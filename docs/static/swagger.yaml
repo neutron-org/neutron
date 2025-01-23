@@ -15476,6 +15476,39 @@ definitions:
         format: uint64
         type: string
     type: object
+  neutron.contractmanager.QueryFailureResponse:
+    description: QueryFailureResponse is response type for the Query/Failure RPC method.
+    properties:
+      failure:
+        properties:
+          address:
+            title: Address of the failed contract
+            type: string
+          error:
+            title: >-
+              Redacted error response of the sudo call. Full error is emitted as
+              an event
+            type: string
+          id:
+            format: uint64
+            title: Id of the failure under specific address
+            type: string
+          sudo_payload:
+            format: byte
+            title: Serialized MessageSudoCallback with Packet and Ack(if exists)
+            type: string
+        title: >-
+          Failure message contains information about ACK failures and can be
+          used to
+
+          replay ACK in case of requirement.
+
+          Note that Failure means that sudo handler to cosmwasm contract failed
+          for
+
+          some reason
+        type: object
+    type: object
   neutron.contractmanager.QueryFailuresResponse:
     description: QueryFailuresResponse is response type for the Query/Failures RPC method.
     properties:
@@ -15548,17 +15581,28 @@ definitions:
             type: string
         type: object
     type: object
+  neutron.cron.ExecutionStage:
+    default: EXECUTION_STAGE_END_BLOCKER
+    description: |-
+      - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+       - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+    enum:
+      - EXECUTION_STAGE_END_BLOCKER
+      - EXECUTION_STAGE_BEGIN_BLOCKER
+    title: Defines when messages will be executed in the block
+    type: string
   neutron.cron.MsgExecuteContract:
     properties:
       contract:
-        title: Contract is the address of the smart contract
+        title: The address of the smart contract
         type: string
       msg:
-        title: Msg is json encoded message to be passed to the contract
+        title: JSON encoded message to be passed to the contract
         type: string
+    title: Defines the contract and the message to pass
     type: object
   neutron.cron.Params:
-    description: Params defines the parameters for the module.
+    description: Defines the parameters for the module.
     properties:
       limit:
         format: uint64
@@ -15569,9 +15613,20 @@ definitions:
         type: string
     type: object
   neutron.cron.QueryGetScheduleResponse:
+    description: The response type for the Query/Params RPC method.
     properties:
       schedule:
         properties:
+          execution_stage:
+            title: Stage when messages will be executed
+            default: EXECUTION_STAGE_END_BLOCKER
+            description: |-
+              - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+               - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+            enum:
+              - EXECUTION_STAGE_END_BLOCKER
+              - EXECUTION_STAGE_BEGIN_BLOCKER
+            type: string
           last_execute_height:
             format: uint64
             title: Last execution's block height
@@ -15580,13 +15635,16 @@ definitions:
             items:
               properties:
                 contract:
-                  title: Contract is the address of the smart contract
+                  title: The address of the smart contract
                   type: string
                 msg:
-                  title: Msg is json encoded message to be passed to the contract
+                  title: JSON encoded message to be passed to the contract
                   type: string
+              title: Defines the contract and the message to pass
               type: object
-            title: Msgs that will be executed every period amount of time
+            title: >-
+              Msgs that will be executed every certain number of blocks,
+              specified in the `period` field
             type: array
           name:
             title: Name of schedule
@@ -15595,9 +15653,11 @@ definitions:
             format: uint64
             title: Period in blocks
             type: string
+        title: Defines the schedule for execution
         type: object
     type: object
   neutron.cron.QueryParamsResponse:
+    description: The response type for the Query/Params RPC method.
     properties:
       params:
         description: params holds all the parameters of this module.
@@ -15612,6 +15672,7 @@ definitions:
         type: object
     type: object
   neutron.cron.QuerySchedulesResponse:
+    description: The response type for the Query/Params RPC method.
     properties:
       pagination:
         description: |-
@@ -15642,6 +15703,16 @@ definitions:
       schedules:
         items:
           properties:
+            execution_stage:
+              title: Stage when messages will be executed
+              default: EXECUTION_STAGE_END_BLOCKER
+              description: |-
+                - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+                 - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+              enum:
+                - EXECUTION_STAGE_END_BLOCKER
+                - EXECUTION_STAGE_BEGIN_BLOCKER
+              type: string
             last_execute_height:
               format: uint64
               title: Last execution's block height
@@ -15650,13 +15721,16 @@ definitions:
               items:
                 properties:
                   contract:
-                    title: Contract is the address of the smart contract
+                    title: The address of the smart contract
                     type: string
                   msg:
-                    title: Msg is json encoded message to be passed to the contract
+                    title: JSON encoded message to be passed to the contract
                     type: string
+                title: Defines the contract and the message to pass
                 type: object
-              title: Msgs that will be executed every period amount of time
+              title: >-
+                Msgs that will be executed every certain number of blocks,
+                specified in the `period` field
               type: array
             name:
               title: Name of schedule
@@ -15665,11 +15739,22 @@ definitions:
               format: uint64
               title: Period in blocks
               type: string
+          title: Defines the schedule for execution
           type: object
         type: array
     type: object
   neutron.cron.Schedule:
     properties:
+      execution_stage:
+        title: Stage when messages will be executed
+        default: EXECUTION_STAGE_END_BLOCKER
+        description: |-
+          - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+           - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+        enum:
+          - EXECUTION_STAGE_END_BLOCKER
+          - EXECUTION_STAGE_BEGIN_BLOCKER
+        type: string
       last_execute_height:
         format: uint64
         title: Last execution's block height
@@ -15678,13 +15763,16 @@ definitions:
         items:
           properties:
             contract:
-              title: Contract is the address of the smart contract
+              title: The address of the smart contract
               type: string
             msg:
-              title: Msg is json encoded message to be passed to the contract
+              title: JSON encoded message to be passed to the contract
               type: string
+          title: Defines the contract and the message to pass
           type: object
-        title: Msgs that will be executed every period amount of time
+        title: >-
+          Msgs that will be executed every certain number of blocks, specified
+          in the `period` field
         type: array
       name:
         title: Name of schedule
@@ -15693,6 +15781,14 @@ definitions:
         format: uint64
         title: Period in blocks
         type: string
+    title: Defines the schedule for execution
+    type: object
+  neutron.dex.DepositOptions:
+    properties:
+      disable_autoswap:
+        type: boolean
+      fail_tx_on_bel:
+        type: boolean
     type: object
   neutron.dex.DepositRecord:
     properties:
@@ -15735,9 +15831,24 @@ definitions:
                         type: string
                     type: object
                 type: object
+              maker_price:
+                title: >-
+                  This is the price of the PoolReserves denominated in the
+                  opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                  worth 10 TokenB )
+                type: string
               price_opposite_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_opposite_taker_maker was an internal
+                  implementation detail and will be removed in a future release.
+
+                  It is being kept strictly for backwards compatibility. The
+                  actual field value is unused.
                 type: string
               price_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_taker_to_maker will be removed in future
+                  release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
                 type: string
@@ -15760,9 +15871,24 @@ definitions:
                         type: string
                     type: object
                 type: object
+              maker_price:
+                title: >-
+                  This is the price of the PoolReserves denominated in the
+                  opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                  worth 10 TokenB )
+                type: string
               price_opposite_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_opposite_taker_maker was an internal
+                  implementation detail and will be removed in a future release.
+
+                  It is being kept strictly for backwards compatibility. The
+                  actual field value is unused.
                 type: string
               price_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_taker_to_maker will be removed in future
+                  release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
                 type: string
@@ -15774,6 +15900,14 @@ definitions:
         type: string
       upper_tick_index:
         format: int64
+        type: string
+    type: object
+  neutron.dex.FailedDeposit:
+    properties:
+      deposit_idx:
+        format: uint64
+        type: string
+      error:
         type: string
     type: object
   neutron.dex.LimitOrderTranche:
@@ -15805,7 +15939,15 @@ definitions:
           tranche_key:
             type: string
         type: object
+      maker_price:
+        title: >-
+          This is the price of the LimitOrder denominated in the opposite token.
+          (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+        type: string
       price_taker_to_maker:
+        description: >-
+          DEPRECATED: price_taker_to_maker will be removed in future release,
+          `maker_price` should always be used.
         type: string
       reserves_maker_denom:
         type: string
@@ -15873,6 +16015,364 @@ definitions:
       - JUST_IN_TIME
       - GOOD_TIL_TIME
     type: string
+  neutron.dex.MsgCancelLimitOrder:
+    properties:
+      creator:
+        type: string
+      tranche_key:
+        type: string
+    type: object
+  neutron.dex.MsgCancelLimitOrderResponse:
+    properties:
+      maker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of maker reserves that were canceled
+      taker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of taker reserves that were withdrawn
+    type: object
+  neutron.dex.MsgDeposit:
+    properties:
+      amounts_a:
+        items:
+          type: string
+        type: array
+      amounts_b:
+        items:
+          type: string
+        type: array
+      creator:
+        type: string
+      fees:
+        items:
+          format: uint64
+          type: string
+        type: array
+      options:
+        items:
+          properties:
+            disable_autoswap:
+              type: boolean
+            fail_tx_on_bel:
+              type: boolean
+          type: object
+        type: array
+      receiver:
+        type: string
+      tick_indexes_a_to_b:
+        items:
+          format: int64
+          type: string
+        type: array
+      token_a:
+        type: string
+      token_b:
+        type: string
+    type: object
+  neutron.dex.MsgDepositResponse:
+    properties:
+      failed_deposits:
+        items:
+          properties:
+            deposit_idx:
+              format: uint64
+              type: string
+            error:
+              type: string
+          type: object
+        type: array
+      reserve0_deposited:
+        items:
+          type: string
+        type: array
+      reserve1_deposited:
+        items:
+          type: string
+        type: array
+      shares_issued:
+        items:
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+    type: object
+  neutron.dex.MsgMultiHopSwap:
+    properties:
+      amount_in:
+        type: string
+      creator:
+        type: string
+      exit_limit_price:
+        type: string
+      pick_best_route:
+        description: >-
+          If pickBestRoute == true then all routes are run and the route with
+          the
+
+          best price is chosen otherwise, the first succesful route is used.
+        type: boolean
+      receiver:
+        type: string
+      routes:
+        items:
+          properties:
+            hops:
+              items:
+                type: string
+              type: array
+          type: object
+        type: array
+    type: object
+  neutron.dex.MsgMultiHopSwapResponse:
+    properties:
+      coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+      dust:
+        items:
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+      route:
+        properties:
+          hops:
+            items:
+              type: string
+            type: array
+        type: object
+    type: object
+  neutron.dex.MsgPlaceLimitOrder:
+    properties:
+      amount_in:
+        type: string
+      creator:
+        type: string
+      expiration_time:
+        description: expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+        format: date-time
+        type: string
+      limit_sell_price:
+        type: string
+      max_amount_out:
+        type: string
+      min_average_sell_price:
+        title: >-
+          min_average_sell_price is an optional parameter that sets a required
+          minimum average price for the entire trade.
+
+          if the min_average_sell_price is not met the trade will fail.
+
+          If min_average_sell_price is omitted limit_sell_price will be used
+          instead
+        type: string
+      order_type:
+        default: GOOD_TIL_CANCELLED
+        enum:
+          - GOOD_TIL_CANCELLED
+          - FILL_OR_KILL
+          - IMMEDIATE_OR_CANCEL
+          - JUST_IN_TIME
+          - GOOD_TIL_TIME
+        type: string
+      receiver:
+        type: string
+      tick_index_in_to_out:
+        description: >-
+          DEPRECATED: tick_index_in_to_out will be removed in future release;
+          limit_sell_price should be used instead.
+        format: int64
+        type: string
+      token_in:
+        type: string
+      token_out:
+        type: string
+    type: object
+  neutron.dex.MsgPlaceLimitOrderResponse:
+    properties:
+      coin_in:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of coin used for the limit order
+      taker_coin_in:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: >-
+          Total amount of the token in that was immediately swapped for
+          takerOutCoin
+      taker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: >-
+          Total amount of coin received from the taker portion of the limit
+          order
+
+          This is the amount of coin immediately available in the users account
+          after
+
+          executing the limit order. It does not include any future proceeds
+          from the
+
+          maker portion which will have withdrawn in the future
+      trancheKey:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawFilledLimitOrder:
+    properties:
+      creator:
+        type: string
+      tranche_key:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawFilledLimitOrderResponse:
+    properties:
+      maker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: >-
+          Total amount of maker reserves that were withdrawn --only applies to
+          inactive LimitOrders
+      taker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of taker reserves that were withdrawn
+    type: object
+  neutron.dex.MsgWithdrawal:
+    properties:
+      creator:
+        type: string
+      fees:
+        items:
+          format: uint64
+          type: string
+        type: array
+      receiver:
+        type: string
+      shares_to_remove:
+        items:
+          type: string
+        type: array
+      tick_indexes_a_to_b:
+        items:
+          format: int64
+          type: string
+        type: array
+      token_a:
+        type: string
+      token_b:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawalResponse:
+    properties:
+      reserve0_withdrawn:
+        type: string
+      reserve1_withdrawn:
+        type: string
+      shares_burned:
+        items:
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+    type: object
   neutron.dex.MultiHopRoute:
     properties:
       hops:
@@ -15927,9 +16427,23 @@ definitions:
                     type: string
                 type: object
             type: object
+          maker_price:
+            title: >-
+              This is the price of the PoolReserves denominated in the opposite
+              token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+            type: string
           price_opposite_taker_to_maker:
+            description: >-
+              DEPRECATED: price_opposite_taker_maker was an internal
+              implementation detail and will be removed in a future release.
+
+              It is being kept strictly for backwards compatibility. The actual
+              field value is unused.
             type: string
           price_taker_to_maker:
+            description: >-
+              DEPRECATED: price_taker_to_maker will be removed in future
+              release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
             type: string
@@ -15952,9 +16466,23 @@ definitions:
                     type: string
                 type: object
             type: object
+          maker_price:
+            title: >-
+              This is the price of the PoolReserves denominated in the opposite
+              token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+            type: string
           price_opposite_taker_to_maker:
+            description: >-
+              DEPRECATED: price_opposite_taker_maker was an internal
+              implementation detail and will be removed in a future release.
+
+              It is being kept strictly for backwards compatibility. The actual
+              field value is unused.
             type: string
           price_taker_to_maker:
+            description: >-
+              DEPRECATED: price_taker_to_maker will be removed in future
+              release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
             type: string
@@ -15997,9 +16525,23 @@ definitions:
                 type: string
             type: object
         type: object
+      maker_price:
+        title: >-
+          This is the price of the PoolReserves denominated in the opposite
+          token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+        type: string
       price_opposite_taker_to_maker:
+        description: >-
+          DEPRECATED: price_opposite_taker_maker was an internal implementation
+          detail and will be removed in a future release.
+
+          It is being kept strictly for backwards compatibility. The actual
+          field value is unused.
         type: string
       price_taker_to_maker:
+        description: >-
+          DEPRECATED: price_taker_to_maker will be removed in future release,
+          `maker_price` should always be used.
         type: string
       reserves_maker_denom:
         type: string
@@ -16052,7 +16594,16 @@ definitions:
                 tranche_key:
                   type: string
               type: object
+            maker_price:
+              title: >-
+                This is the price of the LimitOrder denominated in the opposite
+                token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB
+                )
+              type: string
             price_taker_to_maker:
+              description: >-
+                DEPRECATED: price_taker_to_maker will be removed in future
+                release, `maker_price` should always be used.
               type: string
             reserves_maker_denom:
               type: string
@@ -16123,7 +16674,16 @@ definitions:
                 tranche_key:
                   type: string
               type: object
+            maker_price:
+              title: >-
+                This is the price of the LimitOrder denominated in the opposite
+                token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB
+                )
+              type: string
             price_taker_to_maker:
+              description: >-
+                DEPRECATED: price_taker_to_maker will be removed in future
+                release, `maker_price` should always be used.
               type: string
             reserves_maker_denom:
               type: string
@@ -16387,9 +16947,24 @@ definitions:
                       type: string
                   type: object
               type: object
+            maker_price:
+              title: >-
+                This is the price of the PoolReserves denominated in the
+                opposite token. (ie. 1 TokenA with a maker_price of 10 is worth
+                10 TokenB )
+              type: string
             price_opposite_taker_to_maker:
+              description: >-
+                DEPRECATED: price_opposite_taker_maker was an internal
+                implementation detail and will be removed in a future release.
+
+                It is being kept strictly for backwards compatibility. The
+                actual field value is unused.
               type: string
             price_taker_to_maker:
+              description: >-
+                DEPRECATED: price_taker_to_maker will be removed in future
+                release, `maker_price` should always be used.
               type: string
             reserves_maker_denom:
               type: string
@@ -16456,7 +17031,16 @@ definitions:
                     tranche_key:
                       type: string
                   type: object
+                maker_price:
+                  title: >-
+                    This is the price of the LimitOrder denominated in the
+                    opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                    worth 10 TokenB )
+                  type: string
                 price_taker_to_maker:
+                  description: >-
+                    DEPRECATED: price_taker_to_maker will be removed in future
+                    release, `maker_price` should always be used.
                   type: string
                 reserves_maker_denom:
                   type: string
@@ -16485,9 +17069,25 @@ definitions:
                           type: string
                       type: object
                   type: object
+                maker_price:
+                  title: >-
+                    This is the price of the PoolReserves denominated in the
+                    opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                    worth 10 TokenB )
+                  type: string
                 price_opposite_taker_to_maker:
+                  description: >-
+                    DEPRECATED: price_opposite_taker_maker was an internal
+                    implementation detail and will be removed in a future
+                    release.
+
+                    It is being kept strictly for backwards compatibility. The
+                    actual field value is unused.
                   type: string
                 price_taker_to_maker:
+                  description: >-
+                    DEPRECATED: price_taker_to_maker will be removed in future
+                    release, `maker_price` should always be used.
                   type: string
                 reserves_maker_denom:
                   type: string
@@ -16539,9 +17139,25 @@ definitions:
                               type: string
                           type: object
                       type: object
+                    maker_price:
+                      title: >-
+                        This is the price of the PoolReserves denominated in the
+                        opposite token. (ie. 1 TokenA with a maker_price of 10
+                        is worth 10 TokenB )
+                      type: string
                     price_opposite_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_opposite_taker_maker was an internal
+                        implementation detail and will be removed in a future
+                        release.
+
+                        It is being kept strictly for backwards compatibility.
+                        The actual field value is unused.
                       type: string
                     price_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_taker_to_maker will be removed in
+                        future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
                       type: string
@@ -16564,9 +17180,25 @@ definitions:
                               type: string
                           type: object
                       type: object
+                    maker_price:
+                      title: >-
+                        This is the price of the PoolReserves denominated in the
+                        opposite token. (ie. 1 TokenA with a maker_price of 10
+                        is worth 10 TokenB )
+                      type: string
                     price_opposite_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_opposite_taker_maker was an internal
+                        implementation detail and will be removed in a future
+                        release.
+
+                        It is being kept strictly for backwards compatibility.
+                        The actual field value is unused.
                       type: string
                     price_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_taker_to_maker will be removed in
+                        future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
                       type: string
@@ -16711,7 +17343,15 @@ definitions:
               tranche_key:
                 type: string
             type: object
+          maker_price:
+            title: >-
+              This is the price of the LimitOrder denominated in the opposite
+              token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+            type: string
           price_taker_to_maker:
+            description: >-
+              DEPRECATED: price_taker_to_maker will be removed in future
+              release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
             type: string
@@ -16754,7 +17394,15 @@ definitions:
               tranche_key:
                 type: string
             type: object
+          maker_price:
+            title: >-
+              This is the price of the LimitOrder denominated in the opposite
+              token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+            type: string
           price_taker_to_maker:
+            description: >-
+              DEPRECATED: price_taker_to_maker will be removed in future
+              release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
             type: string
@@ -16846,9 +17494,23 @@ definitions:
                     type: string
                 type: object
             type: object
+          maker_price:
+            title: >-
+              This is the price of the PoolReserves denominated in the opposite
+              token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+            type: string
           price_opposite_taker_to_maker:
+            description: >-
+              DEPRECATED: price_opposite_taker_maker was an internal
+              implementation detail and will be removed in a future release.
+
+              It is being kept strictly for backwards compatibility. The actual
+              field value is unused.
             type: string
           price_taker_to_maker:
+            description: >-
+              DEPRECATED: price_taker_to_maker will be removed in future
+              release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
             type: string
@@ -16900,9 +17562,24 @@ definitions:
                         type: string
                     type: object
                 type: object
+              maker_price:
+                title: >-
+                  This is the price of the PoolReserves denominated in the
+                  opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                  worth 10 TokenB )
+                type: string
               price_opposite_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_opposite_taker_maker was an internal
+                  implementation detail and will be removed in a future release.
+
+                  It is being kept strictly for backwards compatibility. The
+                  actual field value is unused.
                 type: string
               price_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_taker_to_maker will be removed in future
+                  release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
                 type: string
@@ -16925,13 +17602,287 @@ definitions:
                         type: string
                     type: object
                 type: object
+              maker_price:
+                title: >-
+                  This is the price of the PoolReserves denominated in the
+                  opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                  worth 10 TokenB )
+                type: string
               price_opposite_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_opposite_taker_maker was an internal
+                  implementation detail and will be removed in a future release.
+
+                  It is being kept strictly for backwards compatibility. The
+                  actual field value is unused.
                 type: string
               price_taker_to_maker:
+                description: >-
+                  DEPRECATED: price_taker_to_maker will be removed in future
+                  release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
                 type: string
             type: object
+        type: object
+    type: object
+  neutron.dex.QuerySimulateCancelLimitOrderResponse:
+    properties:
+      resp:
+        properties:
+          maker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of maker reserves that were canceled
+          taker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of taker reserves that were withdrawn
+        type: object
+    type: object
+  neutron.dex.QuerySimulateDepositResponse:
+    properties:
+      resp:
+        properties:
+          failed_deposits:
+            items:
+              properties:
+                deposit_idx:
+                  format: uint64
+                  type: string
+                error:
+                  type: string
+              type: object
+            type: array
+          reserve0_deposited:
+            items:
+              type: string
+            type: array
+          reserve1_deposited:
+            items:
+              type: string
+            type: array
+          shares_issued:
+            items:
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            type: array
+        type: object
+    type: object
+  neutron.dex.QuerySimulateMultiHopSwapResponse:
+    properties:
+      resp:
+        properties:
+          coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+          dust:
+            items:
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            type: array
+          route:
+            properties:
+              hops:
+                items:
+                  type: string
+                type: array
+            type: object
+        type: object
+    type: object
+  neutron.dex.QuerySimulatePlaceLimitOrderResponse:
+    properties:
+      resp:
+        properties:
+          coin_in:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of coin used for the limit order
+          taker_coin_in:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: >-
+              Total amount of the token in that was immediately swapped for
+              takerOutCoin
+          taker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: >-
+              Total amount of coin received from the taker portion of the limit
+              order
+
+              This is the amount of coin immediately available in the users
+              account after
+
+              executing the limit order. It does not include any future proceeds
+              from the
+
+              maker portion which will have withdrawn in the future
+          trancheKey:
+            type: string
+        type: object
+    type: object
+  neutron.dex.QuerySimulateWithdrawFilledLimitOrderResponse:
+    properties:
+      resp:
+        properties:
+          maker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: >-
+              Total amount of maker reserves that were withdrawn --only applies
+              to inactive LimitOrders
+          taker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of taker reserves that were withdrawn
+        type: object
+    type: object
+  neutron.dex.QuerySimulateWithdrawalResponse:
+    properties:
+      resp:
+        properties:
+          reserve0_withdrawn:
+            type: string
+          reserve1_withdrawn:
+            type: string
+          shares_burned:
+            items:
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            type: array
         type: object
     type: object
   neutron.dex.TickLiquidity:
@@ -16965,7 +17916,15 @@ definitions:
               tranche_key:
                 type: string
             type: object
+          maker_price:
+            title: >-
+              This is the price of the LimitOrder denominated in the opposite
+              token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+            type: string
           price_taker_to_maker:
+            description: >-
+              DEPRECATED: price_taker_to_maker will be removed in future
+              release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
             type: string
@@ -16994,9 +17953,23 @@ definitions:
                     type: string
                 type: object
             type: object
+          maker_price:
+            title: >-
+              This is the price of the PoolReserves denominated in the opposite
+              token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+            type: string
           price_opposite_taker_to_maker:
+            description: >-
+              DEPRECATED: price_opposite_taker_maker was an internal
+              implementation detail and will be removed in a future release.
+
+              It is being kept strictly for backwards compatibility. The actual
+              field value is unused.
             type: string
           price_taker_to_maker:
+            description: >-
+              DEPRECATED: price_taker_to_maker will be removed in future
+              release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
             type: string
@@ -17484,7 +18457,24 @@ definitions:
             type: object
         type: object
     type: object
+  neutron.ibcratelimit.v1beta1.Params:
+    description: Params defines the parameters for the ibc-rate-limit module.
+    properties:
+      contract_address:
+        type: string
+    type: object
+  neutron.ibcratelimit.v1beta1.QueryParamsResponse:
+    description: aramsResponse is the response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        properties:
+          contract_address:
+            type: string
+        type: object
+    type: object
   neutron.interchainqueries.Block:
+    description: A single verifiable result of an Interchain Query of TX type.
     properties:
       header:
         properties:
@@ -17494,7 +18484,11 @@ definitions:
             format: byte
             type: string
         type: object
-        title: We need to know block X to verify inclusion of transaction for block X
+        description: >-
+          The header of the block the transaction is included in. It is needed
+          to know block header to
+
+          verify inclusion of the transaction.
       next_block_header:
         properties:
           type_url:
@@ -17503,26 +18497,27 @@ definitions:
             format: byte
             type: string
         type: object
-        title: >-
-          We need to know block X+1 to verify response of transaction for block
-          X
+        description: >-
+          The header of the block next to the block the transaction is included
+          in. It is needed to know
 
-          since LastResultsHash is root hash of all results from the txs from
-          the
+          block X+1 header to verify response of transaction for block X since
+          LastResultsHash is root
 
-          previous block
+          hash of all results of the txs from the previous block.
       tx:
+        description: The transaction matched by the Interchain Query's transaction filter.
         properties:
           data:
+            description: The arbitrary data typed body of the transaction.
             format: byte
-            title: is body of the transaction
             type: string
           delivery_proof:
-            title: >-
-              is the Merkle Proof which proves existence of response in block
-              with height
+            description: >-
+              The Merkle Proof which proves existence of response in the block
+              next to the block the
 
-              next_block_header.Height
+              transaction is included in.
             properties:
               aunts:
                 items:
@@ -17540,11 +18535,9 @@ definitions:
                 type: string
             type: object
           inclusion_proof:
-            title: >-
-              is the Merkle Proof which proves existence of data in block with
-              height
-
-              header.Height
+            description: >-
+              The Merkle Proof which proves inclusion of the transaction in the
+              block.
             properties:
               aunts:
                 items:
@@ -17562,13 +18555,7 @@ definitions:
                 type: string
             type: object
           response:
-            description: >-
-              ExecTxResult contains results of executing one individual
-              transaction.
-
-
-              * Its structure is equivalent to #ResponseDeliverTx which will be
-              deprecated/deleted
+            description: The result of the transaction execution.
             properties:
               code:
                 format: int64
@@ -17620,24 +18607,39 @@ definitions:
         type: object
     type: object
   neutron.interchainqueries.KVKey:
+    description: Represents a path to an IAVL storage node.
     properties:
       key:
+        description: >-
+          A bytes field representing the key for specific data in the module's
+          storage.
         format: byte
-        title: Key you want to read from the storage
         type: string
       path:
-        title: >-
-          Path (storage prefix) to the storage where you want to read value by
-          key
+        description: >-
+          The substore name used in an Interchain Query. Typically, this
+          corresponds to the keeper's
 
-          (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+          storeKey, usually the module's name, such as "bank", "staking", etc.
         type: string
     type: object
   neutron.interchainqueries.Params:
-    description: Params defines the parameters for the module.
+    description: The parameters for the module.
     properties:
+      max_kv_query_keys_count:
+        format: uint64
+        title: Maximum amount of keys in a registered key value query
+        type: string
+      max_transactions_filters:
+        format: uint64
+        title: >-
+          max_transactions_filters defines maximum allowed amount of tx filters
+          in msgRegisterInterchainQuery
+        type: string
       query_deposit:
-        description: Amount of coins deposited for the query.
+        description: >-
+          Amount of coins required to be provided as deposit on Interchain Query
+          registration.
         items:
           description: |-
             Coin defines a token with a denomination and an amount.
@@ -17652,37 +18654,58 @@ definitions:
           type: object
         type: array
       query_submit_timeout:
+        description: >-
+          The duration, measured in blocks, that must pass since the query's
+          registration or its last
+
+          result submission before the query becomes eligible for removal by
+          anyone. Is used to set
+
+          `submit_timeout` on Interchain Query registration.
         format: uint64
-        title: |-
-          Defines amount of blocks required before query becomes available for
-          removal by anybody
         type: string
       tx_query_removal_limit:
         description: >-
           Amount of tx hashes to be removed during a single EndBlock. Can vary
-          to
+          to balance between
 
-          balance between network cleaning speed and EndBlock duration. A zero
-          value
-
-          means no limit.
+          network cleaning speed and EndBlock duration. A zero value means no
+          limit.
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.QueryLastRemoteHeightResponse:
+    description: Response type for the Query/LastRemoteHeight RPC method.
     properties:
       height:
+        description: The height of the chain that the IBC client is currently on.
+        format: uint64
+        type: string
+      revision:
+        description: The revision of the chain that the IBC client is currently on.
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.QueryParamsResponse:
-    description: QueryParamsResponse is response type for the Query/Params RPC method.
+    description: Response type for the Query/Params RPC method.
     properties:
       params:
-        description: params holds all the parameters of this module.
+        description: Contains all parameters of the module.
         properties:
+          max_kv_query_keys_count:
+            format: uint64
+            title: Maximum amount of keys in a registered key value query
+            type: string
+          max_transactions_filters:
+            format: uint64
+            title: >-
+              max_transactions_filters defines maximum allowed amount of tx
+              filters in msgRegisterInterchainQuery
+            type: string
           query_deposit:
-            description: Amount of coins deposited for the query.
+            description: >-
+              Amount of coins required to be provided as deposit on Interchain
+              Query registration.
             items:
               description: >-
                 Coin defines a token with a denomination and an amount.
@@ -17700,27 +18723,29 @@ definitions:
               type: object
             type: array
           query_submit_timeout:
-            format: uint64
-            title: >-
-              Defines amount of blocks required before query becomes available
-              for
+            description: >-
+              The duration, measured in blocks, that must pass since the query's
+              registration or its last
 
-              removal by anybody
+              result submission before the query becomes eligible for removal by
+              anyone. Is used to set
+
+              `submit_timeout` on Interchain Query registration.
+            format: uint64
             type: string
           tx_query_removal_limit:
             description: >-
               Amount of tx hashes to be removed during a single EndBlock. Can
-              vary to
+              vary to balance between
 
-              balance between network cleaning speed and EndBlock duration. A
-              zero value
-
-              means no limit.
+              network cleaning speed and EndBlock duration. A zero value means
+              no limit.
             format: uint64
             type: string
         type: object
     type: object
   neutron.interchainqueries.QueryRegisteredQueriesResponse:
+    description: Response type for the Query/RegisteredQueries RPC method.
     properties:
       pagination:
         description: |-
@@ -17749,15 +18774,27 @@ definitions:
             type: string
         type: object
       registered_queries:
+        description: A list of registered Interchain Queries.
         items:
+          description: >-
+            Information about an Interchain Query registered in the
+            interchainqueries module.
           properties:
             connection_id:
-              title: >-
-                The IBC connection ID for getting ConsensusState to verify
-                proofs
+              description: >-
+                The IBC connection ID to the remote chain (the source of
+                querying data). Is used for getting
+
+                ConsensusState from the respective IBC client to verify query
+                result proofs.
               type: string
             deposit:
-              description: Amount of coins deposited for the query.
+              description: >-
+                Amount of coins paid for the Interchain Query registration. The
+                deposit is paid back to the
+
+                remover. The remover can be either the query owner (during the
+                submit timeout) or anybody.
               items:
                 description: >-
                   Coin defines a token with a denomination and an amount.
@@ -17779,35 +18816,41 @@ definitions:
               format: uint64
               type: string
             keys:
+              description: >-
+                The KV-storage keys for which to get values from the remote
+                chain. Only applicable for the
+
+                KV Interchain Queries. Max amount of keys is limited by the
+                module's `max_kv_query_keys_count`
+
+                parameters.
               items:
+                description: Represents a path to an IAVL storage node.
                 properties:
                   key:
+                    description: >-
+                      A bytes field representing the key for specific data in
+                      the module's storage.
                     format: byte
-                    title: Key you want to read from the storage
                     type: string
                   path:
-                    title: >-
-                      Path (storage prefix) to the storage where you want to
-                      read value by key
+                    description: >-
+                      The substore name used in an Interchain Query. Typically,
+                      this corresponds to the keeper's
 
-                      (usually name of cosmos-sdk module: 'staking', 'bank',
-                      etc.)
+                      storeKey, usually the module's name, such as "bank",
+                      "staking", etc.
                     type: string
                 type: object
-              title: >-
-                The KV-storage keys for which we want to get values from remote
-                chain
               type: array
             last_submitted_result_local_height:
-              description: >-
-                The local chain last block height when the query result was
-                updated.
+              description: The local chain block height of the last query results update.
               format: uint64
               type: string
             last_submitted_result_remote_height:
               description: >-
-                The remote chain last block height when the query result was
-                updated.
+                The remote chain block height that corresponds to the last query
+                result update.
               properties:
                 revision_height:
                   format: uint64
@@ -17826,38 +18869,73 @@ definitions:
                 freezing clients
               type: object
             owner:
-              description: The address that registered the query.
+              description: The address of the contract that registered the query.
               type: string
             query_type:
-              title: 'The query type identifier: `kv` or `tx` now'
+              description: 'The query type identifier: `kv` or `tx`.'
               type: string
             registered_at_height:
-              description: The local chain height when the query was registered.
+              description: >-
+                The local chain block height of the Interchain Query
+                registration.
               format: uint64
               type: string
             submit_timeout:
-              description: Timeout before query becomes available for everybody to remove.
+              description: >-
+                The duration, measured in blocks, that must pass since the
+                query's registration or its last
+
+                result submission before the query becomes eligible for removal
+                by anyone.
               format: uint64
               type: string
             transactions_filter:
-              title: The filter for transaction search ICQ
+              description: >-
+                A stringified list of filters for remote transactions search.
+                Only applicable for the TX
+
+                Interchain Queries. Example:
+                "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+                Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount
+                of filter conditions is limited
+
+                by the module's `max_transactions_filters` parameters.
               type: string
             update_period:
-              description: Parameter that defines how often the query must be updated.
+              description: >-
+                Parameter that defines the minimal delay between consecutive
+                query executions (i.e. the
+
+                minimal delay between query results update).
               format: uint64
               type: string
           type: object
         type: array
     type: object
   neutron.interchainqueries.QueryRegisteredQueryResponse:
+    description: Response type for the Query/RegisteredQuery RPC method.
     properties:
       registered_query:
+        description: >-
+          Information about an Interchain Query registered in the
+          interchainqueries module.
         properties:
           connection_id:
-            title: The IBC connection ID for getting ConsensusState to verify proofs
+            description: >-
+              The IBC connection ID to the remote chain (the source of querying
+              data). Is used for getting
+
+              ConsensusState from the respective IBC client to verify query
+              result proofs.
             type: string
           deposit:
-            description: Amount of coins deposited for the query.
+            description: >-
+              Amount of coins paid for the Interchain Query registration. The
+              deposit is paid back to the
+
+              remover. The remover can be either the query owner (during the
+              submit timeout) or anybody.
             items:
               description: >-
                 Coin defines a token with a denomination and an amount.
@@ -17879,34 +18957,41 @@ definitions:
             format: uint64
             type: string
           keys:
+            description: >-
+              The KV-storage keys for which to get values from the remote chain.
+              Only applicable for the
+
+              KV Interchain Queries. Max amount of keys is limited by the
+              module's `max_kv_query_keys_count`
+
+              parameters.
             items:
+              description: Represents a path to an IAVL storage node.
               properties:
                 key:
+                  description: >-
+                    A bytes field representing the key for specific data in the
+                    module's storage.
                   format: byte
-                  title: Key you want to read from the storage
                   type: string
                 path:
-                  title: >-
-                    Path (storage prefix) to the storage where you want to read
-                    value by key
+                  description: >-
+                    The substore name used in an Interchain Query. Typically,
+                    this corresponds to the keeper's
 
-                    (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+                    storeKey, usually the module's name, such as "bank",
+                    "staking", etc.
                   type: string
               type: object
-            title: >-
-              The KV-storage keys for which we want to get values from remote
-              chain
             type: array
           last_submitted_result_local_height:
-            description: >-
-              The local chain last block height when the query result was
-              updated.
+            description: The local chain block height of the last query results update.
             format: uint64
             type: string
           last_submitted_result_remote_height:
             description: >-
-              The remote chain last block height when the query result was
-              updated.
+              The remote chain block height that corresponds to the last query
+              result update.
             properties:
               revision_height:
                 format: uint64
@@ -17925,35 +19010,69 @@ definitions:
               freezing clients
             type: object
           owner:
-            description: The address that registered the query.
+            description: The address of the contract that registered the query.
             type: string
           query_type:
-            title: 'The query type identifier: `kv` or `tx` now'
+            description: 'The query type identifier: `kv` or `tx`.'
             type: string
           registered_at_height:
-            description: The local chain height when the query was registered.
+            description: The local chain block height of the Interchain Query registration.
             format: uint64
             type: string
           submit_timeout:
-            description: Timeout before query becomes available for everybody to remove.
+            description: >-
+              The duration, measured in blocks, that must pass since the query's
+              registration or its last
+
+              result submission before the query becomes eligible for removal by
+              anyone.
             format: uint64
             type: string
           transactions_filter:
-            title: The filter for transaction search ICQ
+            description: >-
+              A stringified list of filters for remote transactions search. Only
+              applicable for the TX
+
+              Interchain Queries. Example:
+              "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+              Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of
+              filter conditions is limited
+
+              by the module's `max_transactions_filters` parameters.
             type: string
           update_period:
-            description: Parameter that defines how often the query must be updated.
+            description: >-
+              Parameter that defines the minimal delay between consecutive query
+              executions (i.e. the
+
+              minimal delay between query results update).
             format: uint64
             type: string
         type: object
     type: object
   neutron.interchainqueries.QueryRegisteredQueryResultResponse:
+    description: Response type for the Query/QueryResult RPC method.
     properties:
       result:
+        description: The last successfully submitted result of an Interchain Query.
         properties:
           allow_kv_callbacks:
+            description: >-
+              Whether to send the query result to the owner contract as a sudo
+              message. Only applicable for
+
+              KV type of Interchain Queries.
             type: boolean
           block:
+            description: >-
+              A TX Interchain Query execution result. Contains metainformation
+              about the blocks of the query
+
+              execution height. Only populated when submitting an Interchain
+              Query result for verification
+
+              and emptied when saving the result on chain.
             properties:
               header:
                 properties:
@@ -17963,9 +19082,11 @@ definitions:
                     format: byte
                     type: string
                 type: object
-                title: >-
-                  We need to know block X to verify inclusion of transaction for
-                  block X
+                description: >-
+                  The header of the block the transaction is included in. It is
+                  needed to know block header to
+
+                  verify inclusion of the transaction.
               next_block_header:
                 properties:
                   type_url:
@@ -17974,26 +19095,29 @@ definitions:
                     format: byte
                     type: string
                 type: object
-                title: >-
-                  We need to know block X+1 to verify response of transaction
-                  for block X
+                description: >-
+                  The header of the block next to the block the transaction is
+                  included in. It is needed to know
 
-                  since LastResultsHash is root hash of all results from the txs
-                  from the
+                  block X+1 header to verify response of transaction for block X
+                  since LastResultsHash is root
 
-                  previous block
+                  hash of all results of the txs from the previous block.
               tx:
+                description: >-
+                  The transaction matched by the Interchain Query's transaction
+                  filter.
                 properties:
                   data:
+                    description: The arbitrary data typed body of the transaction.
                     format: byte
-                    title: is body of the transaction
                     type: string
                   delivery_proof:
-                    title: >-
-                      is the Merkle Proof which proves existence of response in
-                      block with height
+                    description: >-
+                      The Merkle Proof which proves existence of response in the
+                      block next to the block the
 
-                      next_block_header.Height
+                      transaction is included in.
                     properties:
                       aunts:
                         items:
@@ -18011,11 +19135,9 @@ definitions:
                         type: string
                     type: object
                   inclusion_proof:
-                    title: >-
-                      is the Merkle Proof which proves existence of data in
-                      block with height
-
-                      header.Height
+                    description: >-
+                      The Merkle Proof which proves inclusion of the transaction
+                      in the block.
                     properties:
                       aunts:
                         items:
@@ -18033,13 +19155,7 @@ definitions:
                         type: string
                     type: object
                   response:
-                    description: >-
-                      ExecTxResult contains results of executing one individual
-                      transaction.
-
-
-                      * Its structure is equivalent to #ResponseDeliverTx which
-                      will be deprecated/deleted
+                    description: The result of the transaction execution.
                     properties:
                       code:
                         format: int64
@@ -18092,17 +19208,28 @@ definitions:
                 type: object
             type: object
           height:
+            description: >-
+              The height of the chain at the moment of the Interchain Query
+              execution.
             format: uint64
             type: string
           kv_results:
+            description: >-
+              A list of a KV Interchain Query execution results. Each result
+              contains query parameters, a
+
+              response value and a proof.
             items:
+              description: A verifiable result of performing a single KVKey read.
               properties:
                 Proof:
-                  title: >-
-                    is the Merkle Proof which proves existence of key-value pair
-                    in IAVL
+                  description: >-
+                    The Merkle Proof which proves existence/nonexistence of
+                    key-value pair in IAVL storage. Is
 
-                    storage
+                    used to verify
+
+                    the pair against the respective remote chain's header.
                   properties:
                     ops:
                       items:
@@ -18125,30 +19252,76 @@ definitions:
                           for example neighbouring node hash
                         type: object
                       type: array
+                  title: ProofOps is Merkle proof defined by the list of ProofOps
                   type: object
                 key:
+                  description: >-
+                    A bytes field representing the key of the data read from the
+                    module's storage.
                   format: byte
-                  title: is the key in IAVL store
                   type: string
                 storage_prefix:
-                  title: is the substore name (acc, staking, etc.)
+                  description: >-
+                    The substore name used in the read operation. Typically,
+                    this corresponds to the keeper's
+
+                    storeKey, usually the module's name, such as "bank",
+                    "staking", etc.
                   type: string
                 value:
+                  description: >-
+                    A bytes field containing the value associated with the key
+                    in the store.
                   format: byte
-                  title: is the value in IAVL store
                   type: string
               type: object
             type: array
           revision:
+            description: >-
+              The revision number of the chain at the moment of the Interchain
+              Query execution.
             format: uint64
             type: string
         type: object
     type: object
   neutron.interchainqueries.QueryResult:
+    description: >-
+      Contains different information about a single Interchain Query execution
+      result. Currently,
+
+      this structure is used both in query result submission via an ICQ Relayer
+      and as a query result
+
+      storage for read/write operations to interchainqueries module, but the
+      structure fields are
+
+      populated in a bit different ways. When submitting a query result, all
+      fields are populated and
+
+      provided to the interchainqueries module in order to verify the result
+      against the IBC client's
+
+      state. But in order to lighten the chain state, the interchainqueries
+      module removes the block
+
+      field and proofs from the kv_results.
     properties:
       allow_kv_callbacks:
+        description: >-
+          Whether to send the query result to the owner contract as a sudo
+          message. Only applicable for
+
+          KV type of Interchain Queries.
         type: boolean
       block:
+        description: >-
+          A TX Interchain Query execution result. Contains metainformation about
+          the blocks of the query
+
+          execution height. Only populated when submitting an Interchain Query
+          result for verification
+
+          and emptied when saving the result on chain.
         properties:
           header:
             properties:
@@ -18158,9 +19331,11 @@ definitions:
                 format: byte
                 type: string
             type: object
-            title: >-
-              We need to know block X to verify inclusion of transaction for
-              block X
+            description: >-
+              The header of the block the transaction is included in. It is
+              needed to know block header to
+
+              verify inclusion of the transaction.
           next_block_header:
             properties:
               type_url:
@@ -18169,26 +19344,29 @@ definitions:
                 format: byte
                 type: string
             type: object
-            title: >-
-              We need to know block X+1 to verify response of transaction for
-              block X
+            description: >-
+              The header of the block next to the block the transaction is
+              included in. It is needed to know
 
-              since LastResultsHash is root hash of all results from the txs
-              from the
+              block X+1 header to verify response of transaction for block X
+              since LastResultsHash is root
 
-              previous block
+              hash of all results of the txs from the previous block.
           tx:
+            description: >-
+              The transaction matched by the Interchain Query's transaction
+              filter.
             properties:
               data:
+                description: The arbitrary data typed body of the transaction.
                 format: byte
-                title: is body of the transaction
                 type: string
               delivery_proof:
-                title: >-
-                  is the Merkle Proof which proves existence of response in
-                  block with height
+                description: >-
+                  The Merkle Proof which proves existence of response in the
+                  block next to the block the
 
-                  next_block_header.Height
+                  transaction is included in.
                 properties:
                   aunts:
                     items:
@@ -18206,11 +19384,9 @@ definitions:
                     type: string
                 type: object
               inclusion_proof:
-                title: >-
-                  is the Merkle Proof which proves existence of data in block
-                  with height
-
-                  header.Height
+                description: >-
+                  The Merkle Proof which proves inclusion of the transaction in
+                  the block.
                 properties:
                   aunts:
                     items:
@@ -18228,13 +19404,7 @@ definitions:
                     type: string
                 type: object
               response:
-                description: >-
-                  ExecTxResult contains results of executing one individual
-                  transaction.
-
-
-                  * Its structure is equivalent to #ResponseDeliverTx which will
-                  be deprecated/deleted
+                description: The result of the transaction execution.
                 properties:
                   code:
                     format: int64
@@ -18286,17 +19456,28 @@ definitions:
             type: object
         type: object
       height:
+        description: >-
+          The height of the chain at the moment of the Interchain Query
+          execution.
         format: uint64
         type: string
       kv_results:
+        description: >-
+          A list of a KV Interchain Query execution results. Each result
+          contains query parameters, a
+
+          response value and a proof.
         items:
+          description: A verifiable result of performing a single KVKey read.
           properties:
             Proof:
-              title: >-
-                is the Merkle Proof which proves existence of key-value pair in
-                IAVL
+              description: >-
+                The Merkle Proof which proves existence/nonexistence of
+                key-value pair in IAVL storage. Is
 
-                storage
+                used to verify
+
+                the pair against the respective remote chain's header.
               properties:
                 ops:
                   items:
@@ -18319,31 +19500,57 @@ definitions:
                       for example neighbouring node hash
                     type: object
                   type: array
+              title: ProofOps is Merkle proof defined by the list of ProofOps
               type: object
             key:
+              description: >-
+                A bytes field representing the key of the data read from the
+                module's storage.
               format: byte
-              title: is the key in IAVL store
               type: string
             storage_prefix:
-              title: is the substore name (acc, staking, etc.)
+              description: >-
+                The substore name used in the read operation. Typically, this
+                corresponds to the keeper's
+
+                storeKey, usually the module's name, such as "bank", "staking",
+                etc.
               type: string
             value:
+              description: >-
+                A bytes field containing the value associated with the key in
+                the store.
               format: byte
-              title: is the value in IAVL store
               type: string
           type: object
         type: array
       revision:
+        description: >-
+          The revision number of the chain at the moment of the Interchain Query
+          execution.
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.RegisteredQuery:
+    description: >-
+      Information about an Interchain Query registered in the interchainqueries
+      module.
     properties:
       connection_id:
-        title: The IBC connection ID for getting ConsensusState to verify proofs
+        description: >-
+          The IBC connection ID to the remote chain (the source of querying
+          data). Is used for getting
+
+          ConsensusState from the respective IBC client to verify query result
+          proofs.
         type: string
       deposit:
-        description: Amount of coins deposited for the query.
+        description: >-
+          Amount of coins paid for the Interchain Query registration. The
+          deposit is paid back to the
+
+          remover. The remover can be either the query owner (during the submit
+          timeout) or anybody.
         items:
           description: |-
             Coin defines a token with a denomination and an amount.
@@ -18362,28 +19569,41 @@ definitions:
         format: uint64
         type: string
       keys:
+        description: >-
+          The KV-storage keys for which to get values from the remote chain.
+          Only applicable for the
+
+          KV Interchain Queries. Max amount of keys is limited by the module's
+          `max_kv_query_keys_count`
+
+          parameters.
         items:
+          description: Represents a path to an IAVL storage node.
           properties:
             key:
+              description: >-
+                A bytes field representing the key for specific data in the
+                module's storage.
               format: byte
-              title: Key you want to read from the storage
               type: string
             path:
-              title: >-
-                Path (storage prefix) to the storage where you want to read
-                value by key
+              description: >-
+                The substore name used in an Interchain Query. Typically, this
+                corresponds to the keeper's
 
-                (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+                storeKey, usually the module's name, such as "bank", "staking",
+                etc.
               type: string
           type: object
-        title: The KV-storage keys for which we want to get values from remote chain
         type: array
       last_submitted_result_local_height:
-        description: The local chain last block height when the query result was updated.
+        description: The local chain block height of the last query results update.
         format: uint64
         type: string
       last_submitted_result_remote_height:
-        description: The remote chain last block height when the query result was updated.
+        description: >-
+          The remote chain block height that corresponds to the last query
+          result update.
         properties:
           revision_height:
             format: uint64
@@ -18402,33 +19622,57 @@ definitions:
           freezing clients
         type: object
       owner:
-        description: The address that registered the query.
+        description: The address of the contract that registered the query.
         type: string
       query_type:
-        title: 'The query type identifier: `kv` or `tx` now'
+        description: 'The query type identifier: `kv` or `tx`.'
         type: string
       registered_at_height:
-        description: The local chain height when the query was registered.
+        description: The local chain block height of the Interchain Query registration.
         format: uint64
         type: string
       submit_timeout:
-        description: Timeout before query becomes available for everybody to remove.
+        description: >-
+          The duration, measured in blocks, that must pass since the query's
+          registration or its last
+
+          result submission before the query becomes eligible for removal by
+          anyone.
         format: uint64
         type: string
       transactions_filter:
-        title: The filter for transaction search ICQ
+        description: >-
+          A stringified list of filters for remote transactions search. Only
+          applicable for the TX
+
+          Interchain Queries. Example:
+          "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+          Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of
+          filter conditions is limited
+
+          by the module's `max_transactions_filters` parameters.
         type: string
       update_period:
-        description: Parameter that defines how often the query must be updated.
+        description: >-
+          Parameter that defines the minimal delay between consecutive query
+          executions (i.e. the
+
+          minimal delay between query results update).
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.StorageValue:
+    description: A verifiable result of performing a single KVKey read.
     properties:
       Proof:
-        title: |-
-          is the Merkle Proof which proves existence of key-value pair in IAVL
-          storage
+        description: >-
+          The Merkle Proof which proves existence/nonexistence of key-value pair
+          in IAVL storage. Is
+
+          used to verify
+
+          the pair against the respective remote chain's header.
         properties:
           ops:
             items:
@@ -18447,31 +19691,41 @@ definitions:
                 for example neighbouring node hash
               type: object
             type: array
+        title: ProofOps is Merkle proof defined by the list of ProofOps
         type: object
       key:
+        description: >-
+          A bytes field representing the key of the data read from the module's
+          storage.
         format: byte
-        title: is the key in IAVL store
         type: string
       storage_prefix:
-        title: is the substore name (acc, staking, etc.)
+        description: >-
+          The substore name used in the read operation. Typically, this
+          corresponds to the keeper's
+
+          storeKey, usually the module's name, such as "bank", "staking", etc.
         type: string
       value:
+        description: >-
+          A bytes field containing the value associated with the key in the
+          store.
         format: byte
-        title: is the value in IAVL store
         type: string
     type: object
   neutron.interchainqueries.TxValue:
+    description: Contains transaction body, response, and proofs of inclusion and delivery.
     properties:
       data:
+        description: The arbitrary data typed body of the transaction.
         format: byte
-        title: is body of the transaction
         type: string
       delivery_proof:
-        title: >-
-          is the Merkle Proof which proves existence of response in block with
-          height
+        description: >-
+          The Merkle Proof which proves existence of response in the block next
+          to the block the
 
-          next_block_header.Height
+          transaction is included in.
         properties:
           aunts:
             items:
@@ -18489,11 +19743,9 @@ definitions:
             type: string
         type: object
       inclusion_proof:
-        title: >-
-          is the Merkle Proof which proves existence of data in block with
-          height
-
-          header.Height
+        description: >-
+          The Merkle Proof which proves inclusion of the transaction in the
+          block.
         properties:
           aunts:
             items:
@@ -18511,12 +19763,7 @@ definitions:
             type: string
         type: object
       response:
-        description: >-
-          ExecTxResult contains results of executing one individual transaction.
-
-
-          * Its structure is equivalent to #ResponseDeliverTx which will be
-          deprecated/deleted
+        description: The result of the transaction execution.
         properties:
           code:
             format: int64
@@ -18715,7 +19962,7 @@ definitions:
   osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse:
     description: |-
       QueryBeforeSendHookAddressResponse defines the response structure for the
-      DenomBeforeSendHook gRPC query.
+      BeforeSendHookAddress gRPC query.
     properties:
       contract_addr:
         type: string
@@ -18749,6 +19996,14 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  osmosis.tokenfactory.v1beta1.QueryFullDenomResponse:
+    description: |-
+      QueryFullDenomResponse defines the response structure for the
+      FullDenom gRPC query.
+    properties:
+      full_denom:
+        type: string
     type: object
   osmosis.tokenfactory.v1beta1.QueryParamsResponse:
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
@@ -23461,7 +24716,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v4
+  version: v5
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -39271,12 +40526,6 @@ paths:
           name: address
           required: false
           type: string
-        - description: ID of the failure for the given contract.
-          format: uint64
-          in: query
-          name: failure_id
-          required: false
-          type: string
         - description: |-
             key is a value returned in PageResponse.next_key to begin
             querying the next page most efficiently. Only one of offset or key
@@ -39436,12 +40685,6 @@ paths:
           in: path
           name: address
           required: true
-          type: string
-        - description: ID of the failure for the given contract.
-          format: uint64
-          in: query
-          name: failure_id
-          required: false
           type: string
         - description: |-
             key is a value returned in PageResponse.next_key to begin
@@ -39609,130 +40852,44 @@ paths:
           name: failure_id
           required: true
           type: string
-        - description: |-
-            key is a value returned in PageResponse.next_key to begin
-            querying the next page most efficiently. Only one of offset or key
-            should be set.
-          format: byte
-          in: query
-          name: pagination.key
-          required: false
-          type: string
-        - description: >-
-            offset is a numeric offset that can be used when key is unavailable.
-
-            It is less efficient than using key. Only one of offset or key
-            should
-
-            be set.
-          format: uint64
-          in: query
-          name: pagination.offset
-          required: false
-          type: string
-        - description: >-
-            limit is the total number of results to be returned in the result
-            page.
-
-            If left empty it will default to a value to be set by each app.
-          format: uint64
-          in: query
-          name: pagination.limit
-          required: false
-          type: string
-        - description: >-
-            count_total is set to true  to indicate that the result set should
-            include
-
-            a count of the total number of items available for pagination in
-            UIs.
-
-            count_total is only respected when offset is used. It is ignored
-            when key
-
-            is set.
-          in: query
-          name: pagination.count_total
-          required: false
-          type: boolean
-        - description: >-
-            reverse is set to true if results are to be returned in the
-            descending order.
-
-
-            Since: cosmos-sdk 0.43
-          in: query
-          name: pagination.reverse
-          required: false
-          type: boolean
       responses:
         '200':
           description: A successful response.
           schema:
             description: >-
-              QueryFailuresResponse is response type for the Query/Failures RPC
+              QueryFailureResponse is response type for the Query/Failure RPC
               method.
             properties:
-              failures:
-                items:
-                  properties:
-                    address:
-                      title: Address of the failed contract
-                      type: string
-                    error:
-                      title: >-
-                        Redacted error response of the sudo call. Full error is
-                        emitted as an event
-                      type: string
-                    id:
-                      format: uint64
-                      title: Id of the failure under specific address
-                      type: string
-                    sudo_payload:
-                      format: byte
-                      title: >-
-                        Serialized MessageSudoCallback with Packet and Ack(if
-                        exists)
-                      type: string
-                  title: >-
-                    Failure message contains information about ACK failures and
-                    can be used to
-
-                    replay ACK in case of requirement.
-
-                    Note that Failure means that sudo handler to cosmwasm
-                    contract failed for
-
-                    some reason
-                  type: object
-                type: array
-              pagination:
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
-                           repeated Bar results = 1;
-                           PageResponse page = 2;
-                   }
+              failure:
                 properties:
-                  next_key:
-                    description: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently. It will be empty if
-                      there are no more results.
-                    format: byte
+                  address:
+                    title: Address of the failed contract
                     type: string
-                  total:
-                    format: uint64
+                  error:
                     title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
-
-                      was set, its value is undefined otherwise
+                      Redacted error response of the sudo call. Full error is
+                      emitted as an event
                     type: string
+                  id:
+                    format: uint64
+                    title: Id of the failure under specific address
+                    type: string
+                  sudo_payload:
+                    format: byte
+                    title: >-
+                      Serialized MessageSudoCallback with Packet and Ack(if
+                      exists)
+                    type: string
+                title: >-
+                  Failure message contains information about ACK failures and
+                  can be used to
+
+                  replay ACK in case of requirement.
+
+                  Note that Failure means that sudo handler to cosmwasm contract
+                  failed for
+
+                  some reason
                 type: object
             type: object
         default:
@@ -39811,6 +40968,7 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: The response type for the Query/Params RPC method.
             properties:
               params:
                 description: params holds all the parameters of this module.
@@ -39913,6 +41071,7 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: The response type for the Query/Params RPC method.
             properties:
               pagination:
                 description: >-
@@ -39945,6 +41104,17 @@ paths:
               schedules:
                 items:
                   properties:
+                    execution_stage:
+                      title: Stage when messages will be executed
+                      default: EXECUTION_STAGE_END_BLOCKER
+                      description: >-
+                        - EXECUTION_STAGE_END_BLOCKER: Execution at the end of
+                        the block
+                         - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+                      enum:
+                        - EXECUTION_STAGE_END_BLOCKER
+                        - EXECUTION_STAGE_BEGIN_BLOCKER
+                      type: string
                     last_execute_height:
                       format: uint64
                       title: Last execution's block height
@@ -39953,15 +41123,16 @@ paths:
                       items:
                         properties:
                           contract:
-                            title: Contract is the address of the smart contract
+                            title: The address of the smart contract
                             type: string
                           msg:
-                            title: >-
-                              Msg is json encoded message to be passed to the
-                              contract
+                            title: JSON encoded message to be passed to the contract
                             type: string
+                        title: Defines the contract and the message to pass
                         type: object
-                      title: Msgs that will be executed every period amount of time
+                      title: >-
+                        Msgs that will be executed every certain number of
+                        blocks, specified in the `period` field
                       type: array
                     name:
                       title: Name of schedule
@@ -39970,6 +41141,7 @@ paths:
                       format: uint64
                       title: Period in blocks
                       type: string
+                  title: Defines the schedule for execution
                   type: object
                 type: array
             type: object
@@ -40010,9 +41182,21 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: The response type for the Query/Params RPC method.
             properties:
               schedule:
                 properties:
+                  execution_stage:
+                    title: Stage when messages will be executed
+                    default: EXECUTION_STAGE_END_BLOCKER
+                    description: >-
+                      - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the
+                      block
+                       - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+                    enum:
+                      - EXECUTION_STAGE_END_BLOCKER
+                      - EXECUTION_STAGE_BEGIN_BLOCKER
+                    type: string
                   last_execute_height:
                     format: uint64
                     title: Last execution's block height
@@ -40021,15 +41205,16 @@ paths:
                     items:
                       properties:
                         contract:
-                          title: Contract is the address of the smart contract
+                          title: The address of the smart contract
                           type: string
                         msg:
-                          title: >-
-                            Msg is json encoded message to be passed to the
-                            contract
+                          title: JSON encoded message to be passed to the contract
                           type: string
+                      title: Defines the contract and the message to pass
                       type: object
-                    title: Msgs that will be executed every period amount of time
+                    title: >-
+                      Msgs that will be executed every certain number of blocks,
+                      specified in the `period` field
                     type: array
                   name:
                     title: Name of schedule
@@ -40038,6 +41223,7 @@ paths:
                     format: uint64
                     title: Period in blocks
                     type: string
+                title: Defines the schedule for execution
                 type: object
             type: object
         default:
@@ -40069,7 +41255,8 @@ paths:
     get:
       operationId: EstimateMultiHopSwap
       parameters:
-        - in: query
+        - description: 'DEPRECATED: Use QuerySimulateMultiHopSwap.'
+          in: query
           name: creator
           required: false
           type: string
@@ -40137,14 +41324,15 @@ paths:
               message:
                 type: string
             type: object
-      summary: Queries the simulated result of a multihop swap
+      summary: DEPRECATED Queries the simulated result of a multihop swap
       tags:
         - Query
   /neutron/dex/estimate_place_limit_order:
     get:
       operationId: EstimatePlaceLimitOrder
       parameters:
-        - in: query
+        - description: 'DEPRECATED: Use QuerySimulatePlaceLimitOrder.'
+          in: query
           name: creator
           required: false
           type: string
@@ -40284,7 +41472,7 @@ paths:
               message:
                 type: string
             type: object
-      summary: Queries the simulated result of a PlaceLimit order
+      summary: DEPRECATED Queries the simulated result of a PlaceLimit order
       tags:
         - Query
   /neutron/dex/filled_limit_order_tranche:
@@ -40382,7 +41570,16 @@ paths:
                         tranche_key:
                           type: string
                       type: object
+                    maker_price:
+                      title: >-
+                        This is the price of the LimitOrder denominated in the
+                        opposite token. (ie. 1 TokenA with a maker_price of 10
+                        is worth 10 TokenB )
+                      type: string
                     price_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_taker_to_maker will be removed in
+                        future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
                       type: string
@@ -40503,7 +41700,16 @@ paths:
                       tranche_key:
                         type: string
                     type: object
+                  maker_price:
+                    title: >-
+                      This is the price of the LimitOrder denominated in the
+                      opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                      worth 10 TokenB )
+                    type: string
                   price_taker_to_maker:
+                    description: >-
+                      DEPRECATED: price_taker_to_maker will be removed in future
+                      release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
                     type: string
@@ -40635,7 +41841,16 @@ paths:
                         tranche_key:
                           type: string
                       type: object
+                    maker_price:
+                      title: >-
+                        This is the price of the LimitOrder denominated in the
+                        opposite token. (ie. 1 TokenA with a maker_price of 10
+                        is worth 10 TokenB )
+                      type: string
                     price_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_taker_to_maker will be removed in
+                        future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
                       type: string
@@ -40756,7 +41971,16 @@ paths:
                       tranche_key:
                         type: string
                     type: object
+                  maker_price:
+                    title: >-
+                      This is the price of the LimitOrder denominated in the
+                      opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                      worth 10 TokenB )
+                    type: string
                   price_taker_to_maker:
+                    description: >-
+                      DEPRECATED: price_taker_to_maker will be removed in future
+                      release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
                     type: string
@@ -40896,7 +42120,16 @@ paths:
                         tranche_key:
                           type: string
                       type: object
+                    maker_price:
+                      title: >-
+                        This is the price of the LimitOrder denominated in the
+                        opposite token. (ie. 1 TokenA with a maker_price of 10
+                        is worth 10 TokenB )
+                      type: string
                     price_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_taker_to_maker will be removed in
+                        future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
                       type: string
@@ -41019,7 +42252,16 @@ paths:
                       tranche_key:
                         type: string
                     type: object
+                  maker_price:
+                    title: >-
+                      This is the price of the LimitOrder denominated in the
+                      opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                      worth 10 TokenB )
+                    type: string
                   price_taker_to_maker:
+                    description: >-
+                      DEPRECATED: price_taker_to_maker will be removed in future
+                      release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
                     type: string
@@ -41392,9 +42634,25 @@ paths:
                                 type: string
                             type: object
                         type: object
+                      maker_price:
+                        title: >-
+                          This is the price of the PoolReserves denominated in
+                          the opposite token. (ie. 1 TokenA with a maker_price
+                          of 10 is worth 10 TokenB )
+                        type: string
                       price_opposite_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_opposite_taker_maker was an internal
+                          implementation detail and will be removed in a future
+                          release.
+
+                          It is being kept strictly for backwards compatibility.
+                          The actual field value is unused.
                         type: string
                       price_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_taker_to_maker will be removed in
+                          future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
                         type: string
@@ -41417,9 +42675,25 @@ paths:
                                 type: string
                             type: object
                         type: object
+                      maker_price:
+                        title: >-
+                          This is the price of the PoolReserves denominated in
+                          the opposite token. (ie. 1 TokenA with a maker_price
+                          of 10 is worth 10 TokenB )
+                        type: string
                       price_opposite_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_opposite_taker_maker was an internal
+                          implementation detail and will be removed in a future
+                          release.
+
+                          It is being kept strictly for backwards compatibility.
+                          The actual field value is unused.
                         type: string
                       price_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_taker_to_maker will be removed in
+                          future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
                         type: string
@@ -41488,9 +42762,25 @@ paths:
                                 type: string
                             type: object
                         type: object
+                      maker_price:
+                        title: >-
+                          This is the price of the PoolReserves denominated in
+                          the opposite token. (ie. 1 TokenA with a maker_price
+                          of 10 is worth 10 TokenB )
+                        type: string
                       price_opposite_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_opposite_taker_maker was an internal
+                          implementation detail and will be removed in a future
+                          release.
+
+                          It is being kept strictly for backwards compatibility.
+                          The actual field value is unused.
                         type: string
                       price_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_taker_to_maker will be removed in
+                          future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
                         type: string
@@ -41513,9 +42803,25 @@ paths:
                                 type: string
                             type: object
                         type: object
+                      maker_price:
+                        title: >-
+                          This is the price of the PoolReserves denominated in
+                          the opposite token. (ie. 1 TokenA with a maker_price
+                          of 10 is worth 10 TokenB )
+                        type: string
                       price_opposite_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_opposite_taker_maker was an internal
+                          implementation detail and will be removed in a future
+                          release.
+
+                          It is being kept strictly for backwards compatibility.
+                          The actual field value is unused.
                         type: string
                       price_taker_to_maker:
+                        description: >-
+                          DEPRECATED: price_taker_to_maker will be removed in
+                          future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
                         type: string
@@ -41866,9 +43172,25 @@ paths:
                               type: string
                           type: object
                       type: object
+                    maker_price:
+                      title: >-
+                        This is the price of the PoolReserves denominated in the
+                        opposite token. (ie. 1 TokenA with a maker_price of 10
+                        is worth 10 TokenB )
+                      type: string
                     price_opposite_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_opposite_taker_maker was an internal
+                        implementation detail and will be removed in a future
+                        release.
+
+                        It is being kept strictly for backwards compatibility.
+                        The actual field value is unused.
                       type: string
                     price_taker_to_maker:
+                      description: >-
+                        DEPRECATED: price_taker_to_maker will be removed in
+                        future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
                       type: string
@@ -41945,9 +43267,25 @@ paths:
                             type: string
                         type: object
                     type: object
+                  maker_price:
+                    title: >-
+                      This is the price of the PoolReserves denominated in the
+                      opposite token. (ie. 1 TokenA with a maker_price of 10 is
+                      worth 10 TokenB )
+                    type: string
                   price_opposite_taker_to_maker:
+                    description: >-
+                      DEPRECATED: price_opposite_taker_maker was an internal
+                      implementation detail and will be removed in a future
+                      release.
+
+                      It is being kept strictly for backwards compatibility. The
+                      actual field value is unused.
                     type: string
                   price_taker_to_maker:
+                    description: >-
+                      DEPRECATED: price_taker_to_maker will be removed in future
+                      release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
                     type: string
@@ -41976,6 +43314,648 @@ paths:
                 type: string
             type: object
       summary: Queries a PoolReserve by index
+      tags:
+        - Query
+  /neutron/dex/simulate_cancel_limit_order:
+    get:
+      operationId: SimulateCancelLimitOrder
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.tranche_key
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  maker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of maker reserves that were canceled
+                  taker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of taker reserves that were withdrawn
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgCancelLimitOrder
+      tags:
+        - Query
+  /neutron/dex/simulate_deposit:
+    get:
+      operationId: SimulateDeposit
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.token_a
+          required: false
+          type: string
+        - in: query
+          name: msg.token_b
+          required: false
+          type: string
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: msg.amounts_a
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: msg.amounts_b
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: int64
+            type: string
+          name: msg.tick_indexes_a_to_b
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: uint64
+            type: string
+          name: msg.fees
+          required: false
+          type: array
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  failed_deposits:
+                    items:
+                      properties:
+                        deposit_idx:
+                          format: uint64
+                          type: string
+                        error:
+                          type: string
+                      type: object
+                    type: array
+                  reserve0_deposited:
+                    items:
+                      type: string
+                    type: array
+                  reserve1_deposited:
+                    items:
+                      type: string
+                    type: array
+                  shares_issued:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgDeposit
+      tags:
+        - Query
+  /neutron/dex/simulate_multi_hop_swap:
+    get:
+      operationId: SimulateMultiHopSwap
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.amount_in
+          required: false
+          type: string
+        - in: query
+          name: msg.exit_limit_price
+          required: false
+          type: string
+        - description: >-
+            If pickBestRoute == true then all routes are run and the route with
+            the
+
+            best price is chosen otherwise, the first succesful route is used.
+          in: query
+          name: msg.pick_best_route
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                  dust:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
+                  route:
+                    properties:
+                      hops:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgMultiHopSwap
+      tags:
+        - Query
+  /neutron/dex/simulate_place_limit_order:
+    get:
+      operationId: SimulatePlaceLimitOrder
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.token_in
+          required: false
+          type: string
+        - in: query
+          name: msg.token_out
+          required: false
+          type: string
+        - description: >-
+            DEPRECATED: tick_index_in_to_out will be removed in future release;
+            limit_sell_price should be used instead.
+          format: int64
+          in: query
+          name: msg.tick_index_in_to_out
+          required: false
+          type: string
+        - in: query
+          name: msg.amount_in
+          required: false
+          type: string
+        - default: GOOD_TIL_CANCELLED
+          enum:
+            - GOOD_TIL_CANCELLED
+            - FILL_OR_KILL
+            - IMMEDIATE_OR_CANCEL
+            - JUST_IN_TIME
+            - GOOD_TIL_TIME
+          in: query
+          name: msg.order_type
+          required: false
+          type: string
+        - description: expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+          format: date-time
+          in: query
+          name: msg.expiration_time
+          required: false
+          type: string
+        - in: query
+          name: msg.max_amount_out
+          required: false
+          type: string
+        - in: query
+          name: msg.limit_sell_price
+          required: false
+          type: string
+        - description: >-
+            min_average_sell_price is an optional parameter that sets a required
+            minimum average price for the entire trade.
+
+            if the min_average_sell_price is not met the trade will fail.
+
+            If min_average_sell_price is omitted limit_sell_price will be used
+            instead.
+          in: query
+          name: msg.min_average_sell_price
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  coin_in:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of coin used for the limit order
+                  taker_coin_in:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: >-
+                      Total amount of the token in that was immediately swapped
+                      for takerOutCoin
+                  taker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: >-
+                      Total amount of coin received from the taker portion of
+                      the limit order
+
+                      This is the amount of coin immediately available in the
+                      users account after
+
+                      executing the limit order. It does not include any future
+                      proceeds from the
+
+                      maker portion which will have withdrawn in the future
+                  trancheKey:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgPlaceLimitOrder
+      tags:
+        - Query
+  /neutron/dex/simulate_withdraw_filled_limit_order:
+    get:
+      operationId: SimulateWithdrawFilledLimitOrder
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.tranche_key
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  maker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: >-
+                      Total amount of maker reserves that were withdrawn --only
+                      applies to inactive LimitOrders
+                  taker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of taker reserves that were withdrawn
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgWithdrawFilledLimitOrder
+      tags:
+        - Query
+  /neutron/dex/simulate_withdrawal:
+    get:
+      operationId: SimulateWithdrawal
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.token_a
+          required: false
+          type: string
+        - in: query
+          name: msg.token_b
+          required: false
+          type: string
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: msg.shares_to_remove
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: int64
+            type: string
+          name: msg.tick_indexes_a_to_b
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: uint64
+            type: string
+          name: msg.fees
+          required: false
+          type: array
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  reserve0_withdrawn:
+                    type: string
+                  reserve1_withdrawn:
+                    type: string
+                  shares_burned:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgWithdrawal
       tags:
         - Query
   /neutron/dex/tick_liquidity/{pair_id}/{token_in}:
@@ -42112,7 +44092,16 @@ paths:
                             tranche_key:
                               type: string
                           type: object
+                        maker_price:
+                          title: >-
+                            This is the price of the LimitOrder denominated in
+                            the opposite token. (ie. 1 TokenA with a maker_price
+                            of 10 is worth 10 TokenB )
+                          type: string
                         price_taker_to_maker:
+                          description: >-
+                            DEPRECATED: price_taker_to_maker will be removed in
+                            future release, `maker_price` should always be used.
                           type: string
                         reserves_maker_denom:
                           type: string
@@ -42141,9 +44130,25 @@ paths:
                                   type: string
                               type: object
                           type: object
+                        maker_price:
+                          title: >-
+                            This is the price of the PoolReserves denominated in
+                            the opposite token. (ie. 1 TokenA with a maker_price
+                            of 10 is worth 10 TokenB )
+                          type: string
                         price_opposite_taker_to_maker:
+                          description: >-
+                            DEPRECATED: price_opposite_taker_maker was an
+                            internal implementation detail and will be removed
+                            in a future release.
+
+                            It is being kept strictly for backwards
+                            compatibility. The actual field value is unused.
                           type: string
                         price_taker_to_maker:
+                          description: >-
+                            DEPRECATED: price_taker_to_maker will be removed in
+                            future release, `maker_price` should always be used.
                           type: string
                         reserves_maker_denom:
                           type: string
@@ -42291,9 +44296,26 @@ paths:
                                       type: string
                                   type: object
                               type: object
+                            maker_price:
+                              title: >-
+                                This is the price of the PoolReserves
+                                denominated in the opposite token. (ie. 1 TokenA
+                                with a maker_price of 10 is worth 10 TokenB )
+                              type: string
                             price_opposite_taker_to_maker:
+                              description: >-
+                                DEPRECATED: price_opposite_taker_maker was an
+                                internal implementation detail and will be
+                                removed in a future release.
+
+                                It is being kept strictly for backwards
+                                compatibility. The actual field value is unused.
                               type: string
                             price_taker_to_maker:
+                              description: >-
+                                DEPRECATED: price_taker_to_maker will be removed
+                                in future release, `maker_price` should always
+                                be used.
                               type: string
                             reserves_maker_denom:
                               type: string
@@ -42316,9 +44338,26 @@ paths:
                                       type: string
                                   type: object
                               type: object
+                            maker_price:
+                              title: >-
+                                This is the price of the PoolReserves
+                                denominated in the opposite token. (ie. 1 TokenA
+                                with a maker_price of 10 is worth 10 TokenB )
+                              type: string
                             price_opposite_taker_to_maker:
+                              description: >-
+                                DEPRECATED: price_opposite_taker_maker was an
+                                internal implementation detail and will be
+                                removed in a future release.
+
+                                It is being kept strictly for backwards
+                                compatibility. The actual field value is unused.
                               type: string
                             price_taker_to_maker:
+                              description: >-
+                                DEPRECATED: price_taker_to_maker will be removed
+                                in future release, `maker_price` should always
+                                be used.
                               type: string
                             reserves_maker_denom:
                               type: string
@@ -42725,7 +44764,7 @@ paths:
       summary: TotalBurnedNeutronsAmount queries total amount of burned neutron fees.
       tags:
         - Query
-  /neutron/interchainqueries/params:
+  /neutron/ibc-rate-limit/v1beta1/params:
     get:
       operationId: Params
       responses:
@@ -42733,14 +44772,71 @@ paths:
           description: A successful response.
           schema:
             description: >-
-              QueryParamsResponse is response type for the Query/Params RPC
+              aramsResponse is the response type for the Query/Params RPC
               method.
             properties:
               params:
-                description: params holds all the parameters of this module.
+                description: params defines the parameters of the module.
                 properties:
+                  contract_address:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Params defines a gRPC query method that returns the ibc-rate-limit
+        module's
+
+        parameters.
+      tags:
+        - Query
+  /neutron/interchainqueries/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: Response type for the Query/Params RPC method.
+            properties:
+              params:
+                description: Contains all parameters of the module.
+                properties:
+                  max_kv_query_keys_count:
+                    format: uint64
+                    title: Maximum amount of keys in a registered key value query
+                    type: string
+                  max_transactions_filters:
+                    format: uint64
+                    title: >-
+                      max_transactions_filters defines maximum allowed amount of
+                      tx filters in msgRegisterInterchainQuery
+                    type: string
                   query_deposit:
-                    description: Amount of coins deposited for the query.
+                    description: >-
+                      Amount of coins required to be provided as deposit on
+                      Interchain Query registration.
                     items:
                       description: >-
                         Coin defines a token with a denomination and an amount.
@@ -42758,21 +44854,22 @@ paths:
                       type: object
                     type: array
                   query_submit_timeout:
-                    format: uint64
-                    title: >-
-                      Defines amount of blocks required before query becomes
-                      available for
+                    description: >-
+                      The duration, measured in blocks, that must pass since the
+                      query's registration or its last
 
-                      removal by anybody
+                      result submission before the query becomes eligible for
+                      removal by anyone. Is used to set
+
+                      `submit_timeout` on Interchain Query registration.
+                    format: uint64
                     type: string
                   tx_query_removal_limit:
                     description: >-
                       Amount of tx hashes to be removed during a single
-                      EndBlock. Can vary to
+                      EndBlock. Can vary to balance between
 
-                      balance between network cleaning speed and EndBlock
-                      duration. A zero value
-
+                      network cleaning speed and EndBlock duration. A zero value
                       means no limit.
                     format: uint64
                     type: string
@@ -42800,14 +44897,15 @@ paths:
               message:
                 type: string
             type: object
-      summary: Parameters queries the parameters of the module.
+      summary: Fetches the current parameters of the interchainqueries module.
       tags:
         - Query
   /neutron/interchainqueries/query_result:
     get:
       operationId: QueryResult
       parameters:
-        - format: uint64
+        - description: ID of an Interchain Query.
+          format: uint64
           in: query
           name: query_id
           required: false
@@ -42816,12 +44914,27 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/QueryResult RPC method.
             properties:
               result:
+                description: The last successfully submitted result of an Interchain Query.
                 properties:
                   allow_kv_callbacks:
+                    description: >-
+                      Whether to send the query result to the owner contract as
+                      a sudo message. Only applicable for
+
+                      KV type of Interchain Queries.
                     type: boolean
                   block:
+                    description: >-
+                      A TX Interchain Query execution result. Contains
+                      metainformation about the blocks of the query
+
+                      execution height. Only populated when submitting an
+                      Interchain Query result for verification
+
+                      and emptied when saving the result on chain.
                     properties:
                       header:
                         properties:
@@ -42831,9 +44944,11 @@ paths:
                             format: byte
                             type: string
                         type: object
-                        title: >-
-                          We need to know block X to verify inclusion of
-                          transaction for block X
+                        description: >-
+                          The header of the block the transaction is included
+                          in. It is needed to know block header to
+
+                          verify inclusion of the transaction.
                       next_block_header:
                         properties:
                           type_url:
@@ -42842,26 +44957,30 @@ paths:
                             format: byte
                             type: string
                         type: object
-                        title: >-
-                          We need to know block X+1 to verify response of
-                          transaction for block X
+                        description: >-
+                          The header of the block next to the block the
+                          transaction is included in. It is needed to know
 
-                          since LastResultsHash is root hash of all results from
-                          the txs from the
+                          block X+1 header to verify response of transaction for
+                          block X since LastResultsHash is root
 
-                          previous block
+                          hash of all results of the txs from the previous
+                          block.
                       tx:
+                        description: >-
+                          The transaction matched by the Interchain Query's
+                          transaction filter.
                         properties:
                           data:
+                            description: The arbitrary data typed body of the transaction.
                             format: byte
-                            title: is body of the transaction
                             type: string
                           delivery_proof:
-                            title: >-
-                              is the Merkle Proof which proves existence of
-                              response in block with height
+                            description: >-
+                              The Merkle Proof which proves existence of
+                              response in the block next to the block the
 
-                              next_block_header.Height
+                              transaction is included in.
                             properties:
                               aunts:
                                 items:
@@ -42879,11 +44998,9 @@ paths:
                                 type: string
                             type: object
                           inclusion_proof:
-                            title: >-
-                              is the Merkle Proof which proves existence of data
-                              in block with height
-
-                              header.Height
+                            description: >-
+                              The Merkle Proof which proves inclusion of the
+                              transaction in the block.
                             properties:
                               aunts:
                                 items:
@@ -42901,14 +45018,7 @@ paths:
                                 type: string
                             type: object
                           response:
-                            description: >-
-                              ExecTxResult contains results of executing one
-                              individual transaction.
-
-
-                              * Its structure is equivalent to
-                              #ResponseDeliverTx which will be
-                              deprecated/deleted
+                            description: The result of the transaction execution.
                             properties:
                               code:
                                 format: int64
@@ -42961,17 +45071,29 @@ paths:
                         type: object
                     type: object
                   height:
+                    description: >-
+                      The height of the chain at the moment of the Interchain
+                      Query execution.
                     format: uint64
                     type: string
                   kv_results:
+                    description: >-
+                      A list of a KV Interchain Query execution results. Each
+                      result contains query parameters, a
+
+                      response value and a proof.
                     items:
+                      description: A verifiable result of performing a single KVKey read.
                       properties:
                         Proof:
-                          title: >-
-                            is the Merkle Proof which proves existence of
-                            key-value pair in IAVL
+                          description: >-
+                            The Merkle Proof which proves existence/nonexistence
+                            of key-value pair in IAVL storage. Is
 
-                            storage
+                            used to verify
+
+                            the pair against the respective remote chain's
+                            header.
                           properties:
                             ops:
                               items:
@@ -42994,21 +45116,36 @@ paths:
                                   for example neighbouring node hash
                                 type: object
                               type: array
+                          title: >-
+                            ProofOps is Merkle proof defined by the list of
+                            ProofOps
                           type: object
                         key:
+                          description: >-
+                            A bytes field representing the key of the data read
+                            from the module's storage.
                           format: byte
-                          title: is the key in IAVL store
                           type: string
                         storage_prefix:
-                          title: is the substore name (acc, staking, etc.)
+                          description: >-
+                            The substore name used in the read operation.
+                            Typically, this corresponds to the keeper's
+
+                            storeKey, usually the module's name, such as "bank",
+                            "staking", etc.
                           type: string
                         value:
+                          description: >-
+                            A bytes field containing the value associated with
+                            the key in the store.
                           format: byte
-                          title: is the value in IAVL store
                           type: string
                       type: object
                     type: array
                   revision:
+                    description: >-
+                      The revision number of the chain at the moment of the
+                      Interchain Query execution.
                     format: uint64
                     type: string
                 type: object
@@ -43035,6 +45172,11 @@ paths:
               message:
                 type: string
             type: object
+      summary: >-
+        Retrieves the most recent successfully submitted result of an Interchain
+        Query. This is only
+
+        applicable for KV Interchain Queries.
       tags:
         - Query
   /neutron/interchainqueries/registered_queries:
@@ -43042,13 +45184,29 @@ paths:
       operationId: RegisteredQueries
       parameters:
         - collectionFormat: multi
+          description: >-
+            A list of owners of Interchain Queries. Query response will contain
+            only Interchain Queries
+
+            that are owned by one of the owners in the list. If none, Interchain
+            Queries are not filtered
+
+            out by the owner field.
           in: query
           items:
             type: string
           name: owners
           required: false
           type: array
-        - in: query
+        - description: >-
+            IBC connection ID. Query response will contain only Interchain
+            Queries that have the same IBC
+
+            connection ID parameter. If none, Interchain Queries are not
+            filtered out by the connection ID
+
+            field.
+          in: query
           name: connection_id
           required: false
           type: string
@@ -43112,6 +45270,7 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/RegisteredQueries RPC method.
             properties:
               pagination:
                 description: >-
@@ -43142,15 +45301,27 @@ paths:
                     type: string
                 type: object
               registered_queries:
+                description: A list of registered Interchain Queries.
                 items:
+                  description: >-
+                    Information about an Interchain Query registered in the
+                    interchainqueries module.
                   properties:
                     connection_id:
-                      title: >-
-                        The IBC connection ID for getting ConsensusState to
-                        verify proofs
+                      description: >-
+                        The IBC connection ID to the remote chain (the source of
+                        querying data). Is used for getting
+
+                        ConsensusState from the respective IBC client to verify
+                        query result proofs.
                       type: string
                     deposit:
-                      description: Amount of coins deposited for the query.
+                      description: >-
+                        Amount of coins paid for the Interchain Query
+                        registration. The deposit is paid back to the
+
+                        remover. The remover can be either the query owner
+                        (during the submit timeout) or anybody.
                       items:
                         description: >-
                           Coin defines a token with a denomination and an
@@ -43173,35 +45344,43 @@ paths:
                       format: uint64
                       type: string
                     keys:
+                      description: >-
+                        The KV-storage keys for which to get values from the
+                        remote chain. Only applicable for the
+
+                        KV Interchain Queries. Max amount of keys is limited by
+                        the module's `max_kv_query_keys_count`
+
+                        parameters.
                       items:
+                        description: Represents a path to an IAVL storage node.
                         properties:
                           key:
+                            description: >-
+                              A bytes field representing the key for specific
+                              data in the module's storage.
                             format: byte
-                            title: Key you want to read from the storage
                             type: string
                           path:
-                            title: >-
-                              Path (storage prefix) to the storage where you
-                              want to read value by key
+                            description: >-
+                              The substore name used in an Interchain Query.
+                              Typically, this corresponds to the keeper's
 
-                              (usually name of cosmos-sdk module: 'staking',
-                              'bank', etc.)
+                              storeKey, usually the module's name, such as
+                              "bank", "staking", etc.
                             type: string
                         type: object
-                      title: >-
-                        The KV-storage keys for which we want to get values from
-                        remote chain
                       type: array
                     last_submitted_result_local_height:
                       description: >-
-                        The local chain last block height when the query result
-                        was updated.
+                        The local chain block height of the last query results
+                        update.
                       format: uint64
                       type: string
                     last_submitted_result_remote_height:
                       description: >-
-                        The remote chain last block height when the query result
-                        was updated.
+                        The remote chain block height that corresponds to the
+                        last query result update.
                       properties:
                         revision_height:
                           format: uint64
@@ -43220,28 +45399,45 @@ paths:
                         freezing clients
                       type: object
                     owner:
-                      description: The address that registered the query.
+                      description: The address of the contract that registered the query.
                       type: string
                     query_type:
-                      title: 'The query type identifier: `kv` or `tx` now'
+                      description: 'The query type identifier: `kv` or `tx`.'
                       type: string
                     registered_at_height:
-                      description: The local chain height when the query was registered.
+                      description: >-
+                        The local chain block height of the Interchain Query
+                        registration.
                       format: uint64
                       type: string
                     submit_timeout:
                       description: >-
-                        Timeout before query becomes available for everybody to
-                        remove.
+                        The duration, measured in blocks, that must pass since
+                        the query's registration or its last
+
+                        result submission before the query becomes eligible for
+                        removal by anyone.
                       format: uint64
                       type: string
                     transactions_filter:
-                      title: The filter for transaction search ICQ
+                      description: >-
+                        A stringified list of filters for remote transactions
+                        search. Only applicable for the TX
+
+                        Interchain Queries. Example:
+                        "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+                        Supported operators: "eq", "lt", "gt", "lte", "gte". Max
+                        amount of filter conditions is limited
+
+                        by the module's `max_transactions_filters` parameters.
                       type: string
                     update_period:
                       description: >-
-                        Parameter that defines how often the query must be
-                        updated.
+                        Parameter that defines the minimal delay between
+                        consecutive query executions (i.e. the
+
+                        minimal delay between query results update).
                       format: uint64
                       type: string
                   type: object
@@ -43269,13 +45465,19 @@ paths:
               message:
                 type: string
             type: object
+      summary: >-
+        Retrieves all registered Interchain Queries in the module, with optional
+        filtering by owner
+
+        and/or connection ID.
       tags:
         - Query
   /neutron/interchainqueries/registered_query:
     get:
       operationId: RegisteredQuery
       parameters:
-        - format: uint64
+        - description: ID of an Interchain Query.
+          format: uint64
           in: query
           name: query_id
           required: false
@@ -43284,16 +45486,28 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/RegisteredQuery RPC method.
             properties:
               registered_query:
+                description: >-
+                  Information about an Interchain Query registered in the
+                  interchainqueries module.
                 properties:
                   connection_id:
-                    title: >-
-                      The IBC connection ID for getting ConsensusState to verify
-                      proofs
+                    description: >-
+                      The IBC connection ID to the remote chain (the source of
+                      querying data). Is used for getting
+
+                      ConsensusState from the respective IBC client to verify
+                      query result proofs.
                     type: string
                   deposit:
-                    description: Amount of coins deposited for the query.
+                    description: >-
+                      Amount of coins paid for the Interchain Query
+                      registration. The deposit is paid back to the
+
+                      remover. The remover can be either the query owner (during
+                      the submit timeout) or anybody.
                     items:
                       description: >-
                         Coin defines a token with a denomination and an amount.
@@ -43315,35 +45529,43 @@ paths:
                     format: uint64
                     type: string
                   keys:
+                    description: >-
+                      The KV-storage keys for which to get values from the
+                      remote chain. Only applicable for the
+
+                      KV Interchain Queries. Max amount of keys is limited by
+                      the module's `max_kv_query_keys_count`
+
+                      parameters.
                     items:
+                      description: Represents a path to an IAVL storage node.
                       properties:
                         key:
+                          description: >-
+                            A bytes field representing the key for specific data
+                            in the module's storage.
                           format: byte
-                          title: Key you want to read from the storage
                           type: string
                         path:
-                          title: >-
-                            Path (storage prefix) to the storage where you want
-                            to read value by key
+                          description: >-
+                            The substore name used in an Interchain Query.
+                            Typically, this corresponds to the keeper's
 
-                            (usually name of cosmos-sdk module: 'staking',
-                            'bank', etc.)
+                            storeKey, usually the module's name, such as "bank",
+                            "staking", etc.
                           type: string
                       type: object
-                    title: >-
-                      The KV-storage keys for which we want to get values from
-                      remote chain
                     type: array
                   last_submitted_result_local_height:
                     description: >-
-                      The local chain last block height when the query result
-                      was updated.
+                      The local chain block height of the last query results
+                      update.
                     format: uint64
                     type: string
                   last_submitted_result_remote_height:
                     description: >-
-                      The remote chain last block height when the query result
-                      was updated.
+                      The remote chain block height that corresponds to the last
+                      query result update.
                     properties:
                       revision_height:
                         format: uint64
@@ -43362,28 +45584,45 @@ paths:
                       freezing clients
                     type: object
                   owner:
-                    description: The address that registered the query.
+                    description: The address of the contract that registered the query.
                     type: string
                   query_type:
-                    title: 'The query type identifier: `kv` or `tx` now'
+                    description: 'The query type identifier: `kv` or `tx`.'
                     type: string
                   registered_at_height:
-                    description: The local chain height when the query was registered.
+                    description: >-
+                      The local chain block height of the Interchain Query
+                      registration.
                     format: uint64
                     type: string
                   submit_timeout:
                     description: >-
-                      Timeout before query becomes available for everybody to
-                      remove.
+                      The duration, measured in blocks, that must pass since the
+                      query's registration or its last
+
+                      result submission before the query becomes eligible for
+                      removal by anyone.
                     format: uint64
                     type: string
                   transactions_filter:
-                    title: The filter for transaction search ICQ
+                    description: >-
+                      A stringified list of filters for remote transactions
+                      search. Only applicable for the TX
+
+                      Interchain Queries. Example:
+                      "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+                      Supported operators: "eq", "lt", "gt", "lte", "gte". Max
+                      amount of filter conditions is limited
+
+                      by the module's `max_transactions_filters` parameters.
                     type: string
                   update_period:
                     description: >-
-                      Parameter that defines how often the query must be
-                      updated.
+                      Parameter that defines the minimal delay between
+                      consecutive query executions (i.e. the
+
+                      minimal delay between query results update).
                     format: uint64
                     type: string
                 type: object
@@ -43410,13 +45649,19 @@ paths:
               message:
                 type: string
             type: object
+      summary: Fetches details of a registered Interchain Query using its ID.
       tags:
         - Query
   /neutron/interchainqueries/remote_height:
     get:
       operationId: LastRemoteHeight
       parameters:
-        - in: query
+        - description: >-
+            Connection ID of an IBC connection to a remote chain. Determines the
+            IBC client used in query
+
+            handling.
+          in: query
           name: connection_id
           required: false
           type: string
@@ -43424,8 +45669,14 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/LastRemoteHeight RPC method.
             properties:
               height:
+                description: The height of the chain that the IBC client is currently on.
+                format: uint64
+                type: string
+              revision:
+                description: The revision of the chain that the IBC client is currently on.
                 format: uint64
                 type: string
             type: object
@@ -43451,6 +45702,11 @@ paths:
               message:
                 type: string
             type: object
+      summary: >-
+        Retrieves the most recent height of a remote chain as known by the IBC
+        client associated with
+
+        a given connection ID.
       tags:
         - Query
   /neutron/interchaintxs/params:
@@ -43669,7 +45925,7 @@ paths:
               QueryBeforeSendHookAddressResponse defines the response structure
               for the
 
-              DenomBeforeSendHook gRPC query.
+              BeforeSendHookAddress gRPC query.
             properties:
               contract_addr:
                 type: string
@@ -43699,6 +45955,56 @@ paths:
       summary: |-
         BeforeSendHookAddress defines a gRPC query method for
         getting the address registered for the before send hook.
+      tags:
+        - Query
+  /osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/full_denom:
+    get:
+      operationId: FullDenom
+      parameters:
+        - in: path
+          name: creator
+          required: true
+          type: string
+        - in: path
+          name: subdenom
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: |-
+              QueryFullDenomResponse defines the response structure for the
+              FullDenom gRPC query.
+            properties:
+              full_denom:
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        FullDenom defines a gRPC query method for getting full denom name
+        from the creator and subdenom strings.
       tags:
         - Query
   /osmosis/tokenfactory/v1beta1/denoms_from_creator/{creator}:

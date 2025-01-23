@@ -3,8 +3,8 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 var _ TickLiquidityKey = (*PoolReservesKey)(nil)
@@ -44,14 +44,18 @@ func (p PoolReservesKey) Counterpart() *PoolReservesKey {
 	}
 }
 
-func (p PoolReservesKey) PriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec, err error) {
+func (p PoolReservesKey) Price() (priceTakerToMaker math_utils.PrecDec, err error) {
 	return CalcPrice(p.TickIndexTakerToMaker)
 }
 
-func (p PoolReservesKey) MustPriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec) {
-	price, err := p.PriceTakerToMaker()
+func (p PoolReservesKey) MustPrice() (priceTakerToMaker math_utils.PrecDec) {
+	price, err := p.Price()
 	if err != nil {
 		panic(err)
 	}
 	return price
+}
+
+func (p PoolReservesKey) PriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec, err error) {
+	return CalcPrice(-p.TickIndexTakerToMaker)
 }

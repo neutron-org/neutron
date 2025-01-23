@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (k Keeper) SetPoolReserves(ctx sdk.Context, poolReserves *types.PoolReserves) {
@@ -39,4 +39,23 @@ func (k Keeper) GetPoolReserves(
 func (k Keeper) RemovePoolReserves(ctx sdk.Context, poolReservesID *types.PoolReservesKey) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.TickLiquidityKeyPrefix))
 	store.Delete(poolReservesID.KeyMarshal())
+}
+
+// UpdatePoolReserves handles the logic for all updates to PoolReserves in the KV Store.
+// NOTE: This method should always be called even if not all logic branches are applicable.
+// It avoids unnecessary repetition of logic and provides a single place to attach update event handlers.
+func (k Keeper) UpdatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves) {
+	if reserves.HasToken() {
+		// The pool still has ReservesMakerDenom; save it as is
+		k.SetPoolReserves(ctx, reserves)
+	} else {
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalPoolReserves(*reserves.Key.TradePairId.MustPairID()))
+		// The pool is empty (ie. ReservesMakerDenom == 0); it can be safely deleted
+		k.RemovePoolReserves(ctx, reserves.Key)
+	}
+
+	// TODO: This will create a bit of extra noise since UpdatePoolReserves is called for both sides of the pool,
+	// but not in some cases only one side has been updated
+	// This should be solved upstream by better tracking of dirty ticks
+	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*reserves))
 }

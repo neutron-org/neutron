@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
@@ -22,6 +22,10 @@ func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
 
 	if k.isModuleAccount(ctx, mintToAcc) {
 		return status.Errorf(codes.Internal, "minting to module accounts is forbidden")
+	}
+
+	if k.IsEscrowAddress(ctx, mintToAcc) {
+		return status.Errorf(codes.Internal, "minting to IBC escrow accounts is forbidden")
 	}
 
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(amount))
@@ -48,6 +52,10 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 
 	if k.isModuleAccount(ctx, burnFromAcc) {
 		return status.Errorf(codes.Internal, "burning from module accounts is forbidden")
+	}
+
+	if k.IsEscrowAddress(ctx, burnFromAcc) {
+		return status.Errorf(codes.Internal, "burning from IBC escrow accounts is forbidden")
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx,
@@ -84,6 +92,14 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 
 	if k.isModuleAccount(ctx, transferToAcc) {
 		return status.Errorf(codes.Internal, "force transfer to module accounts is forbidden")
+	}
+
+	if k.IsEscrowAddress(ctx, transferFromAcc) {
+		return status.Errorf(codes.Internal, "force transfer from IBC escrow accounts is forbidden")
+	}
+
+	if k.IsEscrowAddress(ctx, transferToAcc) {
+		return status.Errorf(codes.Internal, "force transfer to IBC escrow accounts is forbidden")
 	}
 
 	return k.bankKeeper.SendCoins(ctx, transferFromAcc, transferToAcc, sdk.NewCoins(amount))

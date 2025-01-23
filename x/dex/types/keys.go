@@ -6,7 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/utils"
+	"github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 const (
@@ -207,3 +207,6 @@ func JITGoodTilTime() time.Time {
 const (
 	ExpiringLimitOrderGas = 10_000
 )
+
+// Dummy Address used for simulate queries
+const DummyAddress = "neutron1pq7j6za5zjcl3um9t5gfyleues336tv04tyq0k"

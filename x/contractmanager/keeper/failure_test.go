@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/contractmanager/types"
+	"github.com/neutron-org/neutron/v5/testutil"
+	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/contractmanager/types"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
@@ -20,9 +20,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v4/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
 )
 
 // Prevent strconv unused error
@@ -150,10 +150,14 @@ func TestResubmitFailure(t *testing.T) {
 
 	// case: successful resubmit with ack and ack = response
 	wk.EXPECT().Sudo(ctx, contractAddr, msgSuc).Return([]byte{}, nil)
+	wk.EXPECT().HasContractInfo(ctx, contractAddr).Return(true)
 
 	failure, err := k.GetFailure(ctx, contractAddr, failureID)
 	require.NoError(t, err)
-	err = k.ResubmitFailure(ctx, contractAddr, failure)
+	_, err = k.ResubmitFailure(ctx, &types.MsgResubmitFailure{
+		Sender:    contractAddr.String(),
+		FailureId: failure.Id,
+	})
 	require.NoError(t, err)
 	// failure should be deleted
 	_, err = k.GetFailure(ctx, contractAddr, failureID)
@@ -166,10 +170,14 @@ func TestResubmitFailure(t *testing.T) {
 	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(ctx, contractAddr, msgSuc).Return(nil, fmt.Errorf("failed to sudo"))
+	wk.EXPECT().HasContractInfo(ctx, contractAddr).Return(true)
 
 	failure2, err := k.GetFailure(ctx, contractAddr, failureID2)
 	require.NoError(t, err)
-	err = k.ResubmitFailure(ctx, contractAddr, failure2)
+	_, err = k.ResubmitFailure(ctx, &types.MsgResubmitFailure{
+		Sender:    contractAddr.String(),
+		FailureId: failure2.Id,
+	})
 	require.ErrorContains(t, err, "cannot resubmit failure")
 	// failure is still there
 	failureAfter2, err := k.GetFailure(ctx, contractAddr, failureID2)
@@ -184,10 +192,14 @@ func TestResubmitFailure(t *testing.T) {
 	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return([]byte{}, nil)
+	wk.EXPECT().HasContractInfo(ctx, contractAddr).Return(true)
 
 	failure3, err := k.GetFailure(ctx, contractAddr, failureID3)
 	require.NoError(t, err)
-	err = k.ResubmitFailure(ctx, contractAddr, failure3)
+	_, err = k.ResubmitFailure(ctx, &types.MsgResubmitFailure{
+		Sender:    contractAddr.String(),
+		FailureId: failure3.Id,
+	})
 	require.NoError(t, err)
 	// failure should be deleted
 	_, err = k.GetFailure(ctx, contractAddr, failureID3)
@@ -200,10 +212,14 @@ func TestResubmitFailure(t *testing.T) {
 	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return(nil, fmt.Errorf("failed to sudo"))
+	wk.EXPECT().HasContractInfo(ctx, contractAddr).Return(true)
 
 	failure4, err := k.GetFailure(ctx, contractAddr, failureID4)
 	require.NoError(t, err)
-	err = k.ResubmitFailure(ctx, contractAddr, failure4)
+	_, err = k.ResubmitFailure(ctx, &types.MsgResubmitFailure{
+		Sender:    contractAddr.String(),
+		FailureId: failure4.Id,
+	})
 	require.ErrorContains(t, err, "cannot resubmit failure")
 	// failure is still there
 	failureAfter4, err := k.GetFailure(ctx, contractAddr, failureID4)
@@ -218,10 +234,14 @@ func TestResubmitFailure(t *testing.T) {
 	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgTimeout).Return([]byte{}, nil)
+	wk.EXPECT().HasContractInfo(ctx, contractAddr).Return(true)
 
 	failure5, err := k.GetFailure(ctx, contractAddr, failureID5)
 	require.NoError(t, err)
-	err = k.ResubmitFailure(ctx, contractAddr, failure5)
+	_, err = k.ResubmitFailure(ctx, &types.MsgResubmitFailure{
+		Sender:    contractAddr.String(),
+		FailureId: failure5.Id,
+	})
 	require.NoError(t, err)
 	// failure should be deleted
 	_, err = k.GetFailure(ctx, contractAddr, failureID5)
@@ -234,10 +254,14 @@ func TestResubmitFailure(t *testing.T) {
 	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgTimeout).Return(nil, fmt.Errorf("failed to sudo"))
+	wk.EXPECT().HasContractInfo(ctx, contractAddr).Return(true)
 
 	failure6, err := k.GetFailure(ctx, contractAddr, failureID6)
 	require.NoError(t, err)
-	err = k.ResubmitFailure(ctx, contractAddr, failure6)
+	_, err = k.ResubmitFailure(ctx, &types.MsgResubmitFailure{
+		Sender:    contractAddr.String(),
+		FailureId: failure6.Id,
+	})
 	require.ErrorContains(t, err, "cannot resubmit failure")
 	// failure is still there
 	failureAfter6, err := k.GetFailure(ctx, contractAddr, failureID6)

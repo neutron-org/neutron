@@ -15,16 +15,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 
-	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	icatypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	icatypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 )
 
 func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*bindings.QueryRegisteredQueryResultResponse, error) {
@@ -129,7 +129,7 @@ func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeR
 }
 
 func (qp *QueryPlugin) GetFailures(ctx sdk.Context, address string, pagination *sdkquery.PageRequest) (*bindings.FailuresResponse, error) {
-	res, err := qp.contractmanagerKeeper.AddressFailures(ctx, &contractmanagertypes.QueryFailuresRequest{
+	res, err := qp.contractmanagerQueryServer.AddressFailures(ctx, &contractmanagertypes.QueryFailuresRequest{
 		Address:    address,
 		Pagination: pagination,
 	})
@@ -201,7 +201,6 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 		data, err = dexQuery(ctx, query.TickLiquidityAll, qp.dexKeeper.TickLiquidityAll)
 	case query.UserDepositsAll != nil:
 		data, err = dexQuery(ctx, query.UserDepositsAll, qp.dexKeeper.UserDepositsAll)
-
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.dex query type"}
 	}
@@ -217,8 +216,6 @@ func (qp *QueryPlugin) OracleQuery(ctx sdk.Context, query bindings.OracleQuery) 
 		return processResponse(oracleQueryServer.GetAllCurrencyPairs(ctx, query.GetAllCurrencyPairs))
 	case query.GetPrice != nil:
 		return processResponse(oracleQueryServer.GetPrice(ctx, query.GetPrice))
-	case query.GetPrices != nil:
-		return processResponse(oracleQueryServer.GetPrices(ctx, query.GetPrices))
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.oracle query type"}
 	}
@@ -232,8 +229,6 @@ func (qp *QueryPlugin) MarketMapQuery(ctx sdk.Context, query bindings.MarketMapQ
 		return processResponse(marketMapQueryServer.Params(ctx, query.Params))
 	case query.LastUpdated != nil:
 		return processResponse(marketMapQueryServer.LastUpdated(ctx, query.LastUpdated))
-	case query.MarketMap != nil:
-		return processResponse(marketMapQueryServer.MarketMap(ctx, query.MarketMap))
 	case query.Market != nil:
 		return processResponse(marketMapQueryServer.Market(ctx, query.Market))
 	default:

@@ -18,7 +18,7 @@ import (
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	ics23 "github.com/cosmos/ics23/go"
 
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 )
 
 var _ types.MsgServer = msgServer{}

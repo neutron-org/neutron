@@ -19,9 +19,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v4/x/dex/client/cli"
-	"github.com/neutron-org/neutron/v4/x/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/client/cli"
+	"github.com/neutron-org/neutron/v5/x/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 var (
@@ -161,6 +161,9 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 	if err := cfg.RegisterMigration(types.ModuleName, 3, m.Migrate3to4); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/dex from version 3 to 4: %v", err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 4, m.Migrate4to5); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/dex from version 4 to 5: %v", err))
 	}
 }
 

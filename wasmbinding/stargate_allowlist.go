@@ -9,18 +9,20 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
@@ -36,6 +38,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata": &tokenfactorytypes.QueryDenomAuthorityMetadataResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator":      &tokenfactorytypes.QueryDenomsFromCreatorResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/BeforeSendHookAddress":  &tokenfactorytypes.QueryBeforeSendHookAddressResponse{},
+		"/osmosis.tokenfactory.v1beta1.Query/FullDenom":              &tokenfactorytypes.QueryFullDenomResponse{},
 
 		// interchain accounts
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &icacontrollertypes.QueryInterchainAccountResponse{},
@@ -91,24 +94,37 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.dex.Query/PoolByID":                          &dextypes.QueryPoolResponse{},
 		"/neutron.dex.Query/PoolMetadata":                      &dextypes.QueryGetPoolMetadataResponse{},
 		"/neutron.dex.Query/PoolMetadataAll":                   &dextypes.QueryAllPoolMetadataResponse{},
+		"/neutron.dex.Query/SimulateDeposit":                   &dextypes.QuerySimulateDepositResponse{},
+		"/neutron.dex.Query/SimulateWithdrawal":                &dextypes.QuerySimulateWithdrawalResponse{},
+		"/neutron.dex.Query/SimulatePlaceLimitOrder":           &dextypes.QuerySimulatePlaceLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateWithdrawFilledLimitOrder":  &dextypes.QuerySimulateWithdrawFilledLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateCancelLimitOrder":          &dextypes.QuerySimulateCancelLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateMultiHopSwap":              &dextypes.QuerySimulateMultiHopSwapResponse{},
 
 		// oracle
 		"/slinky.oracle.v1.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
 		"/slinky.oracle.v1.Query/GetPrice":            &oracletypes.GetPriceResponse{},
-		"/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
+		// "/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
 
 		// marketmap
-		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
+		// "/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
 		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
+		"/slinky.marketmap.v1.Query/Market":      &marketmaptypes.MarketResponse{},
 
 		// feemarket
-		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
-		"feemarket.feemarket.v1.Query/State":     &feemarkettypes.StateResponse{},
-		"feemarket.feemarket.v1.Query/GasPrice":  &feemarkettypes.GasPriceResponse{},
-		"feemarket.feemarket.v1.Query/GasPrices": &feemarkettypes.GasPricesResponse{},
+		"/feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
+		"/feemarket.feemarket.v1.Query/State":     &feemarkettypes.StateResponse{},
+		"/feemarket.feemarket.v1.Query/GasPrice":  &feemarkettypes.GasPriceResponse{},
+		"/feemarket.feemarket.v1.Query/GasPrices": &feemarkettypes.GasPricesResponse{},
 
 		// dynamicfees
-		"neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
+		"/neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
+
+		// globalfee
+		"/gaia.globalfee.v1beta1.Query/Params": &globalfeetypes.QueryParamsResponse{},
+
+		// consumer
+		"/interchain_security.ccv.consumer.v1.Query/QueryParams": &consumertypes.QueryParamsResponse{},
 	}
 }

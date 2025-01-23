@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (k Keeper) Swap(
@@ -37,7 +37,7 @@ func (k Keeper) Swap(
 		}
 
 		// break as soon as we iterated past limitPrice
-		if limitPrice != nil && liq.Price().LT(*limitPrice) {
+		if limitPrice != nil && liq.Price().GT(*limitPrice) {
 			break
 		}
 
@@ -52,11 +52,11 @@ func (k Keeper) Swap(
 		// this avoids unnecessary iteration since outAmount will always be 0 going forward
 		// this also catches the normal exit case where remainingTakerDenom == 0
 
-		// NOTE: In theory this check should be: price * remainingTakerDenom < 1
+		// NOTE: In theory this check should be:  remainingTakerDenom / price  < 1
 		// but due to rounding and inaccuracy of fixed decimal math, it is possible
 		// for liq.swap to use the full the amount of taker liquidity and have a leftover
 		// amount of the taker Denom > than 1 token worth of maker denom
-		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
+		if math_utils.NewPrecDecFromInt(remainingTakerDenom).Quo(liq.Price()).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
 		}
@@ -110,10 +110,11 @@ func (k Keeper) SwapWithCache(
 func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 	switch liquidity := liquidityI.(type) {
 	case *types.LimitOrderTranche:
-		k.SaveTranche(sdkCtx, liquidity)
-
+		// If there is still makerReserves we will save the tranche as active, if not, we will move it to inactive
+		k.UpdateTranche(sdkCtx, liquidity)
 	case *types.PoolLiquidity:
-		k.SetPool(sdkCtx, liquidity.Pool)
+		// Save updated to both sides of the pool. If one of the sides is empty it will be deleted
+		k.UpdatePool(sdkCtx, liquidity.Pool)
 	default:
 		panic("Invalid liquidity type")
 	}
@@ -127,6 +128,7 @@ func (k Keeper) TakerLimitOrderSwap(
 	amountIn math.Int,
 	maxAmountOut *math.Int,
 	limitPrice math_utils.PrecDec,
+	minAvgSellPrice math_utils.PrecDec,
 	orderType types.LimitOrderType,
 ) (totalInCoin, totalOutCoin sdk.Coin, err error) {
 	totalInCoin, totalOutCoin, orderFilled, err := k.SwapWithCache(
@@ -145,12 +147,12 @@ func (k Keeper) TakerLimitOrderSwap(
 	}
 
 	if totalInCoin.Amount.IsZero() {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+		return sdk.Coin{}, sdk.Coin{}, types.ErrNoLiquidity
 	}
 
 	truePrice := math_utils.NewPrecDecFromInt(totalOutCoin.Amount).QuoInt(totalInCoin.Amount)
 
-	if truePrice.LT(limitPrice) {
+	if truePrice.LT(minAvgSellPrice) {
 		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
 	}
 
@@ -164,6 +166,7 @@ func (k Keeper) MakerLimitOrderSwap(
 	tradePairID types.TradePairID,
 	amountIn math.Int,
 	limitPrice math_utils.PrecDec,
+	minAvgSellPrice math_utils.PrecDec,
 ) (totalInCoin, totalOutCoin sdk.Coin, filled bool, err error) {
 	totalInCoin, totalOutCoin, filled, err = k.SwapWithCache(
 		ctx,
@@ -178,11 +181,11 @@ func (k Keeper) MakerLimitOrderSwap(
 
 	if totalInCoin.Amount.IsPositive() {
 		remainingIn := amountIn.Sub(totalInCoin.Amount)
-		expectedOutMakerPortion := limitPrice.MulInt(remainingIn).Ceil()
+		expectedOutMakerPortion := math_utils.NewPrecDecFromInt(remainingIn).Quo(limitPrice)
 		totalExpectedOut := expectedOutMakerPortion.Add(math_utils.NewPrecDecFromInt(totalOutCoin.Amount))
 		truePrice := totalExpectedOut.QuoInt(amountIn)
 
-		if truePrice.LT(limitPrice) {
+		if truePrice.LT(minAvgSellPrice) {
 			return sdk.Coin{}, sdk.Coin{}, false, types.ErrLimitPriceNotSatisfied
 		}
 	}

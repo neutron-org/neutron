@@ -3,7 +3,7 @@ package types
 import (
 	sdkerrors "cosmossdk.io/errors"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 func NewTradePairID(takerDenom, makerDenom string) (*TradePairID, error) {
@@ -68,7 +68,7 @@ func (p TradePairID) MustPairID() *PairID {
 }
 
 func (p TradePairID) PairID() (*PairID, error) {
-	return NewPairIDFromUnsorted(p.MakerDenom, p.TakerDenom)
+	return NewPairID(p.MakerDenom, p.TakerDenom)
 }
 
 func (p TradePairID) Reversed() *TradePairID {
@@ -91,12 +91,12 @@ func (p TradePairID) TickIndexNormalized(tickIndexTakerToMaker int64) int64 {
 	return p.TickIndexTakerToMaker(tickIndexTakerToMaker)
 }
 
-func (p TradePairID) PriceTakerToMaker(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec, err error) {
+func (p TradePairID) MakerPrice(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec, err error) {
 	return CalcPrice(p.TickIndexTakerToMaker(tickIndexNormalized))
 }
 
-func (p TradePairID) MustPriceTakerToMaker(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec) {
-	price, err := p.PriceTakerToMaker(tickIndexNormalized)
+func (p TradePairID) MustMakerPrice(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec) {
+	price, err := p.MakerPrice(tickIndexNormalized)
 	if err != nil {
 		panic(err)
 	}

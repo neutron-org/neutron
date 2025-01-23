@@ -11,149 +11,196 @@ import "neutron/interchainqueries/params.proto";
 import "tendermint/abci/types.proto";
 import "tendermint/crypto/proof.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/interchainqueries/types";
 
-// Msg defines the Msg service.
+// Defines the Msg interface of the module.
 service Msg {
   option (cosmos.msg.v1.service) = true;
-
+  // Registers a new Interchain Query in the `interchainqueries` module. This message should only
+  // be issued by a smart contract. The calling contract is automatically charged a query
+  // registration deposit, based on the module's query deposit parameter. The deposit is refunded
+  // when the query is removed. Ensure the contract's account has sufficient assets at the time of
+  // message execution.
+  //
+  // The response includes the ID assigned to the registered query. Use a reply handler to process
+  // this response and utilize the query ID.
   rpc RegisterInterchainQuery(MsgRegisterInterchainQuery) returns (MsgRegisterInterchainQueryResponse);
+  // Submits the result of an Interchain Query execution to the chain. Handling this message may
+  // involve forwarding the result to the smart contract that owns the query for processing, which
+  // could require significant gas usage.
   rpc SubmitQueryResult(MsgSubmitQueryResult) returns (MsgSubmitQueryResultResponse);
+  // Removes a specific Interchain Query and its results from the module. The query can only be
+  // removed by its owner during the query's submit timeout. After the timeout, anyone can remove
+  // it. Upon successful removal, the query deposit is refunded to the caller.
   rpc RemoveInterchainQuery(MsgRemoveInterchainQueryRequest) returns (MsgRemoveInterchainQueryResponse);
+  // Updates the parameters of a registered Interchain Query. This action can only be performed by
+  // the query's owner.
   rpc UpdateInterchainQuery(MsgUpdateInterchainQueryRequest) returns (MsgUpdateInterchainQueryResponse);
+  // Updates the parameters of the `interchainqueries` module. This action can only be performed
+  // by the module's authority.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
+// Request type for the Msg/RegisterInterchainQuery RPC method.
 message MsgRegisterInterchainQuery {
   option (cosmos.msg.v1.signer) = "sender";
-
-  // defines a query type: `kv` or `tx` now
+  // The query type identifier: `kv` or `tx`.
   string query_type = 1;
-
-  // is used to define KV-storage keys for which we want to get values from
-  // remote chain
+  // The KV-storage keys for which we want to get values from remote chain. Only applicable for the
+  // KV Interchain Queries. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+  // parameters.
   repeated KVKey keys = 2;
-
-  // is used to define a filter for transaction search ICQ
+  // A stringified list of filters for remote transactions search. Only applicable for the TX
+  // Interchain Queries. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+  // Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is
+  // limited by the module's `max_transactions_filters` parameters.
   string transactions_filter = 3;
-
-  // is IBC connection ID for getting ConsensusState to verify proofs
+  // The IBC connection ID to the remote chain (the source of querying data). Is used for getting
+  // ConsensusState from the respective IBC client to verify query result proofs.
   string connection_id = 4;
-
-  // is used to specify how often (in neutron blocks) the query must be updated
+  // Parameter that defines the minimal delay between consecutive query executions (i.e. the
+  // minimal delay between query results update).
   uint64 update_period = 5;
-
-  // is the signer of the message
+  // The signer of the message.
   string sender = 6;
 }
 
+// Response type for the Msg/RegisterInterchainQuery RPC method.
 message MsgRegisterInterchainQueryResponse {
+  // The ID assigned to the registered Interchain Query by the module.
   uint64 id = 1;
 }
 
+// Request type for the Msg/SubmitQueryResult RPC method.
 message MsgSubmitQueryResult {
   option (cosmos.msg.v1.signer) = "sender";
-
+  // The ID of the Interchain Query.
   uint64 query_id = 1;
+  // The signer of the message.
   string sender = 2;
-
-  // is the IBC client ID for an IBC connection between Neutron chain and target
-  // chain (where the result was obtained from)
+  // The IBC client ID that corresponds to the IBC connection to the remote chain (where the
+  // query result is coming from).
   // Deprecated: populating this field does not make any affect
   string client_id = 3 [deprecated = true];
+  // The result of the Interchain Query execution.
   QueryResult result = 4;
 }
 
+// Contains different information about a single Interchain Query execution result. Currently,
+// this structure is used both in query result submission via an ICQ Relayer and as a query result
+// storage for read/write operations to interchainqueries module, but the structure fields are
+// populated in a bit different ways. When submitting a query result, all fields are populated and
+// provided to the interchainqueries module in order to verify the result against the IBC client's
+// state. But in order to lighten the chain state, the interchainqueries module removes the block
+// field and proofs from the kv_results.
 message QueryResult {
+  // A list of a KV Interchain Query execution results. Each result contains query parameters, a
+  // response value and a proof.
   repeated StorageValue kv_results = 1;
+  // A TX Interchain Query execution result. Contains metainformation about the blocks of the query
+  // execution height. Only populated when submitting an Interchain Query result for verification
+  // and emptied when saving the result on chain.
   Block block = 2;
+  // The height of the chain at the moment of the Interchain Query execution.
   uint64 height = 3;
+  // The revision number of the chain at the moment of the Interchain Query execution.
   uint64 revision = 4;
+  // Whether to send the query result to the owner contract as a sudo message. Only applicable for
+  // KV type of Interchain Queries.
   bool allow_kv_callbacks = 5;
 }
 
+// A verifiable result of performing a single KVKey read.
 message StorageValue {
-  // is the substore name (acc, staking, etc.)
+  // The substore name used in the read operation. Typically, this corresponds to the keeper's
+  // storeKey, usually the module's name, such as "bank", "staking", etc.
   string storage_prefix = 1;
-
-  // is the key in IAVL store
+  // A bytes field representing the key of the data read from the module's storage.
   bytes key = 2;
-
-  // is the value in IAVL store
+  // A bytes field containing the value associated with the key in the store.
   bytes value = 3;
-
-  // is the Merkle Proof which proves existence of key-value pair in IAVL
-  // storage
+  // The Merkle Proof which proves existence/nonexistence of key-value pair in IAVL storage. Is
+  // used to verify
+  // the pair against the respective remote chain's header.
   tendermint.crypto.ProofOps Proof = 4;
 }
 
+// A single verifiable result of an Interchain Query of TX type.
 message Block {
-  // We need to know block X+1 to verify response of transaction for block X
-  // since LastResultsHash is root hash of all results from the txs from the
-  // previous block
+  // The header of the block next to the block the transaction is included in. It is needed to know
+  // block X+1 header to verify response of transaction for block X since LastResultsHash is root
+  // hash of all results of the txs from the previous block.
   google.protobuf.Any next_block_header = 1;
-
-  // We need to know block X to verify inclusion of transaction for block X
+  // The header of the block the transaction is included in. It is needed to know block header to
+  // verify inclusion of the transaction.
   google.protobuf.Any header = 2;
-
+  // The transaction matched by the Interchain Query's transaction filter.
   TxValue tx = 3;
 }
 
+// Contains transaction body, response, and proofs of inclusion and delivery.
 message TxValue {
+  // The result of the transaction execution.
   tendermint.abci.ExecTxResult response = 1;
-
-  // is the Merkle Proof which proves existence of response in block with height
-  // next_block_header.Height
+  // The Merkle Proof which proves existence of response in the block next to the block the
+  // transaction is included in.
   tendermint.crypto.Proof delivery_proof = 2;
-
-  // is the Merkle Proof which proves existence of data in block with height
-  // header.Height
+  // The Merkle Proof which proves inclusion of the transaction in the block.
   tendermint.crypto.Proof inclusion_proof = 3;
-
-  // is body of the transaction
+  // The arbitrary data typed body of the transaction.
   bytes data = 4;
 }
 
+// Response type for the Msg/SubmitQueryResult RPC method.
 message MsgSubmitQueryResultResponse {}
 
+// Request type for the Msg/RemoveInterchainQuery RPC method.
 message MsgRemoveInterchainQueryRequest {
   option (cosmos.msg.v1.signer) = "sender";
+  // The ID of the query to remove.
   uint64 query_id = 1;
-  string sender = 2; // is the signer of the message
+  // The signer of the message.
+  string sender = 2;
 }
+
+// Response type for the Msg/RemoveInterchainQuery RPC method.
 message MsgRemoveInterchainQueryResponse {}
 
+// Request type for the Msg/UpdateInterchainQuery RPC method.
 message MsgUpdateInterchainQueryRequest {
   option (cosmos.msg.v1.signer) = "sender";
+  // The ID of the query to update.
   uint64 query_id = 1;
+  // A new list of KV-storage keys for which to get values from the remote chain. Only applicable
+  // for a KV Interchain Query. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+  // parameters.
   repeated KVKey new_keys = 2;
+  // A new minimal delay between consecutive query executions.
   uint64 new_update_period = 3;
+  // A new list of filters for remote transactions search. Only applicable for a TX Interchain
+  // Query. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+  // Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is
+  // limited by the module's `max_transactions_filters` parameters.
   string new_transactions_filter = 4;
-  string sender = 5; // is the signer of the message
+  // The signer of the message.
+  string sender = 5;
 }
+
+// Response type for the Msg/UpdateInterchainQuery RPC method.
 message MsgUpdateInterchainQueryResponse {}
 
-// MsgUpdateParams is the MsgUpdateParams request type.
-//
-// Since: 0.47
+// Request type for the Msg/UpdateParams RPC method.
 message MsgUpdateParams {
   option (amino.name) = "interchainqueries/MsgUpdateParams";
   option (cosmos.msg.v1.signer) = "authority";
-
-  // Authority is the address of the governance account.
+  // The address of the authority of the module.
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-
-  // params defines the x/interchainqueries parameters to update.
-  //
-  // NOTE: All parameters must be supplied.
+  // The new parameters of the module. All parameters must be supplied.
   Params params = 2 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
-//
-// Since: 0.47
+// Response type for the Msg/UpdateParams RPC method.
 message MsgUpdateParamsResponse {}

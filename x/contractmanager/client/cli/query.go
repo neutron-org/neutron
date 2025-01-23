@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

@@ -11,8 +11,7 @@ import (
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
-
-	types1 "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	types1 "github.com/neutron-org/neutron/v5/x/feerefunder/types"
 )
 
 // MockWasmKeeper is a mock of WasmKeeper interface.
@@ -244,4 +243,39 @@ func (m *MockAccountKeeper) GetModuleAddress(name string) types.AccAddress {
 func (mr *MockAccountKeeperMockRecorder) GetModuleAddress(name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModuleAddress", reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAddress), name)
+}
+
+// MockTokenfactoryKeeper is a mock of TokenfactoryKeeper interface.
+type MockTokenfactoryKeeper struct {
+	ctrl     *gomock.Controller
+	recorder *MockTokenfactoryKeeperMockRecorder
+}
+
+// MockTokenfactoryKeeperMockRecorder is the mock recorder for MockTokenfactoryKeeper.
+type MockTokenfactoryKeeperMockRecorder struct {
+	mock *MockTokenfactoryKeeper
+}
+
+// NewMockTokenfactoryKeeper creates a new mock instance.
+func NewMockTokenfactoryKeeper(ctrl *gomock.Controller) *MockTokenfactoryKeeper {
+	mock := &MockTokenfactoryKeeper{ctrl: ctrl}
+	mock.recorder = &MockTokenfactoryKeeperMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTokenfactoryKeeper) EXPECT() *MockTokenfactoryKeeperMockRecorder {
+	return m.recorder
+}
+
+// StoreEscrowAddress mocks base method.
+func (m *MockTokenfactoryKeeper) StoreEscrowAddress(ctx types.Context, address types.AccAddress) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "StoreEscrowAddress", ctx, address)
+}
+
+// StoreEscrowAddress indicates an expected call of StoreEscrowAddress.
+func (mr *MockTokenfactoryKeeperMockRecorder) StoreEscrowAddress(ctx, address interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreEscrowAddress", reflect.TypeOf((*MockTokenfactoryKeeper)(nil).StoreEscrowAddress), ctx, address)
 }

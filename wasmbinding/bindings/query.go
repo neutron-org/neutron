@@ -6,10 +6,10 @@ import (
 	"cosmossdk.io/math"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -18,7 +18,7 @@ import (
 
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.
@@ -63,11 +63,9 @@ type QueryRegisteredQueryResultRequest struct {
 type OracleQuery struct {
 	GetAllCurrencyPairs *oracletypes.GetAllCurrencyPairsRequest `json:"get_all_currency_pairs,omitempty"`
 	GetPrice            *oracletypes.GetPriceRequest            `json:"get_price,omitempty"`
-	GetPrices           *oracletypes.GetPricesRequest           `json:"get_prices,omitempty"`
 }
 
 type MarketMapQuery struct {
-	MarketMap   *marketmaptypes.MarketMapRequest   `json:"market_map,omitempty"`
 	LastUpdated *marketmaptypes.LastUpdatedRequest `json:"last_updated,omitempty"`
 	Params      *marketmaptypes.ParamsRequest      `json:"params,omitempty"`
 	Market      *marketmaptypes.MarketRequest      `json:"market,omitempty"`
@@ -107,7 +105,7 @@ type RegisteredQuery struct {
 	ID uint64 `json:"id"`
 	// The address that registered the query.
 	Owner string `json:"owner"`
-	// The KV-storage keys for which we want to get values from remote chain
+	// The KV-storage keys for which we want to get values from the remote chain
 	Keys []*types.KVKey `json:"keys"`
 	// The filter for transaction search ICQ
 	TransactionsFilter string `json:"transactions_filter"`
@@ -115,15 +113,15 @@ type RegisteredQuery struct {
 	QueryType string `json:"query_type"`
 	// The IBC connection ID for getting ConsensusState to verify proofs.
 	ConnectionID string `json:"connection_id"`
-	// Parameter that defines how often the query must be updated.
+	// A parameter that defines how often the query must be updated.
 	UpdatePeriod uint64 `json:"update_period"`
 	// The local chain last block height when the query result was updated.
 	LastSubmittedResultLocalHeight uint64 `json:"last_submitted_result_local_height"`
 	// The remote chain last block height when the query result was updated.
 	LastSubmittedResultRemoteHeight *ibcclienttypes.Height `json:"last_submitted_result_remote_height,omitempty"`
-	// Amount of coins deposited for the query.
+	// The amount of coins deposited for the query.
 	Deposit sdktypes.Coins `json:"deposit"`
-	// Timeout before query becomes available for everybody to remove.
+	// The timeout before the query becomes available for everybody to remove.
 	SubmitTimeout uint64 `json:"submit_timeout"`
 	// The local chain height when the query was registered.
 	RegisteredAtHeight uint64 `json:"registered_at_height"`

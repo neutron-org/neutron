@@ -5,7 +5,6 @@ import (
 
 	"cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -16,8 +15,8 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	wrappedtypes "github.com/neutron-org/neutron/v4/x/transfer/types"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	wrappedtypes "github.com/neutron-org/neutron/v5/x/transfer/types"
 )
 
 // KeeperTransferWrapper is a wrapper for original ibc keeper to override response for "Transfer" method

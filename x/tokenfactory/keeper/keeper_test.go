@@ -4,18 +4,21 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/suite"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/app/params"
-	"github.com/neutron-org/neutron/v4/testutil"
-	"github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v5/testutil"
+	"github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 const (
@@ -28,6 +31,10 @@ type KeeperTestSuite struct {
 
 	TestAccs    []sdktypes.AccAddress
 	QueryHelper *baseapp.QueryServiceTestHelper
+
+	contractKeeper wasmtypes.ContractOpsKeeper
+
+	bankMsgServer banktypes.MsgServer
 
 	queryClient types.QueryClient
 	msgServer   types.MsgServer
@@ -61,7 +68,10 @@ func (suite *KeeperTestSuite) Setup() {
 	))
 	suite.Require().NoError(err)
 
+	suite.bankMsgServer = bankkeeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper)
 	suite.msgServer = keeper.NewMsgServerImpl(*tokenFactoryKeeper)
+
+	suite.contractKeeper = wasmkeeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
 }
 
 func (suite *KeeperTestSuite) SetupTokenFactory() {
