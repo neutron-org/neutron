@@ -24,6 +24,9 @@ message Params {
   // Specifies performance requirements for validators in scope of the oracle price votes. If not
   // met, the validator is not rewarded.
   PerformanceRequirement oracle_votes_performance_requirement = 4;
+
+  // The window in seconds to calculate TWAP price of NTRN
+  uint64 TWAP_Window = 5;
 }
 
 // Specifies a performance criteria that validators must meet to qualify for network rewards.

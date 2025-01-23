@@ -19,6 +19,9 @@ message GenesisState {
 
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
+
+  // CumulativePrices is accumulate prices of the Revenue denom to calculate TWAP price for a given period of time
+  repeated CumulativePrice cumulative_prices = 4;
 }
 
 // Contains information about a validator.
@@ -40,4 +43,18 @@ message State {
 
   // The number of blocks commited in the current month.
   uint64 block_counter = 2;
+}
+
+message CumulativePrice {
+  string cumulative_price = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string last_price = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  uint64 timestamp = 3;
 }
