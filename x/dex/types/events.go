@@ -332,7 +332,6 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche, swapMetadata 
 
 	if len(swapMetadata) == 1 {
 		tickUpdate = addSwapMetadata(tickUpdate, swapMetadata[0])
-
 	}
 
 	return tickUpdate
