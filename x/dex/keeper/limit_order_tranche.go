@@ -56,7 +56,7 @@ func (k Keeper) FindLimitOrderTranche(
 // UpdateTranche handles the logic for all updates to active LimitOrderTranches in the KV Store.
 // NOTE: This method should always be called even if not all logic branches are applicable.
 // It avoids unnecessary repetition of logic and provides a single place to attach update event handlers.
-func (k Keeper) UpdateTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
+func (k Keeper) UpdateTranche(ctx sdk.Context, tranche *types.LimitOrderTranche, swapMetadata ...types.SwapMetadata) {
 	switch {
 
 	// Tranche still has TokenIn (ReservesMakerDenom) ==> Just save the update
@@ -77,7 +77,7 @@ func (k Keeper) UpdateTranche(ctx sdk.Context, tranche *types.LimitOrderTranche)
 		ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(tranche.Key.TradePairId))
 	}
 
-	ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranche(tranche))
+	ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranche(tranche, swapMetadata...))
 }
 
 func (k Keeper) SetLimitOrderTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {

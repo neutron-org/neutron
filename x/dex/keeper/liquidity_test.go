@@ -547,6 +547,22 @@ func (s *DexTestSuite) TestSwapExhaustsLOAndLP() {
 	// There should be total of 6 tick updates
 	// (limitOrder, 2x deposit,  2x swap LP, swap LO)
 	s.AssertNEventValuesEmitted(types.TickUpdateEventKey, 6)
+
+	tickUpdates := s.GetAllMatchingEvents(types.TickUpdateEventKey)
+
+	// LimitOrder TickUpdate has correct SwapMetadatrra
+	loTickUpdate := tickUpdates[3]
+	loSwapIn, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountIn)
+	loSwapOut, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountOut)
+	s.Equal("10000000", loSwapIn.Value)
+	s.Equal("10000000", loSwapOut.Value)
+
+	// LP TickUpdate has correct SwapMetadatrra
+	lpTickUpdate := tickUpdates[5]
+	lpSwapIn, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountIn)
+	lpSwapOut, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountOut)
+	s.Equal("9000000", lpSwapIn.Value)
+	s.Equal("8999100", lpSwapOut.Value)
 }
 
 // Test helpers ///////////////////////////////////////////////////////////////

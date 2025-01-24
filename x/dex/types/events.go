@@ -263,6 +263,21 @@ func CancelLimitOrderEvent(
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
 }
 
+type SwapMetadata struct {
+	AmountIn  math.Int
+	AmountOut math.Int
+	TokenIn   string
+}
+
+func addSwapMetadata(event sdk.Event, swapMetadata SwapMetadata) sdk.Event {
+	swapAttrs := []sdk.Attribute{
+		sdk.NewAttribute(AttributeSwapAmountIn, swapMetadata.AmountIn.String()),
+		sdk.NewAttribute(AttributeSwapAmountOut, swapMetadata.AmountOut.String()),
+	}
+
+	return event.AppendAttributes(swapAttrs...)
+}
+
 func TickUpdateEvent(
 	token0 string,
 	token1 string,
@@ -285,10 +300,10 @@ func TickUpdateEvent(
 	return sdk.NewEvent(EventTypeTickUpdate, attrs...)
 }
 
-func CreateTickUpdatePoolReserves(tick PoolReserves) sdk.Event {
+func CreateTickUpdatePoolReserves(tick PoolReserves, swapMetadata ...SwapMetadata) sdk.Event {
 	tradePairID := tick.Key.TradePairId
 	pairID := tradePairID.MustPairID()
-	return TickUpdateEvent(
+	tickUpdate := TickUpdateEvent(
 		pairID.Token0,
 		pairID.Token1,
 		tradePairID.MakerDenom,
@@ -296,12 +311,17 @@ func CreateTickUpdatePoolReserves(tick PoolReserves) sdk.Event {
 		tick.ReservesMakerDenom,
 		sdk.NewAttribute(AttributeFee, strconv.FormatUint(tick.Key.Fee, 10)),
 	)
+	if len(swapMetadata) == 1 {
+		tickUpdate = addSwapMetadata(tickUpdate, swapMetadata[0])
+	}
+
+	return tickUpdate
 }
 
-func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
+func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche, swapMetadata ...SwapMetadata) sdk.Event {
 	tradePairID := tranche.Key.TradePairId
 	pairID := tradePairID.MustPairID()
-	return TickUpdateEvent(
+	tickUpdate := TickUpdateEvent(
 		pairID.Token0,
 		pairID.Token1,
 		tradePairID.MakerDenom,
@@ -309,6 +329,13 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
 		tranche.ReservesMakerDenom,
 		sdk.NewAttribute(AttributeTrancheKey, tranche.Key.TrancheKey),
 	)
+
+	if len(swapMetadata) == 1 {
+		tickUpdate = addSwapMetadata(tickUpdate, swapMetadata[0])
+
+	}
+
+	return tickUpdate
 }
 
 func CreateTickUpdateLimitOrderTranchePurge(tranche *LimitOrderTranche) sdk.Event {
