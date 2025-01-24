@@ -52,7 +52,7 @@ func Setup(t *testing.T) ibctesting.TestingApp {
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100000000000000))),
 	}
 
-	ibctesting.DefaultTestingAppInit = SetupTestingApp(tmtypes.TM2PB.ValidatorUpdates(valSet))
+	ibctesting.DefaultTestingAppInit = SetupTestingApp()
 
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, "neutron-1", balance)
 

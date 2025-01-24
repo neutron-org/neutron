@@ -398,6 +398,39 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	return msg.TrancheKey
 }
 
+func (s *DexTestSuite) aliceLimitSellsWithMinAvgPrice(
+	selling string,
+	limitPrice math_utils.PrecDec,
+	amountIn int,
+	minAvgPrice math_utils.PrecDec,
+	orderType types.LimitOrderType,
+) (*types.MsgPlaceLimitOrderResponse, error) {
+	return s.limitSellsWithMinAvgPrice(s.alice, selling, limitPrice, amountIn, minAvgPrice, orderType)
+}
+
+func (s *DexTestSuite) limitSellsWithMinAvgPrice(
+	account sdk.AccAddress,
+	tokenIn string,
+	limitPrice math_utils.PrecDec,
+	amountIn int,
+	minAvgPrice math_utils.PrecDec,
+	orderType types.LimitOrderType,
+) (*types.MsgPlaceLimitOrderResponse, error) {
+	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
+
+	return s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
+		Creator:             account.String(),
+		Receiver:            account.String(),
+		TokenIn:             tokenIn,
+		TokenOut:            tokenOut,
+		TickIndexInToOut:    0,
+		LimitSellPrice:      &limitPrice,
+		AmountIn:            sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
+		OrderType:           orderType,
+		MinAverageSellPrice: &minAvgPrice,
+	})
+}
+
 func (s *DexTestSuite) limitSellsWithPrice(
 	account sdk.AccAddress,
 	tokenIn string,
@@ -1473,77 +1506,6 @@ func (s *DexTestSuite) assertNLimitOrderExpiration(expected int) {
 	s.Assert().Equal(expected, len(exps))
 }
 
-func (s *DexTestSuite) calcAutoswapSharesMinted(
-	centerTick int64,
-	fee uint64,
-	residual0, residual1, balanced0, balanced1, totalShares, valuePool int64,
-) sdkmath.Int {
-	residual0Int, residual1Int, balanced0Int, balanced1Int, totalSharesInt, valuePoolInt := sdkmath.NewInt(residual0),
-		sdkmath.NewInt(residual1),
-		sdkmath.NewInt(balanced0),
-		sdkmath.NewInt(balanced1),
-		sdkmath.NewInt(totalShares),
-		sdkmath.NewInt(valuePool)
-
-	// residualValue = 1.0001^-f * residualAmount0 + 1.0001^{i-f} * residualAmount1
-	// balancedValue = balancedAmount0 + 1.0001^{i} * balancedAmount1
-	// value = residualValue + balancedValue
-	// shares minted = value * totalShares / valuePool
-
-	centerPrice := types.MustCalcPrice(-1 * centerTick)
-	leftPrice := types.MustCalcPrice(-1 * (centerTick - int64(fee)))
-	discountPrice := types.MustCalcPrice(-1 * int64(fee))
-
-	balancedValue := math_utils.NewPrecDecFromInt(balanced0Int).
-		Add(centerPrice.MulInt(balanced1Int)).
-		TruncateInt()
-	residualValue := discountPrice.MulInt(residual0Int).
-		Add(leftPrice.Mul(math_utils.NewPrecDecFromInt(residual1Int))).
-		TruncateInt()
-	valueMint := balancedValue.Add(residualValue)
-
-	return valueMint.Mul(totalSharesInt).Quo(valuePoolInt)
-}
-
-func (s *DexTestSuite) calcSharesMinted(centerTick, amount0Int, amount1Int int64) sdkmath.Int {
-	amount0, amount1 := sdkmath.NewInt(amount0Int), sdkmath.NewInt(amount1Int)
-	centerPrice := types.MustCalcPrice(-1 * centerTick)
-
-	return math_utils.NewPrecDecFromInt(amount0).Add(centerPrice.Mul(math_utils.NewPrecDecFromInt(amount1))).TruncateInt()
-}
-
-func (s *DexTestSuite) calcExpectedBalancesAfterWithdrawOnePool(
-	sharesMinted sdkmath.Int,
-	account sdk.AccAddress,
-	tickIndex int64,
-	fee uint64,
-) (sdkmath.Int, sdkmath.Int, sdkmath.Int, sdkmath.Int) {
-	dexCurrentBalance0 := s.App.BankKeeper.GetBalance(
-		s.Ctx,
-		s.App.AccountKeeper.GetModuleAddress("dex"),
-		"TokenA",
-	).Amount
-	dexCurrentBalance1 := s.App.BankKeeper.GetBalance(
-		s.Ctx,
-		s.App.AccountKeeper.GetModuleAddress("dex"),
-		"TokenB",
-	).Amount
-	currentBalance0 := s.App.BankKeeper.GetBalance(s.Ctx, account, "TokenA").Amount
-	currentBalance1 := s.App.BankKeeper.GetBalance(s.Ctx, account, "TokenB").Amount
-	amountPool0, amountPool1 := s.getLiquidityAtTick(tickIndex, fee)
-	poolShares := s.getPoolShares("TokenA", "TokenB", tickIndex, fee)
-
-	amountOut0 := amountPool0.Mul(sharesMinted).Quo(poolShares)
-	amountOut1 := amountPool1.Mul(sharesMinted).Quo(poolShares)
-
-	expectedBalance0 := currentBalance0.Add(amountOut0)
-	expectedBalance1 := currentBalance1.Add(amountOut1)
-	dexExpectedBalance0 := dexCurrentBalance0.Sub(amountOut0)
-	dexExpectedBalance1 := dexCurrentBalance1.Sub(amountOut1)
-
-	return expectedBalance0, expectedBalance1, dexExpectedBalance0, dexExpectedBalance1
-}
-
 func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 	newCtx := s.Ctx.WithBlockTime(blockTime)
 	s.Ctx = newCtx
@@ -2006,6 +1968,7 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 
 	ZEROINT := sdkmath.ZeroInt()
 	ONEINT := sdkmath.OneInt()
+	ZERODEC := math_utils.ZeroPrecDec()
 	TINYDEC := math_utils.MustNewPrecDecFromStr("0.000000000000000000000000494")
 	HUGEDEC := math_utils.MustNewPrecDecFromStr("2020125331305056766452345.127500016657360222036663652")
 	FIVEDEC := math_utils.NewPrecDec(5)
@@ -2176,6 +2139,19 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 				AmountIn:         sdkmath.OneInt(),
 			},
 			types.ErrInvalidPriceAndTick,
+		},
+		{
+			"invalid zero min average sell price",
+			types.MsgPlaceLimitOrder{
+				Creator:             sample.AccAddress(),
+				Receiver:            sample.AccAddress(),
+				TokenIn:             "TokenA",
+				TokenOut:            "TokenB",
+				LimitSellPrice:      &FIVEDEC,
+				AmountIn:            sdkmath.OneInt(),
+				MinAverageSellPrice: &ZERODEC,
+			},
+			types.ErrZeroMinAverageSellPrice,
 		},
 	}
 

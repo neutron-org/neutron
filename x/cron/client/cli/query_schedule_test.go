@@ -5,6 +5,10 @@ import (
 	"strconv"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
@@ -19,6 +23,7 @@ import (
 )
 
 func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.Schedule) {
+	sdk.DefaultBondDenom = appparams.DefaultDenom
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}

@@ -149,7 +149,7 @@ func (k Keeper) HopsToRouteData(
 		if !found {
 			return routeArr, types.ErrLimitPriceNotSatisfied
 		}
-		priceAcc = priceAcc.Mul(price)
+		priceAcc = priceAcc.Quo(price)
 		routeArr[index] = MultihopStep{
 			tradePairID:        tradePairID,
 			RemainingBestPrice: priceAcc,
@@ -284,7 +284,7 @@ func (k Keeper) SwapFullAmountIn(
 		return sdk.Coin{}, sdk.Coin{}, err
 	}
 	if !orderFilled {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+		return sdk.Coin{}, sdk.Coin{}, types.ErrNoLiquidity
 	}
 
 	dust = sdk.Coin.Sub(sdk.NewCoin(swapAmountTakerDenom.Denom, amountIn), swapAmountTakerDenom)

@@ -34,19 +34,26 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Request type for the Msg/RegisterInterchainQuery RPC method.
 type MsgRegisterInterchainQuery struct {
-	// defines a query type: `kv` or `tx` now
+	// The query type identifier: `kv` or `tx`.
 	QueryType string `protobuf:"bytes,1,opt,name=query_type,json=queryType,proto3" json:"query_type,omitempty"`
-	// is used to define KV-storage keys for which we want to get values from
-	// remote chain
+	// The KV-storage keys for which we want to get values from remote chain. Only applicable for the
+	// KV Interchain Queries. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+	// parameters.
 	Keys []*KVKey `protobuf:"bytes,2,rep,name=keys,proto3" json:"keys,omitempty"`
-	// is used to define a filter for transaction search ICQ
+	// A stringified list of filters for remote transactions search. Only applicable for the TX
+	// Interchain Queries. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+	// Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is
+	// limited by the module's `max_transactions_filters` parameters.
 	TransactionsFilter string `protobuf:"bytes,3,opt,name=transactions_filter,json=transactionsFilter,proto3" json:"transactions_filter,omitempty"`
-	// is IBC connection ID for getting ConsensusState to verify proofs
+	// The IBC connection ID to the remote chain (the source of querying data). Is used for getting
+	// ConsensusState from the respective IBC client to verify query result proofs.
 	ConnectionId string `protobuf:"bytes,4,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	// is used to specify how often (in neutron blocks) the query must be updated
+	// Parameter that defines the minimal delay between consecutive query executions (i.e. the
+	// minimal delay between query results update).
 	UpdatePeriod uint64 `protobuf:"varint,5,opt,name=update_period,json=updatePeriod,proto3" json:"update_period,omitempty"`
-	// is the signer of the message
+	// The signer of the message.
 	Sender string `protobuf:"bytes,6,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
@@ -125,7 +132,9 @@ func (m *MsgRegisterInterchainQuery) GetSender() string {
 	return ""
 }
 
+// Response type for the Msg/RegisterInterchainQuery RPC method.
 type MsgRegisterInterchainQueryResponse struct {
+	// The ID assigned to the registered Interchain Query by the module.
 	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
@@ -169,14 +178,18 @@ func (m *MsgRegisterInterchainQueryResponse) GetId() uint64 {
 	return 0
 }
 
+// Request type for the Msg/SubmitQueryResult RPC method.
 type MsgSubmitQueryResult struct {
+	// The ID of the Interchain Query.
 	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
-	Sender  string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
-	// is the IBC client ID for an IBC connection between Neutron chain and target
-	// chain (where the result was obtained from)
+	// The signer of the message.
+	Sender string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
+	// The IBC client ID that corresponds to the IBC connection to the remote chain (where the
+	// query result is coming from).
 	// Deprecated: populating this field does not make any affect
-	ClientId string       `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"` // Deprecated: Do not use.
-	Result   *QueryResult `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
+	ClientId string `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"` // Deprecated: Do not use.
+	// The result of the Interchain Query execution.
+	Result *QueryResult `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
 }
 
 func (m *MsgSubmitQueryResult) Reset()         { *m = MsgSubmitQueryResult{} }
@@ -241,12 +254,28 @@ func (m *MsgSubmitQueryResult) GetResult() *QueryResult {
 	return nil
 }
 
+// Contains different information about a single Interchain Query execution result. Currently,
+// this structure is used both in query result submission via an ICQ Relayer and as a query result
+// storage for read/write operations to interchainqueries module, but the structure fields are
+// populated in a bit different ways. When submitting a query result, all fields are populated and
+// provided to the interchainqueries module in order to verify the result against the IBC client's
+// state. But in order to lighten the chain state, the interchainqueries module removes the block
+// field and proofs from the kv_results.
 type QueryResult struct {
-	KvResults        []*StorageValue `protobuf:"bytes,1,rep,name=kv_results,json=kvResults,proto3" json:"kv_results,omitempty"`
-	Block            *Block          `protobuf:"bytes,2,opt,name=block,proto3" json:"block,omitempty"`
-	Height           uint64          `protobuf:"varint,3,opt,name=height,proto3" json:"height,omitempty"`
-	Revision         uint64          `protobuf:"varint,4,opt,name=revision,proto3" json:"revision,omitempty"`
-	AllowKvCallbacks bool            `protobuf:"varint,5,opt,name=allow_kv_callbacks,json=allowKvCallbacks,proto3" json:"allow_kv_callbacks,omitempty"`
+	// A list of a KV Interchain Query execution results. Each result contains query parameters, a
+	// response value and a proof.
+	KvResults []*StorageValue `protobuf:"bytes,1,rep,name=kv_results,json=kvResults,proto3" json:"kv_results,omitempty"`
+	// A TX Interchain Query execution result. Contains metainformation about the blocks of the query
+	// execution height. Only populated when submitting an Interchain Query result for verification
+	// and emptied when saving the result on chain.
+	Block *Block `protobuf:"bytes,2,opt,name=block,proto3" json:"block,omitempty"`
+	// The height of the chain at the moment of the Interchain Query execution.
+	Height uint64 `protobuf:"varint,3,opt,name=height,proto3" json:"height,omitempty"`
+	// The revision number of the chain at the moment of the Interchain Query execution.
+	Revision uint64 `protobuf:"varint,4,opt,name=revision,proto3" json:"revision,omitempty"`
+	// Whether to send the query result to the owner contract as a sudo message. Only applicable for
+	// KV type of Interchain Queries.
+	AllowKvCallbacks bool `protobuf:"varint,5,opt,name=allow_kv_callbacks,json=allowKvCallbacks,proto3" json:"allow_kv_callbacks,omitempty"`
 }
 
 func (m *QueryResult) Reset()         { *m = QueryResult{} }
@@ -317,15 +346,18 @@ func (m *QueryResult) GetAllowKvCallbacks() bool {
 	return false
 }
 
+// A verifiable result of performing a single KVKey read.
 type StorageValue struct {
-	// is the substore name (acc, staking, etc.)
+	// The substore name used in the read operation. Typically, this corresponds to the keeper's
+	// storeKey, usually the module's name, such as "bank", "staking", etc.
 	StoragePrefix string `protobuf:"bytes,1,opt,name=storage_prefix,json=storagePrefix,proto3" json:"storage_prefix,omitempty"`
-	// is the key in IAVL store
+	// A bytes field representing the key of the data read from the module's storage.
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
-	// is the value in IAVL store
+	// A bytes field containing the value associated with the key in the store.
 	Value []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
-	// is the Merkle Proof which proves existence of key-value pair in IAVL
-	// storage
+	// The Merkle Proof which proves existence/nonexistence of key-value pair in IAVL storage. Is
+	// used to verify
+	// the pair against the respective remote chain's header.
 	Proof *crypto.ProofOps `protobuf:"bytes,4,opt,name=Proof,proto3" json:"Proof,omitempty"`
 }
 
@@ -390,14 +422,17 @@ func (m *StorageValue) GetProof() *crypto.ProofOps {
 	return nil
 }
 
+// A single verifiable result of an Interchain Query of TX type.
 type Block struct {
-	// We need to know block X+1 to verify response of transaction for block X
-	// since LastResultsHash is root hash of all results from the txs from the
-	// previous block
+	// The header of the block next to the block the transaction is included in. It is needed to know
+	// block X+1 header to verify response of transaction for block X since LastResultsHash is root
+	// hash of all results of the txs from the previous block.
 	NextBlockHeader *types.Any `protobuf:"bytes,1,opt,name=next_block_header,json=nextBlockHeader,proto3" json:"next_block_header,omitempty"`
-	// We need to know block X to verify inclusion of transaction for block X
+	// The header of the block the transaction is included in. It is needed to know block header to
+	// verify inclusion of the transaction.
 	Header *types.Any `protobuf:"bytes,2,opt,name=header,proto3" json:"header,omitempty"`
-	Tx     *TxValue   `protobuf:"bytes,3,opt,name=tx,proto3" json:"tx,omitempty"`
+	// The transaction matched by the Interchain Query's transaction filter.
+	Tx *TxValue `protobuf:"bytes,3,opt,name=tx,proto3" json:"tx,omitempty"`
 }
 
 func (m *Block) Reset()         { *m = Block{} }
@@ -454,15 +489,16 @@ func (m *Block) GetTx() *TxValue {
 	return nil
 }
 
+// Contains transaction body, response, and proofs of inclusion and delivery.
 type TxValue struct {
+	// The result of the transaction execution.
 	Response *types1.ExecTxResult `protobuf:"bytes,1,opt,name=response,proto3" json:"response,omitempty"`
-	// is the Merkle Proof which proves existence of response in block with height
-	// next_block_header.Height
+	// The Merkle Proof which proves existence of response in the block next to the block the
+	// transaction is included in.
 	DeliveryProof *crypto.Proof `protobuf:"bytes,2,opt,name=delivery_proof,json=deliveryProof,proto3" json:"delivery_proof,omitempty"`
-	// is the Merkle Proof which proves existence of data in block with height
-	// header.Height
+	// The Merkle Proof which proves inclusion of the transaction in the block.
 	InclusionProof *crypto.Proof `protobuf:"bytes,3,opt,name=inclusion_proof,json=inclusionProof,proto3" json:"inclusion_proof,omitempty"`
-	// is body of the transaction
+	// The arbitrary data typed body of the transaction.
 	Data []byte `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
 }
 
@@ -527,6 +563,7 @@ func (m *TxValue) GetData() []byte {
 	return nil
 }
 
+// Response type for the Msg/SubmitQueryResult RPC method.
 type MsgSubmitQueryResultResponse struct {
 }
 
@@ -563,9 +600,12 @@ func (m *MsgSubmitQueryResultResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSubmitQueryResultResponse proto.InternalMessageInfo
 
+// Request type for the Msg/RemoveInterchainQuery RPC method.
 type MsgRemoveInterchainQueryRequest struct {
+	// The ID of the query to remove.
 	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
-	Sender  string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
+	// The signer of the message.
+	Sender string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
 func (m *MsgRemoveInterchainQueryRequest) Reset()         { *m = MsgRemoveInterchainQueryRequest{} }
@@ -615,6 +655,7 @@ func (m *MsgRemoveInterchainQueryRequest) GetSender() string {
 	return ""
 }
 
+// Response type for the Msg/RemoveInterchainQuery RPC method.
 type MsgRemoveInterchainQueryResponse struct {
 }
 
@@ -651,12 +692,23 @@ func (m *MsgRemoveInterchainQueryResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgRemoveInterchainQueryResponse proto.InternalMessageInfo
 
+// Request type for the Msg/UpdateInterchainQuery RPC method.
 type MsgUpdateInterchainQueryRequest struct {
-	QueryId               uint64   `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
-	NewKeys               []*KVKey `protobuf:"bytes,2,rep,name=new_keys,json=newKeys,proto3" json:"new_keys,omitempty"`
-	NewUpdatePeriod       uint64   `protobuf:"varint,3,opt,name=new_update_period,json=newUpdatePeriod,proto3" json:"new_update_period,omitempty"`
-	NewTransactionsFilter string   `protobuf:"bytes,4,opt,name=new_transactions_filter,json=newTransactionsFilter,proto3" json:"new_transactions_filter,omitempty"`
-	Sender                string   `protobuf:"bytes,5,opt,name=sender,proto3" json:"sender,omitempty"`
+	// The ID of the query to update.
+	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
+	// A new list of KV-storage keys for which to get values from the remote chain. Only applicable
+	// for a KV Interchain Query. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+	// parameters.
+	NewKeys []*KVKey `protobuf:"bytes,2,rep,name=new_keys,json=newKeys,proto3" json:"new_keys,omitempty"`
+	// A new minimal delay between consecutive query executions.
+	NewUpdatePeriod uint64 `protobuf:"varint,3,opt,name=new_update_period,json=newUpdatePeriod,proto3" json:"new_update_period,omitempty"`
+	// A new list of filters for remote transactions search. Only applicable for a TX Interchain
+	// Query. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+	// Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is
+	// limited by the module's `max_transactions_filters` parameters.
+	NewTransactionsFilter string `protobuf:"bytes,4,opt,name=new_transactions_filter,json=newTransactionsFilter,proto3" json:"new_transactions_filter,omitempty"`
+	// The signer of the message.
+	Sender string `protobuf:"bytes,5,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
 func (m *MsgUpdateInterchainQueryRequest) Reset()         { *m = MsgUpdateInterchainQueryRequest{} }
@@ -727,6 +779,7 @@ func (m *MsgUpdateInterchainQueryRequest) GetSender() string {
 	return ""
 }
 
+// Response type for the Msg/UpdateInterchainQuery RPC method.
 type MsgUpdateInterchainQueryResponse struct {
 }
 
@@ -763,15 +816,11 @@ func (m *MsgUpdateInterchainQueryResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateInterchainQueryResponse proto.InternalMessageInfo
 
-// MsgUpdateParams is the MsgUpdateParams request type.
-//
-// Since: 0.47
+// Request type for the Msg/UpdateParams RPC method.
 type MsgUpdateParams struct {
-	// Authority is the address of the governance account.
+	// The address of the authority of the module.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/interchainqueries parameters to update.
-	//
-	// NOTE: All parameters must be supplied.
+	// The new parameters of the module. All parameters must be supplied.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
 
@@ -822,10 +871,7 @@ func (m *MsgUpdateParams) GetParams() Params {
 	return Params{}
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
-//
-// Since: 0.47
+// Response type for the Msg/UpdateParams RPC method.
 type MsgUpdateParamsResponse struct {
 }
 
@@ -973,10 +1019,28 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
+	// Registers a new Interchain Query in the `interchainqueries` module. This message should only
+	// be issued by a smart contract. The calling contract is automatically charged a query
+	// registration deposit, based on the module's query deposit parameter. The deposit is refunded
+	// when the query is removed. Ensure the contract's account has sufficient assets at the time of
+	// message execution.
+	//
+	// The response includes the ID assigned to the registered query. Use a reply handler to process
+	// this response and utilize the query ID.
 	RegisterInterchainQuery(ctx context.Context, in *MsgRegisterInterchainQuery, opts ...grpc.CallOption) (*MsgRegisterInterchainQueryResponse, error)
+	// Submits the result of an Interchain Query execution to the chain. Handling this message may
+	// involve forwarding the result to the smart contract that owns the query for processing, which
+	// could require significant gas usage.
 	SubmitQueryResult(ctx context.Context, in *MsgSubmitQueryResult, opts ...grpc.CallOption) (*MsgSubmitQueryResultResponse, error)
+	// Removes a specific Interchain Query and its results from the module. The query can only be
+	// removed by its owner during the query's submit timeout. After the timeout, anyone can remove
+	// it. Upon successful removal, the query deposit is refunded to the caller.
 	RemoveInterchainQuery(ctx context.Context, in *MsgRemoveInterchainQueryRequest, opts ...grpc.CallOption) (*MsgRemoveInterchainQueryResponse, error)
+	// Updates the parameters of a registered Interchain Query. This action can only be performed by
+	// the query's owner.
 	UpdateInterchainQuery(ctx context.Context, in *MsgUpdateInterchainQueryRequest, opts ...grpc.CallOption) (*MsgUpdateInterchainQueryResponse, error)
+	// Updates the parameters of the `interchainqueries` module. This action can only be performed
+	// by the module's authority.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
@@ -1035,10 +1099,28 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
+	// Registers a new Interchain Query in the `interchainqueries` module. This message should only
+	// be issued by a smart contract. The calling contract is automatically charged a query
+	// registration deposit, based on the module's query deposit parameter. The deposit is refunded
+	// when the query is removed. Ensure the contract's account has sufficient assets at the time of
+	// message execution.
+	//
+	// The response includes the ID assigned to the registered query. Use a reply handler to process
+	// this response and utilize the query ID.
 	RegisterInterchainQuery(context.Context, *MsgRegisterInterchainQuery) (*MsgRegisterInterchainQueryResponse, error)
+	// Submits the result of an Interchain Query execution to the chain. Handling this message may
+	// involve forwarding the result to the smart contract that owns the query for processing, which
+	// could require significant gas usage.
 	SubmitQueryResult(context.Context, *MsgSubmitQueryResult) (*MsgSubmitQueryResultResponse, error)
+	// Removes a specific Interchain Query and its results from the module. The query can only be
+	// removed by its owner during the query's submit timeout. After the timeout, anyone can remove
+	// it. Upon successful removal, the query deposit is refunded to the caller.
 	RemoveInterchainQuery(context.Context, *MsgRemoveInterchainQueryRequest) (*MsgRemoveInterchainQueryResponse, error)
+	// Updates the parameters of a registered Interchain Query. This action can only be performed by
+	// the query's owner.
 	UpdateInterchainQuery(context.Context, *MsgUpdateInterchainQueryRequest) (*MsgUpdateInterchainQueryResponse, error)
+	// Updates the parameters of the `interchainqueries` module. This action can only be performed
+	// by the module's authority.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 }
 

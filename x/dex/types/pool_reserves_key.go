@@ -44,14 +44,18 @@ func (p PoolReservesKey) Counterpart() *PoolReservesKey {
 	}
 }
 
-func (p PoolReservesKey) PriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec, err error) {
+func (p PoolReservesKey) Price() (priceTakerToMaker math_utils.PrecDec, err error) {
 	return CalcPrice(p.TickIndexTakerToMaker)
 }
 
-func (p PoolReservesKey) MustPriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec) {
-	price, err := p.PriceTakerToMaker()
+func (p PoolReservesKey) MustPrice() (priceTakerToMaker math_utils.PrecDec) {
+	price, err := p.Price()
 	if err != nil {
 		panic(err)
 	}
 	return price
+}
+
+func (p PoolReservesKey) PriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec, err error) {
+	return CalcPrice(-p.TickIndexTakerToMaker)
 }

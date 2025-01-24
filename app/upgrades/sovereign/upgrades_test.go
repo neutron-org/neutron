@@ -1,4 +1,4 @@
-package v400_test
+package v600_test
 
 import (
 	"testing"

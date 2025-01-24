@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"testing"
 
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+
 	"github.com/neutron-org/neutron/v5/app/config"
 
 	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
@@ -26,6 +28,8 @@ import (
 )
 
 func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.Failure) {
+	sdktypes.DefaultBondDenom = appparams.DefaultDenom
+
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}
