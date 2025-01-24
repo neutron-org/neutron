@@ -63,11 +63,9 @@ type QueryRegisteredQueryResultRequest struct {
 type OracleQuery struct {
 	GetAllCurrencyPairs *oracletypes.GetAllCurrencyPairsRequest `json:"get_all_currency_pairs,omitempty"`
 	GetPrice            *oracletypes.GetPriceRequest            `json:"get_price,omitempty"`
-	GetPrices           *oracletypes.GetPricesRequest           `json:"get_prices,omitempty"`
 }
 
 type MarketMapQuery struct {
-	MarketMap   *marketmaptypes.MarketMapRequest   `json:"market_map,omitempty"`
 	LastUpdated *marketmaptypes.LastUpdatedRequest `json:"last_updated,omitempty"`
 	Params      *marketmaptypes.ParamsRequest      `json:"params,omitempty"`
 	Market      *marketmaptypes.MarketRequest      `json:"market,omitempty"`
