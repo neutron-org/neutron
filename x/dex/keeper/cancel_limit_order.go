@@ -59,7 +59,7 @@ func (k Keeper) ExecuteCancelLimitOrder(
 	ctx sdk.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (makerCoinOut, takerCoinOut sdk.Coin, error error) {
+) (makerCoinOut, takerCoinOut sdk.Coin, err error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(ctx, callerAddr.String(), trancheKey)
 	if !found {
 		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)

@@ -690,7 +690,7 @@ func (s *IntegrationTestSuite) TestGetMinGasPrice() {
 		s.Run(tc.name, func() {
 			s.SetupTestGlobalFeeStoreAndMinGasPrice(tc.minGasPrice, &globfeetypes.Params{})
 
-			fees := gaiafeeante.GetMinGasPrice(s.ctx, int64(tc.feeTxGasLimit))
+			fees := gaiafeeante.GetMinGasPrice(s.ctx, int64(tc.feeTxGasLimit)) //nolint:gosec
 			s.Require().True(tc.expCoins.Sort().Equal(fees))
 		})
 	}

@@ -367,7 +367,7 @@ func TestSudoHasAddress(t *testing.T) {
 	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.ClientMessage(&nextHeader), nil)
 	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.ClientMessage(&header), exported.ClientMessage(&nextHeader)).Return(nil)
 	tv.EXPECT().VerifyTransaction(&header, &nextHeader, &tx).Return(nil)
-	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(1), ibcclienttypes.NewHeight(1, uint64(header.Header.Height)), tx.GetData()).Return(nil, fmt.Errorf("contract error"))
+	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(1), ibcclienttypes.NewHeight(1, uint64(header.Header.Height)), tx.GetData()).Return(nil, fmt.Errorf("contract error")) //nolint:gosec
 	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
 	require.ErrorContains(t, err, "rejected transaction query result")
 
@@ -376,7 +376,7 @@ func TestSudoHasAddress(t *testing.T) {
 	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.ClientMessage(&nextHeader), nil)
 	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.ClientMessage(&header), exported.ClientMessage(&nextHeader)).Return(nil)
 	tv.EXPECT().VerifyTransaction(&header, &nextHeader, &tx).Return(nil)
-	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(1), ibcclienttypes.NewHeight(1, uint64(header.Header.Height)), tx.GetData()).Return(nil, nil)
+	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(1), ibcclienttypes.NewHeight(1, uint64(header.Header.Height)), tx.GetData()).Return(nil, nil) //nolint:gosec
 	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
 	require.NoError(t, err)
 
@@ -392,7 +392,7 @@ func TestSudoHasAddress(t *testing.T) {
 	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.ClientMessage(&nextHeader), nil)
 	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.ClientMessage(&header), exported.ClientMessage(&nextHeader)).Return(nil)
 	tv.EXPECT().VerifyTransaction(&header, &nextHeader, &tx).Return(nil)
-	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(2), ibcclienttypes.NewHeight(1, uint64(header.Header.Height)), tx.GetData()).Return(nil, nil)
+	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(2), ibcclienttypes.NewHeight(1, uint64(header.Header.Height)), tx.GetData()).Return(nil, nil) //nolint:gosec
 	err = k.ProcessBlock(ctx, address, 2, "tendermint-07", &block)
 	require.NoError(t, err)
 }

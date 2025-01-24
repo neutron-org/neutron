@@ -107,7 +107,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.UserDepositsAll(ctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := keeper.UserDepositsAll(ctx, request(nil, uint64(i), uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Deposits), step)
 			require.Subset(t,
@@ -121,7 +121,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 		var next []byte
 		var allRecords []*types.DepositRecord
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.UserDepositsAll(ctx, request(next, 0, uint64(step), false))
+			resp, err := keeper.UserDepositsAll(ctx, request(next, 0, uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Deposits), step)
 			require.Subset(t,
@@ -140,7 +140,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	t.Run("Total", func(t *testing.T) {
 		resp, err := keeper.UserDepositsAll(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
-		require.Equal(t, len(msgs), int(resp.Pagination.Total))
+		require.Equal(t, uint64(len(msgs)), resp.Pagination.Total)
 		require.ElementsMatch(t,
 			msgs,
 			resp.Deposits,

@@ -94,7 +94,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(flattenItems); i += step {
-			resp, err := k.Failures(ctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := k.Failures(ctx, request(nil, uint64(i), uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -107,7 +107,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(flattenItems); i += step {
-			resp, err := k.Failures(ctx, request(next, 0, uint64(step), false))
+			resp, err := k.Failures(ctx, request(next, 0, uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -120,7 +120,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 	t.Run("Total", func(t *testing.T) {
 		resp, err := k.Failures(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
-		require.Equal(t, len(flattenItems), int(resp.Pagination.Total))
+		require.Equal(t, len(flattenItems), int(resp.Pagination.Total)) //nolint:gosec
 		require.ElementsMatch(t,
 			nullify.Fill(flattenItems),
 			nullify.Fill(resp.Failures),

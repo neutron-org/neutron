@@ -587,7 +587,6 @@ func TestMsgTransferValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := k.Transfer(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)

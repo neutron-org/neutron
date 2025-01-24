@@ -533,7 +533,7 @@ func NewDepositInt(amountA, amountB sdkmath.Int, tickIndex, fee int) *Deposit {
 		AmountA:   amountA,
 		AmountB:   amountB,
 		TickIndex: int64(tickIndex),
-		Fee:       uint64(fee),
+		Fee:       uint64(fee), //nolint:gosec
 	}
 }
 
@@ -549,7 +549,7 @@ func NewDepositWithOptions(
 		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
 		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
 		TickIndex: int64(tickIndex),
-		Fee:       uint64(fee),
+		Fee:       uint64(fee), //nolint:gosec
 		Options:   &options,
 	}
 }
@@ -1776,7 +1776,6 @@ func TestMsgDepositValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.Deposit(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -1953,7 +1952,6 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.Withdrawal(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2156,7 +2154,6 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.PlaceLimitOrder(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2185,7 +2182,6 @@ func TestMsgWithdrawFilledLimitOrderValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.WithdrawFilledLimitOrder(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2214,7 +2210,6 @@ func TestMsgCancelLimitOrderValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.CancelLimitOrder(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2357,7 +2352,6 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.MultiHopSwap(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2392,7 +2386,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)

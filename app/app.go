@@ -477,6 +477,7 @@ func New(
 	overrideWasmVariables()
 
 	appCodec := encodingConfig.Marshaler
+
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
@@ -1342,7 +1343,6 @@ func (app *App) setupUpgradeStoreLoaders() {
 	}
 
 	for _, upgrd := range Upgrades {
-		upgrd := upgrd
 		if upgradeInfo.Name == upgrd.UpgradeName {
 			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrd.StoreUpgrades))
 		}
