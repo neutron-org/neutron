@@ -509,7 +509,8 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey, revenuetypes.StoreKey,
+		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey,
+		ibcratelimittypes.ModuleName, revenuetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
