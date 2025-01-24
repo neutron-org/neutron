@@ -1334,7 +1334,7 @@ type QueryEstimateMultiHopSwapRequest struct {
 	AmountIn       cosmossdk_io_math.Int                                `protobuf:"bytes,4,opt,name=amount_in,json=amountIn,proto3,customtype=cosmossdk.io/math.Int" json:"amount_in" yaml:"amount_in"`
 	ExitLimitPrice github_com_neutron_org_neutron_v5_utils_math.PrecDec `protobuf:"bytes,5,opt,name=exit_limit_price,json=exitLimitPrice,proto3,customtype=github.com/neutron-org/neutron/v5/utils/math.PrecDec" json:"exit_limit_price" yaml:"exit_limit_price"`
 	// If pickBestRoute == true then all routes are run and the route with the
-	// best price is chosen otherwise, the first succesful route is used.
+	// best price is chosen otherwise, the first successful route is used.
 	PickBestRoute bool `protobuf:"varint,6,opt,name=pick_best_route,json=pickBestRoute,proto3" json:"pick_best_route,omitempty"`
 }
 
