@@ -24,6 +24,21 @@ message Params {
   // Specifies performance requirements for validators in scope of the oracle price votes. If not
   // met, the validator is not rewarded.
   PerformanceRequirement oracle_votes_performance_requirement = 4;
+
+  // Indicates the currently active type of payment schedule.
+  PaymentScheduleType payment_schedule_type = 5;
+}
+
+// Represents the type of payment schedule for validator compensation.
+enum PaymentScheduleType {
+  // Unspecified payment schedule type. With this payment schedule type, the module does not
+  // distribute any revenue.
+  PAYMENT_SCHEDULE_TYPE_UNSPECIFIED = 0;
+  // Monthly periods with payments made at the end of each month.
+  PAYMENT_SCHEDULE_TYPE_MONTHLY = 1;
+  // Periods defined by a specific number of blocks, with payments made when the required block
+  // count is reached.
+  PAYMENT_SCHEDULE_TYPE_BLOCK_BASED = 2;
 }
 
 // Specifies a performance criteria that validators must meet to qualify for network rewards.

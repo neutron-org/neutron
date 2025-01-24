@@ -9,6 +9,11 @@ import (
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgUpdateParams{}, "neutron.revenue.MsgUpdateParams", nil)
+
+	cdc.RegisterInterface((*PaymentSchedule)(nil), nil)
+	cdc.RegisterConcrete(&MonthlyPaymentSchedule{}, "neutron/MonthlyPaymentSchedule", nil)
+	cdc.RegisterConcrete(&BlockBasedPaymentSchedule{}, "neutron/BlockBasedPaymentSchedule", nil)
+	cdc.RegisterConcrete(&EmptyPaymentSchedule{}, "neutron/EmptyPaymentSchedule", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -16,10 +21,14 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&MsgUpdateParams{},
 	)
+
+	registry.RegisterInterface(
+		"neutron.revenue.PaymentSchedule",
+		(*PaymentSchedule)(nil),
+		&MonthlyPaymentSchedule{},
+		&BlockBasedPaymentSchedule{},
+		&EmptyPaymentSchedule{},
+	)
+
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
-
-var (
-	Amino     = codec.NewLegacyAmino()
-	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
-)

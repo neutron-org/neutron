@@ -10,21 +10,22 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/v5/x/revenue/keeper"
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"github.com/stretchr/testify/require"
 )
 
 func RevenueKeeper(
 	t testing.TB,
-	voteAggregator types.VoteAggregator,
-	stakingKeeper types.StakingKeeper,
-	bankKeeper types.BankKeeper,
+	voteAggregator revenuetypes.VoteAggregator,
+	stakingKeeper revenuetypes.StakingKeeper,
+	bankKeeper revenuetypes.BankKeeper,
 ) (*keeper.Keeper, sdk.Context) {
-	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(revenuetypes.StoreKey)
 	ss := runtime.NewKVStoreService(storeKey)
 	testCtx := testutil.DefaultContextWithDB(t, storeKey, storetypes.NewTransientStoreKey("transient_test"))
 
 	registry := codectypes.NewInterfaceRegistry()
+	revenuetypes.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 
 	k := keeper.NewKeeper(
@@ -36,7 +37,7 @@ func RevenueKeeper(
 	)
 
 	// Initialize params
-	err := k.SetParams(testCtx.Ctx, types.DefaultParams())
+	err := k.SetParams(testCtx.Ctx, revenuetypes.DefaultParams())
 	require.NoError(t, err)
 
 	return k, testCtx.Ctx

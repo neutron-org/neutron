@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/core/comet"
@@ -9,6 +10,7 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32types "github.com/cosmos/cosmos-sdk/types/bech32"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
@@ -63,24 +65,49 @@ func (k *Keeper) EndBlock(ctx sdk.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get module state: %w", err)
 	}
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get module params: %w", err)
+	}
 
-	// process revenue each first block of the month and start new accounting period
-	if state.CurrentMonth != int32(ctx.BlockTime().Month()) {
-		if err := k.ProcessRevenue(ctx); err != nil {
+	pscv := state.PaymentSchedule.GetCachedValue()
+	ps, ok := pscv.(revenuetypes.PaymentSchedule)
+	if !ok {
+		return fmt.Errorf("expected state.PaymentSchedule to be of type PaymentSchedule, but got %T", pscv)
+	}
+
+	var stateRequiresUpdate bool
+	switch {
+	// payment schedule either haven't been set or has been changed in the current block
+	// in this case, we need to reflect the change in the currently used payment schedule
+	case !revenuetypes.PaymentScheduleMatchesType(ps, params.PaymentScheduleType):
+		ps = revenuetypes.PaymentScheduleByType(params.PaymentScheduleType)
+		ps.StartNewPeriod(ctx)
+		stateRequiresUpdate = true
+
+	// if the period has ended, revenue needs to be processed and module's state set to the next period
+	case ps.PeriodEnded(ctx):
+		if err := k.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
 			return fmt.Errorf("failed to process revenue: %w", err)
 		}
-		state.CurrentMonth = int32(ctx.BlockTime().Month())
-		state.BlockCounter = 0
+		ps.StartNewPeriod(ctx)
+		stateRequiresUpdate = true
+	}
+	if stateRequiresUpdate {
+		packedPs, err := codectypes.NewAnyWithValue(ps)
+		if err != nil {
+			return fmt.Errorf("failed to pack new payment schedule %+v: %w", ps, err)
+		}
+		state.PaymentSchedule = packedPs
+		if err := k.SetState(ctx, state); err != nil {
+			return fmt.Errorf("failed to set module state after changing payment schedule: %w", err)
+		}
 	}
 
 	if err := k.RecordValidatorsParticipation(ctx); err != nil {
 		return fmt.Errorf("failed to record validators participation for current block: %w", err)
 	}
 
-	state.BlockCounter++
-	if err := k.SetState(ctx, state); err != nil {
-		return fmt.Errorf("failed to set module state: %w", err)
-	}
 	return nil
 }
 
@@ -159,6 +186,22 @@ func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []revenuetypes.Vali
 	return infos, nil
 }
 
+func (k *Keeper) GetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress) (info revenuetypes.ValidatorInfo, err error) {
+	store := k.storeService.OpenKVStore(ctx)
+	bz, err := store.Get(revenuetypes.GetValidatorInfoKey(addr))
+	if err != nil {
+		return info, fmt.Errorf("failed to read validator info from the store: %w", err)
+	}
+	if bz == nil {
+		return info, revenuetypes.ErrNoValidatorInfoFound
+	}
+
+	if err = k.cdc.Unmarshal(bz, &info); err != nil {
+		return info, fmt.Errorf("failed to unmarshal validator info: %w", err)
+	}
+	return info, nil
+}
+
 func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info revenuetypes.ValidatorInfo) error {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := k.cdc.Marshal(&info)
@@ -207,10 +250,10 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context) error {
 			return err
 		}
 		if oracleVote {
-			valInfo.CommitedOracleVotesInMonth++
+			valInfo.CommitedOracleVotesInPeriod++
 		}
 		if blockVote {
-			valInfo.CommitedBlocksInMonth++
+			valInfo.CommitedBlocksInPeriod++
 		}
 		if err := k.SetValidatorInfo(ctx, info.Validator.Address, valInfo); err != nil {
 			return err
@@ -223,37 +266,29 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context) error {
 // the current period. It determines each validator's compensation, transfers the appropriate amount
 // of revenue from the module's treasury pool to the validator's account, and resets the validator's
 // performance stats in preparation for the next period.
-func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
+func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blocksPerPeriod uint64) error {
 	infos, err := k.GetAllValidatorInfo(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
 	}
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get module params: %w", err)
-	}
-	state, err := k.GetState(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get module state: %w", err)
-	}
 	baseCompensation := k.CalcBaseRevenueAmount(ctx)
 
 	for _, info := range infos {
+		valConsAddr, err := sdk.ConsAddressFromBech32(info.ConsensusAddress)
+		if err != nil {
+			return fmt.Errorf("failed to create valcons addr from bech32 %s: %w", info.ConsensusAddress, err)
+		}
+
 		rating := PerformanceRating(
 			params.BlocksPerformanceRequirement,
 			params.OracleVotesPerformanceRequirement,
-			int64(state.BlockCounter-info.GetCommitedBlocksInMonth()),
-			int64(state.BlockCounter-info.GetCommitedOracleVotesInMonth()),
-			int64(state.BlockCounter),
+			int64(blocksPerPeriod-info.GetCommitedBlocksInPeriod()),
+			int64(blocksPerPeriod-info.GetCommitedOracleVotesInPeriod()),
+			int64(blocksPerPeriod),
 		)
 		valCompensation := rating.MulInt64(baseCompensation).TruncateInt()
 
 		if valCompensation.IsPositive() {
-			valConsAddr, err := sdk.ConsAddressFromBech32(info.ConsensusAddress)
-			if err != nil {
-				return fmt.Errorf("failed to create valcons addr from bech32 %s: %w", info.ConsensusAddress, err)
-			}
-
 			validator, err := k.stakingKeeper.GetValidatorByConsAddr(ctx, valConsAddr)
 			if err != nil {
 				return fmt.Errorf("failed to get validator by cons addr %s from staking keeper: %w", valConsAddr, err)
@@ -277,9 +312,9 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 			}
 		}
 
-		info.CommitedBlocksInMonth = 0
-		info.CommitedOracleVotesInMonth = 0
-		if err := k.SetValidatorInfo(ctx, sdk.ConsAddress(info.ConsensusAddress), info); err != nil {
+		info.CommitedBlocksInPeriod = 0
+		info.CommitedOracleVotesInPeriod = 0
+		if err := k.SetValidatorInfo(ctx, valConsAddr, info); err != nil {
 			return fmt.Errorf("failed to reset a validator info: %w", err)
 		}
 	}
@@ -300,30 +335,21 @@ func (k *Keeper) getOrCreateValidatorInfo(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 ) (info revenuetypes.ValidatorInfo, err error) {
-	store := k.storeService.OpenKVStore(ctx)
-	bz, err := store.Get(revenuetypes.GetValidatorInfoKey(addr))
-	if err != nil {
+	info, err = k.GetValidatorInfo(ctx, addr)
+	if err != nil && !errors.Is(err, revenuetypes.ErrNoValidatorInfoFound) {
 		return info, fmt.Errorf("failed to read validator info from the store: %w", err)
 	}
 
 	// means there is a validator info entry in the store. otherwise fallback to creation
-	if bz != nil {
-		if err := k.cdc.Unmarshal(bz, &info); err != nil {
-			return info, fmt.Errorf("failed to unmarshal a validator info: %w", err)
-		}
+	if err == nil {
 		return info, nil
 	}
 
 	info = revenuetypes.ValidatorInfo{
 		ConsensusAddress: addr.String(),
 	}
-	infoBz, err := k.cdc.Marshal(&info)
-	if err != nil {
-		return info, fmt.Errorf("failed to marshal validator info: %w", err)
-	}
-
-	if err := store.Set(revenuetypes.GetValidatorInfoKey(addr), infoBz); err != nil {
-		return info, fmt.Errorf("failed to write validator info to store: %w", err)
+	if err := k.SetValidatorInfo(ctx, addr, info); err != nil {
+		return info, fmt.Errorf("failed to write validator info to the store: %w", err)
 	}
 	k.Logger(ctx).Debug("new validator info created", "info", info)
 	return info, nil
