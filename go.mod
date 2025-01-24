@@ -41,7 +41,7 @@ require (
 	github.com/skip-mev/block-sdk/v2 v2.1.5
 	github.com/skip-mev/feemarket v1.1.1
 	github.com/skip-mev/slinky v1.0.13-0.20241114205023-22fefb0864ba
-	github.com/spf13/cast v1.7.0
+	github.com/spf13/cast v1.7.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
