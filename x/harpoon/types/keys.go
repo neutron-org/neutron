@@ -1,5 +1,7 @@
 package types
 
+import "encoding/binary"
+
 const (
 	// ModuleName defines the module name
 	ModuleName = "harpoon"
@@ -17,6 +19,8 @@ func GetHookSubscriptionKeyPrefix() []byte {
 	return HookSubscriptionKey
 }
 
-func GetHookSubscriptionKey(hookType string) []byte {
-	return append(GetHookSubscriptionKeyPrefix(), []byte(hookType)...)
+func GetHookSubscriptionKey(hookType HookType) []byte {
+	var arr []byte = make([]byte, 4)
+	binary.BigEndian.PutUint32(arr[0:4], uint32(hookType))
+	return append(GetHookSubscriptionKeyPrefix(), arr...)
 }
