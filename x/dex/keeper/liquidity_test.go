@@ -557,12 +557,20 @@ func (s *DexTestSuite) TestSwapExhaustsLOAndLP() {
 	s.Equal("10000000", loSwapIn.Value)
 	s.Equal("10000000", loSwapOut.Value)
 
-	// LP TickUpdate has correct SwapMetadatrra
+	// LP TickUpdate has correct SwapMetadata
 	lpTickUpdate := tickUpdates[5]
 	lpSwapIn, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountIn)
 	lpSwapOut, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountOut)
 	s.Equal("9000000", lpSwapIn.Value)
 	s.Equal("8999100", lpSwapOut.Value)
+
+	// opposite LP TickUpdate has no SwapMetadata
+	lpTickUpdateOppositeTick := tickUpdates[4]
+	_, found := lpTickUpdateOppositeTick.GetAttribute(types.AttributeSwapAmountIn)
+	s.False(found)
+	_, found = lpTickUpdateOppositeTick.GetAttribute(types.AttributeSwapAmountOut)
+	s.False(found)
+
 }
 
 // Test helpers ///////////////////////////////////////////////////////////////
