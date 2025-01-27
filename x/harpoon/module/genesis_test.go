@@ -11,8 +11,16 @@ import (
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
+const (
+	ContractAddress1 = "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a"
+	ContractAddress2 = "neutron1u9dulasrfe6laxwwjx83njhm5as466uz43arfheq79k8eqahqhasf3tj94"
+)
+
 func TestGenesis(t *testing.T) {
-	genesisState := types.GenesisState{}
+	// nil state genesis works
+	genesisState := types.GenesisState{
+		HookSubscriptions: nil,
+	}
 
 	k, ctx := keepertest.HarpoonKeeper(t, nil, nil)
 	harpoon.InitGenesis(ctx, *k, genesisState)
@@ -21,4 +29,29 @@ func TestGenesis(t *testing.T) {
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
+
+	require.Equal(t, &genesisState, got)
+
+	// non nil genesis -  hook subscriptions get set properly
+	genesisState2 := types.GenesisState{
+		HookSubscriptions: []types.HookSubscriptions{
+			{
+				HookType:          types.HookType_AfterValidatorBonded,
+				ContractAddresses: []string{ContractAddress1},
+			},
+			{
+				HookType:          types.HookType_BeforeDelegationRemoved,
+				ContractAddresses: []string{ContractAddress1, ContractAddress2},
+			},
+		},
+	}
+	k, ctx = keepertest.HarpoonKeeper(t, nil, nil)
+	harpoon.InitGenesis(ctx, *k, genesisState2)
+	got2 := harpoon.ExportGenesis(ctx, *k)
+	require.NotNil(t, got)
+
+	nullify.Fill(&genesisState)
+	nullify.Fill(got)
+
+	require.Equal(t, &genesisState2, got2)
 }
