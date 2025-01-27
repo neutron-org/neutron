@@ -607,6 +607,7 @@ func New(
 		app.AccountKeeper,
 		app.DynamicFeesKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		revenuetypes.RevenueFeeRedistributePoolName,
 	)
 
 	// ... other modules keepers
@@ -682,6 +683,7 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		revenuetypes.RevenueFeeRedistributePoolName,
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
