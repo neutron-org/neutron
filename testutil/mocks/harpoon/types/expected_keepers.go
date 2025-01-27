@@ -49,43 +49,6 @@ func (mr *MockAccountKeeperMockRecorder) GetModuleAddress(moduleName interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModuleAddress", reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAddress), moduleName)
 }
 
-// MockBankKeeper is a mock of BankKeeper interface.
-type MockBankKeeper struct {
-	ctrl     *gomock.Controller
-	recorder *MockBankKeeperMockRecorder
-}
-
-// MockBankKeeperMockRecorder is the mock recorder for MockBankKeeper.
-type MockBankKeeperMockRecorder struct {
-	mock *MockBankKeeper
-}
-
-// NewMockBankKeeper creates a new mock instance.
-func NewMockBankKeeper(ctrl *gomock.Controller) *MockBankKeeper {
-	mock := &MockBankKeeper{ctrl: ctrl}
-	mock.recorder = &MockBankKeeperMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
-	return m.recorder
-}
-
-// SpendableCoins mocks base method.
-func (m *MockBankKeeper) SpendableCoins(arg0 context.Context, arg1 types.AccAddress) types.Coins {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SpendableCoins", arg0, arg1)
-	ret0, _ := ret[0].(types.Coins)
-	return ret0
-}
-
-// SpendableCoins indicates an expected call of SpendableCoins.
-func (mr *MockBankKeeperMockRecorder) SpendableCoins(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendableCoins", reflect.TypeOf((*MockBankKeeper)(nil).SpendableCoins), arg0, arg1)
-}
-
 // MockWasmKeeper is a mock of WasmKeeper interface.
 type MockWasmKeeper struct {
 	ctrl     *gomock.Controller
