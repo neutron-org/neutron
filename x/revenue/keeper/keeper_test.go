@@ -31,8 +31,9 @@ func TestParams(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
 
 	// assert default params
 	params, err := keeper.GetParams(ctx)
@@ -59,8 +60,9 @@ func TestValidatorInfo(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInMonth = 1
@@ -91,8 +93,9 @@ func TestProcessRevenue(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInMonth = 1000
@@ -130,8 +133,9 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
 
 	// set val1 info as if they haven't committed any blocks and prices
 	val1Info := val1Info()
@@ -161,8 +165,9 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
 
 	// set test specific performance requirements
 	newParams := revenuetypes.DefaultParams()
@@ -235,8 +240,9 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
 
 	// known validator (set in keeper below) with 100% performance
 	val1Info := val1Info()

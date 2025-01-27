@@ -1,7 +1,8 @@
 package types
 
 import (
-	context "context"
+	"context"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 	"math/big"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
@@ -26,4 +27,13 @@ type StakingKeeper interface {
 type BankKeeper interface {
 	// SendCoinsFromModuleToAccount transfers coins from a ModuleAccount to an AccAddress.
 	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdktypes.AccAddress, amt sdktypes.Coins) error
+}
+
+// OracleKeeper defines the expected interfaces getting oracle price for a given asset pair.
+type OracleKeeper interface {
+	// GetPriceForCurrencyPair gets a price for a given asset pair
+	GetPriceForCurrencyPair(ctx sdktypes.Context, cp slinkytypes.CurrencyPair) (oracletypes.QuotePrice, error)
+
+	// GetDecimalsForCurrencyPair gets decimals for a given pair
+	GetDecimalsForCurrencyPair(ctx sdktypes.Context, cp slinkytypes.CurrencyPair) (decimals uint64, err error)
 }

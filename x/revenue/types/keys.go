@@ -28,10 +28,6 @@ func GetValidatorInfoKey(addr sdk.ConsAddress) []byte {
 	return append(PrefixValidatorInfoKey, addr.Bytes()...)
 }
 
-func GetAccumulatedPriceKey(time uint64) []byte {
-	return append(PrefixAccumulatedPriceKey, types.Uint64ToBigEndian(time)...)
-}
-
-func GetTimeFromAccumulatedPriceKey(key []byte) uint64 {
-	return types.BigEndianToUint64(key[1:])
+func GetAccumulatedPriceKey(time int64) []byte {
+	return append(PrefixAccumulatedPriceKey, types.Uint64ToBigEndian(uint64(time))...)
 }

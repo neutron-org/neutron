@@ -13,6 +13,7 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/x/staking/types"
 	gomock "github.com/golang/mock/gomock"
 	types1 "github.com/skip-mev/slinky/pkg/types"
+	types2 "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 // MockVoteAggregator is a mock of VoteAggregator interface.
@@ -125,4 +126,57 @@ func (m *MockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, sende
 func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendCoinsFromModuleToAccount", reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromModuleToAccount), ctx, senderModule, recipientAddr, amt)
+}
+
+// MockOracleKeeper is a mock of OracleKeeper interface.
+type MockOracleKeeper struct {
+	ctrl     *gomock.Controller
+	recorder *MockOracleKeeperMockRecorder
+}
+
+// MockOracleKeeperMockRecorder is the mock recorder for MockOracleKeeper.
+type MockOracleKeeperMockRecorder struct {
+	mock *MockOracleKeeper
+}
+
+// NewMockOracleKeeper creates a new mock instance.
+func NewMockOracleKeeper(ctrl *gomock.Controller) *MockOracleKeeper {
+	mock := &MockOracleKeeper{ctrl: ctrl}
+	mock.recorder = &MockOracleKeeperMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockOracleKeeper) EXPECT() *MockOracleKeeperMockRecorder {
+	return m.recorder
+}
+
+// GetDecimalsForCurrencyPair mocks base method.
+func (m *MockOracleKeeper) GetDecimalsForCurrencyPair(ctx types.Context, cp types1.CurrencyPair) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDecimalsForCurrencyPair", ctx, cp)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDecimalsForCurrencyPair indicates an expected call of GetDecimalsForCurrencyPair.
+func (mr *MockOracleKeeperMockRecorder) GetDecimalsForCurrencyPair(ctx, cp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDecimalsForCurrencyPair", reflect.TypeOf((*MockOracleKeeper)(nil).GetDecimalsForCurrencyPair), ctx, cp)
+}
+
+// GetPriceForCurrencyPair mocks base method.
+func (m *MockOracleKeeper) GetPriceForCurrencyPair(ctx types.Context, cp types1.CurrencyPair) (types2.QuotePrice, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPriceForCurrencyPair", ctx, cp)
+	ret0, _ := ret[0].(types2.QuotePrice)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPriceForCurrencyPair indicates an expected call of GetPriceForCurrencyPair.
+func (mr *MockOracleKeeperMockRecorder) GetPriceForCurrencyPair(ctx, cp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPriceForCurrencyPair", reflect.TypeOf((*MockOracleKeeper)(nil).GetPriceForCurrencyPair), ctx, cp)
 }

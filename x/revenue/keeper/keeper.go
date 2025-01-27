@@ -2,12 +2,11 @@ package keeper
 
 import (
 	"context"
-	"fmt"
-
 	"cosmossdk.io/core/comet"
 	coretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32types "github.com/cosmos/cosmos-sdk/types/bech32"
@@ -20,6 +19,7 @@ type Keeper struct {
 	voteAggregator revenuetypes.VoteAggregator
 	stakingKeeper  revenuetypes.StakingKeeper
 	bankKeeper     revenuetypes.BankKeeper
+	oracleKeeper   revenuetypes.OracleKeeper
 }
 
 func NewKeeper(
@@ -28,6 +28,7 @@ func NewKeeper(
 	voteAggregator revenuetypes.VoteAggregator,
 	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
+	oracleKeeper revenuetypes.OracleKeeper,
 ) *Keeper {
 	// ensure bonded and not bonded module accounts are set
 	// if addr := ak.GetModuleAddress(types.BondedPoolName); addr == nil {
@@ -48,6 +49,7 @@ func NewKeeper(
 		voteAggregator: voteAggregator,
 		stakingKeeper:  stakingKeeper,
 		bankKeeper:     bankKeeper,
+		oracleKeeper:   oracleKeeper,
 	}
 }
 

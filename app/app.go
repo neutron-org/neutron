@@ -951,6 +951,7 @@ func New(
 		voteAggregator,
 		app.StakingKeeper,
 		&app.BankKeeper,
+		app.OracleKeeper,
 	)
 
 	/****  Module Options ****/

@@ -6,16 +6,53 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/v5/x/revenue/types"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 )
 
-func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price math.LegacyDec, timestamp uint64) error {
-	cumulativeFirst, err := k.GetLastCumulativePrice(ctx)
+// TODO: We currently store prices under a single store prefix. We need to handle cases where DenomCompensation is changed.
+
+func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get module params: %w", err)
+	}
+
+	pair := slinkytypes.CurrencyPair{
+		Base:  params.DenomCompensation,
+		Quote: "USD",
+	}
+	priceInt, err := k.oracleKeeper.GetPriceForCurrencyPair(ctx, pair)
+	if err != nil {
+		return err
+	}
+
+	decimals, err := k.oracleKeeper.GetDecimalsForCurrencyPair(ctx, pair)
+	if err != nil {
+		return err
+	}
+
+	price := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals))
+	err = k.SaveCumulativePrice(ctx, price, ctx.BlockTime().Unix())
+	if err != nil {
+		return err
+	}
+
+	err = k.CleanOutdatedCumulativePrices(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price math.LegacyDec, timestamp int64) error {
+	cumulativePrevious, err := k.GetLastCumulativePrice(ctx)
 	if err != nil {
 		return err
 	}
 
 	cumulativeNew := types.CumulativePrice{
-		CumulativePrice: cumulativeFirst.LastPrice.MulInt64(int64(timestamp - cumulativeFirst.Timestamp)).Add(cumulativeFirst.CumulativePrice),
+		CumulativePrice: cumulativePrevious.LastPrice.MulInt64(timestamp - cumulativePrevious.Timestamp).Add(cumulativePrevious.CumulativePrice),
 		LastPrice:       price,
 		Timestamp:       timestamp,
 	}
@@ -36,7 +73,7 @@ func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price math.LegacyDec, time
 
 func (k *Keeper) GetAllCumulativePrices(ctx sdk.Context) ([]*types.CumulativePrice, error) {
 	store := k.storeService.OpenKVStore(ctx)
-	iter, err := store.ReverseIterator(types.PrefixAccumulatedPriceKey, storetypes.PrefixEndBytes(types.PrefixAccumulatedPriceKey))
+	iter, err := store.Iterator(types.PrefixAccumulatedPriceKey, storetypes.PrefixEndBytes(types.PrefixAccumulatedPriceKey))
 	if err != nil {
 		return nil, fmt.Errorf("failed to iterate over accumulated price: %w", err)
 	}
@@ -78,7 +115,7 @@ func (k *Keeper) GetLastCumulativePrice(ctx sdk.Context) (types.CumulativePrice,
 	return cmlt, nil
 }
 
-func (k *Keeper) GetFirstCumulativePriceAfter(ctx sdk.Context, startAt uint64) (types.CumulativePrice, error) {
+func (k *Keeper) GetFirstCumulativePriceAfter(ctx sdk.Context, startAt int64) (types.CumulativePrice, error) {
 	cmlt := types.CumulativePrice{
 		CumulativePrice: math.LegacyZeroDec(),
 		LastPrice:       math.LegacyZeroDec(),
@@ -106,7 +143,7 @@ func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context) error {
 	store := k.storeService.OpenKVStore(ctx)
 	iter, err := store.Iterator(
 		types.PrefixAccumulatedPriceKey,
-		storetypes.PrefixEndBytes(types.GetAccumulatedPriceKey(uint64(ctx.BlockTime().Unix())-types.MaxTWAPWindow)),
+		types.GetAccumulatedPriceKey(ctx.BlockTime().Unix()-types.MaxTWAPWindow),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to iterate over validator info: %w", err)
@@ -138,7 +175,7 @@ func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context) error {
 //	}
 //}
 
-func (k *Keeper) GetTWAPForTime(ctx sdk.Context, startAt uint64) (math.LegacyDec, error) {
+func (k *Keeper) GetTWAPStartFromTime(ctx sdk.Context, startAt int64) (math.LegacyDec, error) {
 	lastPrice, err := k.GetLastCumulativePrice(ctx)
 	if err != nil {
 		return math.LegacyZeroDec(), err
@@ -148,8 +185,8 @@ func (k *Keeper) GetTWAPForTime(ctx sdk.Context, startAt uint64) (math.LegacyDec
 	if err != nil {
 		return math.LegacyZeroDec(), err
 	}
-	if lastPrice == firstPrice {
+	if lastPrice.Timestamp == firstPrice.Timestamp {
 		return lastPrice.LastPrice, nil
 	}
-	return lastPrice.CumulativePrice.Sub(firstPrice.CumulativePrice).QuoInt64(int64(lastPrice.Timestamp - firstPrice.Timestamp)), nil
+	return lastPrice.CumulativePrice.Sub(firstPrice.CumulativePrice).QuoInt64(lastPrice.Timestamp - firstPrice.Timestamp), nil
 }

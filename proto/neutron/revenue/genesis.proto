@@ -56,5 +56,5 @@ message CumulativePrice {
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
-  uint64 timestamp = 3;
+  int64 timestamp = 3;
 }
