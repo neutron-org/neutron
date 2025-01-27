@@ -13,6 +13,7 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
+// SubscribedContracts retrieves the contract addresses subscribed to a specific hook type.
 func (k Keeper) SubscribedContracts(goCtx context.Context, req *types.QuerySubscribedContractsRequest) (*types.QuerySubscribedContractsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")

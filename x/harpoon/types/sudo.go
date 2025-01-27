@@ -2,6 +2,8 @@ package types
 
 import "cosmossdk.io/math"
 
+// This file defines sudo call message structures for Wasm contracts for each hook type.
+
 type SudoAfterValidatorBonded struct {
 	ConsAddr []byte `json:"cons_addr"`
 	ValAddr  []byte `json:"val_addr"`

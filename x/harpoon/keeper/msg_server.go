@@ -22,6 +22,8 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+// ManageHookSubscription updates the hook subscriptions for a specified contract address.
+// Can only be executed by governance.
 func (k msgServer) ManageHookSubscription(goCtx context.Context, req *types.MsgManageHookSubscription) (*types.MsgManageHookSubscriptionResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(err, "failed to validate manage hook subscription message")

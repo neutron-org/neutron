@@ -37,6 +37,7 @@ type (
 	}
 )
 
+// NewKeeper creates a new keeper.
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService corestoretypes.KVStoreService,
@@ -59,21 +60,22 @@ func NewKeeper(
 	}
 }
 
-// GetAuthority returns the module's authority.
+// GetAuthority returns the authority of the module.
 func (k Keeper) GetAuthority() string {
 	return k.authority
 }
 
-// Logger returns a module-specific logger.
+// Logger returns the logger specific to the module.
 func (k Keeper) Logger() log.Logger {
 	return k.logger.With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// Hooks returns implemented StakingHooks that will be called by the staking module
+// Hooks returns the implemented StakingHooks to be called by the staking module.
 func (k Keeper) Hooks() stakingtypes.StakingHooks {
 	return Hooks{k}
 }
 
+// SetHookSubscription configures hook subscriptions for the specified hook type.
 func (k Keeper) SetHookSubscription(goCtx context.Context, hookSubscriptions types.HookSubscriptions) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 	key := types.GetHookSubscriptionKey(hookSubscriptions.HookType)
@@ -81,8 +83,8 @@ func (k Keeper) SetHookSubscription(goCtx context.Context, hookSubscriptions typ
 	store.Set(key, bz)
 }
 
-// UpdateHookSubscription sets hook subscription for given contractAddress
-// All previously subscribed hooks that are not in `subscriptionUpdate.hooks` will be removed.
+// UpdateHookSubscription updates the hook subscription for the given contractAddress.
+// Previously subscribed hooks not listed in `subscriptionUpdate.hooks` will be removed.
 func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.HookSubscription) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
@@ -137,7 +139,7 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.Hook
 	}
 }
 
-// GetSubscribedAddressesForHookType returns all subscribed contracts for a given `hookType`
+// GetSubscribedAddressesForHookType retrieves all contracts subscribed to the specified `hookType`.
 func (k Keeper) GetSubscribedAddressesForHookType(goCtx context.Context, hookType types.HookType) []string {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
@@ -151,7 +153,7 @@ func (k Keeper) GetSubscribedAddressesForHookType(goCtx context.Context, hookTyp
 	}
 }
 
-// GetAllSubscriptions returns subscriptions for all hooks
+// GetAllSubscriptions retrieves subscriptions for all hooks.
 func (k Keeper) GetAllSubscriptions(goCtx context.Context) (res []types.HookSubscriptions) {
 	store := prefix.NewStore(runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx)), types.GetHookSubscriptionKeyPrefix())
 
@@ -167,19 +169,18 @@ func (k Keeper) GetAllSubscriptions(goCtx context.Context) (res []types.HookSubs
 	return res
 }
 
-// CallSudoForSubscriptionType calls sudo for all contracts subscribed to given `hookType`.
-// Returns error in cases where marshalling error occurred (should never happen, since we control it) or
-// when any error in contract happened.
-// Important that because some calls are coming from BeginBlocker/EndBlocker, any errors in contracts can halt the chain.
+// CallSudoForSubscriptionType executes the sudo method for all contracts subscribed to the specified `hookType`.
+// Returns an error if a marshalling issue occurs (unlikely, as it's controlled) or if any contract-related error occurs.
+// Note: Errors in contracts, especially from BeginBlocker/EndBlocker calls, can halt the chain.
 func (k Keeper) CallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
-	if err := k.DoCallSudoForSubscriptionType(ctx, hookType, msg); err != nil {
+	if err := k.doCallSudoForSubscriptionType(ctx, hookType, msg); err != nil {
 		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", hookType)
 	}
 
 	return nil
 }
 
-func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
+func (k Keeper) doCallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
 	contractAddresses := k.GetSubscribedAddressesForHookType(ctx, hookType)
 
 	if len(contractAddresses) == 0 {
@@ -209,7 +210,7 @@ func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType type
 	return nil
 }
 
-// splitAddedAndRemovedHooks splits all hooks on which ones to add and which ones to remove.
+// splitAddedAndRemovedHooks separates hooks into those to be added and those to be removed.
 func splitAddedAndRemovedHooks(allHooks []int32, hooksToAdd []types.HookType) ([]types.HookType, []types.HookType) {
 	// Calculate difference between allHooks and hooksToAdd. It will be hooksToRemove.
 	var hooksToRemove []types.HookType

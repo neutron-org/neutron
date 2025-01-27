@@ -15,12 +15,14 @@ const (
 
 var HookSubscriptionKey = []byte("subscriptions")
 
+// GetHookSubscriptionKeyPrefix returns the store key for hook subscriptions.
 func GetHookSubscriptionKeyPrefix() []byte {
 	return HookSubscriptionKey
 }
 
+// GetHookSubscriptionKey returns the store key for a specific hook subscription.
 func GetHookSubscriptionKey(hookType HookType) []byte {
-	var arr []byte = make([]byte, 4)
+	arr := make([]byte, 4)
 	binary.BigEndian.PutUint32(arr[0:4], uint32(hookType))
 	return append(GetHookSubscriptionKeyPrefix(), arr...)
 }

@@ -14,13 +14,13 @@ import (
 
 var _ stakingtypes.StakingHooks = Hooks{}
 
-// Hooks wrapper struct for harpoon keeper.
-// These hooks are called by the staking module.
+// Hooks is a wrapper struct for hooks used by the harpoon keeper.
+// These hooks are invoked by the staking module.
 type Hooks struct {
 	k Keeper
 }
 
-// AfterValidatorBonded calls sudo method on the contracts subscribed to AfterValidatorBonded hook
+// AfterValidatorBonded calls the sudo method on contracts subscribed to the AfterValidatorBonded hook.
 func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
 	message := types.SudoAfterValidatorBonded{
 		ConsAddr: consAddr,
@@ -29,7 +29,7 @@ func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddres
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorBonded, message)
 }
 
-// AfterValidatorRemoved calls sudo method on the contracts subscribed to AfterValidatorRemoved hook
+// AfterValidatorRemoved calls the sudo method on the contracts subscribed to the AfterValidatorRemoved hook
 func (h Hooks) AfterValidatorRemoved(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
 	message := types.SudoAfterValidatorRemoved{
 		ConsAddr: consAddr,
@@ -38,7 +38,7 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, consAddr sdk.ConsAddre
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorRemoved, message)
 }
 
-// AfterValidatorCreated calls sudo method on the contracts subscribed to AfterValidatorCreated hook
+// AfterValidatorCreated calls the sudo method on the contracts subscribed to the AfterValidatorCreated hook
 func (h Hooks) AfterValidatorCreated(ctx context.Context, valAddr sdk.ValAddress) error {
 	message := types.SudoAfterValidatorCreated{
 		ValAddr: valAddr,
@@ -46,7 +46,7 @@ func (h Hooks) AfterValidatorCreated(ctx context.Context, valAddr sdk.ValAddress
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorCreated, message)
 }
 
-// AfterValidatorBeginUnbonding calls sudo method on the contracts subscribed to AfterValidatorBeginUnbonding hook
+// AfterValidatorBeginUnbonding calls the sudo method on the contracts subscribed to the AfterValidatorBeginUnbonding hook
 func (h Hooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
 	message := types.SudoAfterValidatorBeginUnbonding{
 		ConsAddr: consAddr,
@@ -55,7 +55,7 @@ func (h Hooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr sdk.Co
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorBeginUnbonding, message)
 }
 
-// BeforeValidatorModified calls sudo method on the contracts subscribed to BeforeValidatorModified hook
+// BeforeValidatorModified calls the sudo method on the contracts subscribed to the BeforeValidatorModified hook
 func (h Hooks) BeforeValidatorModified(ctx context.Context, valAddr sdk.ValAddress) error {
 	message := types.SudoBeforeValidatorModified{
 		ValAddr: valAddr,
@@ -63,7 +63,7 @@ func (h Hooks) BeforeValidatorModified(ctx context.Context, valAddr sdk.ValAddre
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_BeforeValidatorModified, message)
 }
 
-// BeforeDelegationCreated calls sudo method on the contracts subscribed to BeforeDelegationCreated hook
+// BeforeDelegationCreated calls the sudo method on the contracts subscribed to the BeforeDelegationCreated hook
 func (h Hooks) BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	message := types.SudoBeforeDelegationCreated{
 		DelAddr: delAddr,
@@ -72,7 +72,7 @@ func (h Hooks) BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddre
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_BeforeDelegationCreated, message)
 }
 
-// BeforeDelegationSharesModified calls sudo method on the contracts subscribed to BeforeDelegationSharesModified hook
+// BeforeDelegationSharesModified calls the sudo method on the contracts subscribed to the BeforeDelegationSharesModified hook
 func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	message := types.SudoBeforeDelegationSharesModified{
 		DelAddr: delAddr,
@@ -81,7 +81,7 @@ func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.A
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_BeforeDelegationSharesModified, message)
 }
 
-// BeforeDelegationRemoved calls sudo method on the contracts subscribed to BeforeDelegationRemoved hook
+// BeforeDelegationRemoved calls the sudo method on the contracts subscribed to the BeforeDelegationRemoved hook
 func (h Hooks) BeforeDelegationRemoved(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	message := types.SudoBeforeDelegationRemoved{
 		DelAddr: delAddr,
@@ -90,7 +90,7 @@ func (h Hooks) BeforeDelegationRemoved(ctx context.Context, delAddr sdk.AccAddre
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_BeforeDelegationRemoved, message)
 }
 
-// AfterDelegationModified calls sudo method on the contracts subscribed to AfterDelegationModified hook
+// AfterDelegationModified calls the sudo method on the contracts subscribed to the AfterDelegationModified hook
 func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	message := types.SudoAfterDelegationModified{
 		DelAddr: delAddr,
@@ -99,7 +99,7 @@ func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddre
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_AfterDelegationModified, message)
 }
 
-// BeforeValidatorSlashed calls sudo method on the contracts subscribed to BeforeValidatorSlashed hook
+// BeforeValidatorSlashed calls the sudo method on the contracts subscribed to the BeforeValidatorSlashed hook
 func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction sdkmath.LegacyDec) error {
 	message := types.SudoBeforeValidatorSlashed{
 		ValAddr:  valAddr,
@@ -108,7 +108,7 @@ func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddres
 	return h.k.CallSudoForSubscriptionType(ctx, types.HookType_BeforeValidatorSlashed, message)
 }
 
-// AfterUnbondingInitiated calls sudo method on the contracts subscribed to AfterUnbondingInitiated hook
+// AfterUnbondingInitiated calls the sudo method on the contracts subscribed to the AfterUnbondingInitiated hook
 func (h Hooks) AfterUnbondingInitiated(ctx context.Context, id uint64) error {
 	message := types.SudoAfterUnbondingInitiated{
 		Id: id,
