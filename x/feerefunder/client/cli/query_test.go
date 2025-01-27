@@ -3,6 +3,8 @@ package cli_test
 import (
 	"testing"
 
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+
 	"github.com/neutron-org/neutron/v5/app/config"
 
 	"cosmossdk.io/math"
@@ -17,6 +19,7 @@ import (
 )
 
 func feeRefunderNetwork(t *testing.T, feeInfo types.Fee) *network.Network {
+	sdk.DefaultBondDenom = appparams.DefaultDenom
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.DefaultGenesis()

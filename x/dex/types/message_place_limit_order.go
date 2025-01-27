@@ -121,6 +121,10 @@ func (msg *MsgPlaceLimitOrder) Validate() error {
 		return ErrInvalidPriceAndTick
 	}
 
+	if msg.MinAverageSellPrice != nil && msg.MinAverageSellPrice.IsZero() {
+		return ErrZeroMinAverageSellPrice
+	}
+
 	return nil
 }
 

@@ -26,15 +26,54 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Params defines the parameters for the module.
+// Represents the type of payment schedule for validator compensation.
+type PaymentScheduleType int32
+
+const (
+	// Unspecified payment schedule type. With this payment schedule type, the module does not
+	// distribute any revenue.
+	PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_UNSPECIFIED PaymentScheduleType = 0
+	// Monthly periods with payments made at the end of each month.
+	PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_MONTHLY PaymentScheduleType = 1
+	// Periods defined by a specific number of blocks, with payments made when the required block
+	// count is reached.
+	PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_BLOCK_BASED PaymentScheduleType = 2
+)
+
+var PaymentScheduleType_name = map[int32]string{
+	0: "PAYMENT_SCHEDULE_TYPE_UNSPECIFIED",
+	1: "PAYMENT_SCHEDULE_TYPE_MONTHLY",
+	2: "PAYMENT_SCHEDULE_TYPE_BLOCK_BASED",
+}
+
+var PaymentScheduleType_value = map[string]int32{
+	"PAYMENT_SCHEDULE_TYPE_UNSPECIFIED": 0,
+	"PAYMENT_SCHEDULE_TYPE_MONTHLY":     1,
+	"PAYMENT_SCHEDULE_TYPE_BLOCK_BASED": 2,
+}
+
+func (x PaymentScheduleType) String() string {
+	return proto.EnumName(PaymentScheduleType_name, int32(x))
+}
+
+func (PaymentScheduleType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_7e318e374514628b, []int{0}
+}
+
+// Defines the parameters for the module.
 type Params struct {
+	// The denom to be used for compensation.
 	DenomCompensation string `protobuf:"bytes,1,opt,name=denom_compensation,json=denomCompensation,proto3" json:"denom_compensation,omitempty"`
-	// OracleVoteWeight is a coefficient which defines how many
-	// missed oracle votes equals 1 missed block signature
-	// Default: 1
-	OracleVoteWeight     cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=oracle_vote_weight,json=oracleVoteWeight,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"oracle_vote_weight"`
-	PerformanceThreshold cosmossdk_io_math.LegacyDec `protobuf:"bytes,3,opt,name=performance_threshold,json=performanceThreshold,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"performance_threshold"`
-	AllowedMissed        cosmossdk_io_math.LegacyDec `protobuf:"bytes,4,opt,name=allowed_missed,json=allowedMissed,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"allowed_missed"`
+	// The compensation amount in USD.
+	BaseCompensation uint64 `protobuf:"varint,2,opt,name=base_compensation,json=baseCompensation,proto3" json:"base_compensation,omitempty"`
+	// Specifies performance requirements for validators in scope of blocks signing and creation. If
+	// not met, the validator is not rewarded.
+	BlocksPerformanceRequirement *PerformanceRequirement `protobuf:"bytes,3,opt,name=blocks_performance_requirement,json=blocksPerformanceRequirement,proto3" json:"blocks_performance_requirement,omitempty"`
+	// Specifies performance requirements for validators in scope of the oracle price votes. If not
+	// met, the validator is not rewarded.
+	OracleVotesPerformanceRequirement *PerformanceRequirement `protobuf:"bytes,4,opt,name=oracle_votes_performance_requirement,json=oracleVotesPerformanceRequirement,proto3" json:"oracle_votes_performance_requirement,omitempty"`
+	// Indicates the currently active type of payment schedule.
+	PaymentScheduleType PaymentScheduleType `protobuf:"varint,5,opt,name=payment_schedule_type,json=paymentScheduleType,proto3,enum=neutron.revenue.PaymentScheduleType" json:"payment_schedule_type,omitempty"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }
@@ -76,37 +115,123 @@ func (m *Params) GetDenomCompensation() string {
 	return ""
 }
 
+func (m *Params) GetBaseCompensation() uint64 {
+	if m != nil {
+		return m.BaseCompensation
+	}
+	return 0
+}
+
+func (m *Params) GetBlocksPerformanceRequirement() *PerformanceRequirement {
+	if m != nil {
+		return m.BlocksPerformanceRequirement
+	}
+	return nil
+}
+
+func (m *Params) GetOracleVotesPerformanceRequirement() *PerformanceRequirement {
+	if m != nil {
+		return m.OracleVotesPerformanceRequirement
+	}
+	return nil
+}
+
+func (m *Params) GetPaymentScheduleType() PaymentScheduleType {
+	if m != nil {
+		return m.PaymentScheduleType
+	}
+	return PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
+}
+
+// Specifies a performance criteria that validators must meet to qualify for network rewards.
+type PerformanceRequirement struct {
+	// The fraction of the total performance a validator can miss without affecting their reward.
+	// Represented as a decimal value.
+	AllowedToMiss cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=allowed_to_miss,json=allowedToMiss,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"allowed_to_miss"`
+	// The minimum fraction of the total performance a validator must achieve to be eligible for
+	// network rewards. Validators falling below this threshold will not receive any rewards.
+	// Represented as a decimal value.
+	RequiredAtLeast cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=required_at_least,json=requiredAtLeast,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"required_at_least"`
+}
+
+func (m *PerformanceRequirement) Reset()         { *m = PerformanceRequirement{} }
+func (m *PerformanceRequirement) String() string { return proto.CompactTextString(m) }
+func (*PerformanceRequirement) ProtoMessage()    {}
+func (*PerformanceRequirement) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e318e374514628b, []int{1}
+}
+func (m *PerformanceRequirement) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *PerformanceRequirement) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PerformanceRequirement.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *PerformanceRequirement) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PerformanceRequirement.Merge(m, src)
+}
+func (m *PerformanceRequirement) XXX_Size() int {
+	return m.Size()
+}
+func (m *PerformanceRequirement) XXX_DiscardUnknown() {
+	xxx_messageInfo_PerformanceRequirement.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PerformanceRequirement proto.InternalMessageInfo
+
 func init() {
+	proto.RegisterEnum("neutron.revenue.PaymentScheduleType", PaymentScheduleType_name, PaymentScheduleType_value)
 	proto.RegisterType((*Params)(nil), "neutron.revenue.Params")
+	proto.RegisterType((*PerformanceRequirement)(nil), "neutron.revenue.PerformanceRequirement")
 }
 
 func init() { proto.RegisterFile("neutron/revenue/params.proto", fileDescriptor_7e318e374514628b) }
 
 var fileDescriptor_7e318e374514628b = []byte{
-	// 359 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0x4f, 0x4b, 0xe3, 0x40,
-	0x18, 0xc6, 0x93, 0x6e, 0x29, 0x6c, 0x60, 0xff, 0x85, 0x2e, 0x64, 0xbb, 0x4b, 0xba, 0x78, 0xf2,
-	0xd2, 0x0c, 0x41, 0xbc, 0x78, 0xac, 0xbd, 0xa9, 0x20, 0x45, 0x54, 0xbc, 0x84, 0xc9, 0xe4, 0x6d,
-	0x12, 0xcc, 0xcc, 0x1b, 0x66, 0xa6, 0xa9, 0xfd, 0x16, 0x1e, 0x3d, 0xfa, 0x21, 0xfc, 0x10, 0x3d,
-	0x16, 0x4f, 0xe2, 0xa1, 0x94, 0xf6, 0x8b, 0x48, 0x93, 0x54, 0x7a, 0xee, 0xed, 0x49, 0x7e, 0xf3,
-	0xfe, 0x9e, 0x81, 0x77, 0xac, 0x7f, 0x02, 0xc6, 0x5a, 0xa2, 0x20, 0x12, 0x0a, 0x10, 0x63, 0x20,
-	0x39, 0x95, 0x94, 0x2b, 0x2f, 0x97, 0xa8, 0xd1, 0xfe, 0x51, 0x53, 0xaf, 0xa6, 0x1d, 0x97, 0xa1,
-	0xe2, 0xa8, 0x48, 0x48, 0x15, 0x90, 0xc2, 0x0f, 0x41, 0x53, 0x9f, 0x30, 0x4c, 0x45, 0x35, 0xd0,
-	0x69, 0xc7, 0x18, 0x63, 0x19, 0xc9, 0x26, 0xd5, 0x7f, 0xff, 0x54, 0x53, 0x41, 0x05, 0xaa, 0x8f,
-	0x0a, 0x1d, 0x2c, 0x1b, 0x56, 0xeb, 0xb2, 0xac, 0xb4, 0x7b, 0x96, 0x1d, 0x81, 0x40, 0x1e, 0x30,
-	0xe4, 0x39, 0x08, 0x45, 0x75, 0x8a, 0xc2, 0x31, 0xff, 0x9b, 0x87, 0x5f, 0x87, 0xbf, 0x4a, 0x72,
-	0xba, 0x03, 0xec, 0xc0, 0xb2, 0x51, 0x52, 0x96, 0x41, 0x50, 0xa0, 0x86, 0x60, 0x02, 0x69, 0x9c,
-	0x68, 0xa7, 0xb1, 0x39, 0xde, 0xf7, 0x67, 0x8b, 0xae, 0xf1, 0xbe, 0xe8, 0xfe, 0xad, 0xba, 0x54,
-	0x74, 0xef, 0xa5, 0x48, 0x38, 0xd5, 0x89, 0x77, 0x0e, 0x31, 0x65, 0xd3, 0x01, 0xb0, 0xd7, 0x97,
-	0x9e, 0x55, 0x5f, 0x65, 0x00, 0x6c, 0xf8, 0xb3, 0x92, 0x5d, 0xa3, 0x86, 0x9b, 0x52, 0x65, 0x8f,
-	0xac, 0xdf, 0x39, 0xc8, 0x11, 0x4a, 0x4e, 0x05, 0x83, 0x40, 0x27, 0x12, 0x54, 0x82, 0x59, 0xe4,
-	0x7c, 0xd9, 0xb7, 0xa3, 0xbd, 0xe3, 0xbb, 0xda, 0xea, 0xec, 0x5b, 0xeb, 0x3b, 0xcd, 0x32, 0x9c,
-	0x40, 0x14, 0xf0, 0x54, 0x29, 0x88, 0x9c, 0xe6, 0xbe, 0x05, 0xdf, 0x6a, 0xd1, 0x45, 0xe9, 0x39,
-	0x69, 0x3e, 0x3d, 0x77, 0x8d, 0xfe, 0xd9, 0x6c, 0xe5, 0x9a, 0xf3, 0x95, 0x6b, 0x2e, 0x57, 0xae,
-	0xf9, 0xb8, 0x76, 0x8d, 0xf9, 0xda, 0x35, 0xde, 0xd6, 0xae, 0x71, 0xe7, 0xc7, 0xa9, 0x4e, 0xc6,
-	0xa1, 0xc7, 0x90, 0x93, 0x7a, 0xd3, 0x3d, 0x94, 0xf1, 0x36, 0x93, 0xe2, 0x98, 0x3c, 0x7c, 0x3e,
-	0x0c, 0x3d, 0xcd, 0x41, 0x85, 0xad, 0x72, 0x6d, 0x47, 0x1f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xcc,
-	0xe3, 0xe9, 0xe1, 0x38, 0x02, 0x00, 0x00,
+	// 547 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x93, 0xcf, 0x6e, 0xd3, 0x4c,
+	0x14, 0xc5, 0x3d, 0x6d, 0xbe, 0x4a, 0xdf, 0x20, 0x48, 0xe2, 0x02, 0x0a, 0xa5, 0x38, 0x49, 0x55,
+	0x44, 0x04, 0x8a, 0xad, 0x14, 0xb1, 0x61, 0x97, 0x3f, 0x46, 0xad, 0x9a, 0xa4, 0x91, 0x93, 0x22,
+	0x82, 0x84, 0x46, 0x93, 0xc9, 0x25, 0xb1, 0x6a, 0x7b, 0x8c, 0x67, 0x12, 0x9a, 0x17, 0x60, 0xcd,
+	0x92, 0x25, 0x2f, 0xc0, 0x8e, 0x87, 0xe8, 0xb2, 0xea, 0x0a, 0xb1, 0xa8, 0x50, 0xf2, 0x22, 0xc8,
+	0xb1, 0x4b, 0x29, 0x4d, 0x16, 0xb0, 0xbb, 0x73, 0xcf, 0xf1, 0xef, 0x78, 0xe6, 0xce, 0xe0, 0x4d,
+	0x0f, 0x46, 0x32, 0xe0, 0x9e, 0x11, 0xc0, 0x18, 0xbc, 0x11, 0x18, 0x3e, 0x0d, 0xa8, 0x2b, 0x74,
+	0x3f, 0xe0, 0x92, 0xab, 0xc9, 0x58, 0xd5, 0x63, 0x75, 0x43, 0x63, 0x5c, 0xb8, 0x5c, 0x18, 0x3d,
+	0x2a, 0xc0, 0x18, 0x97, 0x7a, 0x20, 0x69, 0xc9, 0x60, 0xdc, 0xf6, 0xa2, 0x0f, 0x36, 0xee, 0x45,
+	0x3a, 0x99, 0xaf, 0x8c, 0x68, 0x11, 0x4b, 0xb7, 0x07, 0x7c, 0xc0, 0xa3, 0x7e, 0x58, 0x45, 0xdd,
+	0xad, 0x2f, 0xab, 0x78, 0xad, 0x35, 0x8f, 0x54, 0x8b, 0x58, 0xed, 0x83, 0xc7, 0x5d, 0xc2, 0xb8,
+	0xeb, 0x83, 0x27, 0xa8, 0xb4, 0xb9, 0x97, 0x41, 0x39, 0x54, 0xf8, 0xdf, 0x4a, 0xcf, 0x95, 0xea,
+	0x6f, 0x82, 0xfa, 0x04, 0xa7, 0xc3, 0xbf, 0xb8, 0xea, 0x5e, 0xc9, 0xa1, 0x42, 0xc2, 0x4a, 0x85,
+	0xc2, 0x15, 0xb3, 0x8b, 0xb5, 0x9e, 0xc3, 0xd9, 0x91, 0x20, 0x3e, 0x04, 0x6f, 0x79, 0xe0, 0x52,
+	0x8f, 0x01, 0x09, 0xe0, 0xdd, 0xc8, 0x0e, 0xc0, 0x05, 0x4f, 0x66, 0x56, 0x73, 0xa8, 0x70, 0x63,
+	0xe7, 0x91, 0xfe, 0xc7, 0x8e, 0xf5, 0xd6, 0xa5, 0xdf, 0xba, 0xb4, 0x5b, 0x9b, 0x11, 0x6e, 0xb1,
+	0xaa, 0x1e, 0xe3, 0x6d, 0x1e, 0x50, 0xe6, 0x00, 0x19, 0x73, 0x09, 0xcb, 0x43, 0x13, 0x7f, 0x17,
+	0x9a, 0x8f, 0xa0, 0x2f, 0x43, 0xe6, 0x92, 0xe4, 0x57, 0xf8, 0x8e, 0x4f, 0x27, 0x61, 0x49, 0x04,
+	0x1b, 0x42, 0x7f, 0xe4, 0x00, 0x91, 0x13, 0x1f, 0x32, 0xff, 0xe5, 0x50, 0xe1, 0xd6, 0xce, 0xf6,
+	0xf5, 0xa8, 0xc8, 0xdd, 0x8e, 0xcd, 0x9d, 0x89, 0x0f, 0xd6, 0xba, 0x7f, 0xbd, 0xf9, 0x3c, 0xf1,
+	0xe9, 0x73, 0x56, 0xd9, 0x3a, 0x43, 0xf8, 0xee, 0x92, 0xe8, 0x2e, 0x4e, 0x52, 0xc7, 0xe1, 0xef,
+	0xa1, 0x4f, 0x24, 0x27, 0xae, 0x2d, 0x44, 0x34, 0xbc, 0x4a, 0xe9, 0xe4, 0x3c, 0xab, 0x7c, 0x3f,
+	0xcf, 0xde, 0x8f, 0xee, 0x83, 0xe8, 0x1f, 0xe9, 0x36, 0x37, 0x5c, 0x2a, 0x87, 0x7a, 0x1d, 0x06,
+	0x94, 0x4d, 0x6a, 0xc0, 0xce, 0xbe, 0x16, 0x71, 0x7c, 0x5d, 0x6a, 0xc0, 0xac, 0x9b, 0x31, 0xa9,
+	0xc3, 0x1b, 0xb6, 0x10, 0xea, 0x1b, 0x9c, 0x8e, 0x8f, 0xad, 0x4f, 0xa8, 0x24, 0x0e, 0x50, 0x21,
+	0xe7, 0xb3, 0xfe, 0x27, 0x78, 0xf2, 0x82, 0x55, 0x96, 0xf5, 0x90, 0xf4, 0xf8, 0x03, 0xc2, 0xeb,
+	0x0b, 0xce, 0x41, 0x7d, 0x88, 0xf3, 0xad, 0x72, 0xb7, 0x61, 0x36, 0x3b, 0xa4, 0x5d, 0xdd, 0x35,
+	0x6b, 0x87, 0x75, 0x93, 0x74, 0xba, 0x2d, 0x93, 0x1c, 0x36, 0xdb, 0x2d, 0xb3, 0xba, 0xf7, 0x62,
+	0xcf, 0xac, 0xa5, 0x14, 0x35, 0x8f, 0x1f, 0x2c, 0xb6, 0x35, 0x0e, 0x9a, 0x9d, 0xdd, 0x7a, 0x37,
+	0x85, 0x96, 0x93, 0x2a, 0xf5, 0x83, 0xea, 0x3e, 0xa9, 0x94, 0xdb, 0x66, 0x2d, 0xb5, 0x52, 0xd9,
+	0x3f, 0x99, 0x6a, 0xe8, 0x74, 0xaa, 0xa1, 0x1f, 0x53, 0x0d, 0x7d, 0x9c, 0x69, 0xca, 0xe9, 0x4c,
+	0x53, 0xbe, 0xcd, 0x34, 0xe5, 0x75, 0x69, 0x60, 0xcb, 0xe1, 0xa8, 0xa7, 0x33, 0xee, 0x1a, 0xf1,
+	0x08, 0x8b, 0x3c, 0x18, 0x5c, 0xd4, 0xc6, 0xf8, 0x99, 0x71, 0xfc, 0xeb, 0x0d, 0x87, 0x03, 0x17,
+	0xbd, 0xb5, 0xf9, 0x0b, 0x7b, 0xfa, 0x33, 0x00, 0x00, 0xff, 0xff, 0x07, 0x82, 0x0c, 0x50, 0xe3,
+	0x03, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -129,36 +254,40 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.AllowedMissed.Size()
-		i -= size
-		if _, err := m.AllowedMissed.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintParams(dAtA, i, uint64(size))
+	if m.PaymentScheduleType != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.PaymentScheduleType))
+		i--
+		dAtA[i] = 0x28
 	}
-	i--
-	dAtA[i] = 0x22
-	{
-		size := m.PerformanceThreshold.Size()
-		i -= size
-		if _, err := m.PerformanceThreshold.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if m.OracleVotesPerformanceRequirement != nil {
+		{
+			size, err := m.OracleVotesPerformanceRequirement.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintParams(dAtA, i, uint64(size))
 		}
-		i = encodeVarintParams(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x22
 	}
-	i--
-	dAtA[i] = 0x1a
-	{
-		size := m.OracleVoteWeight.Size()
-		i -= size
-		if _, err := m.OracleVoteWeight.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if m.BlocksPerformanceRequirement != nil {
+		{
+			size, err := m.BlocksPerformanceRequirement.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintParams(dAtA, i, uint64(size))
 		}
-		i = encodeVarintParams(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x1a
 	}
-	i--
-	dAtA[i] = 0x12
+	if m.BaseCompensation != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.BaseCompensation))
+		i--
+		dAtA[i] = 0x10
+	}
 	if len(m.DenomCompensation) > 0 {
 		i -= len(m.DenomCompensation)
 		copy(dAtA[i:], m.DenomCompensation)
@@ -166,6 +295,49 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *PerformanceRequirement) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *PerformanceRequirement) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PerformanceRequirement) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.RequiredAtLeast.Size()
+		i -= size
+		if _, err := m.RequiredAtLeast.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	{
+		size := m.AllowedToMiss.Size()
+		i -= size
+		if _, err := m.AllowedToMiss.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -190,11 +362,32 @@ func (m *Params) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovParams(uint64(l))
 	}
-	l = m.OracleVoteWeight.Size()
+	if m.BaseCompensation != 0 {
+		n += 1 + sovParams(uint64(m.BaseCompensation))
+	}
+	if m.BlocksPerformanceRequirement != nil {
+		l = m.BlocksPerformanceRequirement.Size()
+		n += 1 + l + sovParams(uint64(l))
+	}
+	if m.OracleVotesPerformanceRequirement != nil {
+		l = m.OracleVotesPerformanceRequirement.Size()
+		n += 1 + l + sovParams(uint64(l))
+	}
+	if m.PaymentScheduleType != 0 {
+		n += 1 + sovParams(uint64(m.PaymentScheduleType))
+	}
+	return n
+}
+
+func (m *PerformanceRequirement) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.AllowedToMiss.Size()
 	n += 1 + l + sovParams(uint64(l))
-	l = m.PerformanceThreshold.Size()
-	n += 1 + l + sovParams(uint64(l))
-	l = m.AllowedMissed.Size()
+	l = m.RequiredAtLeast.Size()
 	n += 1 + l + sovParams(uint64(l))
 	return n
 }
@@ -267,10 +460,10 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			m.DenomCompensation = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OracleVoteWeight", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseCompensation", wireType)
 			}
-			var stringLen uint64
+			m.BaseCompensation = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowParams
@@ -280,31 +473,16 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.BaseCompensation |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthParams
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthParams
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.OracleVoteWeight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PerformanceThreshold", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BlocksPerformanceRequirement", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowParams
@@ -314,29 +492,136 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthParams
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthParams
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.PerformanceThreshold.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if m.BlocksPerformanceRequirement == nil {
+				m.BlocksPerformanceRequirement = &PerformanceRequirement{}
+			}
+			if err := m.BlocksPerformanceRequirement.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AllowedMissed", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OracleVotesPerformanceRequirement", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.OracleVotesPerformanceRequirement == nil {
+				m.OracleVotesPerformanceRequirement = &PerformanceRequirement{}
+			}
+			if err := m.OracleVotesPerformanceRequirement.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PaymentScheduleType", wireType)
+			}
+			m.PaymentScheduleType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PaymentScheduleType |= PaymentScheduleType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *PerformanceRequirement) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: PerformanceRequirement: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: PerformanceRequirement: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AllowedToMiss", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -364,7 +649,41 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.AllowedMissed.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.AllowedToMiss.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RequiredAtLeast", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RequiredAtLeast.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

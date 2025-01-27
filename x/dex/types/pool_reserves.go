@@ -2,6 +2,8 @@ package types
 
 import (
 	"cosmossdk.io/math"
+
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 func (p PoolReserves) HasToken() bool {
@@ -12,10 +14,13 @@ func NewPoolReservesFromCounterpart(
 	counterpart *PoolReserves,
 ) *PoolReserves {
 	thisID := counterpart.Key.Counterpart()
+	// Pool tickIndex has already been validated so this will never throw
+	makerPrice := MustCalcPrice(thisID.TickIndexTakerToMaker)
 	return &PoolReserves{
 		Key:                       thisID,
 		ReservesMakerDenom:        math.ZeroInt(),
-		PriceTakerToMaker:         counterpart.PriceOppositeTakerToMaker,
+		MakerPrice:                makerPrice,
+		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
 		PriceOppositeTakerToMaker: counterpart.PriceTakerToMaker,
 	}
 }
@@ -23,7 +28,7 @@ func NewPoolReservesFromCounterpart(
 func NewPoolReserves(
 	poolReservesID *PoolReservesKey,
 ) (*PoolReserves, error) {
-	priceTakerToMaker, err := poolReservesID.PriceTakerToMaker()
+	makerPrice, err := poolReservesID.Price()
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +41,8 @@ func NewPoolReserves(
 	return &PoolReserves{
 		Key:                       poolReservesID,
 		ReservesMakerDenom:        math.ZeroInt(),
-		PriceTakerToMaker:         priceTakerToMaker,
+		MakerPrice:                makerPrice,
+		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
 		PriceOppositeTakerToMaker: priceOppositeTakerToMaker,
 	}, nil
 }

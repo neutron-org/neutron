@@ -20,7 +20,7 @@ func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {
 			panic("failed to create pool")
 		}
 		pool.Deposit(math.NewInt(10), math.NewInt(0), math.ZeroInt(), true)
-		k.SetPool(ctx, pool)
+		k.UpdatePool(ctx, pool)
 		items[i] = pool
 	}
 
@@ -33,7 +33,7 @@ func TestPoolInit(t *testing.T) {
 	pool, err := keeper.InitPool(ctx, defaultPairID, 0, 1)
 	require.NoError(t, err)
 	pool.Deposit(math.NewInt(1000), math.NewInt(1000), math.NewInt(0), true)
-	keeper.SetPool(ctx, pool)
+	keeper.UpdatePool(ctx, pool)
 
 	dbPool, found := keeper.GetPool(ctx, defaultPairID, 0, 1)
 
@@ -74,7 +74,7 @@ func TestGetPoolIDByParams(t *testing.T) {
 	id0, found := keeper.GetPoolIDByParams(
 		ctx,
 		items[0].LowerTick0.Key.TradePairId.MustPairID(),
-		items[0].CenterTickIndex(),
+		items[0].CenterTickIndexToken1(),
 		items[0].Fee(),
 	)
 	require.True(t, found)
@@ -83,7 +83,7 @@ func TestGetPoolIDByParams(t *testing.T) {
 	id1, found := keeper.GetPoolIDByParams(
 		ctx,
 		items[1].LowerTick0.Key.TradePairId.MustPairID(),
-		items[1].CenterTickIndex(),
+		items[1].CenterTickIndexToken1(),
 		items[1].Fee(),
 	)
 	require.True(t, found)
