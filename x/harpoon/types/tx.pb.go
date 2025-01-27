@@ -33,9 +33,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Defines the Msg/ManageHookSubscription request type.
 type MsgManageHookSubscription struct {
-	// The address of the governance account.
+	// Address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// Hook subscription to update.
+	// Hook subscription to be updated.
 	HookSubscription *HookSubscription `protobuf:"bytes,2,opt,name=hook_subscription,json=hookSubscription,proto3" json:"hook_subscription,omitempty"`
 }
 
@@ -123,11 +123,11 @@ func (m *MsgManageHookSubscriptionResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgManageHookSubscriptionResponse proto.InternalMessageInfo
 
-// Describes new hook subscriptions for contract_address
+// Specifies new hook subscriptions for the contract_address.
 type HookSubscription struct {
-	// Contract address for which subscriptions will be updated.
+	// Contract address to update subscriptions for.
 	ContractAddress string `protobuf:"bytes,2,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
-	// List of hooks to subscribe to. Existing hooks not specified here will be removed.
+	// List of hooks to subscribe to. Hooks not listed here will be removed.
 	Hooks []HookType `protobuf:"varint,3,rep,packed,name=hooks,proto3,enum=neutron.harpoon.HookType" json:"hooks,omitempty"`
 }
 
@@ -228,9 +228,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// Updates hook subscriptions for a given contract address.
-	// Pass empty array to `hook_subscription.hooks` to remove subscription from this contract_address.
-	// Only executable by governance.
+	// Updates hook subscriptions for a specific contract address.
+	// To remove a subscription, pass an empty array to `hook_subscription.hooks`.
+	// Can only be executed by governance.
 	ManageHookSubscription(ctx context.Context, in *MsgManageHookSubscription, opts ...grpc.CallOption) (*MsgManageHookSubscriptionResponse, error)
 }
 
@@ -253,9 +253,9 @@ func (c *msgClient) ManageHookSubscription(ctx context.Context, in *MsgManageHoo
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// Updates hook subscriptions for a given contract address.
-	// Pass empty array to `hook_subscription.hooks` to remove subscription from this contract_address.
-	// Only executable by governance.
+	// Updates hook subscriptions for a specific contract address.
+	// To remove a subscription, pass an empty array to `hook_subscription.hooks`.
+	// Can only be executed by governance.
 	ManageHookSubscription(context.Context, *MsgManageHookSubscription) (*MsgManageHookSubscriptionResponse, error)
 }
 

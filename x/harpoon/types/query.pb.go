@@ -33,7 +33,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Request type for the Query/SubscribedContracts RPC method.
 type QuerySubscribedContractsRequest struct {
-	// Response will only contain contract addresses for this hook type.
+	// The response will include only contract addresses for this hook type.
 	HookType string `protobuf:"bytes,1,opt,name=hookType,proto3" json:"hookType,omitempty"`
 }
 
@@ -79,7 +79,7 @@ func (m *QuerySubscribedContractsRequest) GetHookType() string {
 
 // Response type for the Query/SubscribedContracts RPC method.
 type QuerySubscribedContractsResponse struct {
-	// List of contract addresses that are subscribed to a given hook.
+	// List of contract addresses subscribed to a specific hook.
 	ContractAddresses []string `protobuf:"bytes,1,rep,name=contract_addresses,json=contractAddresses,proto3" json:"contract_addresses,omitempty"`
 }
 
@@ -168,7 +168,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Fetches subscribed contracts to a given hook type.
+	// Retrieves contracts subscribed to a specific hook type.
 	SubscribedContracts(ctx context.Context, in *QuerySubscribedContractsRequest, opts ...grpc.CallOption) (*QuerySubscribedContractsResponse, error)
 }
 
@@ -191,7 +191,7 @@ func (c *queryClient) SubscribedContracts(ctx context.Context, in *QuerySubscrib
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Fetches subscribed contracts to a given hook type.
+	// Retrieves contracts subscribed to a specific hook type.
 	SubscribedContracts(context.Context, *QuerySubscribedContractsRequest) (*QuerySubscribedContractsResponse, error)
 }
 

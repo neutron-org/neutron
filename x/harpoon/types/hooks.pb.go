@@ -26,27 +26,27 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type HookType int32
 
 const (
-	// Called after validator is created
+	// Triggered after validator is created
 	HookType_AfterValidatorCreated HookType = 0
-	// Called before validator is modified
+	// Triggered before validator is modified
 	HookType_BeforeValidatorModified HookType = 1
-	// Called after validator is removed
+	// Triggered after validator is removed
 	HookType_AfterValidatorRemoved HookType = 2
-	// Called after validator is bonded
+	// Triggered after validator is bonded
 	HookType_AfterValidatorBonded HookType = 3
-	// Called after validator begins unbonding
+	// Triggered after validator begins unbonding
 	HookType_AfterValidatorBeginUnbonding HookType = 4
-	// Called before delegation is created
+	// Triggered before delegation is created
 	HookType_BeforeDelegationCreated HookType = 5
-	// Called before delegation's shares are modified
+	// Triggered before delegation's shares are modified
 	HookType_BeforeDelegationSharesModified HookType = 6
-	// Called before delegation is removed
+	// Triggered before delegation is removed
 	HookType_BeforeDelegationRemoved HookType = 7
-	// Called after delegation is modified
+	// Triggered after delegation is modified
 	HookType_AfterDelegationModified HookType = 8
-	// Called before validator is slashed
+	// Triggered before validator is slashed
 	HookType_BeforeValidatorSlashed HookType = 9
-	// Called after unbonding is initiated
+	// Triggered after unbonding is initiated
 	HookType_AfterUnbondingInitiated HookType = 10
 )
 
@@ -86,11 +86,11 @@ func (HookType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_a137ba09c56f7009, []int{0}
 }
 
-// Defines how subscribed contract_addresses are stored in KV store under each hook kind.
+// Specifies how subscribed contract_addresses are stored in the KV store for each hook type.
 type HookSubscriptions struct {
-	// Hook type that's being subscribed to.
+	// The hook type being subscribed to.
 	HookType HookType `protobuf:"varint,1,opt,name=hookType,proto3,enum=neutron.harpoon.HookType" json:"hookType,omitempty"`
-	// Contract addresses that are subscribed to the hook kind.
+	// Contract addresses subscribed to this hook type.
 	ContractAddresses []string `protobuf:"bytes,2,rep,name=contract_addresses,json=contractAddresses,proto3" json:"contract_addresses,omitempty"`
 }
 

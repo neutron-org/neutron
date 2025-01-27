@@ -3,36 +3,36 @@ package neutron.harpoon;
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 
-// Defines how subscribed contract_addresses are stored in KV store under each hook kind.
+// Specifies how subscribed contract_addresses are stored in the KV store for each hook type.
 message HookSubscriptions {
-  // Hook type that's being subscribed to.
+  // The hook type being subscribed to.
   HookType hookType = 1;
-  // Contract addresses that are subscribed to the hook kind.
+  // Contract addresses subscribed to this hook type.
   repeated string contract_addresses = 2;
 }
 
 // Hook types that can be subscribed to.
 enum HookType {
-  // Called after validator is created
+  // Triggered after validator is created
   AfterValidatorCreated = 0;
-  // Called before validator is modified
+  // Triggered before validator is modified
   BeforeValidatorModified = 1;
-  // Called after validator is removed
+  // Triggered after validator is removed
   AfterValidatorRemoved = 2;
-  // Called after validator is bonded
+  // Triggered after validator is bonded
   AfterValidatorBonded = 3;
-  // Called after validator begins unbonding
+  // Triggered after validator begins unbonding
   AfterValidatorBeginUnbonding = 4;
-  // Called before delegation is created
+  // Triggered before delegation is created
   BeforeDelegationCreated = 5;
-  // Called before delegation's shares are modified
+  // Triggered before delegation's shares are modified
   BeforeDelegationSharesModified = 6;
-  // Called before delegation is removed
+  // Triggered before delegation is removed
   BeforeDelegationRemoved = 7;
-  // Called after delegation is modified
+  // Triggered after delegation is modified
   AfterDelegationModified = 8;
-  // Called before validator is slashed
+  // Triggered before validator is slashed
   BeforeValidatorSlashed = 9;
-  // Called after unbonding is initiated
+  // Triggered after unbonding is initiated
   AfterUnbondingInitiated = 10;
 }
