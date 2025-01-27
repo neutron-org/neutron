@@ -89,14 +89,15 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.Hook
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
 	allHooks := maps.Keys(types.HookType_name)
+	slices.Sort(allHooks)
 
-	// First we understand which hooks should be added and which should be removed
-	hooksToAdd, hooksToRemove := splitAddedAndRemovedHooks(allHooks, update.Hooks)
+	// First we understand which hooks should be removed
+	hooksToRemove := findHooksToRemove(allHooks, update.Hooks)
 
-	// As the contract addresses are stored grouped by hooks, we need to iterate each hook
-	// to understand which addresses to remove, which to add, and which are already there.
+	// Since contract addresses are stored grouped by hooks, we need to iterate through each hook
+	// to determine which addresses to add, remove, or retain.
 
-	for _, item := range hooksToAdd {
+	for _, item := range update.Hooks {
 		key := types.GetHookSubscriptionKey(item)
 		subscriptions := types.HookSubscriptions{
 			HookType: types.HookType(item),
@@ -105,7 +106,7 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.Hook
 			k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
 		}
 
-		// add contract address if it's not already in the list
+		// Add contract address if it's not already in the list
 		if !slices.Contains(subscriptions.ContractAddresses, update.ContractAddress) {
 			subscriptions.ContractAddresses = append(subscriptions.ContractAddresses, update.ContractAddress)
 		}
@@ -122,7 +123,7 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.Hook
 			}
 			k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
 
-			// remove contract address if it's present in the list
+			// Remove contract address if it's present in the list
 			newContractAddresses := slices.DeleteFunc(subscriptions.ContractAddresses, func(addr string) bool {
 				return addr == update.ContractAddress
 			})
@@ -210,10 +211,10 @@ func (k Keeper) doCallSudoForSubscriptionType(ctx context.Context, hookType type
 	return nil
 }
 
-// splitAddedAndRemovedHooks separates hooks into those to be added and those to be removed.
-func splitAddedAndRemovedHooks(allHooks []int32, hooksToAdd []types.HookType) ([]types.HookType, []types.HookType) {
-	// Calculate difference between allHooks and hooksToAdd. It will be hooksToRemove.
-	var hooksToRemove []types.HookType
+// findHooksToRemove finds what hooks are to be removed.
+func findHooksToRemove(allHooks []int32, hooksToAdd []types.HookType) []types.HookType {
+	var res []types.HookType
+	// Calculate difference between allHooks and hooksToAdd.
 	itemMap := make(map[int32]bool)
 
 	// Add all items from hooksToAdd to the map
@@ -224,9 +225,9 @@ func splitAddedAndRemovedHooks(allHooks []int32, hooksToAdd []types.HookType) ([
 	// Check each item in allHooks and add to hooksToRemove if not in the map
 	for _, item := range allHooks {
 		if !itemMap[item] {
-			hooksToRemove = append(hooksToRemove, types.HookType(item))
+			res = append(res, types.HookType(item))
 		}
 	}
 
-	return hooksToAdd, hooksToRemove
+	return res
 }
