@@ -1,12 +1,15 @@
 package keeper
 
 import (
+	"fmt"
+
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+
+	"github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 // TODO: We currently store prices under a single store prefix. We need to handle cases where DenomCompensation is changed.
@@ -164,7 +167,7 @@ func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context) error {
 	return nil
 }
 
-//func getFirstIterValue[T proto.Marshaler](iter dbm.Iterator) ([]byte, T, error) {
+// func getFirstIterValue[T proto.Marshaler](iter dbm.Iterator) ([]byte, T, error) {
 //	var value T
 //	for ; iter.Valid(); iter.Next() {
 //		twap := sdk.DecCoin{}

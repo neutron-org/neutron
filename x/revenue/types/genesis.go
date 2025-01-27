@@ -1,12 +1,23 @@
 package types
 
+import (
+	fmt "fmt"
+
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+)
+
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
+	params := DefaultParams()
+	paymentSchedule, err := codectypes.NewAnyWithValue(PaymentScheduleByType(params.PaymentScheduleType))
+	if err != nil {
+		panic(fmt.Sprintf("failed to create Any payment schedule for the default payment schedule type %s: %v", params.PaymentScheduleType, err))
+	}
+
 	return &GenesisState{
-		Params: DefaultParams(),
+		Params: params,
 		State: State{
-			CurrentMonth: 0,
-			BlockCounter: 0,
+			PaymentSchedule: paymentSchedule,
 		},
 		Validators: nil,
 	}
@@ -15,17 +26,17 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
-	// Check for duplicated index in schedule
-	//scheduleIndexMap := make(map[string]struct{})
+	if err := gs.Params.Validate(); err != nil {
+		return fmt.Errorf("invalid params: %w", err)
+	}
 
-	//for _, elem := range gs.ScheduleList {
-	//	index := string(GetScheduleKey(elem.Name))
-	//	if _, ok := scheduleIndexMap[index]; ok {
-	//		return fmt.Errorf("duplicated index for schedule")
-	//	}
-	//	scheduleIndexMap[index] = struct{}{}
-	//}
-	//
-	//return gs.Params.Validate()
+	ps, ok := gs.State.PaymentSchedule.GetCachedValue().(PaymentSchedule)
+	if !ok {
+		return fmt.Errorf("expected State.PaymentSchedule to be of type PaymentSchedule: %T", gs.State.PaymentSchedule.GetCachedValue())
+	}
+	if !PaymentScheduleMatchesType(ps, gs.Params.PaymentScheduleType) {
+		return fmt.Errorf("payment schedule type %s does not match payment schedule of type %T in genesis state", gs.Params.PaymentScheduleType, ps)
+	}
+
 	return nil
 }

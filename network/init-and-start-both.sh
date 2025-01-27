@@ -17,7 +17,6 @@ export STAKEDENOM=untrn
 "$script_full_path"/init-neutrond.sh
 "$script_full_path"/start.sh
 
-exit
 export BINARY=gaiad
 export CHAINID=test-2
 export P2PPORT=16656

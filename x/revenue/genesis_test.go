@@ -1,6 +1,6 @@
 package revenue_test
 
-//func TestGenesis(t *testing.T) {
+// func TestGenesis(t *testing.T) {
 //	k, ctx := keeper.CronKeeper(t, nil, nil)
 //
 //	genesisState := types.GenesisState{

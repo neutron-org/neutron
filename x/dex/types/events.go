@@ -7,6 +7,8 @@ import (
 	"cosmossdk.io/math"
 	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 // Shared Attributes
@@ -53,6 +55,7 @@ const (
 	AttributeTakerDenom           = "TakerDenom"
 	AttributeSharesOwned          = "SharesOwned"
 	AttributeSharesWithdrawn      = "SharesWithdrawn"
+	AttributeMinAvgSellPrice      = "MinAvgSellPrice"
 )
 
 // Event Keys
@@ -168,6 +171,7 @@ func CreatePlaceLimitOrderEvent(
 	amountIn math.Int,
 	limitTick int64,
 	orderType string,
+	minAvgSellPrice math_utils.PrecDec,
 	shares math.Int,
 	trancheKey string,
 	swapAmountIn math.Int,
@@ -189,6 +193,7 @@ func CreatePlaceLimitOrderEvent(
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
 		sdk.NewAttribute(AttributeSwapAmountIn, swapAmountIn.String()),
 		sdk.NewAttribute(AttributeSwapAmountOut, swapAmountOut.String()),
+		sdk.NewAttribute(AttributeMinAvgSellPrice, minAvgSellPrice.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
@@ -233,6 +238,12 @@ func CancelLimitOrderEvent(
 	amountOutMaker math.Int,
 	trancheKey string,
 ) sdk.Event {
+	pairID := PairID{Token0: token0, Token1: token1}
+	takerDenom := pairID.MustOppositeToken(makerDenom)
+	coinsOut := sdk.NewCoins(
+		sdk.NewCoin(makerDenom, amountOutMaker),
+		sdk.NewCoin(takerDenom, amountOutTaker),
+	)
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, CancelLimitOrderEventKey),
@@ -242,6 +253,8 @@ func CancelLimitOrderEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
+		// DEPRECATED: `AmountOut` will be removed in the next release
+		sdk.NewAttribute(AttributeAmountOut, coinsOut.String()),
 		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
 		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),

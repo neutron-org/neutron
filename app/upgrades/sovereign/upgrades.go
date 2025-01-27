@@ -1,12 +1,15 @@
-package v400
+package v600
 
 import (
 	"context"
-	"cosmossdk.io/math"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
+	"time"
+
+	"cosmossdk.io/math"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -21,9 +24,8 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+
 	"github.com/neutron-org/neutron/v5/app/upgrades"
-	"os"
-	"time"
 )
 
 // "random" addresses
@@ -117,7 +119,7 @@ type PK struct {
 	} `json:"priv_key"`
 }
 
-func NewSovereignVal(ctx context.Context, id int, bk bankkeeper.Keeper, ak authkeeper.AccountKeeperI) types.MsgCreateValidator {
+func NewSovereignVal(ctx context.Context, id int, bk bankkeeper.Keeper, _ authkeeper.AccountKeeperI) types.MsgCreateValidator {
 	pkpath := fmt.Sprintf("/home/swelf/src/lido/neutron/data/test-1/node-%d/config/priv_validator_key.json", id)
 	pkdata, err := os.ReadFile(pkpath)
 	if err != nil {
@@ -290,8 +292,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		}
 	}
 
-	sk.SetLastTotalPower(ctx, math.NewInt(1))
-	return nil
+	return sk.SetLastTotalPower(ctx, math.NewInt(1))
 }
 
 // copied from staking module https://github.com/cosmos/cosmos-sdk/blob/v0.50.6/x/staking/keeper/val_state_change.go#L336

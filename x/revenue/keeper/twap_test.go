@@ -1,14 +1,16 @@
 package keeper_test
 
 import (
+	"testing"
+	"time"
+
 	"cosmossdk.io/math"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	"github.com/neutron-org/neutron/v5/x/revenue/types"
-	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestCumulative(t *testing.T) {

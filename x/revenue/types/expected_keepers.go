@@ -2,8 +2,9 @@ package types
 
 import (
 	"context"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 	"math/big"
+
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"

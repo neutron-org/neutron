@@ -117,7 +117,9 @@ func (k Keeper) ExecuteWithdraw(
 
 		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
-		k.SetPool(ctx, pool)
+
+		// Save both sides of the pool. If one or both sides are empty they will be deleted.
+		k.UpdatePool(ctx, pool)
 
 		totalReserve0ToRemove = totalReserve0ToRemove.Add(outAmount0)
 		totalReserve1ToRemove = totalReserve1ToRemove.Add(outAmount1)

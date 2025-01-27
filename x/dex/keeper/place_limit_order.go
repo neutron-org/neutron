@@ -21,6 +21,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	orderType types.LimitOrderType,
 	goodTil *time.Time,
 	maxAmountOut *math.Int,
+	minAvgSellPriceP *math_utils.PrecDec,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
 ) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin sdk.Coin, err error) {
@@ -30,7 +31,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	if err != nil {
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
-	trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, err := k.ExecutePlaceLimitOrder(
+	trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, minAvgSellPrice, err := k.ExecutePlaceLimitOrder(
 		ctx,
 		takerTradePairID,
 		amountIn,
@@ -38,6 +39,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		orderType,
 		goodTil,
 		maxAmountOut,
+		minAvgSellPriceP,
 		receiverAddr,
 	)
 	if err != nil {
@@ -82,6 +84,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		totalIn,
 		tickIndexInToOut,
 		orderType.String(),
+		minAvgSellPrice,
 		sharesIssued,
 		trancheKey,
 		swapInCoin.Amount,
@@ -102,54 +105,68 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	orderType types.LimitOrderType,
 	goodTil *time.Time,
 	maxAmountOut *math.Int,
+	minAvgSellPriceP *math_utils.PrecDec,
 	receiverAddr sdk.AccAddress,
-) (trancheKey string, totalIn math.Int, swapInCoin, swapOutCoin sdk.Coin, sharesIssued math.Int, err error) {
+) (
+	trancheKey string,
+	totalIn math.Int,
+	swapInCoin, swapOutCoin sdk.Coin,
+	sharesIssued math.Int,
+	minAvgSellPrice math_utils.PrecDec,
+	err error,
+) {
 	amountLeft := amountIn
 
-	var limitPrice math_utils.PrecDec
-	limitPrice, err = types.CalcPrice(tickIndexInToOut)
+	limitBuyPrice, err := types.CalcPrice(tickIndexInToOut)
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), math_utils.ZeroPrecDec(), err
+	}
+
+	// Use limitPrice for minAvgSellPrice if it has not been specified
+	minAvgSellPrice = math_utils.OnePrecDec().Quo(limitBuyPrice)
+
+	if minAvgSellPriceP != nil {
+		minAvgSellPrice = *minAvgSellPriceP
 	}
 
 	// Ensure that after rounding user will get at least 1 token out.
-	err = types.ValidateFairOutput(amountIn, limitPrice)
+	err = types.ValidateFairOutput(amountIn, limitBuyPrice)
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 	}
 
 	var orderFilled bool
 	if orderType.IsTakerOnly() {
-		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, orderType)
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
 	} else {
-		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice)
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitBuyPrice, minAvgSellPrice)
 	}
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 	}
 
 	totalIn = swapInCoin.Amount
 	amountLeft = amountLeft.Sub(swapInCoin.Amount)
 
 	makerTradePairID := takerTradePairID.Reversed()
-	makerTickIndexTakerToMaker := tickIndexInToOut * -1
+	tickIndexTakerToMaker := tickIndexInToOut * -1
 	var placeTranche *types.LimitOrderTranche
 	placeTranche, err = k.GetOrInitPlaceTranche(
 		ctx,
 		makerTradePairID,
-		makerTickIndexTakerToMaker,
+		tickIndexTakerToMaker,
 		goodTil,
 		orderType,
 	)
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 	}
 
 	trancheKey = placeTranche.Key.TrancheKey
 	trancheUser := k.GetOrInitLimitOrderTrancheUser(
 		ctx,
 		makerTradePairID,
-		makerTickIndexTakerToMaker,
+		tickIndexTakerToMaker,
 		trancheKey,
 		orderType,
 		receiverAddr.String(),
@@ -163,9 +180,9 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		// NOTE: This does mean that a successful taker leg of the trade will be thrown away since the entire tx will fail.
 		// In most circumstances this seems preferable to executing the taker leg and exiting early before placing a maker
 		// order with the remaining liquidity.
-		err = types.ValidateFairOutput(amountLeft, limitPrice)
+		err = types.ValidateFairOutput(amountLeft, limitBuyPrice)
 		if err != nil {
-			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 		}
 		placeTranche.PlaceMakerLimitOrder(amountLeft)
 		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountLeft)
@@ -176,21 +193,25 @@ func (k Keeper) ExecutePlaceLimitOrder(
 			ctx.GasMeter().ConsumeGas(types.ExpiringLimitOrderGas, "Expiring LimitOrder Fee")
 		}
 
-		k.SaveTranche(ctx, placeTranche)
+		// This update will ALWAYS save the tranche as active.
+		// But we use the general updateTranche function so the correct events are emitted
+		k.UpdateTranche(ctx, placeTranche)
 
 		totalIn = totalIn.Add(amountLeft)
 		sharesIssued = amountLeft
 	}
 
-	k.SaveTrancheUser(ctx, trancheUser)
+	// This update will ALWAYS save the trancheUser as active.
+	// But we use the general updateTranche function so the correct events are emitted
+	k.UpdateTrancheUser(ctx, trancheUser)
 
 	if orderType.IsJIT() {
 		err = k.AssertCanPlaceJIT(ctx)
 		if err != nil {
-			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 		}
 		k.IncrementJITsInBlock(ctx)
 	}
 
-	return trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, nil
+	return trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, minAvgSellPrice, nil
 }

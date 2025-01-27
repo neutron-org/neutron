@@ -44,3 +44,16 @@ func (k Keeper) BeforeSendHookAddress(ctx context.Context, req *types.QueryBefor
 
 	return &types.QueryBeforeSendHookAddressResponse{ContractAddr: contractAddr}, nil
 }
+
+func (k Keeper) FullDenom(_ context.Context, req *types.QueryFullDenomRequest) (*types.QueryFullDenomResponse, error) {
+	if _, err := sdk.AccAddressFromBech32(req.Creator); err != nil {
+		return nil, err
+	}
+
+	fullDenom, err := types.GetTokenDenom(req.Creator, req.Subdenom)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryFullDenomResponse{FullDenom: fullDenom}, nil
+}

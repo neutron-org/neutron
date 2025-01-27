@@ -46,7 +46,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapInsufficientLiquiditySingleRoute(
 	// THEN estimate multihopswap fails
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
 	s.aliceEstimatesMultiHopSwapFails(
-		types.ErrLimitPriceNotSatisfied,
+		types.ErrNoLiquidity,
 		route,
 		100,
 		math_utils.MustNewPrecDecFromStr("0.9"),
