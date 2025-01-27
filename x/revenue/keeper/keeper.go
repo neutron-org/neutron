@@ -22,6 +22,7 @@ type Keeper struct {
 	voteAggregator revenuetypes.VoteAggregator
 	stakingKeeper  revenuetypes.StakingKeeper
 	bankKeeper     revenuetypes.BankKeeper
+	authority      string
 }
 
 func NewKeeper(
@@ -30,6 +31,7 @@ func NewKeeper(
 	voteAggregator revenuetypes.VoteAggregator,
 	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
+	authority string,
 ) *Keeper {
 	// ensure bonded and not bonded module accounts are set
 	// if addr := ak.GetModuleAddress(types.BondedPoolName); addr == nil {
@@ -50,7 +52,12 @@ func NewKeeper(
 		voteAggregator: voteAggregator,
 		stakingKeeper:  stakingKeeper,
 		bankKeeper:     bankKeeper,
+		authority:      authority,
 	}
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {

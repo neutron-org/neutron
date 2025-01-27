@@ -25,5 +25,10 @@ type StakingKeeper interface {
 // BankKeeper defines the expected interface needed to send coins from one account to another.
 type BankKeeper interface {
 	// SendCoinsFromModuleToAccount transfers coins from a ModuleAccount to an AccAddress.
+	// It will panic if the module account does not exist. An error is returned if
+	// the recipient address is black-listed or if sending the tokens fails.
 	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdktypes.AccAddress, amt sdktypes.Coins) error
+	// SendCoinsFromAccountToModule transfers coins from an AccAddress to a ModuleAccount.
+	// It will panic if the module account does not exist.
+	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdktypes.AccAddress, recipientModule string, amt sdktypes.Coins) error
 }

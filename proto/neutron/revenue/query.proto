@@ -65,20 +65,12 @@ message QueryValidatorStatsResponse {
 }
 
 // Request type for the Query/ValidatorsStats RPC method.
-message QueryValidatorsStatsRequest {
-  // Pagination parameters for the request. Use values from previous response in the next request
-  // in consecutive requests with paginated responses.
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
+message QueryValidatorsStatsRequest {}
 
 // Response type for the Query/ValidatorsStats RPC method.
 message QueryValidatorsStatsResponse {
   // Contains the validators' information.
   repeated ValidatorStats stats = 1 [(gogoproto.nullable) = false];
-
-  // Current page information. Use values from previous response in the next request in consecutive
-  // requests with paginated responses.
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // Contains validator's info and their performance rating.

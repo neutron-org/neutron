@@ -3,6 +3,10 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
+	"cosmossdk.io/math"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
@@ -18,12 +22,50 @@ func NewMsgServerImpl(keeper *Keeper) revenuetypes.MsgServer {
 
 var _ revenuetypes.MsgServer = msgServer{}
 
-func (s msgServer) UpdateParams(context context.Context, msg *revenuetypes.MsgUpdateParams) (*revenuetypes.MsgUpdateParamsResponse, error) {
-	// TODO implement me
-	panic("implement me")
+func (s msgServer) UpdateParams(goCtx context.Context, msg *revenuetypes.MsgUpdateParams) (*revenuetypes.MsgUpdateParamsResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "invalid MsgUpdateParams")
+	}
+
+	authority := s.keeper.GetAuthority()
+	if authority != msg.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, msg.Authority)
+	}
+
+	ctx := sdktypes.UnwrapSDKContext(goCtx)
+	if err := s.keeper.SetParams(ctx, msg.Params); err != nil {
+		return nil, err
+	}
+
+	return &revenuetypes.MsgUpdateParamsResponse{}, nil
 }
 
-func (s msgServer) FundTreasury(context context.Context, msg *revenuetypes.MsgFundTreasury) (*revenuetypes.MsgFundTreasuryResponse, error) {
-	// TODO implement me
-	panic("implement me")
+func (s msgServer) FundTreasury(goCtx context.Context, msg *revenuetypes.MsgFundTreasury) (*revenuetypes.MsgFundTreasuryResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "invalid MsgFundTreasury")
+	}
+
+	authority := s.keeper.GetAuthority()
+	if authority != msg.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, msg.Authority)
+	}
+
+	authorityAddr, err := sdktypes.AccAddressFromBech32(msg.Authority)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid bech32 authority address %s", msg.Authority)
+	}
+
+	ctx := sdktypes.UnwrapSDKContext(goCtx)
+	if err := s.keeper.bankKeeper.SendCoinsFromAccountToModule(
+		ctx,
+		authorityAddr,
+		revenuetypes.RevenueTreasuryPoolName,
+		sdktypes.NewCoins(sdktypes.NewCoin(
+			msg.Amount[0].Denom, math.Int(msg.Amount[0].Amount),
+		)),
+	); err != nil {
+		return nil, err
+	}
+
+	return &revenuetypes.MsgFundTreasuryResponse{}, nil
 }

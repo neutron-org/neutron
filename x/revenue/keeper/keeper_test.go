@@ -34,7 +34,7 @@ func TestParams(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 	// assert default params
 	params, err := keeper.GetParams(ctx)
@@ -61,7 +61,7 @@ func TestValidatorInfo(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1
@@ -92,7 +92,7 @@ func TestProcessRevenue(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1000
@@ -128,7 +128,7 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 	// set val1 info as if they haven't committed any blocks and prices
 	val1Info := val1Info()
@@ -151,7 +151,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 	// define test specific performance requirements
 	params := revenuetypes.DefaultParams()
@@ -220,7 +220,7 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 	// known validator (set in keeper below) with 100% performance
 	val1Info := val1Info()
@@ -278,7 +278,7 @@ func TestEndBlockEmptyPaymentSchedule(t *testing.T) {
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 	g := revenuetypes.DefaultGenesis()
 	require.Nil(t, keeper.SetParams(ctx, g.Params))
@@ -325,7 +325,7 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 		voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
@@ -377,7 +377,7 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 		voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
@@ -449,7 +449,7 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 		voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
@@ -501,7 +501,7 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 		voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
+		keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, "")
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()

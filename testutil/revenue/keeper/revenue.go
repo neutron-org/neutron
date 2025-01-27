@@ -19,6 +19,7 @@ func RevenueKeeper(
 	voteAggregator revenuetypes.VoteAggregator,
 	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
+	authority string,
 ) (*keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(revenuetypes.StoreKey)
 	ss := runtime.NewKVStoreService(storeKey)
@@ -34,6 +35,7 @@ func RevenueKeeper(
 		voteAggregator,
 		stakingKeeper,
 		bankKeeper,
+		authority,
 	)
 
 	// Initialize params

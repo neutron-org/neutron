@@ -926,6 +926,7 @@ func New(
 		voteAggregator,
 		app.StakingKeeper,
 		&app.BankKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	/****  Module Options ****/
