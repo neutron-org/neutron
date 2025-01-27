@@ -89,6 +89,7 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.Hook
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
 	allHooks := maps.Keys(types.HookType_name)
+	// Sort to avoid any potential non-determinism of `maps.Keys`
 	slices.Sort(allHooks)
 
 	// First we understand which hooks should be removed
