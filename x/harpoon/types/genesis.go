@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -23,7 +24,6 @@ func (gs GenesisState) Validate() error {
 			if _, err := sdk.AccAddressFromBech32(addr); err != nil {
 				return fmt.Errorf("invalid contract_address=%s in genesis state: %v", addr, err)
 			}
-
 		}
 	}
 
