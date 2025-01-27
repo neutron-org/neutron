@@ -570,7 +570,6 @@ func (s *DexTestSuite) TestSwapExhaustsLOAndLP() {
 	s.False(found)
 	_, found = lpTickUpdateOppositeTick.GetAttribute(types.AttributeSwapAmountOut)
 	s.False(found)
-
 }
 
 // Test helpers ///////////////////////////////////////////////////////////////
