@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	"golang.org/x/exp/slices"
 
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"golang.org/x/exp/maps"
@@ -32,7 +32,6 @@ type (
 		storeService corestoretypes.KVStoreService
 		logger       log.Logger
 
-		// the address capable of executing a MsgUpdateParams message
 		authority string
 	}
 )
@@ -119,9 +118,7 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.Hook
 	for _, item := range hooksToRemove {
 		key := types.GetHookSubscriptionKey(item)
 		if store.Has(key) {
-			subscriptions := types.HookSubscriptions{
-				HookType: item,
-			}
+			subscriptions := types.HookSubscriptions{}
 			k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
 
 			// Remove contract address if it's present in the list

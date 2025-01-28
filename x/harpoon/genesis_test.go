@@ -3,11 +3,12 @@ package harpoon_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v5/x/harpoon"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
 	keepertest "github.com/neutron-org/neutron/v5/testutil/harpoon/keeper"
-	harpoon "github.com/neutron-org/neutron/v5/x/harpoon/module"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
@@ -36,11 +37,11 @@ func TestGenesis(t *testing.T) {
 	genesisState2 := types.GenesisState{
 		HookSubscriptions: []types.HookSubscriptions{
 			{
-				HookType:          types.HookType_AfterValidatorBonded,
+				HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
 				ContractAddresses: []string{ContractAddress1},
 			},
 			{
-				HookType:          types.HookType_BeforeDelegationRemoved,
+				HookType:          types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED,
 				ContractAddresses: []string{ContractAddress1, ContractAddress2},
 			},
 		},

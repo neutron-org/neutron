@@ -13,8 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	// this line is used by starport scaffolding # 1
-
 	"github.com/neutron-org/neutron/v5/x/harpoon/keeper"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )

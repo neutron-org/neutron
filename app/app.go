@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/neutron-org/neutron/v5/x/harpoon"
+
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/interchain-security/v5/testutil/integration"
@@ -228,7 +230,6 @@ import (
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	harpoonkeeper "github.com/neutron-org/neutron/v5/x/harpoon/keeper"
-	harpoon "github.com/neutron-org/neutron/v5/x/harpoon/module"
 	harpoontypes "github.com/neutron-org/neutron/v5/x/harpoon/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"

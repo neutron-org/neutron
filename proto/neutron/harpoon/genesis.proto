@@ -10,5 +10,5 @@ option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 // Harpoon module genesis state.
 message GenesisState {
   // List of hooks
-  repeated HookSubscriptions hookSubscriptions = 1 [(gogoproto.nullable) = false];
+  repeated HookSubscriptions hook_subscriptions = 1 [(gogoproto.nullable) = false];
 }

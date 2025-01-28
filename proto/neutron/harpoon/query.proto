@@ -19,7 +19,7 @@ service Query {
 // Request type for the Query/SubscribedContracts RPC method.
 message QuerySubscribedContractsRequest {
   // The response will include only contract addresses for this hook type.
-  string hookType = 1;
+  string hook_type = 1;
 }
 
 // Response type for the Query/SubscribedContracts RPC method.

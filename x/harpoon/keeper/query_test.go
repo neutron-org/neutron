@@ -13,18 +13,18 @@ func TestSubscribedContractsQuery(t *testing.T) {
 	keeper, ctx := keepertest.HarpoonKeeper(t, nil, nil)
 
 	// before set return empty
-	response, err := keeper.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HookType_AfterValidatorCreated.String()})
+	response, err := keeper.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HOOK_TYPE_AFTER_VALIDATOR_CREATED.String()})
 	require.NoError(t, err)
 	require.Equal(t, &types.QuerySubscribedContractsResponse{ContractAddresses: []string{}}, response)
 
 	// add hook
 	keeper.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress1,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED},
 	})
 
 	// after adding returns hook
-	response, err = keeper.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HookType_AfterValidatorCreated.String()})
+	response, err = keeper.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HOOK_TYPE_AFTER_VALIDATOR_CREATED.String()})
 	require.NoError(t, err)
 	require.Equal(t, &types.QuerySubscribedContractsResponse{ContractAddresses: []string{ContractAddress1}}, response)
 }

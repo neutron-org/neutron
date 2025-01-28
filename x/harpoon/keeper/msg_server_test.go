@@ -69,7 +69,7 @@ func TestManageHookSubscription(t *testing.T) {
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
-					Hooks:           []types.HookType{types.HookType_AfterValidatorBonded, types.HookType_AfterDelegationModified, types.HookType_AfterValidatorBonded},
+					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED},
 				},
 			},
 			"subscription hooks are not unique",
@@ -102,7 +102,7 @@ func TestManageHookSubscription(t *testing.T) {
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
-					Hooks:           []types.HookType{types.HookType_AfterValidatorCreated, types.HookType_AfterDelegationModified},
+					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED},
 				},
 			},
 			"",

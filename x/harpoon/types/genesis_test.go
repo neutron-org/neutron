@@ -26,7 +26,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: &types.GenesisState{
 				HookSubscriptions: []types.HookSubscriptions{
 					{
-						HookType:          types.HookType_AfterValidatorCreated,
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
 						ContractAddresses: []string{ContractAddress1},
 					},
 				},
@@ -38,7 +38,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: &types.GenesisState{
 				HookSubscriptions: []types.HookSubscriptions{
 					{
-						HookType:          types.HookType_AfterValidatorCreated,
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
 						ContractAddresses: []string{""},
 					},
 				},
@@ -50,7 +50,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: &types.GenesisState{
 				HookSubscriptions: []types.HookSubscriptions{
 					{
-						HookType:          types.HookType_AfterValidatorCreated,
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
 						ContractAddresses: []string{"whatever"},
 					},
 				},

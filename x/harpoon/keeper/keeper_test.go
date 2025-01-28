@@ -33,53 +33,53 @@ func TestUpdateHookSubscription(t *testing.T) {
 	// add hook to ContractAddress1
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress1,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED},
 	})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorCreated), []string{ContractAddress1})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED), []string{ContractAddress1})
 
 	// add same hook to ContractAddress2
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress2,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED},
 	})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorCreated), []string{ContractAddress1, ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED), []string{ContractAddress1, ContractAddress2})
 
 	// add hooks to ContractAddress3
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress3,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated, types.HookType_AfterValidatorBonded},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED},
 	})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorCreated), []string{ContractAddress1, ContractAddress2, ContractAddress3})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorBonded), []string{ContractAddress3})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED), []string{ContractAddress1, ContractAddress2, ContractAddress3})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED), []string{ContractAddress3})
 
 	// remove hook from ContractAddress2
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress2,
 		Hooks:           []types.HookType{},
 	})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorCreated), []string{ContractAddress1, ContractAddress3})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED), []string{ContractAddress1, ContractAddress3})
 
 	// add more hooks for ContractAddress2
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress2,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated, types.HookType_AfterValidatorBonded, types.HookType_AfterUnbondingInitiated, types.HookType_BeforeValidatorModified},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_AFTER_UNBONDING_INITIATED, types.HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED},
 	})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorCreated), []string{ContractAddress1, ContractAddress3, ContractAddress2})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorBonded), []string{ContractAddress3, ContractAddress2})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterUnbondingInitiated), []string{ContractAddress2})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeValidatorModified), []string{ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED), []string{ContractAddress1, ContractAddress3, ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED), []string{ContractAddress3, ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_UNBONDING_INITIATED), []string{ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED), []string{ContractAddress2})
 
 	// update hooks for ContractAddress3 deleting some hooks, adding new hook
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress2,
-		// note: deleted HookType_AfterValidatorBonded, added HookType_BeforeDelegationRemoved
-		Hooks: []types.HookType{types.HookType_AfterValidatorCreated, types.HookType_AfterUnbondingInitiated, types.HookType_BeforeValidatorModified, types.HookType_BeforeDelegationRemoved},
+		// note: deleted HOOK_TYPE_AFTER_VALIDATOR_BONDED, added HOOK_TYPE_BEFORE_DELEGATION_REMOVED
+		Hooks: []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_UNBONDING_INITIATED, types.HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED, types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED},
 	})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorCreated), []string{ContractAddress1, ContractAddress3, ContractAddress2})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorBonded), []string{ContractAddress3})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterUnbondingInitiated), []string{ContractAddress2})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeValidatorModified), []string{ContractAddress2})
-	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeDelegationRemoved), []string{ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED), []string{ContractAddress1, ContractAddress3, ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED), []string{ContractAddress3})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_AFTER_UNBONDING_INITIATED), []string{ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED), []string{ContractAddress2})
+	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED), []string{ContractAddress2})
 }
 
 func TestCallSudoForSubscriptionType(t *testing.T) {
@@ -91,7 +91,7 @@ func TestCallSudoForSubscriptionType(t *testing.T) {
 
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress1,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED},
 	})
 
 	msg := types.SudoAfterValidatorCreated{
@@ -101,28 +101,28 @@ func TestCallSudoForSubscriptionType(t *testing.T) {
 	require.NoError(t, err)
 
 	// Returning no error and no calls when not subscribed to hook
-	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterDelegationModified, msg)
+	err = k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED, msg)
 	require.NoError(t, err)
 
 	// Returning no error and call when subscribed to hook
 	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress1), msgBz).Times(1).Return(nil, nil)
-	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorCreated, msg)
+	err = k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, msg)
 	require.NoError(t, err)
 
 	// Returning error when the only one subscribed hook is erroring
 	returnedError := fmt.Errorf("error")
 	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress1), msgBz).Times(1).Return(nil, returnedError)
-	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorCreated, msg)
+	err = k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, msg)
 	require.ErrorIs(t, err, returnedError)
 
 	// Returning errors when one of the subscribed hooks is erroring
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress2,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED},
 	})
 	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress1), msgBz).Times(1).Return(nil, nil)
 	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress2), msgBz).Times(1).Return(nil, returnedError)
-	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorCreated, msg)
+	err = k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, msg)
 	require.ErrorIs(t, err, returnedError)
 }
 
@@ -134,14 +134,14 @@ func TestSetHookSubscription(t *testing.T) {
 	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
 
 	k.SetHookSubscription(ctx, types.HookSubscriptions{
-		HookType:          types.HookType_AfterValidatorBonded,
+		HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
 		ContractAddresses: []string{ContractAddress1},
 	})
 
 	res := k.GetAllSubscriptions(ctx)
 	require.EqualValues(t, []types.HookSubscriptions{
 		{
-			HookType:          types.HookType_AfterValidatorBonded,
+			HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
 			ContractAddresses: []string{ContractAddress1},
 		},
 	}, res)
@@ -159,26 +159,26 @@ func TestGetAllSubscriptions(t *testing.T) {
 
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress1,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorBonded, types.HookType_BeforeDelegationRemoved},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED},
 	})
 
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress2,
-		Hooks:           []types.HookType{types.HookType_AfterValidatorBonded, types.HookType_AfterValidatorBeginUnbonding},
+		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING},
 	})
 	res = k.GetAllSubscriptions(ctx)
 
 	require.EqualValues(t, []types.HookSubscriptions{
 		{
-			HookType:          types.HookType_AfterValidatorBonded,
+			HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
 			ContractAddresses: []string{ContractAddress1, ContractAddress2},
 		},
 		{
-			HookType:          types.HookType_AfterValidatorBeginUnbonding,
+			HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING,
 			ContractAddresses: []string{ContractAddress2},
 		},
 		{
-			HookType:          types.HookType_BeforeDelegationRemoved,
+			HookType:          types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED,
 			ContractAddresses: []string{ContractAddress1},
 		},
 	}, res)
