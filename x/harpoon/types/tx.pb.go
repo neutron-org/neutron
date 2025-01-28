@@ -230,7 +230,7 @@ const _ = grpc.SupportPackageIsVersion4
 type MsgClient interface {
 	// Updates hook subscriptions for a specific contract address.
 	// To remove a subscription, pass an empty array to `hook_subscription.hooks`.
-	// Can only be executed by governance.
+	// Can only be executed by the module's authority.
 	ManageHookSubscription(ctx context.Context, in *MsgManageHookSubscription, opts ...grpc.CallOption) (*MsgManageHookSubscriptionResponse, error)
 }
 
@@ -255,7 +255,7 @@ func (c *msgClient) ManageHookSubscription(ctx context.Context, in *MsgManageHoo
 type MsgServer interface {
 	// Updates hook subscriptions for a specific contract address.
 	// To remove a subscription, pass an empty array to `hook_subscription.hooks`.
-	// Can only be executed by governance.
+	// Can only be executed by the module's authority.
 	ManageHookSubscription(context.Context, *MsgManageHookSubscription) (*MsgManageHookSubscriptionResponse, error)
 }
 

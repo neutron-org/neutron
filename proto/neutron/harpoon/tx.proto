@@ -15,7 +15,7 @@ service Msg {
 
   // Updates hook subscriptions for a specific contract address.
   // To remove a subscription, pass an empty array to `hook_subscription.hooks`.
-  // Can only be executed by governance.
+  // Can only be executed by the module's authority.
   rpc ManageHookSubscription(MsgManageHookSubscription) returns (MsgManageHookSubscriptionResponse);
 }
 
