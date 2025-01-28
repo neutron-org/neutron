@@ -24,7 +24,7 @@ func TestDefaultGenesis(t *testing.T) {
 
 func TestInvalidGenesisPaymentScheduleTypeMismatch(t *testing.T) {
 	defaultGenesis := revenuetypes.DefaultGenesis()
-	defaultGenesis.Params.PaymentScheduleType = revenuetypes.PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
+	defaultGenesis.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
 	err := defaultGenesis.Validate()
 	require.ErrorContains(t, err, "does not match payment schedule")
 

@@ -329,7 +329,7 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_MONTHLY
+		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_MONTHLY
 		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))
@@ -381,7 +381,7 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_MONTHLY
+		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_MONTHLY
 		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))
@@ -453,7 +453,7 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
+		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
 		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))
@@ -505,7 +505,7 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
+		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
 		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))

@@ -80,9 +80,9 @@ func (s *EmptyPaymentSchedule) StartNewPeriod(_ sdktypes.Context) {
 // PaymentScheduleType.
 func PaymentScheduleByType(paymentScheduleType PaymentScheduleType) PaymentSchedule {
 	switch paymentScheduleType {
-	case PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_BLOCK_BASED:
+	case PAYMENT_SCHEDULE_TYPE_BLOCK_BASED:
 		return &BlockBasedPaymentSchedule{}
-	case PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_MONTHLY:
+	case PAYMENT_SCHEDULE_TYPE_MONTHLY:
 		return &MonthlyPaymentSchedule{}
 	default:
 		return &EmptyPaymentSchedule{}
@@ -94,10 +94,10 @@ func PaymentScheduleByType(paymentScheduleType PaymentScheduleType) PaymentSched
 func PaymentScheduleMatchesType(ps PaymentSchedule, t PaymentScheduleType) bool {
 	switch ps.(type) {
 	case *MonthlyPaymentSchedule:
-		return t == PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_MONTHLY
+		return t == PAYMENT_SCHEDULE_TYPE_MONTHLY
 	case *BlockBasedPaymentSchedule:
-		return t == PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
+		return t == PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
 	default:
-		return t == PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
+		return t == PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
 	}
 }
