@@ -593,7 +593,7 @@ func New(
 		appCodec,
 		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
 		app.AccountKeeper,
-		app.WasmKeeper,
+		&app.WasmKeeper,
 		logger,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
