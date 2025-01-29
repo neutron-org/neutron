@@ -154,7 +154,7 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	// prepare keeper state
 	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
 	require.Nil(t, err)
-	
+
 	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 

@@ -49,7 +49,7 @@ enum PaymentScheduleType {
 // Specifies a performance criteria that validators must meet to qualify for network rewards.
 message PerformanceRequirement {
   // The fraction of the total performance a validator can miss without affecting their reward.
-  // Represented as a decimal value.
+  // Represented as a decimal value in the range [0.0, 1.0], where 1.0 corresponds to 100%.
   string allowed_to_miss = 1 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
@@ -58,7 +58,7 @@ message PerformanceRequirement {
 
   // The minimum fraction of the total performance a validator must achieve to be eligible for
   // network rewards. Validators falling below this threshold will not receive any rewards.
-  // Represented as a decimal value.
+  // Represented as a decimal value in the range [0.0, 1.0], where 1.0 corresponds to 100%.
   string required_at_least = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
