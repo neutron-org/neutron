@@ -21,6 +21,7 @@ func RevenueKeeper(
 	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
 	oracleKeeper revenuetypes.OracleKeeper,
+	authority string,
 ) (*keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(revenuetypes.StoreKey)
 	ss := runtime.NewKVStoreService(storeKey)
@@ -37,6 +38,7 @@ func RevenueKeeper(
 		stakingKeeper,
 		bankKeeper,
 		oracleKeeper,
+		authority,
 	)
 
 	// Initialize params

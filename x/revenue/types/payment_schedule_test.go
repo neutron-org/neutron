@@ -19,7 +19,7 @@ func TestMonthlyPaymentSchedule(t *testing.T) {
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	_, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
+	_, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper, "")
 
 	// a monthly schedule for January with first block height = 1
 	s := &revenuetypes.MonthlyPaymentSchedule{
@@ -57,7 +57,7 @@ func TestBlockBasedPaymentSchedule(t *testing.T) {
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	_, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
+	_, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper, "")
 
 	// a block based schedule of 100 blocks period and period start block = 1
 	s := &revenuetypes.BlockBasedPaymentSchedule{

@@ -34,6 +34,8 @@ message Params {
 
 // Represents the type of payment schedule for validator compensation.
 enum PaymentScheduleType {
+  option (gogoproto.goproto_enum_prefix) = false;
+
   // Unspecified payment schedule type. With this payment schedule type, the module does not
   // distribute any revenue.
   PAYMENT_SCHEDULE_TYPE_UNSPECIFIED = 0;

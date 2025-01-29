@@ -15,7 +15,7 @@ var (
 	// DefaultBaseCompensation represents the default compensation amount in USD.
 	DefaultBaseCompensation uint64 = 2500
 	// DefaultPaymentScheduleType represents the default payment schedule type.
-	DefaultPaymentScheduleType = PaymentScheduleType_PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
+	DefaultPaymentScheduleType = PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
 )
 
 // NewParams creates a new Params instance.

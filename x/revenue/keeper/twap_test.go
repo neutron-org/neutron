@@ -20,7 +20,7 @@ func TestCumulative(t *testing.T) {
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper)
+	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper, "")
 	prices, err := keeper.GetAllCumulativePrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 0)
