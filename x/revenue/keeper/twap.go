@@ -14,6 +14,8 @@ import (
 
 // TODO: We currently store prices under a single store prefix. We need to handle cases where DenomCompensation is changed.
 
+// UpdateCumulativePrice updates cumulative prices and
+// does the maintenance of the storage by removing outdated TWAP prices.
 func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -26,28 +28,32 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	}
 	priceInt, err := k.oracleKeeper.GetPriceForCurrencyPair(ctx, pair)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get price for currency pair: %w", err)
 	}
 
 	decimals, err := k.oracleKeeper.GetDecimalsForCurrencyPair(ctx, pair)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get decimals for currency pair: %w", err)
 	}
 
 	price := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals))
 	err = k.SaveCumulativePrice(ctx, price, ctx.BlockTime().Unix())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to save cumulative price: %w", err)
 	}
 
 	err = k.CleanOutdatedCumulativePrices(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to clean outdated prices: %w", err)
 	}
 
 	return nil
 }
 
+// SaveCumulativePrice saves new cumulative price
+// accepts price and current timestamp as arguments
+// and calculates cumulative price taking into account
+// a time passed since last saved cumulative price
 func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price math.LegacyDec, timestamp int64) error {
 	cumulativePrevious, err := k.GetLastCumulativePrice(ctx)
 	if err != nil {
@@ -63,37 +69,38 @@ func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price math.LegacyDec, time
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := k.cdc.Marshal(&cumulativeNew)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal cumulative price: %w", err)
 	}
 
 	err = store.Set(types.GetAccumulatedPriceKey(timestamp), bz)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to store cumulative price: %w", err)
 	}
 
 	return nil
 }
 
+// GetAllCumulativePrices get all the TWAP values
 func (k *Keeper) GetAllCumulativePrices(ctx sdk.Context) ([]*types.CumulativePrice, error) {
 	store := k.storeService.OpenKVStore(ctx)
 	iter, err := store.Iterator(types.PrefixAccumulatedPriceKey, storetypes.PrefixEndBytes(types.PrefixAccumulatedPriceKey))
 	if err != nil {
-		return nil, fmt.Errorf("failed to iterate over accumulated price: %w", err)
+		return nil, fmt.Errorf("failed to iterate over cumulative price: %w", err)
 	}
 	defer iter.Close()
 
-	prices := []*types.CumulativePrice{}
+	var prices []*types.CumulativePrice
 	for ; iter.Valid(); iter.Next() {
 		p := types.CumulativePrice{}
 		if err = k.cdc.Unmarshal(iter.Value(), &p); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal a accumulated price: %w", err)
+			return nil, fmt.Errorf("failed to unmarshal a cumulative price: %w", err)
 		}
 		prices = append(prices, &p)
 	}
-	k.Logger(ctx).Error("TWAP storage is empty")
 	return prices, nil
 }
 
+// GetLastCumulativePrice gets very last element of TWAP storage
 func (k *Keeper) GetLastCumulativePrice(ctx sdk.Context) (types.CumulativePrice, error) {
 	cmlt := types.CumulativePrice{
 		CumulativePrice: math.LegacyZeroDec(),
@@ -104,20 +111,21 @@ func (k *Keeper) GetLastCumulativePrice(ctx sdk.Context) (types.CumulativePrice,
 	store := k.storeService.OpenKVStore(ctx)
 	iter, err := store.ReverseIterator(types.PrefixAccumulatedPriceKey, storetypes.PrefixEndBytes(types.PrefixAccumulatedPriceKey))
 	if err != nil {
-		return cmlt, fmt.Errorf("failed to iterate over accumulated price: %w", err)
+		return cmlt, fmt.Errorf("failed to iterate over cumulative price: %w", err)
 	}
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
 		if err = k.cdc.Unmarshal(iter.Value(), &cmlt); err != nil {
-			return cmlt, fmt.Errorf("failed to unmarshal a accumulated price: %w", err)
+			return cmlt, fmt.Errorf("failed to unmarshal a cumulative price: %w", err)
 		}
 		return cmlt, nil
 	}
-	k.Logger(ctx).Error("TWAP storage is empty")
+	k.Logger(ctx).Warn("TWAP storage is empty")
 	return cmlt, nil
 }
 
+// GetFirstCumulativePriceAfter gets first element after `startAt` of the TWAP storage
 func (k *Keeper) GetFirstCumulativePriceAfter(ctx sdk.Context, startAt int64) (types.CumulativePrice, error) {
 	cmlt := types.CumulativePrice{
 		CumulativePrice: math.LegacyZeroDec(),
@@ -128,20 +136,22 @@ func (k *Keeper) GetFirstCumulativePriceAfter(ctx sdk.Context, startAt int64) (t
 	store := k.storeService.OpenKVStore(ctx)
 	iter, err := store.Iterator(types.GetAccumulatedPriceKey(startAt), storetypes.PrefixEndBytes(types.PrefixAccumulatedPriceKey))
 	if err != nil {
-		return cmlt, fmt.Errorf("failed to iterate over validator info: %w", err)
+		return cmlt, fmt.Errorf("failed to iterate over cumulative price: %w", err)
 	}
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
 		if err = k.cdc.Unmarshal(iter.Value(), &cmlt); err != nil {
-			return cmlt, fmt.Errorf("failed to unmarshal a validator info: %w", err)
+			return cmlt, fmt.Errorf("failed to unmarshal a cumulative price: %w", err)
 		}
 		return cmlt, nil
 	}
-	k.Logger(ctx).Error("TWAP storage is empty")
+	k.Logger(ctx).Warn("TWAP storage is empty")
 	return cmlt, nil
 }
 
+// CleanOutdatedCumulativePrices removes all the cumulative
+// prices those are older than a threshold
 func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context) error {
 	store := k.storeService.OpenKVStore(ctx)
 	iter, err := store.Iterator(
@@ -149,7 +159,7 @@ func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context) error {
 		types.GetAccumulatedPriceKey(ctx.BlockTime().Unix()-types.MaxTWAPWindow),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to iterate over validator info: %w", err)
+		return fmt.Errorf("failed to iterate over cumulative price: %w", err)
 	}
 	defer iter.Close()
 
@@ -167,26 +177,17 @@ func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context) error {
 	return nil
 }
 
-// func getFirstIterValue[T proto.Marshaler](iter dbm.Iterator) ([]byte, T, error) {
-//	var value T
-//	for ; iter.Valid(); iter.Next() {
-//		twap := sdk.DecCoin{}
-//		if err = k.cdc.Unmarshal(iter.Value(), &twap); err != nil {
-//			return nil, 0, fmt.Errorf("failed to unmarshal a validator info: %w", err)
-//		}
-//		return &twap, types.GetTimeFromAccumulatedPriceKey(iter.Key()), nil
-//	}
-//}
-
+// GetTWAPStartFromTime returns a TWAP price for window
+// from `startAt` till last saved value (saved at every block)
 func (k *Keeper) GetTWAPStartFromTime(ctx sdk.Context, startAt int64) (math.LegacyDec, error) {
 	lastPrice, err := k.GetLastCumulativePrice(ctx)
 	if err != nil {
-		return math.LegacyZeroDec(), err
+		return math.LegacyZeroDec(), fmt.Errorf("failed to get last cumulative price: %w", err)
 	}
 
 	firstPrice, err := k.GetFirstCumulativePriceAfter(ctx, startAt)
 	if err != nil {
-		return math.LegacyZeroDec(), err
+		return math.LegacyZeroDec(), fmt.Errorf("failed to get first cumulative price: %w", err)
 	}
 	if lastPrice.Timestamp == firstPrice.Timestamp {
 		return lastPrice.LastPrice, nil

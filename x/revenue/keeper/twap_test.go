@@ -76,12 +76,12 @@ func TestCumulative(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, price, math.LegacyMustNewDecFromStr("19.090909090909090909"))
 
-	// price at time 1 is outdated
 	prices, err = keeper.GetAllCumulativePrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 4)
 
 	ctx = ctx.WithBlockTime(time.Unix(types.MaxTWAPWindow+2, 0))
+	// now price at time 1 is outdated
 	err = keeper.CleanOutdatedCumulativePrices(ctx)
 	require.Nil(t, err)
 
