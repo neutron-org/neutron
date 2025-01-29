@@ -146,11 +146,11 @@ func (m *Params) GetPaymentScheduleType() PaymentScheduleType {
 // Specifies a performance criteria that validators must meet to qualify for network rewards.
 type PerformanceRequirement struct {
 	// The fraction of the total performance a validator can miss without affecting their reward.
-	// Represented as a decimal value.
+	// Represented as a decimal value in the range [0.0, 1.0], where 1.0 corresponds to 100%.
 	AllowedToMiss cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=allowed_to_miss,json=allowedToMiss,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"allowed_to_miss"`
 	// The minimum fraction of the total performance a validator must achieve to be eligible for
 	// network rewards. Validators falling below this threshold will not receive any rewards.
-	// Represented as a decimal value.
+	// Represented as a decimal value in the range [0.0, 1.0], where 1.0 corresponds to 100%.
 	RequiredAtLeast cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=required_at_least,json=requiredAtLeast,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"required_at_least"`
 }
 

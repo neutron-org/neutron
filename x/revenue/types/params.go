@@ -57,22 +57,29 @@ func (p Params) Validate() error {
 		return fmt.Errorf("invalid payment schedule type %s", p.PaymentScheduleType)
 	}
 
-	if p.BlocksPerformanceRequirement.AllowedToMiss.LT(math.LegacyZeroDec()) ||
-		p.BlocksPerformanceRequirement.AllowedToMiss.GT(math.LegacyOneDec()) {
+	// shorthands
+	bpr := p.BlocksPerformanceRequirement
+	ovpr := p.OracleVotesPerformanceRequirement
+
+	if bpr.AllowedToMiss.LT(math.LegacyZeroDec()) || bpr.AllowedToMiss.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("blocks allowed to miss must be between 0.0 and 1.0")
 	}
-	if p.BlocksPerformanceRequirement.RequiredAtLeast.LT(math.LegacyZeroDec()) ||
-		p.BlocksPerformanceRequirement.RequiredAtLeast.GT(math.LegacyOneDec()) {
+	if bpr.RequiredAtLeast.LT(math.LegacyZeroDec()) || bpr.RequiredAtLeast.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("blocks required at least must be between 0.0 and 1.0")
 	}
 
-	if p.OracleVotesPerformanceRequirement.AllowedToMiss.LT(math.LegacyZeroDec()) ||
-		p.OracleVotesPerformanceRequirement.AllowedToMiss.GT(math.LegacyOneDec()) {
+	if ovpr.AllowedToMiss.LT(math.LegacyZeroDec()) || ovpr.AllowedToMiss.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("oracle votes allowed to miss must be between 0.0 and 1.0")
 	}
-	if p.OracleVotesPerformanceRequirement.RequiredAtLeast.LT(math.LegacyZeroDec()) ||
-		p.OracleVotesPerformanceRequirement.RequiredAtLeast.GT(math.LegacyOneDec()) {
+	if ovpr.RequiredAtLeast.LT(math.LegacyZeroDec()) || ovpr.RequiredAtLeast.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("oracle votes required at least must be between 0.0 and 1.0")
+	}
+
+	if bpr.AllowedToMiss.Add(bpr.RequiredAtLeast).GT(math.LegacyOneDec()) {
+		return fmt.Errorf("sum of blocks allowed to miss and required at least must not be greater than 1.0")
+	}
+	if ovpr.AllowedToMiss.Add(ovpr.RequiredAtLeast).GT(math.LegacyOneDec()) {
+		return fmt.Errorf("sum of oracle votes allowed to miss and required at least must not be greater than 1.0")
 	}
 
 	return nil

@@ -67,4 +67,13 @@ func TestInvalidGenesisParams(t *testing.T) {
 	defaultGenesis = revenuetypes.DefaultGenesis()
 	defaultGenesis.Params.OracleVotesPerformanceRequirement.RequiredAtLeast = math.LegacyZeroDec().Sub(math.LegacySmallestDec())
 	require.ErrorContains(t, defaultGenesis.Validate(), "oracle votes required at least must be between 0.0 and 1.0")
+
+	defaultGenesis = revenuetypes.DefaultGenesis()
+	defaultGenesis.Params.BlocksPerformanceRequirement.AllowedToMiss = math.LegacyOneDec()
+	defaultGenesis.Params.BlocksPerformanceRequirement.RequiredAtLeast = math.LegacySmallestDec()
+	require.ErrorContains(t, defaultGenesis.Validate(), "sum of blocks allowed to miss and required at least must not be greater than 1.0")
+	defaultGenesis = revenuetypes.DefaultGenesis()
+	defaultGenesis.Params.OracleVotesPerformanceRequirement.AllowedToMiss = math.LegacyOneDec()
+	defaultGenesis.Params.OracleVotesPerformanceRequirement.RequiredAtLeast = math.LegacySmallestDec()
+	require.ErrorContains(t, defaultGenesis.Validate(), "sum of oracle votes allowed to miss and required at least must not be greater than 1.0")
 }
