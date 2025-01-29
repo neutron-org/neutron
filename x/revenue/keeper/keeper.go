@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"errors"
 	"fmt"
 
@@ -282,7 +283,10 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
 	}
-	baseCompensation := k.CalcBaseRevenueAmount(ctx)
+	baseCompensation, err := k.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+	if err != nil {
+		return fmt.Errorf("failed to calculate base revenue amount: %w", err)
+	}
 
 	for _, info := range infos {
 		valConsAddr, err := sdk.ConsAddressFromBech32(info.ConsensusAddress)
@@ -297,7 +301,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 			int64(blocksPerPeriod-info.GetCommitedOracleVotesInPeriod()),
 			int64(blocksPerPeriod),
 		)
-		valCompensation := rating.MulInt64(baseCompensation).TruncateInt()
+		valCompensation := rating.MulInt(baseCompensation).TruncateInt()
 
 		if valCompensation.IsPositive() {
 			validator, err := k.stakingKeeper.GetValidatorByConsAddr(ctx, valConsAddr)
@@ -335,11 +339,15 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 // CalcBaseRevenueAmount calculates the base compensation amount for validators based on the current
 // price of the compensation denomination. The final compensation amount for a validator is
 // determined by multiplying the base revenue amount by the validator's performance rating.
-func (k *Keeper) CalcBaseRevenueAmount(_ sdk.Context) int64 {
-	// TODO: implement calculation of base compensation
-	// TODO: think about price obsolescence case (if the price is too old, should we use it for
-	// payments?)
-	return 10_000_000
+func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation int64) (math.Int, error) {
+	assetPrice, err := k.GetTWAPStartFromTime(ctx, ctx.BlockHeader().Time.Unix())
+	if err != nil {
+		return math.ZeroInt(), fmt.Errorf("failed to get TWAP price: %w", err)
+	}
+	if assetPrice.Equal(math.LegacyZeroDec()) {
+		return math.ZeroInt(), fmt.Errorf("invalid TWAP price, price must be greater than zero")
+	}
+	return math.LegacyNewDec(baseCompensation).Quo(assetPrice).TruncateInt(), nil
 }
 
 func (k *Keeper) getOrCreateValidatorInfo(

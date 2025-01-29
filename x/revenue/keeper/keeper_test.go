@@ -109,6 +109,15 @@ func TestProcessRevenue(t *testing.T) {
 	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
 	require.Nil(t, err)
 
+	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	require.Nil(t, err)
+
+	params, err := keeper.GetParams(ctx)
+	require.Nil(t, err)
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+	require.Nil(t, err)
+
 	stakingKeeper.EXPECT().GetValidatorByConsAddr(
 		gomock.Any(),
 		mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
@@ -121,7 +130,7 @@ func TestProcessRevenue(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
 	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), 1000)
@@ -144,6 +153,9 @@ func TestProcessRevenueNoReward(t *testing.T) {
 
 	// prepare keeper state
 	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
+	require.Nil(t, err)
+	
+	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
 	// no SendCoinsFromModuleToAccount calls expected
@@ -199,6 +211,12 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		mustConsAddressFromBech32(t, val2Info.ConsensusAddress),
 	).Return(stakingtypes.Validator{OperatorAddress: val2OperAddr}, nil)
 
+	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	require.Nil(t, err)
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+	require.Nil(t, err)
+
 	// expect one successful SendCoinsFromModuleToAccount call for val1 75% of rewards
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 		gomock.Any(),
@@ -206,7 +224,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.LegacyNewDecWithPrec(75, 2).MulInt(math.NewInt(keeper.CalcBaseRevenueAmount(ctx))).RoundInt(),
+			math.LegacyNewDecWithPrec(75, 2).MulInt(baseRevenueAmount).RoundInt(),
 		)),
 	).Times(1).Return(nil)
 
@@ -217,7 +235,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val2OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
 	err = keeper.ProcessRevenue(ctx, params, 1000)
@@ -430,6 +448,15 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 			mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
 		).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
 
+		err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		require.Nil(t, err)
+
+		params, err := keeper.GetParams(ctx)
+		require.Nil(t, err)
+
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+		require.Nil(t, err)
+
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 			gomock.Any(),
@@ -437,7 +464,7 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
 				revenuetypes.DefaultDenomCompensation,
-				math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+				baseRevenueAmount)),
 		).Times(1).Return(nil)
 
 		// next block in the next month with expected revenue distribution
@@ -558,6 +585,15 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 			mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
 		).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
 
+		err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		require.Nil(t, err)
+
+		params, err := keeper.GetParams(ctx)
+		require.Nil(t, err)
+
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+		require.Nil(t, err)
+
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 			gomock.Any(),
@@ -565,7 +601,7 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
 				revenuetypes.DefaultDenomCompensation,
-				math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+				baseRevenueAmount)),
 		).Times(1).Return(nil)
 
 		// next block in the next period with expected revenue distribution
