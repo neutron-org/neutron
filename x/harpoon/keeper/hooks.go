@@ -17,7 +17,7 @@ var _ stakingtypes.StakingHooks = Hooks{}
 // Hooks is a wrapper struct for hooks used by the harpoon keeper.
 // These hooks are invoked by the staking module.
 type Hooks struct {
-	k Keeper
+	k *Keeper
 }
 
 // AfterValidatorBonded calls the sudo method on contracts subscribed to the AfterValidatorBonded hook.
