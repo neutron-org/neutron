@@ -4,54 +4,98 @@ import "cosmossdk.io/math"
 
 // This file defines sudo call message structures for Wasm contracts for each hook type.
 
-type SudoAfterValidatorBonded struct {
-	ConsAddr []byte `json:"cons_addr"`
-	ValAddr  []byte `json:"val_addr"`
+type AfterValidatorBondedSudoMsg struct {
+	AfterValidatorBonded AfterValidatorBondedMsg `json:"after_validator_bonded,omitempty"`
 }
 
-type SudoAfterValidatorRemoved struct {
-	ConsAddr []byte `json:"cons_addr"`
-	ValAddr  []byte `json:"val_addr"`
+type AfterValidatorBondedMsg struct {
+	ConsAddr string `json:"cons_addr"`
+	ValAddr  string `json:"val_addr"`
 }
 
-type SudoAfterValidatorCreated struct {
-	ValAddr []byte `json:"val_addr"`
+type AfterValidatorRemovedSudoMsg struct {
+	AfterValidatorRemoved AfterValidatorRemovedMsg `json:"after_validator_removed,omitempty"`
 }
 
-type SudoAfterValidatorBeginUnbonding struct {
-	ConsAddr []byte `json:"cons_addr"`
-	ValAddr  []byte `json:"val_addr"`
+type AfterValidatorRemovedMsg struct {
+	ConsAddr string `json:"cons_addr"`
+	ValAddr  string `json:"val_addr"`
 }
 
-type SudoBeforeValidatorModified struct {
-	ValAddr []byte `json:"val_addr"`
+type AfterValidatorCreatedSudoMsg struct {
+	AfterValidatorCreated AfterValidatorCreatedMsg `json:"after_validator_created,omitempty"`
 }
 
-type SudoBeforeDelegationCreated struct {
-	DelAddr []byte `json:"del_addr"`
-	ValAddr []byte `json:"val_addr"`
+type AfterValidatorCreatedMsg struct {
+	ValAddr string `json:"val_addr"`
 }
 
-type SudoBeforeDelegationSharesModified struct {
-	DelAddr []byte `json:"del_addr"`
-	ValAddr []byte `json:"val_addr"`
+type AfterValidatorBeginUnbondingSudoMsg struct {
+	AfterValidatorBeginUnbonding AfterValidatorBeginUnbondingMsg `json:"after_validator_begin_unbonding,omitempty"`
 }
 
-type SudoBeforeDelegationRemoved struct {
-	DelAddr []byte `json:"del_addr"`
-	ValAddr []byte `json:"val_addr"`
+type AfterValidatorBeginUnbondingMsg struct {
+	ConsAddr string `json:"cons_addr"`
+	ValAddr  string `json:"val_addr"`
 }
 
-type SudoAfterDelegationModified struct {
-	DelAddr []byte `json:"del_addr"`
-	ValAddr []byte `json:"val_addr"`
+type BeforeValidatorModifiedSudoMsg struct {
+	BeforeValidatorModified BeforeValidatorModifiedMsg `json:"before_validator_modified,omitempty"`
 }
 
-type SudoBeforeValidatorSlashed struct {
-	ValAddr  []byte         `json:"val_addr"`
+type BeforeValidatorModifiedMsg struct {
+	ValAddr string `json:"val_addr"`
+}
+
+type BeforeDelegationCreatedSudoMsg struct {
+	BeforeDelegationCreated BeforeDelegationCreatedMsg `json:"before_delegation_created,omitempty"`
+}
+
+type BeforeDelegationCreatedMsg struct {
+	DelAddr string `json:"del_addr"`
+	ValAddr string `json:"val_addr"`
+}
+
+type BeforeDelegationSharesModifiedSudoMsg struct {
+	BeforeDelegationSharesModified BeforeDelegationSharesModifiedMsg `json:"before_delegation_shares_modified,omitempty"`
+}
+
+type BeforeDelegationSharesModifiedMsg struct {
+	DelAddr string `json:"del_addr"`
+	ValAddr string `json:"val_addr"`
+}
+
+type BeforeDelegationRemovedSudoMsg struct {
+	BeforeDelegationRemoved BeforeDelegationRemovedMsg `json:"before_delegation_removed,omitempty"`
+}
+
+type BeforeDelegationRemovedMsg struct {
+	DelAddr string `json:"del_addr"`
+	ValAddr string `json:"val_addr"`
+}
+
+type AfterDelegationModifiedSudoMsg struct {
+	AfterDelegationModified AfterDelegationModifiedMsg `json:"after_delegation_modified,omitempty"`
+}
+
+type AfterDelegationModifiedMsg struct {
+	DelAddr string `json:"del_addr"`
+	ValAddr string `json:"val_addr"`
+}
+
+type BeforeValidatorSlashedSudoMsg struct {
+	BeforeValidatorSlashed BeforeValidatorSlashedMsg `json:"before_validator_slashed,omitempty"`
+}
+
+type BeforeValidatorSlashedMsg struct {
+	ValAddr  string         `json:"val_addr"`
 	Fraction math.LegacyDec `json:"fraction"`
 }
 
-type SudoAfterUnbondingInitiated struct {
+type AfterUnbondingInitiatedSudoMsg struct {
+	AfterUnbondingInitiated AfterUnbondingInitiatedMsg `json:"after_unbonding_initiated,omitempty"`
+}
+
+type AfterUnbondingInitiatedMsg struct {
 	Id uint64 `json:"id"`
 }
