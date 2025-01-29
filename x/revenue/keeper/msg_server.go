@@ -41,24 +41,24 @@ func (s msgServer) UpdateParams(goCtx context.Context, msg *revenuetypes.MsgUpda
 }
 
 func (s msgServer) FundTreasury(goCtx context.Context, msg *revenuetypes.MsgFundTreasury) (*revenuetypes.MsgFundTreasuryResponse, error) {
-	if err := msg.Validate(); err != nil {
+	ctx := sdktypes.UnwrapSDKContext(goCtx)
+	params, err := s.keeper.GetParams(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get module params for verification")
+	}
+
+	if err := msg.Validate(params); err != nil {
 		return nil, errors.Wrap(err, "invalid MsgFundTreasury")
 	}
 
-	authority := s.keeper.GetAuthority()
-	if authority != msg.Authority {
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, msg.Authority)
-	}
-
-	authorityAddr, err := sdktypes.AccAddressFromBech32(msg.Authority)
+	sender, err := sdktypes.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return nil, errors.Wrapf(err, "invalid bech32 authority address %s", msg.Authority)
+		return nil, errors.Wrapf(err, "failed to create acc address from bech32 %s: %s", msg.Sender, err)
 	}
 
-	ctx := sdktypes.UnwrapSDKContext(goCtx)
 	if err := s.keeper.bankKeeper.SendCoinsFromAccountToModule(
 		ctx,
-		authorityAddr,
+		sender,
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			msg.Amount[0].Denom, math.Int(msg.Amount[0].Amount),
