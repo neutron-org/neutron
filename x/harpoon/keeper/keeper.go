@@ -71,7 +71,7 @@ func (k Keeper) Logger() log.Logger {
 
 // Hooks returns the implemented StakingHooks to be called by the staking module.
 func (k Keeper) Hooks() stakingtypes.StakingHooks {
-	return Hooks{k}
+	return Hooks{&k}
 }
 
 // SetHookSubscription configures hook subscriptions for the specified hook type.

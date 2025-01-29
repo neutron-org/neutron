@@ -8,14 +8,14 @@ import (
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
-func InitGenesis(ctx sdk.Context, k keeper.Keeper, state types.GenesisState) {
+func InitGenesis(ctx sdk.Context, k *keeper.Keeper, state types.GenesisState) {
 	for _, item := range state.HookSubscriptions {
 		k.SetHookSubscription(ctx, item)
 	}
 }
 
 // ExportGenesis returns the module's exported genesis.
-func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
+func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.HookSubscriptions = k.GetAllSubscriptions(ctx)
 

@@ -394,7 +394,7 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	GlobalFeeKeeper     globalfeekeeper.Keeper
-	HarpoonKeeper       harpoonkeeper.Keeper
+	HarpoonKeeper       *harpoonkeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -589,15 +589,6 @@ func New(
 		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 	)
 
-	app.HarpoonKeeper = *harpoonkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
-		app.AccountKeeper,
-		app.WasmKeeper,
-		logger,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
 	app.UpgradeKeeper = *upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
@@ -724,9 +715,6 @@ func New(
 		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
-
-	multiStakingHooks := stakingtypes.NewMultiStakingHooks(app.SlashingKeeper.Hooks(), app.HarpoonKeeper.Hooks())
-	app.StakingKeeper.SetHooks(multiStakingHooks)
 
 	// consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
@@ -878,6 +866,18 @@ func New(
 		wasmOpts...,
 	)
 
+	app.HarpoonKeeper = harpoonkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
+		app.AccountKeeper,
+		app.WasmKeeper,
+		logger,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	multiStakingHooks := stakingtypes.NewMultiStakingHooks(app.SlashingKeeper.Hooks(), app.HarpoonKeeper.Hooks())
+	app.StakingKeeper.SetHooks(multiStakingHooks)
+
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
 
@@ -943,6 +943,7 @@ func New(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		harpoon.NewAppModule(appCodec, app.HarpoonKeeper, app.AccountKeeper),
 		transferModule,
 		stakingModule,
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, encodingConfig.TxConfig),
@@ -966,7 +967,6 @@ func New(
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
-		harpoon.NewAppModule(appCodec, app.HarpoonKeeper, app.AccountKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1073,6 +1073,8 @@ func New(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		feegrant.ModuleName,
+		wasmtypes.ModuleName,
+		harpoontypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
@@ -1081,7 +1083,6 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
@@ -1094,7 +1095,6 @@ func New(
 		oracletypes.ModuleName,
 		marketmaptypes.ModuleName,
 		dextypes.ModuleName,
-		harpoontypes.ModuleName,
 		dynamicfeestypes.ModuleName,
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
