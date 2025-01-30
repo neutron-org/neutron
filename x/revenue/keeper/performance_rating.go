@@ -30,12 +30,12 @@ func PerformanceRating(
 
 	// if a validator has signed less blocks than required, the rating is zero
 	missedBlocksShare := math.LegacyNewDec(missedBlocks).QuoInt64(totalBlocks)
-	if missedBlocksShare.GTE(blocksPerfThreshold) {
+	if missedBlocksShare.GT(blocksPerfThreshold) {
 		return math.LegacyZeroDec()
 	}
 	// if a validator has provided less oracle prices than required, the rating is zero
 	missedOracleVotesShare := math.LegacyNewDec(missedOracleVotes).QuoInt64(totalBlocks)
-	if missedOracleVotesShare.GTE(oracleVotesPerfThreshold) {
+	if missedOracleVotesShare.GT(oracleVotesPerfThreshold) {
 		return math.LegacyZeroDec()
 	}
 
@@ -45,17 +45,8 @@ func PerformanceRating(
 		return math.LegacyOneDec()
 	}
 
-	// how much blocks/votes missed over the allowed value
-	finedMissedBlocksShare := missedBlocksShare.Sub(blocksPR.AllowedToMiss)
-	finedMissedOracleVotesShare := missedOracleVotesShare.Sub(oracleVotesPR.AllowedToMiss)
-
-	// the missed blocks/votes span for (0.0;1.1) performance rating values
-	blocksPerfEvalWindow := blocksPerfThreshold.Sub(blocksPR.AllowedToMiss)
-	oracleVotesPerfEvalWindow := oracleVotesPerfThreshold.Sub(oracleVotesPR.AllowedToMiss)
-
-	// calculated as how much blocks/votes missed in the eval window
-	missedBlocksPerfQuo := finedMissedBlocksShare.Quo(blocksPerfEvalWindow)
-	missedOracleVotesPerfQuo := finedMissedOracleVotesShare.Quo(oracleVotesPerfEvalWindow)
+	missedBlocksPerfQuo := calCMissedPerfQuo(missedBlocksShare, blocksPR.AllowedToMiss, blocksPerfThreshold)
+	missedOracleVotesPerfQuo := calCMissedPerfQuo(missedOracleVotesShare, oracleVotesPR.AllowedToMiss, oracleVotesPerfThreshold)
 
 	// rating = 0.5 * ((1 - missedBlocksPerfQuo^2) + (1 - missedOracleVotesPerfQuo^2))
 	rating := math.LegacyNewDecWithPrec(5, 1).Mul(
@@ -63,4 +54,23 @@ func PerformanceRating(
 			Add(math.LegacyOneDec().Sub(missedOracleVotesPerfQuo.Mul(missedOracleVotesPerfQuo))),
 	)
 	return rating
+}
+
+// calCMissedPerfQuo calculates the negative coefficient based on the missed share, allowed to miss,
+// and performance threshold. If the missed share is LTE allowed to miss, the returned value is
+// 0.0, i.e. no negative coefficient for this criteria.
+func calCMissedPerfQuo(
+	missedShare math.LegacyDec,
+	allowedToMiss math.LegacyDec,
+	perfThreshold math.LegacyDec,
+) math.LegacyDec {
+	if missedShare.LTE(allowedToMiss) {
+		return math.LegacyZeroDec()
+	}
+
+	finedMissedShare := missedShare.Sub(allowedToMiss)    // how much missed over the allowed value
+	perfEvalWindow := perfThreshold.Sub(allowedToMiss)    // span of evaluation window
+	missedPerfQuo := finedMissedShare.Quo(perfEvalWindow) // how much missed in the evaluation window
+
+	return missedPerfQuo
 }
