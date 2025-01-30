@@ -53,7 +53,7 @@ CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
 NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
 
-NEUTRON_STAKING_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron-staking-vault.wasm
+NEUTRON_STAKING_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_staking_vault-aarch64.wasm
 
 # Slinky genesis configs
 USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
@@ -782,11 +782,11 @@ set_genesis_param_jq ".app_state.feemarket.params.max_learning_rate" "\"0.5\""  
 set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                            # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
-set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[{\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 0},
+set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 0},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 1},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 3},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 4},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 5},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 6},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 7},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 8},
