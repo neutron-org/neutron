@@ -1,6 +1,8 @@
 package types
 
 import (
+	fmt "fmt"
+
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 )
@@ -84,20 +86,24 @@ func PaymentScheduleByType(paymentScheduleType PaymentScheduleType) PaymentSched
 		return &BlockBasedPaymentSchedule{}
 	case PAYMENT_SCHEDULE_TYPE_MONTHLY:
 		return &MonthlyPaymentSchedule{}
-	default:
+	case PAYMENT_SCHEDULE_TYPE_UNSPECIFIED:
 		return &EmptyPaymentSchedule{}
+	default:
+		panic(fmt.Sprintf("invalid payment schedule type: %d", paymentScheduleType))
 	}
 }
 
 // PaymentScheduleMatchesType checks whether the given PaymentSchedule instance matches the given
 // PaymentScheduleType.
 func PaymentScheduleMatchesType(ps PaymentSchedule, t PaymentScheduleType) bool {
-	switch ps.(type) {
+	switch psType := ps.(type) {
 	case *MonthlyPaymentSchedule:
 		return t == PAYMENT_SCHEDULE_TYPE_MONTHLY
 	case *BlockBasedPaymentSchedule:
 		return t == PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
-	default:
+	case *EmptyPaymentSchedule:
 		return t == PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
+	default:
+		panic(fmt.Sprintf("invalid payment schedule type: %T", psType))
 	}
 }
