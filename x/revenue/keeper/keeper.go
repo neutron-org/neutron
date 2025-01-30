@@ -89,22 +89,26 @@ func (k *Keeper) EndBlock(ctx sdk.Context) error {
 	}
 
 	var stateRequiresUpdate bool
-	switch {
-	// payment schedule either haven't been set or has been changed in the current block
-	// in this case, we need to reflect the change in the currently used payment schedule
-	case !revenuetypes.PaymentScheduleMatchesType(ps, params.PaymentScheduleType):
-		ps = revenuetypes.PaymentScheduleByType(params.PaymentScheduleType)
-		ps.StartNewPeriod(ctx)
-		stateRequiresUpdate = true
 
 	// if the period has ended, revenue needs to be processed and module's state set to the next period
-	case ps.PeriodEnded(ctx):
+	if ps.PeriodEnded(ctx) {
 		if err := k.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
 			return fmt.Errorf("failed to process revenue: %w", err)
 		}
 		ps.StartNewPeriod(ctx)
 		stateRequiresUpdate = true
 	}
+
+	// a mismatch means that the payment schedule type has been changed in the current block by
+	// a MsgUpdateParams submission
+	// in this case, we need to reflect the change in the module's State by storing the
+	// corresponding payment schedule implementation in the module's State
+	if !revenuetypes.PaymentScheduleMatchesType(ps, params.PaymentScheduleType) {
+		ps = revenuetypes.PaymentScheduleByType(params.PaymentScheduleType)
+		ps.StartNewPeriod(ctx)
+		stateRequiresUpdate = true
+	}
+
 	if stateRequiresUpdate {
 		packedPs, err := codectypes.NewAnyWithValue(ps)
 		if err != nil {
