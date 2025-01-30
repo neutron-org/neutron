@@ -333,10 +333,21 @@ func (m *EmptyPaymentSchedule) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EmptyPaymentSchedule proto.InternalMessageInfo
 
+// CumulativePrice is a structure that contains the cumulative price of an asset over the
+// entire observation period, as well as the last recorded asset price
+// and the timestamp at which this price is valid.
+//
+// It is used to calculate TWAP as:
+// twap_from_time_t(n)_to_time_t(n-1) = (cumulative_price_at_tn - cumulative_price_at_t(n-1))/(tn - t(n-1))
 type CumulativePrice struct {
+	// Cumulative price of a denom from the start of monitoring to the last block
+	// calculates as
+	// `cumulative_price at timestamp t(n)` = `last_price at t(n-1)` * (t(n) - t(n-1))`
 	CumulativePrice cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=cumulative_price,json=cumulativePrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"cumulative_price"`
-	LastPrice       cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=last_price,json=lastPrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"last_price"`
-	Timestamp       int64                       `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// last_price is the price at the current timestamp
+	LastPrice cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=last_price,json=lastPrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"last_price"`
+	// Timestamp when the price has been saved.
+	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 }
 
 func (m *CumulativePrice) Reset()         { *m = CumulativePrice{} }
