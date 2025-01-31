@@ -153,11 +153,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(ctx context.Context) error {
-	sCtx := sdk.UnwrapSDKContext(ctx)
-	err := am.keeper.EndBlock(sCtx)
-	if err != nil {
-		am.keeper.Logger(sCtx).Error("", "error", err)
-	}
+func (am AppModule) EndBlock(_ context.Context) error {
 	return nil
 }

@@ -421,9 +421,8 @@ type App struct {
 	ContractKeeper *wasmkeeper.PermissionedKeeper
 
 	// slinky
-	MarketMapKeeper       *marketmapkeeper.Keeper
-	OracleKeeper          *oraclekeeper.Keeper
-	oraclePreBlockHandler *oraclepreblock.PreBlockHandler
+	MarketMapKeeper *marketmapkeeper.Keeper
+	OracleKeeper    *oraclekeeper.Keeper
 
 	// processes
 	oracleClient oracleclient.OracleClient
@@ -1283,7 +1282,7 @@ func New(
 
 	// Create the pre-finalize block hook that will be used to apply oracle data
 	// to the state before any transactions are executed (in finalize block).
-	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
+	oraclePreBlockHandler := oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
 		aggregatorFn,
 		app.OracleKeeper,
@@ -1298,8 +1297,8 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
-
-	app.SetPreBlocker(app.oraclePreBlockHandler.WrappedPreBlocker(app.mm))
+	revenuePreBlockHandler := revenue.NewPreBlockHandler(app.RevenueKeeper)
+	app.SetPreBlocker(revenuePreBlockHandler.WrappedPreBlocker(oraclePreBlockHandler.WrappedPreBlocker(app.mm)))
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).

@@ -6,6 +6,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
+var _ codectypes.UnpackInterfacesMessage = GenesisState{}
+
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
 	params := DefaultParams()
@@ -38,5 +40,15 @@ func (gs GenesisState) Validate() error {
 		return fmt.Errorf("payment schedule type %s does not match payment schedule of type %T in genesis state", gs.Params.PaymentScheduleType, ps)
 	}
 
+	return nil
+}
+
+func (gs GenesisState) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	if gs.State.PaymentSchedule != nil {
+		var ps PaymentSchedule
+		if err := unpacker.UnpackAny(gs.State.PaymentSchedule, &ps); err != nil {
+			return fmt.Errorf("failed to unpack payment schedule: %w", err)
+		}
+	}
 	return nil
 }
