@@ -11,30 +11,30 @@ import (
 )
 
 type msgServer struct {
-	*Keeper
+	keeper *Keeper
 }
 
 // NewMsgServerImpl returns an implementation of the MsgServer interface
 // for the provided Keeper.
 func NewMsgServerImpl(keeper *Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper}
+	return &msgServer{keeper: keeper}
 }
 
 var _ types.MsgServer = msgServer{}
 
 // ManageHookSubscription updates the hook subscriptions for a specified contract address.
 // Can only be executed by the module's authority.
-func (k msgServer) ManageHookSubscription(goCtx context.Context, req *types.MsgManageHookSubscription) (*types.MsgManageHookSubscriptionResponse, error) {
+func (s msgServer) ManageHookSubscription(goCtx context.Context, req *types.MsgManageHookSubscription) (*types.MsgManageHookSubscriptionResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(err, "failed to validate manage hook subscription message")
 	}
 
-	if k.GetAuthority() != req.Authority {
-		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.GetAuthority(), req.Authority)
+	if s.keeper.GetAuthority() != req.Authority {
+		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "invalid authority; expected %s, got %s", s.keeper.GetAuthority(), req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.UpdateHookSubscription(ctx, req.HookSubscription)
+	s.keeper.UpdateHookSubscription(ctx, req.HookSubscription)
 
 	return &types.MsgManageHookSubscriptionResponse{}, nil
 }

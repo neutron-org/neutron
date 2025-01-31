@@ -25,8 +25,8 @@ const (
 )
 
 func setupMsgServer(t testing.TB) (keeper.Keeper, types.MsgServer, context.Context) {
-	k, ctx := keepertest.HarpoonKeeper(t, nil, nil)
-	return *k, keeper.NewMsgServerImpl(*k), ctx
+	k, ctx := keepertest.HarpoonKeeper(t, nil)
+	return *k, keeper.NewMsgServerImpl(k), ctx
 }
 
 func TestMsgServer(t *testing.T) {
@@ -40,12 +40,10 @@ func TestManageHookSubscription(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
-
 	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
 
-	msgServer := keeper.NewMsgServerImpl(*k)
+	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
 		name                      string

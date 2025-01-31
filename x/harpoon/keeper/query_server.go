@@ -11,10 +11,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var _ types.QueryServer = Keeper{}
+type queryServer struct {
+	keeper *Keeper
+}
+
+// NewQueryServerImpl returns an implementation of the QueryServer interface
+// for the provided Keeper.
+func NewQueryServerImpl(keeper *Keeper) types.QueryServer {
+	return &queryServer{keeper: keeper}
+}
+
+var _ types.QueryServer = queryServer{}
 
 // SubscribedContracts retrieves the contract addresses subscribed to a specific hook type.
-func (k Keeper) SubscribedContracts(goCtx context.Context, req *types.QuerySubscribedContractsRequest) (*types.QuerySubscribedContractsResponse, error) {
+func (s queryServer) SubscribedContracts(goCtx context.Context, req *types.QuerySubscribedContractsRequest) (*types.QuerySubscribedContractsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -26,7 +36,7 @@ func (k Keeper) SubscribedContracts(goCtx context.Context, req *types.QuerySubsc
 	if hookTypeInt, ok := types.HookType_value[req.HookType]; ok {
 		ctx := sdk.UnwrapSDKContext(goCtx)
 		hookType := types.HookType(hookTypeInt)
-		return &types.QuerySubscribedContractsResponse{ContractAddresses: k.GetSubscribedAddressesForHookType(ctx, hookType)}, nil
+		return &types.QuerySubscribedContractsResponse{ContractAddresses: s.keeper.GetSubscribedAddressesForHookType(ctx, hookType)}, nil
 	} else {
 		return nil, status.Error(codes.InvalidArgument, "non existing hookType")
 	}
