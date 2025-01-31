@@ -17,26 +17,27 @@ message HookSubscriptions {
 enum HookType {
   option (gogoproto.goproto_enum_prefix) = false;
 
+  HOOK_TYPE_UNSPECIFIED = 0;
   // Triggered after validator is created
-  HOOK_TYPE_AFTER_VALIDATOR_CREATED = 0;
+  HOOK_TYPE_AFTER_VALIDATOR_CREATED = 1;
   // Triggered before validator is modified
-  HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED = 1;
+  HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED = 2;
   // Triggered after validator is removed
-  HOOK_TYPE_AFTER_VALIDATOR_REMOVED = 2;
+  HOOK_TYPE_AFTER_VALIDATOR_REMOVED = 3;
   // Triggered after validator is bonded
-  HOOK_TYPE_AFTER_VALIDATOR_BONDED = 3;
+  HOOK_TYPE_AFTER_VALIDATOR_BONDED = 4;
   // Triggered after validator begins unbonding
-  HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING = 4;
+  HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING = 5;
   // Triggered before delegation is created
-  HOOK_TYPE_BEFORE_DELEGATION_CREATED = 5;
+  HOOK_TYPE_BEFORE_DELEGATION_CREATED = 6;
   // Triggered before delegation's shares are modified
-  HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED = 6;
+  HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED = 7;
   // Triggered before delegation is removed
-  HOOK_TYPE_BEFORE_DELEGATION_REMOVED = 7;
+  HOOK_TYPE_BEFORE_DELEGATION_REMOVED = 8;
   // Triggered after delegation is modified
-  HOOK_TYPE_AFTER_DELEGATION_MODIFIED = 8;
+  HOOK_TYPE_AFTER_DELEGATION_MODIFIED = 9;
   // Triggered before validator is slashed
-  HOOK_TYPE_BEFORE_VALIDATOR_SLASHED = 9;
+  HOOK_TYPE_BEFORE_VALIDATOR_SLASHED = 10;
   // Triggered after unbonding is initiated
-  HOOK_TYPE_AFTER_UNBONDING_INITIATED = 10;
+  HOOK_TYPE_AFTER_UNBONDING_INITIATED = 11;
 }

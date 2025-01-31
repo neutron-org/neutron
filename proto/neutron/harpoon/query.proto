@@ -5,6 +5,7 @@ import "amino/amino.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "neutron/harpoon/hooks.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 
@@ -19,7 +20,7 @@ service Query {
 // Request type for the Query/SubscribedContracts RPC method.
 message QuerySubscribedContractsRequest {
   // The response will include only contract addresses for this hook type.
-  string hook_type = 1;
+  HookType hook_type = 1;
 }
 
 // Response type for the Query/SubscribedContracts RPC method.
