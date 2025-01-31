@@ -783,15 +783,15 @@ set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED" 
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 0},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 1},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 3},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 2},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 4},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 6},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 5},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 7},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 8},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 9},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 10}]"
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 10},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 11}]"
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2

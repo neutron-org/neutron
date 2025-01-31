@@ -15,7 +15,7 @@ func TestSubscribedContractsQuery(t *testing.T) {
 	queryServer := keeper.NewQueryServerImpl(k)
 
 	// before set return empty
-	response, err := queryServer.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HOOK_TYPE_AFTER_VALIDATOR_CREATED.String()})
+	response, err := queryServer.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HOOK_TYPE_AFTER_VALIDATOR_CREATED})
 	require.NoError(t, err)
 	require.Equal(t, &types.QuerySubscribedContractsResponse{ContractAddresses: []string{}}, response)
 
@@ -26,7 +26,7 @@ func TestSubscribedContractsQuery(t *testing.T) {
 	})
 
 	// after adding returns hook
-	response, err = queryServer.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HOOK_TYPE_AFTER_VALIDATOR_CREATED.String()})
+	response, err = queryServer.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HOOK_TYPE_AFTER_VALIDATOR_CREATED})
 	require.NoError(t, err)
 	require.Equal(t, &types.QuerySubscribedContractsResponse{ContractAddresses: []string{ContractAddress1}}, response)
 }

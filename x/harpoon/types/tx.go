@@ -70,6 +70,10 @@ func (msg *MsgManageHookSubscription) checkHooksExist() error {
 		if !ok {
 			return fmt.Errorf("non-existing hook=%d", int32(item))
 		}
+
+		if item == HOOK_TYPE_UNSPECIFIED {
+			return fmt.Errorf("unspecified hooks are not allowed")
+		}
 	}
 
 	return nil

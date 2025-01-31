@@ -29,15 +29,10 @@ func (s queryServer) SubscribedContracts(goCtx context.Context, req *types.Query
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	if req.HookType == "" {
-		return nil, status.Error(codes.InvalidArgument, "empty hook type")
+	if req.HookType == types.HOOK_TYPE_UNSPECIFIED {
+		return nil, status.Error(codes.InvalidArgument, "unspecified hook type")
 	}
 
-	if hookTypeInt, ok := types.HookType_value[req.HookType]; ok {
-		ctx := sdk.UnwrapSDKContext(goCtx)
-		hookType := types.HookType(hookTypeInt)
-		return &types.QuerySubscribedContractsResponse{ContractAddresses: s.keeper.GetSubscribedAddressesForHookType(ctx, hookType)}, nil
-	} else {
-		return nil, status.Error(codes.InvalidArgument, "non existing hookType")
-	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	return &types.QuerySubscribedContractsResponse{ContractAddresses: s.keeper.GetSubscribedAddressesForHookType(ctx, req.HookType)}, nil
 }

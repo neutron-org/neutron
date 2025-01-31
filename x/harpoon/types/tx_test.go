@@ -50,6 +50,17 @@ func TestMsgManageHookSubscriptionValidate(t *testing.T) {
 			"non-existing hook type",
 		},
 		{
+			"unspecified hook type",
+			types.MsgManageHookSubscription{
+				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				HookSubscription: &types.HookSubscription{
+					ContractAddress: testutil.TestOwnerAddress,
+					Hooks:           []types.HookType{types.HOOK_TYPE_UNSPECIFIED},
+				},
+			},
+			"non-existing hook type: unspecified hooks are not allowed",
+		},
+		{
 			"all good",
 			types.MsgManageHookSubscription{
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
