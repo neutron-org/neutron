@@ -12,7 +12,7 @@ option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 service Query {
   // Retrieves contracts subscribed to a specific hook type.
   rpc SubscribedContracts(QuerySubscribedContractsRequest) returns (QuerySubscribedContractsResponse) {
-    option (google.api.http).get = "/neutron/v5/harpoon/subscribed_contracts";
+    option (google.api.http).get = "/neutron/harpoon/subscribed_contracts";
   }
 }
 
