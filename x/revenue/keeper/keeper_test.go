@@ -301,7 +301,7 @@ func TestEndBlockEmptyPaymentSchedule(t *testing.T) {
 	// val commits oracle prices (content doesn't matter, the len of the map does)
 	voteAggregator.EXPECT().GetPriceForValidator(ca1).Return(map[slinkytypes.CurrencyPair]*big.Int{{}: big.NewInt(0)})
 
-	err := keeper.EndBlock(ctx)
+	err := keeper.PreBlock(ctx)
 	require.Nil(t, err)
 
 	// make sure that the validator votes are processed and recorded
@@ -354,7 +354,7 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 		// no SendCoinsFromModuleToAccount calls expected
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-		err = keeper.EndBlock(ctx.WithBlockHeight(2).WithBlockTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)))
+		err = keeper.PreBlock(ctx.WithBlockHeight(2).WithBlockTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)))
 		require.Nil(t, err)
 
 		// make sure that the validator votes are processed and recorded
@@ -422,7 +422,7 @@ func TestEndBlockMonthlyPaymentSchedule(t *testing.T) {
 		).Times(1).Return(nil)
 
 		// next block in the next month with expected revenue distribution
-		err = keeper.EndBlock(ctx.WithBlockHeight(6).WithBlockTime(time.Date(2000, 2, 1, 0, 0, 0, 0, time.UTC)))
+		err = keeper.PreBlock(ctx.WithBlockHeight(6).WithBlockTime(time.Date(2000, 2, 1, 0, 0, 0, 0, time.UTC)))
 		require.Nil(t, err)
 
 		// make sure that the validator commitments are reset at the new period (month)
@@ -478,7 +478,7 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 		// no SendCoinsFromModuleToAccount calls expected
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-		err = keeper.EndBlock(ctx.WithBlockHeight(2))
+		err = keeper.PreBlock(ctx.WithBlockHeight(2))
 		require.Nil(t, err)
 
 		// make sure that the validator votes are processed and recorded
@@ -546,7 +546,7 @@ func TestEndBlockBlockBasedPaymentSchedule(t *testing.T) {
 		).Times(1).Return(nil)
 
 		// next block in the next period with expected revenue distribution
-		err = keeper.EndBlock(ctx.WithBlockHeight(6))
+		err = keeper.PreBlock(ctx.WithBlockHeight(6))
 		require.Nil(t, err)
 
 		// make sure that the validator commitments are reset at the new period

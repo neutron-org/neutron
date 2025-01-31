@@ -64,10 +64,10 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", revenuetypes.ModuleName))
 }
 
-// EndBlock records validators' participation in block creation and oracle price provisioning,
+// PreBlock records validators' participation in block creation and oracle price provisioning,
 // ensuring the module's state remains up to date. At the start of each month, it calculates and
 // distributes rewards to all validators based on their performance during the previous period.
-func (k *Keeper) EndBlock(ctx sdk.Context) error {
+func (k *Keeper) PreBlock(ctx sdk.Context) error {
 	state, err := k.GetState(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get module state: %w", err)
