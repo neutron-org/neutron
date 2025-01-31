@@ -869,7 +869,6 @@ func New(
 	app.HarpoonKeeper = harpoonkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
-		app.AccountKeeper,
 		&app.WasmKeeper,
 		logger,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -943,7 +942,7 @@ func New(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		harpoon.NewAppModule(appCodec, app.HarpoonKeeper, app.AccountKeeper),
+		harpoon.NewAppModule(appCodec, app.HarpoonKeeper),
 		transferModule,
 		stakingModule,
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, encodingConfig.TxConfig),

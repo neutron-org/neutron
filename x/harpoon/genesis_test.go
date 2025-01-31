@@ -23,9 +23,9 @@ func TestGenesis(t *testing.T) {
 		HookSubscriptions: nil,
 	}
 
-	k, ctx := keepertest.HarpoonKeeper(t, nil, nil)
-	harpoon.InitGenesis(ctx, *k, genesisState)
-	got := harpoon.ExportGenesis(ctx, *k)
+	k, ctx := keepertest.HarpoonKeeper(t, nil)
+	harpoon.InitGenesis(ctx, k, genesisState)
+	got := harpoon.ExportGenesis(ctx, k)
 	require.NotNil(t, got)
 
 	nullify.Fill(&genesisState)
@@ -46,9 +46,9 @@ func TestGenesis(t *testing.T) {
 			},
 		},
 	}
-	k, ctx = keepertest.HarpoonKeeper(t, nil, nil)
-	harpoon.InitGenesis(ctx, *k, genesisState2)
-	got2 := harpoon.ExportGenesis(ctx, *k)
+	k, ctx = keepertest.HarpoonKeeper(t, nil)
+	harpoon.InitGenesis(ctx, k, genesisState2)
+	got2 := harpoon.ExportGenesis(ctx, k)
 	require.NotNil(t, got)
 
 	nullify.Fill(&genesisState)

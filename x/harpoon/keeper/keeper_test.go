@@ -20,9 +20,8 @@ import (
 func TestUpdateHookSubscription(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
 
 	// empty update on empty subscription should work
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
@@ -85,17 +84,18 @@ func TestUpdateHookSubscription(t *testing.T) {
 func TestCallSudoForSubscriptionType(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
 
 	k.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress1,
 		Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED},
 	})
 
-	msg := types.SudoAfterValidatorCreated{
-		ValAddr: []byte("test"),
+	msg := types.AfterValidatorCreatedSudoMsg{
+		AfterValidatorCreated: types.AfterValidatorCreatedMsg{
+			ValAddr: "neutronvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk5tccmr",
+		},
 	}
 	msgBz, err := json.Marshal(msg)
 	require.NoError(t, err)
@@ -129,9 +129,8 @@ func TestCallSudoForSubscriptionType(t *testing.T) {
 func TestSetHookSubscription(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
 
 	k.SetHookSubscription(ctx, types.HookSubscriptions{
 		HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
@@ -150,9 +149,8 @@ func TestSetHookSubscription(t *testing.T) {
 func TestGetAllSubscriptions(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
 
 	res := k.GetAllSubscriptions(ctx)
 	require.Empty(t, res)
