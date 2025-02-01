@@ -155,6 +155,8 @@ SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
 
 NEUTRON_CHAIN_MANAGER_LABEL="neutron.chain.manager"
 
+NEUTRON_STAKING_VAULT_NAME="Neutron Staking Vault"
+NEUTRON_STAKING_VAULT_DESCRIPTION="Vault that gives voting power from a native delegations to validators"
 NEUTRON_STAKING_VAULT_LABEL="neutron.voting.vaults.staking"
 
 echo "Initializing dao contract in genesis..."
@@ -637,8 +639,8 @@ NEUTRON_CHAIN_MANAGER_INIT_MSG='{
 }'
 
 NEUTRON_STAKING_VAULT_INIT_MSG='{
-  "name": "Staking Vault",
-  "description": "Staking Vault",
+  "name": "'"$NEUTRON_STAKING_VAULT_NAME"'",
+  "description": "'"$NEUTRON_STAKING_VAULT_DESCRIPTION"'",
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
   "denom": "untrn"
 }'
