@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/neutron-org/neutron/v5/x/harpoon"
+
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/interchain-security/v5/testutil/integration"
@@ -227,6 +229,9 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
+	harpoonkeeper "github.com/neutron-org/neutron/v5/x/harpoon/keeper"
+	harpoontypes "github.com/neutron-org/neutron/v5/x/harpoon/types"
+
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
@@ -297,6 +302,7 @@ var (
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
 		consensus.AppModuleBasic{},
+		harpoon.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -317,6 +323,7 @@ var (
 		oracletypes.ModuleName:                  nil,
 		marketmaptypes.ModuleName:               nil,
 		feemarkettypes.FeeCollectorName:         nil,
+		harpoontypes.ModuleName:                 nil,
 	}
 )
 
@@ -387,6 +394,7 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	GlobalFeeKeeper     globalfeekeeper.Keeper
+	HarpoonKeeper       *harpoonkeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -502,6 +510,7 @@ func New(
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey, ibcratelimittypes.ModuleName,
+		harpoontypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -706,7 +715,7 @@ func New(
 		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
-	app.StakingKeeper.SetHooks(app.SlashingKeeper.Hooks())
+
 	// consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
 
@@ -857,6 +866,17 @@ func New(
 		wasmOpts...,
 	)
 
+	app.HarpoonKeeper = harpoonkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
+		&app.WasmKeeper,
+		logger,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	multiStakingHooks := stakingtypes.NewMultiStakingHooks(app.SlashingKeeper.Hooks(), app.HarpoonKeeper.Hooks())
+	app.StakingKeeper.SetHooks(multiStakingHooks)
+
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
 
@@ -922,6 +942,7 @@ func New(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		harpoon.NewAppModule(appCodec, app.HarpoonKeeper),
 		transferModule,
 		stakingModule,
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, encodingConfig.TxConfig),
@@ -991,6 +1012,7 @@ func New(
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
 		dextypes.ModuleName,
+		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
 
@@ -1028,6 +1050,7 @@ func New(
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
 		dextypes.ModuleName,
+		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
 
@@ -1049,6 +1072,8 @@ func New(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		feegrant.ModuleName,
+		wasmtypes.ModuleName,
+		harpoontypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
@@ -1057,7 +1082,6 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
