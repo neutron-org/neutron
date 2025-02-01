@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"cosmossdk.io/core/appmodule"

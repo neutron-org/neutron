@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
 	"github.com/spf13/cobra"
@@ -51,7 +52,6 @@ func CmdQuerySubscribedContracts() *cobra.Command {
 		},
 	}
 
-	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
