@@ -17,7 +17,6 @@ import (
 
 func RevenueKeeper(
 	t testing.TB,
-	voteAggregator revenuetypes.VoteAggregator,
 	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
 	oracleKeeper revenuetypes.OracleKeeper,
@@ -34,7 +33,6 @@ func RevenueKeeper(
 	k := keeper.NewKeeper(
 		cdc,
 		ss,
-		voteAggregator,
 		stakingKeeper,
 		bankKeeper,
 		oracleKeeper,

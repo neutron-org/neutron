@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 
-	"cosmossdk.io/core/comet"
 	coretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32types "github.com/cosmos/cosmos-sdk/types/bech32"
 
@@ -19,19 +18,17 @@ import (
 )
 
 type Keeper struct {
-	cdc            codec.BinaryCodec
-	storeService   coretypes.KVStoreService
-	voteAggregator revenuetypes.VoteAggregator
-	stakingKeeper  revenuetypes.StakingKeeper
-	bankKeeper     revenuetypes.BankKeeper
+	cdc           codec.BinaryCodec
+	storeService  coretypes.KVStoreService
+	stakingKeeper revenuetypes.StakingKeeper
+	bankKeeper    revenuetypes.BankKeeper
 	oracleKeeper   revenuetypes.OracleKeeper
-	authority      string
+	authority     string
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService coretypes.KVStoreService,
-	voteAggregator revenuetypes.VoteAggregator,
 	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
 	oracleKeeper revenuetypes.OracleKeeper,
@@ -51,13 +48,12 @@ func NewKeeper(
 	//	panic("authority is not a valid acc address")
 	// }
 	return &Keeper{
-		cdc:            cdc,
-		storeService:   storeService,
-		voteAggregator: voteAggregator,
-		stakingKeeper:  stakingKeeper,
-		bankKeeper:     bankKeeper,
+		cdc:           cdc,
+		storeService:  storeService,
+		stakingKeeper: stakingKeeper,
+		bankKeeper:    bankKeeper,
 		oracleKeeper:   oracleKeeper,
-		authority:      authority,
+		authority:     authority,
 	}
 }
 
@@ -67,64 +63,6 @@ func (k Keeper) GetAuthority() string {
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", revenuetypes.ModuleName))
-}
-
-// PreBlock records validators' participation in block creation and oracle price provisioning,
-// ensuring the module's state remains up to date. At the start of each month, it calculates and
-// distributes rewards to all validators based on their performance during the previous period.
-func (k *Keeper) PreBlock(ctx sdk.Context) error {
-	state, err := k.GetState(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get module state: %w", err)
-	}
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get module params: %w", err)
-	}
-
-	pscv := state.PaymentSchedule.GetCachedValue()
-	ps, ok := pscv.(revenuetypes.PaymentSchedule)
-	if !ok {
-		return fmt.Errorf("expected state.PaymentSchedule to be of type PaymentSchedule, but got %T", pscv)
-	}
-
-	var stateRequiresUpdate bool
-
-	// if the period has ended, revenue needs to be processed and module's state set to the next period
-	if ps.PeriodEnded(ctx) {
-		if err := k.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
-			return fmt.Errorf("failed to process revenue: %w", err)
-		}
-		ps.StartNewPeriod(ctx)
-		stateRequiresUpdate = true
-	}
-
-	// a mismatch means that the payment schedule type has been changed in the current block by
-	// a MsgUpdateParams submission
-	// in this case, we need to reflect the change in the module's State by storing the
-	// corresponding payment schedule implementation in the module's State
-	if !revenuetypes.PaymentScheduleMatchesType(ps, params.PaymentScheduleType) {
-		ps = revenuetypes.PaymentScheduleByType(params.PaymentScheduleType)
-		ps.StartNewPeriod(ctx)
-		stateRequiresUpdate = true
-	}
-
-	if stateRequiresUpdate {
-		packedPs, err := codectypes.NewAnyWithValue(ps)
-		if err != nil {
-			return fmt.Errorf("failed to pack new payment schedule %+v: %w", ps, err)
-		}
-		state.PaymentSchedule = packedPs
-		if err := k.SetState(ctx, state); err != nil {
-			return fmt.Errorf("failed to set module state after changing payment schedule: %w", err)
-		}
-	}
-
-	if err := k.RecordValidatorsParticipation(ctx); err != nil {
-		return fmt.Errorf("failed to record validators participation for current block: %w", err)
-	}
-
-	return nil
 }
 
 // GetParams gets the revenue module parameters.
@@ -233,24 +171,24 @@ func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info re
 
 // RecordValidatorsParticipation checks whether validators have voted for the block and oracle
 // prices and updates their info in accordance with the results.
-func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context) error {
-	for _, info := range ctx.VoteInfos() {
+func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuetypes.ValidatorParticipation) error {
+	for _, vote := range votes {
 		var blockVote bool  // whether the validator has voted for the block
 		var oracleVote bool // whether the validator has voted for the oracle prices
 
 		// BlockIDFlagAbsent means that no block vote has been received from the validator
-		if comet.BlockIDFlag(info.BlockIdFlag) == comet.BlockIDFlagAbsent {
+		if vote.BlockVote == tmtypes.BlockIDFlagAbsent {
 			k.Logger(ctx).Debug("missing validator's block signature",
-				"validator", info.Validator.Address,
+				"validator", vote.ConsAddress.String(),
 				"height", ctx.BlockHeight(),
 			)
 		} else {
 			blockVote = true
 		}
 		// empty oracle prices means that no prices vote has been received from the validator
-		if len(k.voteAggregator.GetPriceForValidator(sdk.ConsAddress(info.Validator.Address))) == 0 {
+		if len(vote.OracleVoteExtension.Prices) == 0 {
 			k.Logger(ctx).Debug("missing validator's oracle prices",
-				"validator", info.Validator.Address,
+				"validator", vote.ConsAddress.String(),
 				"height", ctx.BlockHeight(),
 			)
 		} else {
@@ -261,7 +199,7 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context) error {
 		}
 
 		// update validator's info in the module state
-		valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address)
+		valInfo, err := k.getOrCreateValidatorInfo(ctx, vote.ConsAddress)
 		if err != nil {
 			return err
 		}
@@ -271,7 +209,7 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context) error {
 		if blockVote {
 			valInfo.CommitedBlocksInPeriod++
 		}
-		if err := k.SetValidatorInfo(ctx, info.Validator.Address, valInfo); err != nil {
+		if err := k.SetValidatorInfo(ctx, vote.ConsAddress, valInfo); err != nil {
 			return err
 		}
 	}
@@ -282,7 +220,7 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context) error {
 // the current period. It determines each validator's compensation, transfers the appropriate amount
 // of revenue from the module's treasury pool to the validator's account, and resets the validator's
 // performance stats in preparation for the next period.
-func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blocksPerPeriod uint64) error {
+func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blocksInPeriod uint64) error {
 	infos, err := k.GetAllValidatorInfo(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
@@ -301,9 +239,9 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 		rating := PerformanceRating(
 			params.BlocksPerformanceRequirement,
 			params.OracleVotesPerformanceRequirement,
-			int64(blocksPerPeriod-info.GetCommitedBlocksInPeriod()),
-			int64(blocksPerPeriod-info.GetCommitedOracleVotesInPeriod()),
-			int64(blocksPerPeriod),
+			int64(blocksInPeriod-info.GetCommitedBlocksInPeriod()),
+			int64(blocksInPeriod-info.GetCommitedOracleVotesInPeriod()),
+			int64(blocksInPeriod),
 		)
 		valCompensation := rating.MulInt(baseCompensation).TruncateInt()
 
@@ -334,7 +272,29 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 		info.CommitedBlocksInPeriod = 0
 		info.CommitedOracleVotesInPeriod = 0
 		if err := k.SetValidatorInfo(ctx, valConsAddr, info); err != nil {
-			return fmt.Errorf("failed to reset a validator info: %w", err)
+			return fmt.Errorf("failed to reset a validator %s info: %w", info.ConsensusAddress, err)
+		}
+	}
+	return nil
+}
+
+// ResetValidatorsInfo resets the validators' performance info in the module state.
+func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
+	infos, err := k.GetAllValidatorInfo(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get all validator info: %w", err)
+	}
+
+	for _, info := range infos {
+		valConsAddr, err := sdk.ConsAddressFromBech32(info.ConsensusAddress)
+		if err != nil {
+			return fmt.Errorf("failed to create valcons addr from bech32 %s: %w", info.ConsensusAddress, err)
+		}
+
+		info.CommitedBlocksInPeriod = 0
+		info.CommitedOracleVotesInPeriod = 0
+		if err := k.SetValidatorInfo(ctx, valConsAddr, info); err != nil {
+			return fmt.Errorf("failed to reset a validator %s info: %w", info.ConsensusAddress, err)
 		}
 	}
 	return nil

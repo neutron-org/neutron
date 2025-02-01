@@ -14,12 +14,11 @@ import (
 
 func TestMonthlyPaymentSchedule(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	_, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper, "")
+	_, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, oracleKeeper, "")
 
 	// a monthly schedule for January with first block height = 1
 	s := &revenuetypes.MonthlyPaymentSchedule{
@@ -52,12 +51,11 @@ func TestMonthlyPaymentSchedule(t *testing.T) {
 
 func TestBlockBasedPaymentSchedule(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	_, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper, oracleKeeper, "")
+	_, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, oracleKeeper, "")
 
 	// a block based schedule of 100 blocks period and period start block = 1
 	s := &revenuetypes.BlockBasedPaymentSchedule{

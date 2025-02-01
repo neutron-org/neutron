@@ -26,6 +26,10 @@ func PerformanceRating(
 	missedOracleVotes int64,
 	totalBlocks int64,
 ) math.LegacyDec {
+	if totalBlocks == 0 {
+		return math.LegacyZeroDec()
+	}
+
 	blocksPerfThreshold := math.LegacyOneDec().Sub(blocksPR.RequiredAtLeast)
 	oracleVotesPerfThreshold := math.LegacyOneDec().Sub(oracleVotesPR.RequiredAtLeast)
 

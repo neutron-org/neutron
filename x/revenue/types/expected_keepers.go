@@ -2,21 +2,13 @@ package types
 
 import (
 	"context"
-	"math/big"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 )
-
-// VoteAggregator defines the expected interface for aggregating oracle votes into a set of prices.
-type VoteAggregator interface {
-	// GetPriceForValidator gets the prices reported by a given validator. This method depends
-	// on the prices from the latest set of aggregated votes.
-	GetPriceForValidator(validator sdktypes.ConsAddress) map[slinkytypes.CurrencyPair]*big.Int
-}
 
 // StakingKeeper defines the expected interface for getting validators by consensus address.
 type StakingKeeper interface {

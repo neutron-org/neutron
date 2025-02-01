@@ -6,7 +6,6 @@ package mock_types
 
 import (
 	context "context"
-	big "math/big"
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
@@ -15,43 +14,6 @@ import (
 	types1 "github.com/skip-mev/slinky/pkg/types"
 	types2 "github.com/skip-mev/slinky/x/oracle/types"
 )
-
-// MockVoteAggregator is a mock of VoteAggregator interface.
-type MockVoteAggregator struct {
-	ctrl     *gomock.Controller
-	recorder *MockVoteAggregatorMockRecorder
-}
-
-// MockVoteAggregatorMockRecorder is the mock recorder for MockVoteAggregator.
-type MockVoteAggregatorMockRecorder struct {
-	mock *MockVoteAggregator
-}
-
-// NewMockVoteAggregator creates a new mock instance.
-func NewMockVoteAggregator(ctrl *gomock.Controller) *MockVoteAggregator {
-	mock := &MockVoteAggregator{ctrl: ctrl}
-	mock.recorder = &MockVoteAggregatorMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockVoteAggregator) EXPECT() *MockVoteAggregatorMockRecorder {
-	return m.recorder
-}
-
-// GetPriceForValidator mocks base method.
-func (m *MockVoteAggregator) GetPriceForValidator(validator types.ConsAddress) map[types1.CurrencyPair]*big.Int {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPriceForValidator", validator)
-	ret0, _ := ret[0].(map[types1.CurrencyPair]*big.Int)
-	return ret0
-}
-
-// GetPriceForValidator indicates an expected call of GetPriceForValidator.
-func (mr *MockVoteAggregatorMockRecorder) GetPriceForValidator(validator interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPriceForValidator", reflect.TypeOf((*MockVoteAggregator)(nil).GetPriceForValidator), validator)
-}
 
 // MockStakingKeeper is a mock of StakingKeeper interface.
 type MockStakingKeeper struct {

@@ -917,15 +917,9 @@ func New(
 		voteweighted.DefaultPowerThreshold,
 	)
 
-	voteAggregator := aggregator.NewDefaultVoteAggregator(
-		app.Logger(),
-		aggregatorFn,
-		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
-	)
 	app.RevenueKeeper = revenuekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[revenuetypes.StoreKey]),
-		voteAggregator,
 		app.StakingKeeper,
 		&app.BankKeeper,
 		app.OracleKeeper,
@@ -1280,7 +1274,7 @@ func New(
 
 	app.SetCheckTx(parityCheckTx.CheckTx())
 
-	// Create the pre-finalize block hook that will be used to apply oracle data
+	// Create a pre-finalize block hook that will be used to apply oracle data
 	// to the state before any transactions are executed (in finalize block).
 	oraclePreBlockHandler := oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
@@ -1297,7 +1291,19 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
-	revenuePreBlockHandler := revenue.NewPreBlockHandler(app.RevenueKeeper)
+	// Create a pre-finalize block hook that will be used to record validators' participation
+	// in network operations and distribute revenue to validators.
+	revenuePreBlockHandler := revenue.NewPreBlockHandler(
+		app.RevenueKeeper,
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+	)
 	app.SetPreBlocker(revenuePreBlockHandler.WrappedPreBlocker(oraclePreBlockHandler.WrappedPreBlocker(app.mm)))
 
 	// Create the vote extensions handler that will be used to extend and verify
@@ -1309,6 +1315,12 @@ func New(
 	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
 		compression.NewDefaultExtendedCommitCodec(),
 		compression.NewZStdCompressor(),
+	)
+
+	voteAggregator := aggregator.NewDefaultVoteAggregator(
+		app.Logger(),
+		aggregatorFn,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 	)
 
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
