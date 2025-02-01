@@ -53,6 +53,10 @@ func TestPerformanceRating(t *testing.T) {
 	rating = PerformanceRating(bpr, ovpr, 75, 75, 1000)
 	require.Truef(t, math.LegacyNewDecWithPrec(457063711911357340, 18).Equal(rating), rating.String())
 
+	// everything's been missed, perf rating is 0.0
+	rating = PerformanceRating(bpr, ovpr, 1000, 1000, 1000)
+	require.Truef(t, math.LegacyZeroDec().Equal(rating), rating.String())
+
 	// define new performance requirements
 	bpr.AllowedToMiss = math.LegacyNewDecWithPrec(5, 3)    // 0.5%
 	bpr.RequiredAtLeast = math.LegacyNewDecWithPrec(9, 1)  // 90%
