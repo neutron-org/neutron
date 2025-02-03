@@ -22,8 +22,9 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 		return fmt.Errorf("failed to get module params: %w", err)
 	}
 
+	// TODO: enrich params with info how to query DenomCompensation price
 	pair := slinkytypes.CurrencyPair{
-		Base:  params.DenomCompensation,
+		Base:  "NTRN",
 		Quote: "USD",
 	}
 	priceInt, err := k.oracleKeeper.GetPriceForCurrencyPair(ctx, pair)
@@ -41,8 +42,9 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to save cumulative price: %w", err)
 	}
+	k.Logger(ctx).Debug("TWAP refresh", "price", price.String())
 
-	err = k.CleanOutdatedCumulativePrices(ctx)
+	err = k.CleanOutdatedCumulativePrices(ctx, ctx.BlockTime().Unix()-params.TWAP_Window)
 	if err != nil {
 		return fmt.Errorf("failed to clean outdated prices: %w", err)
 	}
@@ -152,11 +154,11 @@ func (k *Keeper) GetFirstCumulativePriceAfter(ctx sdk.Context, startAt int64) (t
 
 // CleanOutdatedCumulativePrices removes all the cumulative
 // prices those are older than a threshold
-func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context) error {
+func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context, cleanUntil int64) error {
 	store := k.storeService.OpenKVStore(ctx)
 	iter, err := store.Iterator(
 		types.PrefixAccumulatedPriceKey,
-		types.GetAccumulatedPriceKey(ctx.BlockTime().Unix()-types.MaxTWAPWindow),
+		types.GetAccumulatedPriceKey(cleanUntil),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to iterate over cumulative price: %w", err)

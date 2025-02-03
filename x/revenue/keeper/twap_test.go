@@ -79,9 +79,9 @@ func TestCumulative(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 4)
 
-	ctx = ctx.WithBlockTime(time.Unix(types.MaxTWAPWindow+2, 0))
+	ctx = ctx.WithBlockTime(time.Unix(types.DefaultTWAPWindow+2, 0))
 	// now price at time 1 is outdated
-	err = keeper.CleanOutdatedCumulativePrices(ctx)
+	err = keeper.CleanOutdatedCumulativePrices(ctx, ctx.BlockTime().Unix()-types.DefaultTWAPWindow)
 	require.Nil(t, err)
 
 	prices, err = keeper.GetAllCumulativePrices(ctx)

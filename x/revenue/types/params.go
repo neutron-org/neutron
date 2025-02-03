@@ -16,6 +16,8 @@ var (
 	DefaultBaseCompensation uint64 = 2500
 	// DefaultPaymentScheduleType represents the default payment schedule type.
 	DefaultPaymentScheduleType = &Params_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
+	// DefaultPaymentScheduleType represents default time to calculate TWAP
+	DefaultTWAPWindow int64 = 24 * 3600
 )
 
 // NewParams creates a new Params instance.
@@ -32,6 +34,7 @@ func NewParams(
 		BlocksPerformanceRequirement:      blocksPerformanceRequirement,
 		OracleVotesPerformanceRequirement: oraclePricesPerformanceRequirement,
 		PaymentScheduleType:               paymentScheduleType,
+		TWAP_Window:                       DefaultTWAPWindow,
 	}
 }
 
