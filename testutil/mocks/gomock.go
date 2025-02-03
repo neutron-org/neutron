@@ -8,4 +8,5 @@ package mocks
 //go:generate mockgen -source=./../../x/transfer/types/expected_keepers.go -destination ./transfer/types/expected_keepers.go
 //go:generate mockgen -source=./../../x/feeburner/types/expected_keepers.go -destination ./feeburner/types/expected_keepers.go
 //go:generate mockgen -source=./../../x/cron/types/expected_keepers.go -destination ./cron/types/expected_keepers.go
+//go:generate mockgen -source=./../../x/harpoon/types/expected_keepers.go -destination ./harpoon/types/expected_keepers.go
 //go:generate mockgen -source=./../../x/revenue/types/expected_keepers.go -destination ./revenue/types/expected_keepers.go

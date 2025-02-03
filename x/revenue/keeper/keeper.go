@@ -268,12 +268,6 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 				return fmt.Errorf("failed to send revenue to validator %s: %w", validator.OperatorAddress, err)
 			}
 		}
-
-		info.CommitedBlocksInPeriod = 0
-		info.CommitedOracleVotesInPeriod = 0
-		if err := k.SetValidatorInfo(ctx, valConsAddr, info); err != nil {
-			return fmt.Errorf("failed to reset a validator %s info: %w", info.ConsensusAddress, err)
-		}
 	}
 	return nil
 }

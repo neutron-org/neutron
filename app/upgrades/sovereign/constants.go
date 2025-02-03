@@ -4,6 +4,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	harpoontypes "github.com/neutron-org/neutron/v5/x/harpoon/types"
+
 	"github.com/neutron-org/neutron/v5/app/upgrades"
 )
 
@@ -18,6 +20,7 @@ var Upgrade = upgrades.Upgrade{
 	StoreUpgrades: storetypes.StoreUpgrades{
 		Added: []string{
 			stakingtypes.ModuleName,
+			harpoontypes.ModuleName,
 		},
 	},
 }

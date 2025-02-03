@@ -53,6 +53,8 @@ CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
 NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
 
+NEUTRON_STAKING_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron-staking-vault.wasm
+
 # Slinky genesis configs
 USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
 USE_RAYDIUM_MARKETS=${USE_RAYDIUM_MARKETS:-false}
@@ -153,6 +155,10 @@ SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
 
 NEUTRON_CHAIN_MANAGER_LABEL="neutron.chain.manager"
 
+NEUTRON_STAKING_VAULT_NAME="Neutron Staking Vault"
+NEUTRON_STAKING_VAULT_DESCRIPTION="Vault that gives voting power from a native delegations to validators"
+NEUTRON_STAKING_VAULT_LABEL="neutron.voting.vaults.staking"
+
 echo "Initializing dao contract in genesis..."
 
 function store_binary() {
@@ -189,6 +195,8 @@ CW4_VOTING_CONTRACT_BINARY_ID=$(store_binary            "$CW4_VOTING_CONTRACT")
 CW4_GROUP_CONTRACT_BINARY_ID=$(store_binary             "$CW4_GROUP_CONTRACT")
 
 NEUTRON_CHAIN_MANAGER_BINARY_ID=$(store_binary          "$NEUTRON_CHAIN_MANAGER_CONTRACT")
+
+NEUTRON_STAKING_VAULT_BINARY_ID=$(store_binary          "$NEUTRON_STAKING_VAULT_CONTRACT")
 
 # WARNING!
 # The following code is needed to pre-generate the contract addresses
@@ -240,6 +248,7 @@ GRANTS_SUBDAO_TIMELOCK_CONTRACT_ADDRESS=$(genaddr      "$SUBDAO_TIMELOCK_BINARY_
 GRANTS_SUBDAO_GROUP_CONTRACT_ADDRESS=$(genaddr         "$CW4_GROUP_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
 NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_CHAIN_MANAGER_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_STAKING_VAULT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
 function check_json() {
   MSG=$1
@@ -629,6 +638,13 @@ NEUTRON_CHAIN_MANAGER_INIT_MSG='{
   "initial_strategy_address": "'"$DAO_CONTRACT_ADDRESS"'"
 }'
 
+NEUTRON_STAKING_VAULT_INIT_MSG='{
+  "name": "'"$NEUTRON_STAKING_VAULT_NAME"'",
+  "description": "'"$NEUTRON_STAKING_VAULT_DESCRIPTION"'",
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
+  "denom": "untrn"
+}'
+
 echo "Instantiate contracts"
 
 function init_contract() {
@@ -653,6 +669,7 @@ init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"             "$DISTRIBUTION_INIT
 init_contract "$SUBDAO_CORE_BINARY_ID"                       "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL"
 init_contract "$SUBDAO_CORE_BINARY_ID"                       "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"
 init_contract "$NEUTRON_CHAIN_MANAGER_BINARY_ID"             "$NEUTRON_CHAIN_MANAGER_INIT_MSG" "$NEUTRON_CHAIN_MANAGER_LABEL"
+init_contract "$NEUTRON_STAKING_VAULT_BINARY_ID"             "$NEUTRON_STAKING_VAULT_INIT_MSG" "$NEUTRON_STAKING_VAULT_LABEL"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
@@ -767,6 +784,16 @@ set_genesis_param_jq ".app_state.feemarket.params.max_learning_rate" "\"0.5\""  
 set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                            # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
+set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 1},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 2},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 4},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 5},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 7},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 8},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 9},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 10},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 11}]"
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
@@ -774,3 +801,4 @@ if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
 fi
 
 echo "DAO $DAO_CONTRACT_ADDRESS"
+echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS
