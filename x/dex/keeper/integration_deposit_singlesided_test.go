@@ -442,3 +442,55 @@ func (s *DexTestSuite) TestDepositSingleToken1BELFails() {
 		NewDepositWithOptions(0, 50, -2004, 1, types.DepositOptions{FailTxOnBel: true}),
 	)
 }
+
+func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapPartial() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(0, 30)
+
+	// GIVEN TokenB liquidity at tick 2002-2004
+	s.bobDeposits(NewDeposit(0, 10, 2001, 1),
+		NewDeposit(0, 10, 2002, 1),
+		NewDeposit(0, 10, 2003, 1),
+	)
+	// WHEN alice deposits TokenA at tick -2005 (BEL)
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(50, 0, 2006, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+	)
+
+	//THEN some of alice's token0 is swapped and she deposits ~13TokenA & ~30TokenB
+	// A = 50 - 30 * 1.0001^~2002 = 13.3
+	// SharesIssued = 13.3 + 30 * 1.0001^2006 = 50
+
+	s.Equal(sdkmath.NewInt(13347289), resp.Reserve0Deposited[0])
+	s.Equal(sdkmath.NewInt(30000000), resp.Reserve1Deposited[0])
+	s.Equal(sdkmath.NewInt(50010995), resp.SharesIssued[0].Amount)
+	s.assertAliceBalances(0, 0)
+
+	s.assertPoolLiquidity(13347289, 30000000, 2006, 1)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapAll() {
+	s.fundAliceBalances(25, 0)
+	s.fundBobBalances(0, 30)
+
+	// GIVEN TokenB liquidity at tick 2002-2004
+	s.bobDeposits(NewDeposit(0, 10, 2001, 1),
+		NewDeposit(0, 10, 2002, 1),
+		NewDeposit(0, 10, 2003, 1),
+	)
+	// WHEN alice deposits TokenA at tick -2005 (BEL)
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(25, 0, 2006, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+	)
+
+	//THEN all of alice's token0 is swapped and she deposits 0TokenA & ~20TokenB
+	// B = 25 / 1.0001^~2002 = 20.4
+	// SharesIssued = 20.4 * 1.0001^2006 = 25
+
+	s.True(resp.Reserve0Deposited[0].IsZero())
+	s.Equal(sdkmath.NewInt(20463287), resp.Reserve1Deposited[0])
+	s.Equal(sdkmath.NewInt(25008665), resp.SharesIssued[0].Amount)
+	s.assertAliceBalances(0, 0)
+
+	s.assertPoolLiquidity(20463287, 25008665, 2006, 1)
+}

@@ -112,6 +112,10 @@ func (msg *MsgDeposit) Validate() error {
 		if err := ValidateTickFee(msg.TickIndexesAToB[i], msg.Fees[i]); err != nil {
 			return err
 		}
+
+		if msg.Options[i].DisableAutoswap && msg.Options[i].SwapOnDeposit {
+			return ErrSwapOnDepositWithoutAutoswap
+		}
 	}
 
 	return nil
