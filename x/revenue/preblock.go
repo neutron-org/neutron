@@ -102,6 +102,9 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 		if err := h.keeper.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
 			return fmt.Errorf("failed to process revenue: %w", err)
 		}
+		if err := h.keeper.ResetValidatorsInfo(ctx); err != nil {
+			return fmt.Errorf("failed to reset validators info on revenue distribution: %w", err)
+		}
 		ps.StartNewPeriod(ctx)
 		stateRequiresUpdate = true
 	}
