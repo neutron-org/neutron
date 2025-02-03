@@ -207,6 +207,11 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 		if err := k.SetValidatorInfo(ctx, vote.ConsAddress, valInfo); err != nil {
 			return err
 		}
+		k.Logger(ctx).Debug("validator participation recorded",
+			"validator", vote.ConsAddress.String(),
+			"committed_blocks_in_period", valInfo.CommitedBlocksInPeriod,
+			"committed_oracle_votes_in_period", valInfo.CommitedOracleVotesInPeriod,
+		)
 	}
 	return nil
 }
@@ -248,16 +253,29 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 				return fmt.Errorf("failed to convert valoper address %s to bytes: %w", validator.OperatorAddress, err)
 			}
 
+			revenueAmt := sdk.NewCoins(sdk.NewCoin(params.DenomCompensation, valCompensation))
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(
 				ctx,
 				revenuetypes.RevenueTreasuryPoolName,
 				valOperAddr,
-				sdk.NewCoins(sdk.NewCoin(
-					params.DenomCompensation, valCompensation,
-				)),
+				revenueAmt,
 			)
 			if err != nil {
-				return fmt.Errorf("failed to send revenue to validator %s: %w", validator.OperatorAddress, err)
+				ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
+					sdk.NewAttribute(revenuetypes.EventAttributeValidator, validator.OperatorAddress),
+					sdk.NewAttribute(revenuetypes.EventAttributePaymentFailure, err.Error()),
+				))
+				k.Logger(ctx).Debug("failed to send revenue to validator", "validator", validator.OperatorAddress, "err", err)
+			} else {
+				ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
+					sdk.NewAttribute(revenuetypes.EventAttributeValidator, validator.OperatorAddress),
+					sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, revenueAmt.String()),
+					sdk.NewAttribute(revenuetypes.EventAttributePerformanceRating, rating.String()),
+					sdk.NewAttribute(revenuetypes.EventAttributeCommittedBlocksInPeriod, fmt.Sprintf("%d", info.CommitedBlocksInPeriod)),
+					sdk.NewAttribute(revenuetypes.EventAttributeCommittedOracleVotesInPeriod, fmt.Sprintf("%d", info.CommitedOracleVotesInPeriod)),
+					sdk.NewAttribute(revenuetypes.EventAttributeTotalBlockInPeriod, fmt.Sprintf("%d", blocksInPeriod)),
+				))
+				k.Logger(ctx).Debug("revenue sent to validator", "validator", validator.OperatorAddress, "revenue", revenueAmt.String())
 			}
 		}
 	}
@@ -283,6 +301,7 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 			return fmt.Errorf("failed to reset a validator %s info: %w", info.ConsensusAddress, err)
 		}
 	}
+	k.Logger(ctx).Debug("all validators info has been reset")
 	return nil
 }
 

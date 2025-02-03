@@ -50,11 +50,7 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 
 		// If vote extensions are not enabled, then we don't need to do anything.
 		if !slinkyve.VoteExtensionsEnabled(ctx) {
-			h.keeper.Logger(ctx).Info(
-				"vote extensions are not enabled",
-				"height", ctx.BlockHeight(),
-			)
-
+			h.keeper.Logger(ctx).Info("vote extensions are not enabled", "height", ctx.BlockHeight())
 			return response, nil
 		}
 
@@ -99,6 +95,7 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 
 	// if the period has ended, revenue needs to be processed and module's state set to the next period
 	if ps.PeriodEnded(ctx) {
+		h.keeper.Logger(ctx).Debug("payment period has ended, processing revenue")
 		if err := h.keeper.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
 			return fmt.Errorf("failed to process revenue: %w", err)
 		}
@@ -114,6 +111,10 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 	// in this case, we need to reflect the change in the module's State by storing the corresponding
 	// payment schedule implementation in the module's State and prepare for the a new period
 	if !revenuetypes.PaymentScheduleMatchesType(ps, params.PaymentScheduleType) {
+		h.keeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
+			"new_payment_schedule_type", params.PaymentScheduleType.String(),
+			"old_payment_schedule_value", ps.String(),
+		)
 		if err := h.keeper.ResetValidatorsInfo(ctx); err != nil {
 			return fmt.Errorf("failed to reset validators info on payment schedule change: %w", err)
 		}
@@ -132,6 +133,7 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 		if err := h.keeper.SetState(ctx, state); err != nil {
 			return fmt.Errorf("failed to set module state after changing payment schedule: %w", err)
 		}
+		h.keeper.Logger(ctx).Debug("module state updated", "new_state", state.String())
 	}
 
 	return nil
