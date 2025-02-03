@@ -16,6 +16,8 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
+	harpoontypes "github.com/neutron-org/neutron/v5/x/harpoon/types"
+
 	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
@@ -139,5 +141,8 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/cosmos.staking.v1beta1.Query/Validator":                     &stakingtypes.QueryValidatorResponse{},
 		"/cosmos.staking.v1beta1.Query/DelegatorDelegations":          &stakingtypes.QueryDelegatorDelegationsResponse{},
 		"/cosmos.staking.v1beta1.Query/DelegatorUnbondingDelegations": &stakingtypes.QueryDelegatorUnbondingDelegationsResponse{},
+
+		// harpoon
+		"/neutron.harpoon.Query/SubscribedContracts": &harpoontypes.QuerySubscribedContractsResponse{},
 	}
 }
