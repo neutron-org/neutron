@@ -21,7 +21,9 @@ func TestInitAndExportGenesis(t *testing.T) {
 		CommitedBlocksInPeriod:      1000,
 		CommitedOracleVotesInPeriod: 1000,
 	})
-	genesisState.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
+	genesisState.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
+		BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+	}
 	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1}
 	var err error
 	genesisState.State.PaymentSchedule, err = codectypes.NewAnyWithValue(ps)

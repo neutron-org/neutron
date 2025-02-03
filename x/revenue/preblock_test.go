@@ -78,8 +78,12 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_MONTHLY
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		g.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{
+			MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+		}
+		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonth: 1, CurrentMonthStartBlock: 1,
+		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))
 
@@ -116,8 +120,12 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_MONTHLY
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		g.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{
+			MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+		}
+		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonth: 1, CurrentMonthStartBlock: 1,
+		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))
 
@@ -177,8 +185,12 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
+		g.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		}
+		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{
+			BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1,
+		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))
 
@@ -215,8 +227,12 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
+		g.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		}
+		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{
+			BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1,
+		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		require.Nil(t, keeper.SetState(ctx, g.State))
 

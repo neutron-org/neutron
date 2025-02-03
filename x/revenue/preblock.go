@@ -106,13 +106,13 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 		stateRequiresUpdate = true
 	}
 
-	// a mismatch means that the payment schedule type has been changed in the current block by
+	// a mismatch means that the payment schedule type has been changed in the previous block by
 	// a MsgUpdateParams submission
 	// in this case, we need to reflect the change in the module's State by storing the corresponding
 	// payment schedule implementation in the module's State and prepare for the a new period
-	if !revenuetypes.PaymentScheduleMatchesType(ps, params.PaymentScheduleType) {
+	if !ps.MatchesType(params.PaymentScheduleType) {
 		h.keeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
-			"new_payment_schedule_type", params.PaymentScheduleType.String(),
+			"new_payment_schedule_type", fmt.Sprintf("%+v", params.PaymentScheduleType),
 			"old_payment_schedule_value", ps.String(),
 		)
 		if err := h.keeper.ResetValidatorsInfo(ctx); err != nil {

@@ -79,3 +79,25 @@ func TestBlockBasedPaymentSchedule(t *testing.T) {
 	assert.Equal(t, uint64(10), s.TotalBlocksInPeriod(ctx.WithBlockHeight(111)))
 	assert.Equal(t, uint64(100), s.TotalBlocksInPeriod(ctx.WithBlockHeight(201)))
 }
+
+func TestPaymentScheduleTypeMatch(t *testing.T) {
+	eps := &revenuetypes.EmptyPaymentSchedule{}
+	assert.True(t, eps.MatchesType(&revenuetypes.Params_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{}}))
+	assert.False(t, eps.MatchesType(&revenuetypes.Params_BlockBasedPaymentScheduleType{}))
+	assert.False(t, eps.MatchesType(&revenuetypes.Params_MonthlyPaymentScheduleType{}))
+
+	bbps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 1}
+	assert.True(t, bbps.MatchesType(&revenuetypes.Params_BlockBasedPaymentScheduleType{
+		BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 1},
+	}))
+	assert.False(t, bbps.MatchesType(&revenuetypes.Params_BlockBasedPaymentScheduleType{
+		BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+	}))
+	assert.False(t, bbps.MatchesType(&revenuetypes.Params_MonthlyPaymentScheduleType{}))
+	assert.False(t, bbps.MatchesType(&revenuetypes.Params_EmptyPaymentScheduleType{}))
+
+	mps := &revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1}
+	assert.True(t, mps.MatchesType(&revenuetypes.Params_MonthlyPaymentScheduleType{MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{}}))
+	assert.False(t, mps.MatchesType(&revenuetypes.Params_BlockBasedPaymentScheduleType{}))
+	assert.False(t, mps.MatchesType(&revenuetypes.Params_EmptyPaymentScheduleType{}))
+}
