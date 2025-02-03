@@ -13,7 +13,7 @@ import (
 
 func TestUpdateParams(t *testing.T) {
 	appconfig.GetDefaultConfig()
-	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
 	msgServer := revenuekeeper.NewMsgServerImpl(k)
 
 	tests := []struct {
