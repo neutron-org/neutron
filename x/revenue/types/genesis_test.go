@@ -25,7 +25,9 @@ func TestDefaultGenesis(t *testing.T) {
 
 func TestInvalidGenesisPaymentScheduleTypeMismatch(t *testing.T) {
 	defaultGenesis := revenuetypes.DefaultGenesis()
-	defaultGenesis.Params.PaymentScheduleType = revenuetypes.PAYMENT_SCHEDULE_TYPE_BLOCK_BASED
+	defaultGenesis.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
+		BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 1},
+	}
 	err := defaultGenesis.Validate()
 	require.ErrorContains(t, err, "does not match payment schedule")
 
@@ -38,10 +40,6 @@ func TestInvalidGenesisPaymentScheduleTypeMismatch(t *testing.T) {
 
 func TestInvalidGenesisParams(t *testing.T) {
 	defaultGenesis := revenuetypes.DefaultGenesis()
-	defaultGenesis.Params.PaymentScheduleType = 999
-	require.ErrorContains(t, defaultGenesis.Validate(), "invalid payment schedule type")
-
-	defaultGenesis = revenuetypes.DefaultGenesis()
 	defaultGenesis.Params.BlocksPerformanceRequirement.AllowedToMiss = math.LegacyOneDec().Add(math.LegacySmallestDec())
 	require.ErrorContains(t, defaultGenesis.Validate(), "blocks allowed to miss must be between 0.0 and 1.0")
 	defaultGenesis = revenuetypes.DefaultGenesis()

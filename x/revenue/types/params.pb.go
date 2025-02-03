@@ -8,6 +8,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
@@ -26,40 +27,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Represents the type of payment schedule for validator compensation.
-type PaymentScheduleType int32
-
-const (
-	// Unspecified payment schedule type. With this payment schedule type, the module does not
-	// distribute any revenue.
-	PAYMENT_SCHEDULE_TYPE_UNSPECIFIED PaymentScheduleType = 0
-	// Monthly periods with payments made at the end of each month.
-	PAYMENT_SCHEDULE_TYPE_MONTHLY PaymentScheduleType = 1
-	// Periods defined by a specific number of blocks, with payments made when the required block
-	// count is reached.
-	PAYMENT_SCHEDULE_TYPE_BLOCK_BASED PaymentScheduleType = 2
-)
-
-var PaymentScheduleType_name = map[int32]string{
-	0: "PAYMENT_SCHEDULE_TYPE_UNSPECIFIED",
-	1: "PAYMENT_SCHEDULE_TYPE_MONTHLY",
-	2: "PAYMENT_SCHEDULE_TYPE_BLOCK_BASED",
-}
-
-var PaymentScheduleType_value = map[string]int32{
-	"PAYMENT_SCHEDULE_TYPE_UNSPECIFIED": 0,
-	"PAYMENT_SCHEDULE_TYPE_MONTHLY":     1,
-	"PAYMENT_SCHEDULE_TYPE_BLOCK_BASED": 2,
-}
-
-func (x PaymentScheduleType) String() string {
-	return proto.EnumName(PaymentScheduleType_name, int32(x))
-}
-
-func (PaymentScheduleType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_7e318e374514628b, []int{0}
-}
-
 // Defines the parameters for the module.
 type Params struct {
 	// The denom to be used for compensation.
@@ -73,9 +40,14 @@ type Params struct {
 	// met, the validator is not rewarded.
 	OracleVotesPerformanceRequirement *PerformanceRequirement `protobuf:"bytes,4,opt,name=oracle_votes_performance_requirement,json=oracleVotesPerformanceRequirement,proto3" json:"oracle_votes_performance_requirement,omitempty"`
 	// Indicates the currently active type of payment schedule.
-	PaymentScheduleType PaymentScheduleType `protobuf:"varint,5,opt,name=payment_schedule_type,json=paymentScheduleType,proto3,enum=neutron.revenue.PaymentScheduleType" json:"payment_schedule_type,omitempty"`
+	//
+	// Types that are valid to be assigned to PaymentScheduleType:
+	//	*Params_MonthlyPaymentScheduleType
+	//	*Params_BlockBasedPaymentScheduleType
+	//	*Params_EmptyPaymentScheduleType
+	PaymentScheduleType isParams_PaymentScheduleType `protobuf_oneof:"payment_schedule_type"`
 	// The window in seconds to calculate TWAP price of NTRN
-	TWAP_Window uint64 `protobuf:"varint,6,opt,name=TWAP_Window,json=TWAPWindow,proto3" json:"TWAP_Window,omitempty"`
+	TWAP_Window uint64 `protobuf:"varint,8,opt,name=TWAP_Window,json=TWAPWindow,proto3" json:"TWAP_Window,omitempty"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }
@@ -110,6 +82,33 @@ func (m *Params) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
 
+type isParams_PaymentScheduleType interface {
+	isParams_PaymentScheduleType()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type Params_MonthlyPaymentScheduleType struct {
+	MonthlyPaymentScheduleType *MonthlyPaymentScheduleType `protobuf:"bytes,5,opt,name=monthly_payment_schedule_type,json=monthlyPaymentScheduleType,proto3,oneof" json:"monthly_payment_schedule_type,omitempty"`
+}
+type Params_BlockBasedPaymentScheduleType struct {
+	BlockBasedPaymentScheduleType *BlockBasedPaymentScheduleType `protobuf:"bytes,6,opt,name=block_based_payment_schedule_type,json=blockBasedPaymentScheduleType,proto3,oneof" json:"block_based_payment_schedule_type,omitempty"`
+}
+type Params_EmptyPaymentScheduleType struct {
+	EmptyPaymentScheduleType *EmptyPaymentScheduleType `protobuf:"bytes,7,opt,name=empty_payment_schedule_type,json=emptyPaymentScheduleType,proto3,oneof" json:"empty_payment_schedule_type,omitempty"`
+}
+
+func (*Params_MonthlyPaymentScheduleType) isParams_PaymentScheduleType()    {}
+func (*Params_BlockBasedPaymentScheduleType) isParams_PaymentScheduleType() {}
+func (*Params_EmptyPaymentScheduleType) isParams_PaymentScheduleType()      {}
+
+func (m *Params) GetPaymentScheduleType() isParams_PaymentScheduleType {
+	if m != nil {
+		return m.PaymentScheduleType
+	}
+	return nil
+}
+
 func (m *Params) GetDenomCompensation() string {
 	if m != nil {
 		return m.DenomCompensation
@@ -138,11 +137,25 @@ func (m *Params) GetOracleVotesPerformanceRequirement() *PerformanceRequirement 
 	return nil
 }
 
-func (m *Params) GetPaymentScheduleType() PaymentScheduleType {
-	if m != nil {
-		return m.PaymentScheduleType
+func (m *Params) GetMonthlyPaymentScheduleType() *MonthlyPaymentScheduleType {
+	if x, ok := m.GetPaymentScheduleType().(*Params_MonthlyPaymentScheduleType); ok {
+		return x.MonthlyPaymentScheduleType
 	}
-	return PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
+	return nil
+}
+
+func (m *Params) GetBlockBasedPaymentScheduleType() *BlockBasedPaymentScheduleType {
+	if x, ok := m.GetPaymentScheduleType().(*Params_BlockBasedPaymentScheduleType); ok {
+		return x.BlockBasedPaymentScheduleType
+	}
+	return nil
+}
+
+func (m *Params) GetEmptyPaymentScheduleType() *EmptyPaymentScheduleType {
+	if x, ok := m.GetPaymentScheduleType().(*Params_EmptyPaymentScheduleType); ok {
+		return x.EmptyPaymentScheduleType
+	}
+	return nil
 }
 
 func (m *Params) GetTWAP_Window() uint64 {
@@ -151,6 +164,136 @@ func (m *Params) GetTWAP_Window() uint64 {
 	}
 	return 0
 }
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Params) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Params_MonthlyPaymentScheduleType)(nil),
+		(*Params_BlockBasedPaymentScheduleType)(nil),
+		(*Params_EmptyPaymentScheduleType)(nil),
+	}
+}
+
+// Monthly periods with payments made at the end of each month.
+type MonthlyPaymentScheduleType struct {
+}
+
+func (m *MonthlyPaymentScheduleType) Reset()         { *m = MonthlyPaymentScheduleType{} }
+func (m *MonthlyPaymentScheduleType) String() string { return proto.CompactTextString(m) }
+func (*MonthlyPaymentScheduleType) ProtoMessage()    {}
+func (*MonthlyPaymentScheduleType) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e318e374514628b, []int{1}
+}
+func (m *MonthlyPaymentScheduleType) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MonthlyPaymentScheduleType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MonthlyPaymentScheduleType.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MonthlyPaymentScheduleType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MonthlyPaymentScheduleType.Merge(m, src)
+}
+func (m *MonthlyPaymentScheduleType) XXX_Size() int {
+	return m.Size()
+}
+func (m *MonthlyPaymentScheduleType) XXX_DiscardUnknown() {
+	xxx_messageInfo_MonthlyPaymentScheduleType.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MonthlyPaymentScheduleType proto.InternalMessageInfo
+
+// Periods defined by a specific number of blocks, with payments made when the required block
+// count is reached.
+type BlockBasedPaymentScheduleType struct {
+	// The number of blocks in a payment period.
+	BlocksPerPeriod uint64 `protobuf:"varint,1,opt,name=blocks_per_period,json=blocksPerPeriod,proto3" json:"blocks_per_period,omitempty"`
+}
+
+func (m *BlockBasedPaymentScheduleType) Reset()         { *m = BlockBasedPaymentScheduleType{} }
+func (m *BlockBasedPaymentScheduleType) String() string { return proto.CompactTextString(m) }
+func (*BlockBasedPaymentScheduleType) ProtoMessage()    {}
+func (*BlockBasedPaymentScheduleType) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e318e374514628b, []int{2}
+}
+func (m *BlockBasedPaymentScheduleType) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *BlockBasedPaymentScheduleType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_BlockBasedPaymentScheduleType.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *BlockBasedPaymentScheduleType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BlockBasedPaymentScheduleType.Merge(m, src)
+}
+func (m *BlockBasedPaymentScheduleType) XXX_Size() int {
+	return m.Size()
+}
+func (m *BlockBasedPaymentScheduleType) XXX_DiscardUnknown() {
+	xxx_messageInfo_BlockBasedPaymentScheduleType.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BlockBasedPaymentScheduleType proto.InternalMessageInfo
+
+func (m *BlockBasedPaymentScheduleType) GetBlocksPerPeriod() uint64 {
+	if m != nil {
+		return m.BlocksPerPeriod
+	}
+	return 0
+}
+
+// Endless periods with payments never made.
+type EmptyPaymentScheduleType struct {
+}
+
+func (m *EmptyPaymentScheduleType) Reset()         { *m = EmptyPaymentScheduleType{} }
+func (m *EmptyPaymentScheduleType) String() string { return proto.CompactTextString(m) }
+func (*EmptyPaymentScheduleType) ProtoMessage()    {}
+func (*EmptyPaymentScheduleType) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e318e374514628b, []int{3}
+}
+func (m *EmptyPaymentScheduleType) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EmptyPaymentScheduleType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EmptyPaymentScheduleType.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EmptyPaymentScheduleType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmptyPaymentScheduleType.Merge(m, src)
+}
+func (m *EmptyPaymentScheduleType) XXX_Size() int {
+	return m.Size()
+}
+func (m *EmptyPaymentScheduleType) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmptyPaymentScheduleType.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmptyPaymentScheduleType proto.InternalMessageInfo
 
 // Specifies a performance criteria that validators must meet to qualify for network rewards.
 type PerformanceRequirement struct {
@@ -167,7 +310,7 @@ func (m *PerformanceRequirement) Reset()         { *m = PerformanceRequirement{}
 func (m *PerformanceRequirement) String() string { return proto.CompactTextString(m) }
 func (*PerformanceRequirement) ProtoMessage()    {}
 func (*PerformanceRequirement) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e318e374514628b, []int{1}
+	return fileDescriptor_7e318e374514628b, []int{4}
 }
 func (m *PerformanceRequirement) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -197,51 +340,58 @@ func (m *PerformanceRequirement) XXX_DiscardUnknown() {
 var xxx_messageInfo_PerformanceRequirement proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterEnum("neutron.revenue.PaymentScheduleType", PaymentScheduleType_name, PaymentScheduleType_value)
 	proto.RegisterType((*Params)(nil), "neutron.revenue.Params")
+	proto.RegisterType((*MonthlyPaymentScheduleType)(nil), "neutron.revenue.MonthlyPaymentScheduleType")
+	proto.RegisterType((*BlockBasedPaymentScheduleType)(nil), "neutron.revenue.BlockBasedPaymentScheduleType")
+	proto.RegisterType((*EmptyPaymentScheduleType)(nil), "neutron.revenue.EmptyPaymentScheduleType")
 	proto.RegisterType((*PerformanceRequirement)(nil), "neutron.revenue.PerformanceRequirement")
 }
 
 func init() { proto.RegisterFile("neutron/revenue/params.proto", fileDescriptor_7e318e374514628b) }
 
 var fileDescriptor_7e318e374514628b = []byte{
-	// 575 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0xcd, 0x6e, 0xd3, 0x4c,
-	0x14, 0xb5, 0xdb, 0x7c, 0x95, 0xbe, 0xa9, 0xa0, 0xa9, 0x0b, 0x28, 0x94, 0xe2, 0xa4, 0x55, 0x11,
-	0x11, 0x28, 0xb6, 0x52, 0xc4, 0x86, 0x5d, 0x7e, 0x8c, 0x5a, 0x35, 0x49, 0x2d, 0xc7, 0xa5, 0x04,
-	0x09, 0x8d, 0x26, 0xf6, 0x25, 0xb1, 0x6a, 0x7b, 0x8c, 0x67, 0x92, 0x36, 0x6f, 0xc0, 0x82, 0x05,
-	0x4b, 0x96, 0x48, 0xbc, 0x02, 0x0f, 0xd1, 0x15, 0xaa, 0xba, 0x42, 0x2c, 0x2a, 0x94, 0xbc, 0x08,
-	0xf2, 0x4f, 0x29, 0xa5, 0xc9, 0x02, 0x76, 0x77, 0xce, 0x39, 0x3e, 0x67, 0x7c, 0xe7, 0x5e, 0xb4,
-	0xe6, 0xc3, 0x80, 0x87, 0xd4, 0x57, 0x43, 0x18, 0x82, 0x3f, 0x00, 0x35, 0x20, 0x21, 0xf1, 0x98,
-	0x12, 0x84, 0x94, 0x53, 0x69, 0x29, 0x65, 0x95, 0x94, 0x5d, 0x95, 0x2d, 0xca, 0x3c, 0xca, 0xd4,
-	0x2e, 0x61, 0xa0, 0x0e, 0xcb, 0x5d, 0xe0, 0xa4, 0xac, 0x5a, 0xd4, 0xf1, 0x93, 0x0f, 0x56, 0xef,
-	0x26, 0x3c, 0x8e, 0x4f, 0x6a, 0x72, 0x48, 0xa9, 0x5b, 0x3d, 0xda, 0xa3, 0x09, 0x1e, 0x55, 0x09,
-	0xba, 0xf1, 0x75, 0x1e, 0x2d, 0xe8, 0x71, 0xa4, 0x54, 0x42, 0x92, 0x0d, 0x3e, 0xf5, 0xb0, 0x45,
-	0xbd, 0x00, 0x7c, 0x46, 0xb8, 0x43, 0xfd, 0x9c, 0x58, 0x10, 0x8b, 0xff, 0x1b, 0xcb, 0x31, 0x53,
-	0xfb, 0x8d, 0x90, 0x1e, 0xa3, 0xe5, 0xe8, 0x16, 0x57, 0xd5, 0x73, 0x05, 0xb1, 0x98, 0x31, 0xb2,
-	0x11, 0x71, 0x45, 0xec, 0x21, 0xb9, 0xeb, 0x52, 0xeb, 0x90, 0xe1, 0x00, 0xc2, 0x37, 0x34, 0xf4,
-	0x88, 0x6f, 0x01, 0x0e, 0xe1, 0xed, 0xc0, 0x09, 0xc1, 0x03, 0x9f, 0xe7, 0xe6, 0x0b, 0x62, 0x71,
-	0x71, 0xeb, 0xa1, 0xf2, 0xc7, 0x1f, 0x2b, 0xfa, 0xa5, 0xde, 0xb8, 0x94, 0x1b, 0x6b, 0x89, 0xdd,
-	0x74, 0x56, 0x3a, 0x46, 0x9b, 0x34, 0x24, 0x96, 0x0b, 0x78, 0x48, 0x39, 0xcc, 0x0e, 0xcd, 0xfc,
-	0x5d, 0xe8, 0x7a, 0x62, 0xfa, 0x22, 0xf2, 0x9c, 0x91, 0xfc, 0x12, 0xdd, 0x0e, 0xc8, 0x28, 0x2a,
-	0x31, 0xb3, 0xfa, 0x60, 0x0f, 0x5c, 0xc0, 0x7c, 0x14, 0x40, 0xee, 0xbf, 0x82, 0x58, 0xbc, 0xb9,
-	0xb5, 0x79, 0x3d, 0x2a, 0x51, 0xb7, 0x53, 0xb1, 0x39, 0x0a, 0xc0, 0x58, 0x09, 0xae, 0x83, 0x52,
-	0x1e, 0x2d, 0x9a, 0x07, 0x15, 0x1d, 0x1f, 0x38, 0xbe, 0x4d, 0x8f, 0x72, 0x0b, 0x71, 0xa7, 0x51,
-	0x04, 0x25, 0xc8, 0xb3, 0xcc, 0xc7, 0x4f, 0x79, 0x61, 0xe3, 0x4c, 0x44, 0x77, 0x66, 0xdc, 0xad,
-	0x83, 0x96, 0x88, 0xeb, 0xd2, 0x23, 0xb0, 0x31, 0xa7, 0xd8, 0x73, 0x18, 0x4b, 0x5e, 0xb7, 0x5a,
-	0x3e, 0x39, 0xcf, 0x0b, 0xdf, 0xcf, 0xf3, 0xf7, 0x92, 0x81, 0x61, 0xf6, 0xa1, 0xe2, 0x50, 0xd5,
-	0x23, 0xbc, 0xaf, 0x34, 0xa0, 0x47, 0xac, 0x51, 0x1d, 0xac, 0xb3, 0x2f, 0x25, 0x94, 0xce, 0x53,
-	0x1d, 0x2c, 0xe3, 0x46, 0xea, 0x64, 0xd2, 0xa6, 0xc3, 0x98, 0xf4, 0x1a, 0x2d, 0xa7, 0x7d, 0xb5,
-	0x31, 0xe1, 0xd8, 0x05, 0xc2, 0x78, 0x3c, 0x0c, 0xff, 0x64, 0xbe, 0x74, 0xe1, 0x55, 0xe1, 0x8d,
-	0xc8, 0xe9, 0xd1, 0x7b, 0x11, 0xad, 0x4c, 0x69, 0x94, 0xf4, 0x00, 0xad, 0xeb, 0x95, 0x4e, 0x53,
-	0x6b, 0x99, 0xb8, 0x5d, 0xdb, 0xd6, 0xea, 0xfb, 0x0d, 0x0d, 0x9b, 0x1d, 0x5d, 0xc3, 0xfb, 0xad,
-	0xb6, 0xae, 0xd5, 0x76, 0x9e, 0xef, 0x68, 0xf5, 0xac, 0x20, 0xad, 0xa3, 0xfb, 0xd3, 0x65, 0xcd,
-	0xbd, 0x96, 0xb9, 0xdd, 0xe8, 0x64, 0xc5, 0xd9, 0x4e, 0xd5, 0xc6, 0x5e, 0x6d, 0x17, 0x57, 0x2b,
-	0x6d, 0xad, 0x9e, 0x9d, 0x5b, 0xcd, 0xbc, 0xfb, 0x2c, 0x0b, 0xd5, 0xdd, 0x93, 0xb1, 0x2c, 0x9e,
-	0x8e, 0x65, 0xf1, 0xc7, 0x58, 0x16, 0x3f, 0x4c, 0x64, 0xe1, 0x74, 0x22, 0x0b, 0xdf, 0x26, 0xb2,
-	0xf0, 0xaa, 0xdc, 0x73, 0x78, 0x7f, 0xd0, 0x55, 0x2c, 0xea, 0xa9, 0xe9, 0x4b, 0x97, 0x68, 0xd8,
-	0xbb, 0xa8, 0xd5, 0xe1, 0x53, 0xf5, 0xf8, 0xd7, 0xaa, 0x47, 0x73, 0xc1, 0xba, 0x0b, 0xf1, 0x22,
-	0x3e, 0xf9, 0x19, 0x00, 0x00, 0xff, 0xff, 0x39, 0x85, 0xb6, 0xe8, 0x0a, 0x04, 0x00, 0x00,
+	// 651 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xcb, 0x6e, 0xd3, 0x4c,
+	0x14, 0xb6, 0xff, 0x3f, 0x04, 0x98, 0x0a, 0x85, 0x58, 0x5c, 0x42, 0xda, 0x3a, 0x6d, 0x84, 0xd4,
+	0xbb, 0xad, 0x80, 0xd8, 0xb0, 0x6b, 0x28, 0x52, 0xa5, 0xb6, 0x52, 0x64, 0x2a, 0x2a, 0x90, 0xd0,
+	0x68, 0x62, 0x1f, 0x12, 0xab, 0x1e, 0x8f, 0xf1, 0x4c, 0xd2, 0xe6, 0x2d, 0x58, 0x76, 0xd9, 0x17,
+	0x40, 0x42, 0x88, 0x87, 0xe8, 0xb2, 0xea, 0x0a, 0xb1, 0xa8, 0x50, 0xbb, 0xe0, 0x21, 0xd8, 0xa0,
+	0x99, 0x71, 0x5b, 0xda, 0xc6, 0x91, 0x60, 0x91, 0xc8, 0x3e, 0xdf, 0x77, 0xce, 0xf9, 0x7c, 0x6e,
+	0x68, 0x22, 0x86, 0x9e, 0x48, 0x59, 0xec, 0xa6, 0xd0, 0x87, 0xb8, 0x07, 0x6e, 0x42, 0x52, 0x42,
+	0xb9, 0x93, 0xa4, 0x4c, 0x30, 0xab, 0x94, 0xa1, 0x4e, 0x86, 0x56, 0xcb, 0x84, 0x86, 0x31, 0x73,
+	0xd5, 0xbf, 0xe6, 0x54, 0x6d, 0x9f, 0x71, 0xca, 0xb8, 0xdb, 0x26, 0x1c, 0xdc, 0x7e, 0xa3, 0x0d,
+	0x82, 0x34, 0x5c, 0x9f, 0x85, 0x71, 0x86, 0x3f, 0xd2, 0x38, 0x56, 0x6f, 0xae, 0x7e, 0xc9, 0xa0,
+	0x7b, 0x1d, 0xd6, 0x61, 0xda, 0x2e, 0x9f, 0xb4, 0xb5, 0xfe, 0xab, 0x88, 0x8a, 0x2d, 0xa5, 0xc2,
+	0x5a, 0x42, 0x56, 0x00, 0x31, 0xa3, 0xd8, 0x67, 0x34, 0x81, 0x98, 0x13, 0x11, 0xb2, 0xb8, 0x62,
+	0x4e, 0x99, 0xb3, 0xb7, 0xbd, 0xb2, 0x42, 0x5e, 0xfc, 0x01, 0x58, 0x0b, 0xa8, 0x2c, 0x55, 0x5c,
+	0x66, 0xff, 0x37, 0x65, 0xce, 0x16, 0xbc, 0xbb, 0x12, 0xb8, 0x44, 0xa6, 0xc8, 0x6e, 0x47, 0xcc,
+	0xdf, 0xe6, 0x38, 0x81, 0xf4, 0x3d, 0x4b, 0x29, 0x89, 0x7d, 0xc0, 0x29, 0x7c, 0xe8, 0x85, 0x29,
+	0x50, 0x88, 0x45, 0xe5, 0xff, 0x29, 0x73, 0x76, 0xec, 0xc9, 0x8c, 0x73, 0xa5, 0x08, 0x4e, 0xeb,
+	0x82, 0xef, 0x5d, 0xd0, 0xbd, 0x09, 0x1d, 0x6e, 0x38, 0x6a, 0xed, 0xa2, 0xc7, 0x2c, 0x25, 0x7e,
+	0x04, 0xb8, 0xcf, 0x04, 0xe4, 0x27, 0x2d, 0xfc, 0x5d, 0xd2, 0x69, 0x1d, 0xf4, 0xb5, 0x8c, 0x99,
+	0x93, 0x79, 0xdf, 0x44, 0x93, 0x94, 0xc5, 0xa2, 0x1b, 0x0d, 0x70, 0x42, 0x06, 0xd2, 0x86, 0xb9,
+	0xdf, 0x85, 0xa0, 0x17, 0x01, 0x16, 0x83, 0x04, 0x2a, 0x37, 0x54, 0xce, 0x85, 0x6b, 0x39, 0x37,
+	0xb4, 0x57, 0x4b, 0x3b, 0xbd, 0xca, 0x7c, 0x36, 0x07, 0x09, 0x34, 0x9d, 0x2f, 0x3f, 0x3f, 0xcf,
+	0xcf, 0x9d, 0x0d, 0x8d, 0x6e, 0x97, 0x9b, 0xcf, 0x5f, 0x35, 0xbc, 0x2a, 0xcd, 0x45, 0xad, 0x4f,
+	0x26, 0x9a, 0x56, 0xd5, 0xc3, 0xb2, 0x4d, 0x41, 0x8e, 0xcc, 0xa2, 0x92, 0xe9, 0x5c, 0x93, 0xd9,
+	0x94, 0x9e, 0x4d, 0xe9, 0x38, 0x4c, 0x69, 0x43, 0x2a, 0x5d, 0xbc, 0xa2, 0x74, 0xa4, 0xcb, 0xaa,
+	0xe1, 0x4d, 0xb6, 0x47, 0x11, 0xac, 0x3d, 0x13, 0x8d, 0x03, 0x4d, 0x44, 0x5e, 0x41, 0x6f, 0x2a,
+	0xa5, 0x73, 0xd7, 0x94, 0xbe, 0x94, 0x3e, 0xc3, 0x44, 0x2e, 0x4a, 0x91, 0x33, 0x57, 0x44, 0xe6,
+	0xb1, 0x57, 0x0d, 0xaf, 0x02, 0x39, 0x98, 0x55, 0x43, 0x63, 0x9b, 0x5b, 0xcb, 0x2d, 0xbc, 0x15,
+	0xc6, 0x01, 0xdb, 0xa9, 0xdc, 0x52, 0xd3, 0x8f, 0xa4, 0x49, 0x5b, 0x9e, 0x17, 0xf6, 0xf6, 0x6b,
+	0x46, 0xf3, 0x21, 0xba, 0x3f, 0x54, 0x7a, 0x7d, 0x02, 0x55, 0xf3, 0xdb, 0x58, 0x5f, 0x43, 0x93,
+	0x23, 0x4b, 0x67, 0xcd, 0xa3, 0xf2, 0xc5, 0x56, 0xc9, 0x5f, 0xc8, 0x02, 0xb5, 0xb0, 0x05, 0xaf,
+	0x74, 0xbe, 0x1f, 0x2d, 0x65, 0xae, 0x57, 0x51, 0x25, 0xef, 0x13, 0xeb, 0x47, 0x26, 0x7a, 0x90,
+	0x33, 0xcf, 0x6f, 0x50, 0x89, 0x44, 0x11, 0xdb, 0x81, 0x00, 0x0b, 0x86, 0x69, 0xc8, 0xb9, 0xbe,
+	0x08, 0xcd, 0xc6, 0xc1, 0x71, 0xcd, 0xf8, 0x7e, 0x5c, 0x1b, 0xd7, 0x47, 0x86, 0x07, 0xdb, 0x4e,
+	0xc8, 0x5c, 0x4a, 0x44, 0xd7, 0x59, 0x87, 0x0e, 0xf1, 0x07, 0x2b, 0xe0, 0x1f, 0x7d, 0x5d, 0x42,
+	0xd9, 0x0d, 0x5a, 0x01, 0xdf, 0xbb, 0x93, 0x45, 0xda, 0x64, 0x1b, 0x21, 0xe7, 0xd6, 0x3b, 0x54,
+	0xce, 0x76, 0x31, 0xc0, 0x44, 0xe0, 0x08, 0x08, 0x17, 0xea, 0x80, 0xfc, 0x53, 0xf0, 0xd2, 0x59,
+	0xac, 0x65, 0xb1, 0x2e, 0x23, 0x35, 0xd7, 0x0e, 0x4e, 0x6c, 0xf3, 0xf0, 0xc4, 0x36, 0x7f, 0x9c,
+	0xd8, 0xe6, 0xc7, 0x53, 0xdb, 0x38, 0x3c, 0xb5, 0x8d, 0x6f, 0xa7, 0xb6, 0xf1, 0xb6, 0xd1, 0x09,
+	0x45, 0xb7, 0xd7, 0x76, 0x7c, 0x46, 0xdd, 0x6c, 0x68, 0x96, 0x58, 0xda, 0x39, 0x7b, 0x76, 0xfb,
+	0xcf, 0xdc, 0xdd, 0xf3, 0x13, 0x2d, 0xfb, 0xc4, 0xdb, 0x45, 0x75, 0x2d, 0x9f, 0xfe, 0x0e, 0x00,
+	0x00, 0xff, 0xff, 0x96, 0x90, 0x96, 0x0c, 0xc2, 0x05, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -267,12 +417,16 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.TWAP_Window != 0 {
 		i = encodeVarintParams(dAtA, i, uint64(m.TWAP_Window))
 		i--
-		dAtA[i] = 0x30
+		dAtA[i] = 0x40
 	}
-	if m.PaymentScheduleType != 0 {
-		i = encodeVarintParams(dAtA, i, uint64(m.PaymentScheduleType))
-		i--
-		dAtA[i] = 0x28
+	if m.PaymentScheduleType != nil {
+		{
+			size := m.PaymentScheduleType.Size()
+			i -= size
+			if _, err := m.PaymentScheduleType.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
 	}
 	if m.OracleVotesPerformanceRequirement != nil {
 		{
@@ -310,6 +464,143 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Params_MonthlyPaymentScheduleType) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Params_MonthlyPaymentScheduleType) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.MonthlyPaymentScheduleType != nil {
+		{
+			size, err := m.MonthlyPaymentScheduleType.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintParams(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x2a
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Params_BlockBasedPaymentScheduleType) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Params_BlockBasedPaymentScheduleType) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.BlockBasedPaymentScheduleType != nil {
+		{
+			size, err := m.BlockBasedPaymentScheduleType.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintParams(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x32
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Params_EmptyPaymentScheduleType) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Params_EmptyPaymentScheduleType) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.EmptyPaymentScheduleType != nil {
+		{
+			size, err := m.EmptyPaymentScheduleType.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintParams(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x3a
+	}
+	return len(dAtA) - i, nil
+}
+func (m *MonthlyPaymentScheduleType) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MonthlyPaymentScheduleType) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MonthlyPaymentScheduleType) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *BlockBasedPaymentScheduleType) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *BlockBasedPaymentScheduleType) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *BlockBasedPaymentScheduleType) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlocksPerPeriod != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.BlocksPerPeriod))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EmptyPaymentScheduleType) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EmptyPaymentScheduleType) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EmptyPaymentScheduleType) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	return len(dAtA) - i, nil
 }
 
@@ -388,12 +679,78 @@ func (m *Params) Size() (n int) {
 		l = m.OracleVotesPerformanceRequirement.Size()
 		n += 1 + l + sovParams(uint64(l))
 	}
-	if m.PaymentScheduleType != 0 {
-		n += 1 + sovParams(uint64(m.PaymentScheduleType))
+	if m.PaymentScheduleType != nil {
+		n += m.PaymentScheduleType.Size()
 	}
 	if m.TWAP_Window != 0 {
 		n += 1 + sovParams(uint64(m.TWAP_Window))
 	}
+	return n
+}
+
+func (m *Params_MonthlyPaymentScheduleType) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.MonthlyPaymentScheduleType != nil {
+		l = m.MonthlyPaymentScheduleType.Size()
+		n += 1 + l + sovParams(uint64(l))
+	}
+	return n
+}
+func (m *Params_BlockBasedPaymentScheduleType) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.BlockBasedPaymentScheduleType != nil {
+		l = m.BlockBasedPaymentScheduleType.Size()
+		n += 1 + l + sovParams(uint64(l))
+	}
+	return n
+}
+func (m *Params_EmptyPaymentScheduleType) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.EmptyPaymentScheduleType != nil {
+		l = m.EmptyPaymentScheduleType.Size()
+		n += 1 + l + sovParams(uint64(l))
+	}
+	return n
+}
+func (m *MonthlyPaymentScheduleType) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *BlockBasedPaymentScheduleType) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.BlocksPerPeriod != 0 {
+		n += 1 + sovParams(uint64(m.BlocksPerPeriod))
+	}
+	return n
+}
+
+func (m *EmptyPaymentScheduleType) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
 	return n
 }
 
@@ -569,10 +926,10 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PaymentScheduleType", wireType)
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MonthlyPaymentScheduleType", wireType)
 			}
-			m.PaymentScheduleType = 0
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowParams
@@ -582,12 +939,98 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.PaymentScheduleType |= PaymentScheduleType(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &MonthlyPaymentScheduleType{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.PaymentScheduleType = &Params_MonthlyPaymentScheduleType{v}
+			iNdEx = postIndex
 		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockBasedPaymentScheduleType", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &BlockBasedPaymentScheduleType{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.PaymentScheduleType = &Params_BlockBasedPaymentScheduleType{v}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmptyPaymentScheduleType", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &EmptyPaymentScheduleType{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.PaymentScheduleType = &Params_EmptyPaymentScheduleType{v}
+			iNdEx = postIndex
+		case 8:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TWAP_Window", wireType)
 			}
@@ -606,6 +1049,175 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MonthlyPaymentScheduleType) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MonthlyPaymentScheduleType: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MonthlyPaymentScheduleType: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *BlockBasedPaymentScheduleType) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: BlockBasedPaymentScheduleType: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: BlockBasedPaymentScheduleType: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlocksPerPeriod", wireType)
+			}
+			m.BlocksPerPeriod = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlocksPerPeriod |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EmptyPaymentScheduleType) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EmptyPaymentScheduleType: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EmptyPaymentScheduleType: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])

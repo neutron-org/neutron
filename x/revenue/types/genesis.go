@@ -36,7 +36,7 @@ func (gs GenesisState) Validate() error {
 	if !ok {
 		return fmt.Errorf("expected State.PaymentSchedule to be of type PaymentSchedule: %T", gs.State.PaymentSchedule.GetCachedValue())
 	}
-	if !PaymentScheduleMatchesType(ps, gs.Params.PaymentScheduleType) {
+	if !ps.MatchesType(gs.Params.PaymentScheduleType) {
 		return fmt.Errorf("payment schedule type %s does not match payment schedule of type %T in genesis state", gs.Params.PaymentScheduleType, ps)
 	}
 

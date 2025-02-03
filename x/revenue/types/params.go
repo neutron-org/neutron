@@ -15,7 +15,7 @@ var (
 	// DefaultBaseCompensation represents the default compensation amount in USD.
 	DefaultBaseCompensation uint64 = 2500
 	// DefaultPaymentScheduleType represents the default payment schedule type.
-	DefaultPaymentScheduleType = PAYMENT_SCHEDULE_TYPE_UNSPECIFIED
+	DefaultPaymentScheduleType = &Params_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
 )
 
 // NewParams creates a new Params instance.
@@ -24,7 +24,7 @@ func NewParams(
 	baseCompensation uint64,
 	blocksPerformanceRequirement *PerformanceRequirement,
 	oraclePricesPerformanceRequirement *PerformanceRequirement,
-	paymentScheduleType PaymentScheduleType,
+	paymentScheduleType isParams_PaymentScheduleType,
 ) Params {
 	return Params{
 		DenomCompensation:                 denomCompensation,
@@ -54,10 +54,6 @@ func (p Params) String() string {
 
 // Validate performs basic validation of the revenue module parameters.
 func (p Params) Validate() error {
-	if _, ex := PaymentScheduleType_name[int32(p.PaymentScheduleType)]; !ex {
-		return fmt.Errorf("invalid payment schedule type %s", p.PaymentScheduleType)
-	}
-
 	// shorthands
 	bpr := p.BlocksPerformanceRequirement
 	ovpr := p.OracleVotesPerformanceRequirement
@@ -81,6 +77,10 @@ func (p Params) Validate() error {
 	}
 	if ovpr.AllowedToMiss.Add(ovpr.RequiredAtLeast).GT(math.LegacyOneDec()) {
 		return fmt.Errorf("sum of oracle votes allowed to miss and required at least must not be greater than 1.0")
+	}
+
+	if err := ValidatePaymentScheduleType(p.PaymentScheduleType); err != nil {
+		return fmt.Errorf("validation of payment schedule type failed: %w", err)
 	}
 
 	return nil

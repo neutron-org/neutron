@@ -1,6 +1,7 @@
 syntax = "proto3";
 package neutron.revenue;
 
+import "amino/amino.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
@@ -26,25 +27,27 @@ message Params {
   PerformanceRequirement oracle_votes_performance_requirement = 4;
 
   // Indicates the currently active type of payment schedule.
-  PaymentScheduleType payment_schedule_type = 5;
-
+  oneof payment_schedule_type {
+    MonthlyPaymentScheduleType monthly_payment_schedule_type = 5 [(amino.oneof_name) = "revenue/Params/MonthlyPaymentScheduleType"];
+    BlockBasedPaymentScheduleType block_based_payment_schedule_type = 6 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentScheduleType"];
+    EmptyPaymentScheduleType empty_payment_schedule_type = 7 [(amino.oneof_name) = "revenue/Params/EmptyPaymentScheduleType"];
+  }
   // The window in seconds to calculate TWAP price of NTRN
-  uint64 TWAP_Window = 6;
+  uint64 TWAP_Window = 8;
 }
 
-// Represents the type of payment schedule for validator compensation.
-enum PaymentScheduleType {
-  option (gogoproto.goproto_enum_prefix) = false;
+// Monthly periods with payments made at the end of each month.
+message MonthlyPaymentScheduleType {}
 
-  // Unspecified payment schedule type. With this payment schedule type, the module does not
-  // distribute any revenue.
-  PAYMENT_SCHEDULE_TYPE_UNSPECIFIED = 0;
-  // Monthly periods with payments made at the end of each month.
-  PAYMENT_SCHEDULE_TYPE_MONTHLY = 1;
-  // Periods defined by a specific number of blocks, with payments made when the required block
-  // count is reached.
-  PAYMENT_SCHEDULE_TYPE_BLOCK_BASED = 2;
+// Periods defined by a specific number of blocks, with payments made when the required block
+// count is reached.
+message BlockBasedPaymentScheduleType {
+  // The number of blocks in a payment period.
+  uint64 blocks_per_period = 1;
 }
+
+// Endless periods with payments never made.
+message EmptyPaymentScheduleType {}
 
 // Specifies a performance criteria that validators must meet to qualify for network rewards.
 message PerformanceRequirement {
