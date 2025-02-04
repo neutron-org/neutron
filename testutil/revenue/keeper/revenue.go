@@ -17,7 +17,6 @@ import (
 
 func RevenueKeeper(
 	t testing.TB,
-	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
 	oracleKeeper revenuetypes.OracleKeeper,
 	authority string,
@@ -33,7 +32,6 @@ func RevenueKeeper(
 	k := keeper.NewKeeper(
 		cdc,
 		ss,
-		stakingKeeper,
 		bankKeeper,
 		oracleKeeper,
 		authority,

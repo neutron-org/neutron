@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
@@ -61,7 +60,7 @@ func (s msgServer) FundTreasury(goCtx context.Context, msg *revenuetypes.MsgFund
 		sender,
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			msg.Amount[0].Denom, math.Int(msg.Amount[0].Amount),
+			msg.Amount[0].Denom, msg.Amount[0].Amount,
 		)),
 	); err != nil {
 		return nil, err

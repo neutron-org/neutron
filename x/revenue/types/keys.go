@@ -24,7 +24,7 @@ var (
 	PrefixAccumulatedPriceKey = []byte{0x04}
 )
 
-func GetValidatorInfoKey(addr sdk.ConsAddress) []byte {
+func GetValidatorInfoKey(addr sdk.ValAddress) []byte {
 	return append(PrefixValidatorInfoKey, addr.Bytes()...)
 }
 

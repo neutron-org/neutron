@@ -11,7 +11,7 @@ import (
 // InitGenesis initializes the module's state from a provided genesis state.
 func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState) {
 	for _, elem := range genState.Validators {
-		_, addr, err := bech32.DecodeAndConvert(elem.ConsensusAddress)
+		_, addr, err := bech32.DecodeAndConvert(elem.ValOperAddress)
 		if err != nil {
 			panic(err)
 		}

@@ -54,10 +54,10 @@ message MsgFundTreasury {
 
   // The amount of coins to fund the revenue treasury pool with. Must match the denom compensation
   // defined in the module's params.
-  repeated cosmos.base.v1beta1.DecCoin amount = 2 [
+  repeated cosmos.base.v1beta1.Coin amount = 2 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
 }
 

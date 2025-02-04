@@ -15,11 +15,10 @@ import (
 
 func TestCumulative(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, oracleKeeper, "")
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 	prices, err := keeper.GetAllCumulativePrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 0)

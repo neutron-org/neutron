@@ -54,8 +54,8 @@ message QueryStateResponse {
 
 // Request type for the Query/ValidatorStats RPC method.
 message QueryValidatorStatsRequest {
-  // The validator's consensus node address.
-  string consensus_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // The validator's node operator address.
+  string val_oper_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 // Response type for the Query/ValidatorStats RPC method.

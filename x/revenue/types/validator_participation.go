@@ -9,8 +9,8 @@ import (
 // ValidatorParticipation represents a validator's participation in a block creation and oracle prices
 // provision.
 type ValidatorParticipation struct {
-	// ConsAddress is the validator's consensus address.
-	ConsAddress sdktypes.ConsAddress
+	// ValOperAddress is the validator's operator address.
+	ValOperAddress sdktypes.ValAddress
 	// BlockVote is the block ID flag the validator voted for.
 	BlockVote tmtypes.BlockIDFlag
 	// OracleVoteExtension is the validator's vote extension for the oracle module.

@@ -12,12 +12,12 @@ import (
 )
 
 func TestInitAndExportGenesis(t *testing.T) {
-	k, ctx := keeper.RevenueKeeper(t, nil, nil, nil, "")
+	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 
 	// create some non-default genesis state
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
-		ConsensusAddress:            "neutronvalcons1arjwkww79m65csulawqngr7ngs4uqu5hv5736l",
+		ValOperAddress:              "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70",
 		CommitedBlocksInPeriod:      1000,
 		CommitedOracleVotesInPeriod: 1000,
 	})

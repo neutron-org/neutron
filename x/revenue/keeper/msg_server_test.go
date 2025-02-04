@@ -4,7 +4,10 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/golang/mock/gomock"
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
+	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
@@ -13,7 +16,7 @@ import (
 
 func TestUpdateParams(t *testing.T) {
 	appconfig.GetDefaultConfig()
-	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
 	msgServer := revenuekeeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -21,6 +24,28 @@ func TestUpdateParams(t *testing.T) {
 		updateParamsMsg *revenuetypes.MsgUpdateParams
 		expectedErr     string
 	}{
+		{
+			"valid params",
+			&revenuetypes.MsgUpdateParams{
+				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Params: revenuetypes.Params{
+					DenomCompensation: "untrn",
+					BaseCompensation:  1500,
+					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					OracleVotesPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					PaymentScheduleType: &revenuetypes.Params_BlockBasedPaymentScheduleType{
+						BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+					},
+				},
+			},
+			"",
+		},
 		{
 			"empty authority",
 			&revenuetypes.MsgUpdateParams{
@@ -266,6 +291,70 @@ func TestUpdateParams(t *testing.T) {
 			require.NoError(t, err, tt.expectedErr)
 			require.Equal(t, res, &revenuetypes.MsgUpdateParamsResponse{})
 		} else {
+			require.ErrorContains(t, err, tt.expectedErr)
+			require.Empty(t, res)
+		}
+	}
+}
+
+func TestFundTreasury(t *testing.T) {
+	appconfig.GetDefaultConfig()
+
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+
+	k, ctx := testutil_keeper.RevenueKeeper(t, bankKeeper, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	require.Nil(t, k.SetParams(ctx, revenuetypes.DefaultParams()))
+	msgServer := revenuekeeper.NewMsgServerImpl(k)
+
+	tests := []struct {
+		name            string
+		fundTreasuryMsg *revenuetypes.MsgFundTreasury
+		expectedErr     string
+	}{
+		{
+			"valid top up",
+			&revenuetypes.MsgFundTreasury{
+				Sender: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Amount: sdktypes.NewCoins(sdktypes.NewCoin("untrn", math.NewInt(1000))),
+			},
+			"",
+		},
+		{
+			"too many coins",
+			&revenuetypes.MsgFundTreasury{
+				Sender: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Amount: sdktypes.NewCoins(
+					sdktypes.NewCoin("untrn", math.NewInt(1000)),
+					sdktypes.NewCoin("uatom", math.NewInt(1000)),
+				),
+			},
+			"exactly one coin must be provided",
+		},
+		{
+			"invalid denom",
+			&revenuetypes.MsgFundTreasury{
+				Sender: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Amount: sdktypes.NewCoins(sdktypes.NewCoin("uatom", math.NewInt(1000))),
+			},
+			"provided denom doesn't match the denom for compensation untrn",
+		},
+	}
+
+	for _, tt := range tests {
+		if tt.expectedErr == "" {
+			bankKeeper.EXPECT().SendCoinsFromAccountToModule(
+				gomock.Any(),
+				sdktypes.MustAccAddressFromBech32(tt.fundTreasuryMsg.Sender),
+				revenuetypes.RevenueTreasuryPoolName,
+				tt.fundTreasuryMsg.Amount,
+			).Times(1) // expect a single transfer from sender to module account
+
+			res, err := msgServer.FundTreasury(ctx, tt.fundTreasuryMsg)
+			require.NoError(t, err, tt.expectedErr)
+			require.Equal(t, res, &revenuetypes.MsgFundTreasuryResponse{})
+		} else {
+			res, err := msgServer.FundTreasury(ctx, tt.fundTreasuryMsg)
 			require.ErrorContains(t, err, tt.expectedErr)
 			require.Empty(t, res)
 		}
