@@ -16,22 +16,24 @@ import (
 // NewPreBlockHandler returns a new PreBlockHandler. The handler is responsible for recording
 // validators' participation in network operations and distribute revenue to validators.
 func NewPreBlockHandler(
-	keeper *revenuekeeper.Keeper,
+	revenueKeeper *revenuekeeper.Keeper,
+	stakingKeeper revenuetypes.StakingKeeper,
 	veCodec codec.VoteExtensionCodec,
 	ecCodec codec.ExtendedCommitCodec,
 ) *PreBlockHandler {
 	return &PreBlockHandler{
-		keeper:  keeper,
-		veCodec: veCodec,
-		ecCodec: ecCodec,
+		revenueKeeper: revenueKeeper,
+		stakingKeeper: stakingKeeper,
+		veCodec:       veCodec,
+		ecCodec:       ecCodec,
 	}
 }
 
 // PreBlockHandler is responsible for recording validators' participation in network operations and
 // distribute revenue to validators.
 type PreBlockHandler struct { //golint:ignore
-	// keeper is the keeper for the revenue module.
-	keeper *revenuekeeper.Keeper
+	revenueKeeper *revenuekeeper.Keeper
+	stakingKeeper revenuetypes.StakingKeeper
 
 	// codecs
 	veCodec codec.VoteExtensionCodec
@@ -50,23 +52,23 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 
 		// If vote extensions are not enabled, then we don't need to do anything.
 		if !slinkyve.VoteExtensionsEnabled(ctx) {
-			h.keeper.Logger(ctx).Info("vote extensions are not enabled", "height", ctx.BlockHeight())
+			h.revenueKeeper.Logger(ctx).Info("vote extensions are not enabled", "height", ctx.BlockHeight())
 			return response, nil
 		}
 
 		if err := h.PaymentScheduleCheck(ctx); err != nil {
-			return response, err
+			return response, fmt.Errorf("error checking payment schedule: %w", err)
 		}
 
 		if len(req.Txs) < slinkyabcitypes.NumInjectedTxs {
-			return response, slinkyabcitypes.MissingCommitInfoError{}
+			return response, fmt.Errorf("the number of transactions is less than the expected number of injected transactions: %d < %d", len(req.Txs), slinkyabcitypes.NumInjectedTxs)
 		}
 		extendedCommitInfo, err := h.ecCodec.Decode(req.Txs[slinkyabcitypes.OracleInfoIndex])
 		if err != nil {
-			return response, slinkyabcitypes.CodecError{Err: fmt.Errorf("error decoding extended-commit-info: %w", err)}
+			return response, fmt.Errorf("failed to decode oracle info indexed tx[%d] as extended commit info: %w", slinkyabcitypes.OracleInfoIndex, err)
 		}
 		if err := h.ProcessExtendedCommitInfo(ctx, extendedCommitInfo); err != nil {
-			return response, err
+			return response, fmt.Errorf("error processing extended commit info: %w", err)
 		}
 
 		return response, nil
@@ -76,11 +78,11 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 // PaymentScheduleCheck maintains payment schedule state and consistency, and ensures revenue is
 // distributed across validators according to the payment schedule.
 func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
-	state, err := h.keeper.GetState(ctx)
+	state, err := h.revenueKeeper.GetState(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get module state: %w", err)
 	}
-	params, err := h.keeper.GetParams(ctx)
+	params, err := h.revenueKeeper.GetParams(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get module params: %w", err)
 	}
@@ -95,11 +97,11 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 
 	// if the period has ended, revenue needs to be processed and module's state set to the next period
 	if ps.PeriodEnded(ctx) {
-		h.keeper.Logger(ctx).Debug("payment period has ended, processing revenue")
-		if err := h.keeper.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
+		h.revenueKeeper.Logger(ctx).Debug("payment period has ended, processing revenue")
+		if err := h.revenueKeeper.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
 			return fmt.Errorf("failed to process revenue: %w", err)
 		}
-		if err := h.keeper.ResetValidatorsInfo(ctx); err != nil {
+		if err := h.revenueKeeper.ResetValidatorsInfo(ctx); err != nil {
 			return fmt.Errorf("failed to reset validators info on revenue distribution: %w", err)
 		}
 		ps.StartNewPeriod(ctx)
@@ -111,11 +113,11 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 	// in this case, we need to reflect the change in the module's State by storing the corresponding
 	// payment schedule implementation in the module's State and prepare for the a new period
 	if !ps.MatchesType(params.PaymentScheduleType) {
-		h.keeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
+		h.revenueKeeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
 			"new_payment_schedule_type", fmt.Sprintf("%+v", params.PaymentScheduleType),
 			"old_payment_schedule_value", ps.String(),
 		)
-		if err := h.keeper.ResetValidatorsInfo(ctx); err != nil {
+		if err := h.revenueKeeper.ResetValidatorsInfo(ctx); err != nil {
 			return fmt.Errorf("failed to reset validators info on payment schedule change: %w", err)
 		}
 
@@ -130,10 +132,10 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 			return fmt.Errorf("failed to pack new payment schedule %+v: %w", ps, err)
 		}
 		state.PaymentSchedule = packedPs
-		if err := h.keeper.SetState(ctx, state); err != nil {
+		if err := h.revenueKeeper.SetState(ctx, state); err != nil {
 			return fmt.Errorf("failed to set module state after changing payment schedule: %w", err)
 		}
-		h.keeper.Logger(ctx).Debug("module state updated", "new_state", state.String())
+		h.revenueKeeper.Logger(ctx).Debug("module state updated", "new_state", state.String())
 	}
 
 	return nil
@@ -149,14 +151,23 @@ func (h *PreBlockHandler) ProcessExtendedCommitInfo(ctx sdktypes.Context, extend
 			return slinkyabcitypes.CodecError{Err: fmt.Errorf("error decoding vote-extension: %w", err)}
 		}
 
+		validator, err := h.stakingKeeper.GetValidatorByConsAddr(ctx, voteInfo.Validator.Address)
+		if err != nil {
+			return fmt.Errorf("error getting validator by consensus address: %w", err)
+		}
+		valoperAddr, err := sdktypes.ValAddressFromBech32(validator.OperatorAddress)
+		if err != nil {
+			return fmt.Errorf("error converting bech32 validator operator address to sdktypes.ValAddress: %w", err)
+		}
+
 		votes = append(votes, revenuetypes.ValidatorParticipation{
-			ConsAddress:         voteInfo.Validator.Address,
+			ValOperAddress:      valoperAddr,
 			BlockVote:           voteInfo.BlockIdFlag,
 			OracleVoteExtension: voteExtension,
 		})
 	}
 
-	if err := h.keeper.RecordValidatorsParticipation(ctx, votes); err != nil {
+	if err := h.revenueKeeper.RecordValidatorsParticipation(ctx, votes); err != nil {
 		return fmt.Errorf("failed to record validators participation for current block: %w", err)
 	}
 

@@ -930,7 +930,6 @@ func New(
 	app.RevenueKeeper = revenuekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[revenuetypes.StoreKey]),
-		app.StakingKeeper,
 		&app.BankKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -1316,6 +1315,7 @@ func New(
 	// in network operations and distribute revenue to validators.
 	revenuePreBlockHandler := revenue.NewPreBlockHandler(
 		app.RevenueKeeper,
+		app.StakingKeeper,
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),

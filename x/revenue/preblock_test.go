@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/golang/mock/gomock"
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
@@ -21,7 +20,6 @@ import (
 
 const (
 	val1OperAddr = "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
-	val1ConsAddr = "neutronvalcons18zawa74y4xv6xg3zv0cstmfl9y38ecurucx9jw"
 )
 
 var (
@@ -41,8 +39,8 @@ func TestPaymentScheduleCheckEmptyPaymentSchedule(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
-	preBlock := revenue.NewPreBlockHandler(keeper, veCodec, ecCodec)
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 	g := revenuetypes.DefaultGenesis()
 	require.Nil(t, keeper.SetParams(ctx, g.Params))
@@ -50,10 +48,10 @@ func TestPaymentScheduleCheckEmptyPaymentSchedule(t *testing.T) {
 
 	// init a fresh validator
 	val1Info := val1Info()
-	ca1 := mustConsAddressFromBech32(t, val1Info.ConsensusAddress)
+	va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
 
 	// prepare keeper state by setting validator info
-	require.Nil(t, keeper.SetValidatorInfo(ctx, ca1, val1Info))
+	require.Nil(t, keeper.SetValidatorInfo(ctx, va1, val1Info))
 
 	// no state updates are expected ever for the empty payment schedule
 	for _, height := range []int64{1, 10, 1000, 100000, 1000000000} {
@@ -73,8 +71,8 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
-		preBlock := revenue.NewPreBlockHandler(keeper, veCodec, ecCodec)
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
@@ -89,10 +87,10 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 
 		// init a fresh validator
 		val1Info := val1Info()
-		ca1 := mustConsAddressFromBech32(t, val1Info.ConsensusAddress)
+		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
 
 		// prepare keeper state by setting validator info
-		err := keeper.SetValidatorInfo(ctx, ca1, val1Info)
+		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
 
 		// expect no revenue distribution within the same period
@@ -115,8 +113,8 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
-		preBlock := revenue.NewPreBlockHandler(keeper, veCodec, ecCodec)
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
@@ -133,16 +131,11 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		val1Info := val1Info()
 		val1Info.CommitedBlocksInPeriod = 5
 		val1Info.CommitedOracleVotesInPeriod = 5
-		ca1 := mustConsAddressFromBech32(t, val1Info.ConsensusAddress)
+		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
 
 		// prepare keeper state by setting validator info
-		err := keeper.SetValidatorInfo(ctx, ca1, val1Info)
+		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
-
-		stakingKeeper.EXPECT().GetValidatorByConsAddr(
-			gomock.Any(),
-			mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
-		).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
 
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
@@ -166,7 +159,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		require.Equal(t, uint64(6), newPs.CurrentMonthStartBlock)
 
 		// make sure validators' info is reset
-		info, err := keeper.GetValidatorInfo(ctx, ca1)
+		info, err := keeper.GetValidatorInfo(ctx, va1)
 		require.Nil(t, err)
 		require.Equal(t, uint64(0), info.CommitedBlocksInPeriod)
 		require.Equal(t, uint64(0), info.CommitedOracleVotesInPeriod)
@@ -180,8 +173,8 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
-		preBlock := revenue.NewPreBlockHandler(keeper, veCodec, ecCodec)
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
@@ -196,10 +189,10 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 
 		// init a fresh validator
 		val1Info := val1Info()
-		ca1 := mustConsAddressFromBech32(t, val1Info.ConsensusAddress)
+		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
 
 		// prepare keeper state by setting validator info
-		err := keeper.SetValidatorInfo(ctx, ca1, val1Info)
+		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
 
 		// no SendCoinsFromModuleToAccount calls expected
@@ -222,8 +215,8 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
-		preBlock := revenue.NewPreBlockHandler(keeper, veCodec, ecCodec)
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
@@ -240,16 +233,11 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		val1Info := val1Info()
 		val1Info.CommitedBlocksInPeriod = 5
 		val1Info.CommitedOracleVotesInPeriod = 5
-		ca1 := mustConsAddressFromBech32(t, val1Info.ConsensusAddress)
+		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
 
 		// prepare keeper state by setting validator info
-		err := keeper.SetValidatorInfo(ctx, ca1, val1Info)
+		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
-
-		stakingKeeper.EXPECT().GetValidatorByConsAddr(
-			gomock.Any(),
-			mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
-		).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
 
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
@@ -273,7 +261,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		require.Equal(t, uint64(6), newPs.CurrentPeriodStartBlock)
 
 		// make sure validators' info is reset
-		info, err := keeper.GetValidatorInfo(ctx, ca1)
+		info, err := keeper.GetValidatorInfo(ctx, va1)
 		require.Nil(t, err)
 		require.Equal(t, uint64(0), info.CommitedBlocksInPeriod)
 		require.Equal(t, uint64(0), info.CommitedOracleVotesInPeriod)
@@ -282,7 +270,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 
 func val1Info() revenuetypes.ValidatorInfo {
 	return revenuetypes.ValidatorInfo{
-		ConsensusAddress: val1ConsAddr,
+		ValOperAddress: val1OperAddr,
 	}
 }
 
@@ -305,11 +293,11 @@ func mustGetFromBech32(
 	return b
 }
 
-func mustConsAddressFromBech32(
+func mustValAddressFromBech32(
 	t *testing.T,
 	address string,
-) sdktypes.ConsAddress {
-	ca, err := sdktypes.ConsAddressFromBech32(address)
+) sdktypes.ValAddress {
+	va, err := sdktypes.ValAddressFromBech32(address)
 	require.Nil(t, err)
-	return ca
+	return va
 }

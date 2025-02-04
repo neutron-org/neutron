@@ -16,26 +16,23 @@ import (
 )
 
 type Keeper struct {
-	cdc           codec.BinaryCodec
-	storeService  coretypes.KVStoreService
-	stakingKeeper revenuetypes.StakingKeeper
-	bankKeeper    revenuetypes.BankKeeper
-	authority     string
+	cdc          codec.BinaryCodec
+	storeService coretypes.KVStoreService
+	bankKeeper   revenuetypes.BankKeeper
+	authority    string
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService coretypes.KVStoreService,
-	stakingKeeper revenuetypes.StakingKeeper,
 	bankKeeper revenuetypes.BankKeeper,
 	authority string,
 ) *Keeper {
 	return &Keeper{
-		cdc:           cdc,
-		storeService:  storeService,
-		stakingKeeper: stakingKeeper,
-		bankKeeper:    bankKeeper,
-		authority:     authority,
+		cdc:          cdc,
+		storeService: storeService,
+		bankKeeper:   bankKeeper,
+		authority:    authority,
 	}
 }
 
@@ -122,7 +119,7 @@ func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []revenuetypes.Vali
 	return infos, nil
 }
 
-func (k *Keeper) GetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress) (info revenuetypes.ValidatorInfo, err error) {
+func (k *Keeper) GetValidatorInfo(ctx sdk.Context, addr sdk.ValAddress) (info revenuetypes.ValidatorInfo, err error) {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := store.Get(revenuetypes.GetValidatorInfoKey(addr))
 	if err != nil {
@@ -138,7 +135,7 @@ func (k *Keeper) GetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress) (info r
 	return info, nil
 }
 
-func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info revenuetypes.ValidatorInfo) error {
+func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ValAddress, info revenuetypes.ValidatorInfo) error {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := k.cdc.Marshal(&info)
 	if err != nil {
@@ -161,7 +158,7 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 		// BlockIDFlagAbsent means that no block vote has been received from the validator
 		if vote.BlockVote == tmtypes.BlockIDFlagAbsent {
 			k.Logger(ctx).Debug("missing validator's block signature",
-				"validator", vote.ConsAddress.String(),
+				"validator", vote.ValOperAddress.String(),
 				"height", ctx.BlockHeight(),
 			)
 		} else {
@@ -170,7 +167,7 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 		// empty oracle prices means that no prices vote has been received from the validator
 		if len(vote.OracleVoteExtension.Prices) == 0 {
 			k.Logger(ctx).Debug("missing validator's oracle prices",
-				"validator", vote.ConsAddress.String(),
+				"validator", vote.ValOperAddress.String(),
 				"height", ctx.BlockHeight(),
 			)
 		} else {
@@ -181,7 +178,7 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 		}
 
 		// update validator's info in the module state
-		valInfo, err := k.getOrCreateValidatorInfo(ctx, vote.ConsAddress)
+		valInfo, err := k.getOrCreateValidatorInfo(ctx, vote.ValOperAddress)
 		if err != nil {
 			return err
 		}
@@ -191,11 +188,11 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 		if blockVote {
 			valInfo.CommitedBlocksInPeriod++
 		}
-		if err := k.SetValidatorInfo(ctx, vote.ConsAddress, valInfo); err != nil {
+		if err := k.SetValidatorInfo(ctx, vote.ValOperAddress, valInfo); err != nil {
 			return err
 		}
 		k.Logger(ctx).Debug("validator participation recorded",
-			"validator", vote.ConsAddress.String(),
+			"validator", vote.ValOperAddress.String(),
 			"committed_blocks_in_period", valInfo.CommitedBlocksInPeriod,
 			"committed_oracle_votes_in_period", valInfo.CommitedOracleVotesInPeriod,
 		)
@@ -215,11 +212,6 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 	baseCompensation := k.CalcBaseRevenueAmount(ctx)
 
 	for _, info := range infos {
-		valConsAddr, err := sdk.ConsAddressFromBech32(info.ConsensusAddress)
-		if err != nil {
-			return fmt.Errorf("failed to create valcons addr from bech32 %s: %w", info.ConsensusAddress, err)
-		}
-
 		rating := PerformanceRating(
 			params.BlocksPerformanceRequirement,
 			params.OracleVotesPerformanceRequirement,
@@ -230,39 +222,34 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 		valCompensation := rating.MulInt64(baseCompensation).TruncateInt()
 
 		if valCompensation.IsPositive() {
-			validator, err := k.stakingKeeper.GetValidatorByConsAddr(ctx, valConsAddr)
+			_, valOperAddrBytes, err := bech32types.DecodeAndConvert(info.ValOperAddress)
 			if err != nil {
-				return fmt.Errorf("failed to get validator by cons addr %s from staking keeper: %w", valConsAddr, err)
-			}
-
-			_, valOperAddr, err := bech32types.DecodeAndConvert(validator.OperatorAddress)
-			if err != nil {
-				return fmt.Errorf("failed to convert valoper address %s to bytes: %w", validator.OperatorAddress, err)
+				return fmt.Errorf("failed to convert valoper address %s to bytes: %w", info.ValOperAddress, err)
 			}
 
 			revenueAmt := sdk.NewCoins(sdk.NewCoin(params.DenomCompensation, valCompensation))
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(
 				ctx,
 				revenuetypes.RevenueTreasuryPoolName,
-				valOperAddr,
+				valOperAddrBytes,
 				revenueAmt,
 			)
 			if err != nil {
 				ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
-					sdk.NewAttribute(revenuetypes.EventAttributeValidator, validator.OperatorAddress),
+					sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
 					sdk.NewAttribute(revenuetypes.EventAttributePaymentFailure, err.Error()),
 				))
-				k.Logger(ctx).Debug("failed to send revenue to validator", "validator", validator.OperatorAddress, "err", err)
+				k.Logger(ctx).Debug("failed to send revenue to validator", "validator", info.ValOperAddress, "err", err)
 			} else {
 				ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
-					sdk.NewAttribute(revenuetypes.EventAttributeValidator, validator.OperatorAddress),
+					sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
 					sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, revenueAmt.String()),
 					sdk.NewAttribute(revenuetypes.EventAttributePerformanceRating, rating.String()),
 					sdk.NewAttribute(revenuetypes.EventAttributeCommittedBlocksInPeriod, fmt.Sprintf("%d", info.CommitedBlocksInPeriod)),
 					sdk.NewAttribute(revenuetypes.EventAttributeCommittedOracleVotesInPeriod, fmt.Sprintf("%d", info.CommitedOracleVotesInPeriod)),
 					sdk.NewAttribute(revenuetypes.EventAttributeTotalBlockInPeriod, fmt.Sprintf("%d", blocksInPeriod)),
 				))
-				k.Logger(ctx).Debug("revenue sent to validator", "validator", validator.OperatorAddress, "revenue", revenueAmt.String())
+				k.Logger(ctx).Debug("revenue sent to validator", "validator", info.ValOperAddress, "revenue", revenueAmt.String())
 			}
 		}
 	}
@@ -277,15 +264,15 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 	}
 
 	for _, info := range infos {
-		valConsAddr, err := sdk.ConsAddressFromBech32(info.ConsensusAddress)
+		valOperAddr, err := sdk.ValAddressFromBech32(info.ValOperAddress)
 		if err != nil {
-			return fmt.Errorf("failed to create valcons addr from bech32 %s: %w", info.ConsensusAddress, err)
+			return fmt.Errorf("failed to create valoper addr from bech32 %s: %w", info.ValOperAddress, err)
 		}
 
 		info.CommitedBlocksInPeriod = 0
 		info.CommitedOracleVotesInPeriod = 0
-		if err := k.SetValidatorInfo(ctx, valConsAddr, info); err != nil {
-			return fmt.Errorf("failed to reset a validator %s info: %w", info.ConsensusAddress, err)
+		if err := k.SetValidatorInfo(ctx, valOperAddr, info); err != nil {
+			return fmt.Errorf("failed to reset a validator %s info: %w", info.ValOperAddress, err)
 		}
 	}
 	k.Logger(ctx).Debug("all validators info has been reset")
@@ -304,7 +291,7 @@ func (k *Keeper) CalcBaseRevenueAmount(_ sdk.Context) int64 {
 
 func (k *Keeper) getOrCreateValidatorInfo(
 	ctx sdk.Context,
-	addr sdk.ConsAddress,
+	addr sdk.ValAddress,
 ) (info revenuetypes.ValidatorInfo, err error) {
 	info, err = k.GetValidatorInfo(ctx, addr)
 	if err != nil && !errors.Is(err, revenuetypes.ErrNoValidatorInfoFound) {
@@ -317,7 +304,7 @@ func (k *Keeper) getOrCreateValidatorInfo(
 	}
 
 	info = revenuetypes.ValidatorInfo{
-		ConsensusAddress: addr.String(),
+		ValOperAddress: addr.String(),
 	}
 	if err := k.SetValidatorInfo(ctx, addr, info); err != nil {
 		return info, fmt.Errorf("failed to write validator info to the store: %w", err)

@@ -15,7 +15,7 @@ import (
 func TestQueryParams(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
-	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	k, ctx := testutil_keeper.RevenueKeeper(t, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
 	params := revenuetypes.DefaultParams()
 	require.Nil(t, k.SetParams(ctx, params))
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
@@ -40,7 +40,7 @@ func TestQueryParams(t *testing.T) {
 func TestQueryState(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
-	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	k, ctx := testutil_keeper.RevenueKeeper(t, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
 	ps := revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         10,
 		CurrentPeriodStartBlock: 1,
@@ -58,7 +58,7 @@ func TestQueryState(t *testing.T) {
 func TestQueryValidatorStats(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
-	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	k, ctx := testutil_keeper.RevenueKeeper(t, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
 	params := revenuetypes.DefaultParams()
 	require.Nil(t, k.SetParams(ctx, params))
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
@@ -75,15 +75,15 @@ func TestQueryValidatorStats(t *testing.T) {
 	val1 := val1Info()
 	val1.CommitedBlocksInPeriod = 100
 	val1.CommitedOracleVotesInPeriod = 100
-	require.Nil(t, k.SetValidatorInfo(ctx, mustConsAddressFromBech32(t, val1.ConsensusAddress), val1))
+	require.Nil(t, k.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1.ValOperAddress), val1))
 	// val 2 with 50/100 performance (ctx.WithBlockHeight(100))
 	val2 := val2Info()
 	val2.CommitedBlocksInPeriod = 50
 	val2.CommitedOracleVotesInPeriod = 50
-	require.Nil(t, k.SetValidatorInfo(ctx, mustConsAddressFromBech32(t, val2.ConsensusAddress), val2))
+	require.Nil(t, k.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val2.ValOperAddress), val2))
 
 	val1Stats, err := queryServer.ValidatorStats(ctx.WithBlockHeight(100), &revenuetypes.QueryValidatorStatsRequest{
-		ConsensusAddress: val1.ConsensusAddress,
+		ValOperAddress: val1.ValOperAddress,
 	})
 	require.Nil(t, err)
 	require.Equal(t, uint64(100), val1Stats.Stats.ValidatorInfo.CommitedBlocksInPeriod)
@@ -91,7 +91,7 @@ func TestQueryValidatorStats(t *testing.T) {
 	require.Equal(t, math.LegacyOneDec(), val1Stats.Stats.PerformanceRating)
 
 	val2Stats, err := queryServer.ValidatorStats(ctx.WithBlockHeight(100), &revenuetypes.QueryValidatorStatsRequest{
-		ConsensusAddress: val2.ConsensusAddress,
+		ValOperAddress: val2.ValOperAddress,
 	})
 	require.Nil(t, err)
 	require.Equal(t, uint64(50), val2Stats.Stats.ValidatorInfo.CommitedBlocksInPeriod)

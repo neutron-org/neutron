@@ -81,7 +81,7 @@ func CmdQueryState() *cobra.Command {
 
 func CmdQueryValidatorStats() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "validator-stats",
+		Use:   "validator-stats [val-oper-addr]",
 		Short: "shows the stats of a validator",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -89,7 +89,7 @@ func CmdQueryValidatorStats() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			res, err := queryClient.ValidatorStats(context.Background(), &types.QueryValidatorStatsRequest{ConsensusAddress: args[0]})
+			res, err := queryClient.ValidatorStats(context.Background(), &types.QueryValidatorStatsRequest{ValOperAddress: args[0]})
 			if err != nil {
 				return err
 			}

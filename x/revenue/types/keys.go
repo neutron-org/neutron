@@ -20,6 +20,6 @@ var (
 	PrefixValidatorInfoKey = []byte{0x03}
 )
 
-func GetValidatorInfoKey(addr sdk.ConsAddress) []byte {
+func GetValidatorInfoKey(addr sdk.ValAddress) []byte {
 	return append(PrefixValidatorInfoKey, addr.Bytes()...)
 }

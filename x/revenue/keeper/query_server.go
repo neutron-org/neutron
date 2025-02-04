@@ -57,12 +57,12 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 
 	ctx := sdktypes.UnwrapSDKContext(goCtx)
 
-	ca, err := sdktypes.ConsAddressFromBech32(request.ConsensusAddress)
+	valOperAddr, err := sdktypes.ValAddressFromBech32(request.ValOperAddress)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	valInfo, err := s.keeper.GetValidatorInfo(ctx, ca)
+	valInfo, err := s.keeper.GetValidatorInfo(ctx, valOperAddr)
 	if err != nil {
 		if errors.Is(err, revenuetypes.ErrNoValidatorInfoFound) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())

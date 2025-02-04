@@ -6,7 +6,6 @@ import (
 	"cosmossdk.io/math"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/golang/mock/gomock"
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
@@ -18,17 +17,13 @@ import (
 
 const (
 	val1OperAddr = "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
-	val1ConsAddr = "neutronvalcons18zawa74y4xv6xg3zv0cstmfl9y38ecurucx9jw"
-
 	val2OperAddr = "neutronvaloper1x6hw4rnkj4ag97jkdz4srlxzkr7w6pny54qmda"
-	val2ConsAddr = "neutronvalcons1x6hw4rnkj4ag97jkdz4srlxzkr7w6pnyqxn8pu"
 )
 
 func TestParams(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
 
 	// assert default params
 	params, err := keeper.GetParams(ctx)
@@ -52,9 +47,8 @@ func TestValidatorInfo(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
 	ctrl := gomock.NewController(t)
-	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1
@@ -65,39 +59,33 @@ func TestValidatorInfo(t *testing.T) {
 	val1Info.CommitedOracleVotesInPeriod = 200
 
 	// set validator infos
-	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
+	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
-	err = keeper.SetValidatorInfo(ctx, []byte(val2Info.ConsensusAddress), val2Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val2Info.ValOperAddress), val2Info)
 	require.Nil(t, err)
 
 	// get all validator info
 	valInfos, err := keeper.GetAllValidatorInfo(ctx)
 	require.Nil(t, err)
 	require.Equal(t, 2, len(valInfos))
-	require.Equal(t, val1Info, valInfos[0])
-	require.Equal(t, val2Info, valInfos[1])
+	require.Equal(t, val1Info, valInfos[1])
+	require.Equal(t, val2Info, valInfos[0])
 }
 
 func TestProcessRevenue(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
 	ctrl := gomock.NewController(t)
-	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1000
 	val1Info.CommitedOracleVotesInPeriod = 1000
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
+	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
-
-	stakingKeeper.EXPECT().GetValidatorByConsAddr(
-		gomock.Any(),
-		mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
-	).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
 
 	// expect one successful SendCoinsFromModuleToAccount call
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
@@ -117,15 +105,14 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
 	ctrl := gomock.NewController(t)
-	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
 
 	// set val1 info as if they haven't committed any blocks and prices
 	val1Info := val1Info()
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
+	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
 	// no SendCoinsFromModuleToAccount calls expected
@@ -139,9 +126,8 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
 	ctrl := gomock.NewController(t)
-	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
 
 	// define test specific performance requirements
 	params := revenuetypes.DefaultParams()
@@ -164,19 +150,10 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	val2Info.CommitedOracleVotesInPeriod = 1000
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
+	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
-	err = keeper.SetValidatorInfo(ctx, []byte(val2Info.ConsensusAddress), val2Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val2Info.ValOperAddress), val2Info)
 	require.Nil(t, err)
-
-	stakingKeeper.EXPECT().GetValidatorByConsAddr(
-		gomock.Any(),
-		mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
-	).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
-	stakingKeeper.EXPECT().GetValidatorByConsAddr(
-		gomock.Any(),
-		mustConsAddressFromBech32(t, val2Info.ConsensusAddress),
-	).Return(stakingtypes.Validator{OperatorAddress: val2OperAddr}, nil)
 
 	// expect one successful SendCoinsFromModuleToAccount call for val1 75% of rewards
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
@@ -207,9 +184,8 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
 	ctrl := gomock.NewController(t)
-	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, stakingKeeper, bankKeeper, "")
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
 
 	// known validator (set in keeper below) with 100% performance
 	val1Info := val1Info()
@@ -218,25 +194,25 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	// new validator (doesn't exist in keeper state)
 	val2Info := val2Info()
 
-	ca1 := mustConsAddressFromBech32(t, val1Info.ConsensusAddress)
-	ca2 := mustConsAddressFromBech32(t, val2Info.ConsensusAddress)
+	va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
+	va2 := mustValAddressFromBech32(t, val2Info.ValOperAddress)
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, ca1, val1Info)
+	err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 	require.Nil(t, err)
 
 	// vote info from the validators
 	votes := []revenuetypes.ValidatorParticipation{
 		// known validator misses a block
 		{
-			ConsAddress:         ca1,
+			ValOperAddress:      va1,
 			BlockVote:           tmtypes.BlockIDFlagAbsent,
 			OracleVoteExtension: vetypes.OracleVoteExtension{Prices: map[uint64][]byte{}},
 		},
 		// new validator commits a block and oracle prices
 		{
-			ConsAddress: ca2,
-			BlockVote:   tmtypes.BlockIDFlagCommit,
+			ValOperAddress: va2,
+			BlockVote:      tmtypes.BlockIDFlagCommit,
 			// content doesn't matter, the len of the map does
 			OracleVoteExtension: vetypes.OracleVoteExtension{Prices: map[uint64][]byte{0: {}}},
 		},
@@ -246,28 +222,28 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	require.Nil(t, err)
 
 	// make sure that the validator votes are processed and recorded
-	storedVal1Info, err := keeper.GetValidatorInfo(ctx, ca1) // known val
+	storedVal1Info, err := keeper.GetValidatorInfo(ctx, va1) // known val
 	require.Nil(t, err)
-	require.Equal(t, val1Info.ConsensusAddress, storedVal1Info.ConsensusAddress)
+	require.Equal(t, val1Info.ValOperAddress, storedVal1Info.ValOperAddress)
 	require.Equal(t, uint64(1000), storedVal1Info.CommitedBlocksInPeriod)      // never missed a block but the last one
 	require.Equal(t, uint64(1000), storedVal1Info.CommitedOracleVotesInPeriod) // never missed a block but the last one
 
-	storedVal2Info, err := keeper.GetValidatorInfo(ctx, ca2) // new val
+	storedVal2Info, err := keeper.GetValidatorInfo(ctx, va2) // new val
 	require.Nil(t, err)
-	require.Equal(t, val2Info.ConsensusAddress, storedVal2Info.ConsensusAddress)
+	require.Equal(t, val2Info.ValOperAddress, storedVal2Info.ValOperAddress)
 	require.Equal(t, uint64(1), storedVal2Info.CommitedBlocksInPeriod)      // all but the last one are missed
 	require.Equal(t, uint64(1), storedVal2Info.CommitedOracleVotesInPeriod) // all but the last one are missed
 }
 
 func val1Info() revenuetypes.ValidatorInfo {
 	return revenuetypes.ValidatorInfo{
-		ConsensusAddress: val1ConsAddr,
+		ValOperAddress: val1OperAddr,
 	}
 }
 
 func val2Info() revenuetypes.ValidatorInfo {
 	return revenuetypes.ValidatorInfo{
-		ConsensusAddress: val2ConsAddr,
+		ValOperAddress: val2OperAddr,
 	}
 }
 
@@ -281,11 +257,11 @@ func mustGetFromBech32(
 	return b
 }
 
-func mustConsAddressFromBech32(
+func mustValAddressFromBech32(
 	t *testing.T,
 	address string,
-) sdktypes.ConsAddress {
-	ca, err := sdktypes.ConsAddressFromBech32(address)
+) sdktypes.ValAddress {
+	va, err := sdktypes.ValAddressFromBech32(address)
 	require.Nil(t, err)
-	return ca
+	return va
 }
