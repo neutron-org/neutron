@@ -30,19 +30,6 @@ func NewKeeper(
 	bankKeeper revenuetypes.BankKeeper,
 	authority string,
 ) *Keeper {
-	// ensure bonded and not bonded module accounts are set
-	// if addr := ak.GetModuleAddress(types.BondedPoolName); addr == nil {
-	//	panic(fmt.Sprintf("%s module account has not been set", types.BondedPoolName))
-	// }
-	//
-	// if addr := ak.GetModuleAddress(types.NotBondedPoolName); addr == nil {
-	//	panic(fmt.Sprintf("%s module account has not been set", types.NotBondedPoolName))
-	// }
-	//
-	// ensure that authority is a valid AccAddress
-	// if _, err := ak.AddressCodec().StringToBytes(authority); err != nil {
-	//	panic("authority is not a valid acc address")
-	// }
 	return &Keeper{
 		cdc:           cdc,
 		storeService:  storeService,
