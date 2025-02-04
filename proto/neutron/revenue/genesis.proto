@@ -80,7 +80,7 @@ message EmptyPaymentSchedule {
   option (cosmos_proto.implements_interface) = "neutron.revenue.PaymentSchedule";
 }
 
-// CumulativePrice is a structure that contains the cumulative price of an asset over the
+// Represents a type that contains the cumulative price of an asset over the
 // entire observation period, as well as the last recorded asset price
 // and the timestamp at which this price is valid.
 //
@@ -95,12 +95,12 @@ message CumulativePrice {
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
-  // last_price is the price at the current timestamp
+  // Specifies the price at the current timestamp
   string last_price = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
-  // Timestamp when the price has been saved.
+  // The timestamp when the price has been saved.
   int64 timestamp = 3;
 }

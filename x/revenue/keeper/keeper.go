@@ -22,7 +22,7 @@ type Keeper struct {
 	storeService  coretypes.KVStoreService
 	stakingKeeper revenuetypes.StakingKeeper
 	bankKeeper    revenuetypes.BankKeeper
-	oracleKeeper   revenuetypes.OracleKeeper
+	oracleKeeper  revenuetypes.OracleKeeper
 	authority     string
 }
 
@@ -52,7 +52,7 @@ func NewKeeper(
 		storeService:  storeService,
 		stakingKeeper: stakingKeeper,
 		bankKeeper:    bankKeeper,
-		oracleKeeper:   oracleKeeper,
+		oracleKeeper:  oracleKeeper,
 		authority:     authority,
 	}
 }
@@ -230,7 +230,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
 	}
-	baseCompensation, err := k.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+	baseCompensation, err := k.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 	if err != nil {
 		return fmt.Errorf("failed to calculate base revenue amount: %w", err)
 	}
@@ -316,7 +316,7 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 // CalcBaseRevenueAmount calculates the base compensation amount for validators based on the current
 // price of the compensation denomination. The final compensation amount for a validator is
 // determined by multiplying the base revenue amount by the validator's performance rating.
-func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation int64) (math.Int, error) {
+func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64) (math.Int, error) {
 	assetPrice, err := k.GetTWAPStartFromTime(ctx, ctx.BlockHeader().Time.Unix())
 	if err != nil {
 		return math.ZeroInt(), fmt.Errorf("failed to get TWAP price: %w", err)
@@ -324,7 +324,7 @@ func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation int64) 
 	if assetPrice.Equal(math.LegacyZeroDec()) {
 		return math.ZeroInt(), fmt.Errorf("invalid TWAP price, price must be greater than zero")
 	}
-	return math.LegacyNewDec(baseCompensation).Quo(assetPrice).TruncateInt(), nil
+	return math.LegacyNewDec(int64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil
 }
 
 func (k *Keeper) getOrCreateValidatorInfo(

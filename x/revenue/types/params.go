@@ -34,7 +34,7 @@ func NewParams(
 		BlocksPerformanceRequirement:      blocksPerformanceRequirement,
 		OracleVotesPerformanceRequirement: oraclePricesPerformanceRequirement,
 		PaymentScheduleType:               paymentScheduleType,
-		TWAP_Window:                       DefaultTWAPWindow,
+		TwapWindow:                        DefaultTWAPWindow,
 	}
 }
 

@@ -107,7 +107,7 @@ func TestProcessRevenue(t *testing.T) {
 	params, err := keeper.GetParams(ctx)
 	require.Nil(t, err)
 
-	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 	require.Nil(t, err)
 
 	stakingKeeper.EXPECT().GetValidatorByConsAddr(
@@ -204,7 +204,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
-	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 	require.Nil(t, err)
 
 	// expect one successful SendCoinsFromModuleToAccount call for val1 75% of rewards

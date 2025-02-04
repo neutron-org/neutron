@@ -12,6 +12,11 @@ import (
 	"github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
+const (
+	NTRNSlinkyDenom = "NTRN"
+	USDSlinkyDenom  = "USD"
+)
+
 // TODO: We currently store prices under a single store prefix. We need to handle cases where DenomCompensation is changed.
 
 // UpdateCumulativePrice updates cumulative prices and
@@ -22,10 +27,9 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 		return fmt.Errorf("failed to get module params: %w", err)
 	}
 
-	// TODO: enrich params with info how to query DenomCompensation price
 	pair := slinkytypes.CurrencyPair{
-		Base:  "NTRN",
-		Quote: "USD",
+		Base:  NTRNSlinkyDenom,
+		Quote: USDSlinkyDenom,
 	}
 	priceInt, err := k.oracleKeeper.GetPriceForCurrencyPair(ctx, pair)
 	if err != nil {
@@ -44,7 +48,7 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	}
 	k.Logger(ctx).Debug("TWAP refresh", "price", price.String())
 
-	err = k.CleanOutdatedCumulativePrices(ctx, ctx.BlockTime().Unix()-params.TWAP_Window)
+	err = k.CleanOutdatedCumulativePrices(ctx, ctx.BlockTime().Unix()-params.TwapWindow)
 	if err != nil {
 		return fmt.Errorf("failed to clean outdated prices: %w", err)
 	}

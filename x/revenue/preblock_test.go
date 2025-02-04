@@ -151,7 +151,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		params, err := keeper.GetParams(ctx)
 		require.Nil(t, err)
 
-		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 		require.Nil(t, err)
 
 		stakingKeeper.EXPECT().GetValidatorByConsAddr(
@@ -271,7 +271,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		params, err := keeper.GetParams(ctx)
 		require.Nil(t, err)
 
-		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, int64(params.BaseCompensation))
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 		require.Nil(t, err)
 
 		stakingKeeper.EXPECT().GetValidatorByConsAddr(

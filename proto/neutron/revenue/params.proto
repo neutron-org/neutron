@@ -32,8 +32,8 @@ message Params {
     BlockBasedPaymentScheduleType block_based_payment_schedule_type = 6 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentScheduleType"];
     EmptyPaymentScheduleType empty_payment_schedule_type = 7 [(amino.oneof_name) = "revenue/Params/EmptyPaymentScheduleType"];
   }
-  // The window in seconds to calculate TWAP price of NTRN
-  int64 TWAP_Window = 8;
+  // Represents the window in seconds to calculate TWAP price of `denom_compensation`
+  int64 twap_window = 8;
 }
 
 // Monthly periods with payments made at the end of each month.
