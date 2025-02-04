@@ -54,6 +54,7 @@ CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
 
 NEUTRON_STAKING_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron-staking-vault.wasm
+NEUTRON_STAKING_TRACKER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron-staking-tracker.wasm
 
 # Slinky genesis configs
 USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
@@ -159,6 +160,10 @@ NEUTRON_STAKING_VAULT_NAME="Neutron Staking Vault"
 NEUTRON_STAKING_VAULT_DESCRIPTION="Vault that gives voting power from a native delegations to validators"
 NEUTRON_STAKING_VAULT_LABEL="neutron.voting.vaults.staking"
 
+NEUTRON_STAKING_TRACKER_NAME="Neutron Staking Tracker"
+NEUTRON_STAKING_TRACKER_DESCRIPTION="Tracks the Staking module for querying historical voting power and notifying about staking changes"
+NEUTRON_STAKING_TRACKER_LABEL="neutron.voting.staking_tracker" # TODO: assign correct label
+
 echo "Initializing dao contract in genesis..."
 
 function store_binary() {
@@ -197,6 +202,7 @@ CW4_GROUP_CONTRACT_BINARY_ID=$(store_binary             "$CW4_GROUP_CONTRACT")
 NEUTRON_CHAIN_MANAGER_BINARY_ID=$(store_binary          "$NEUTRON_CHAIN_MANAGER_CONTRACT")
 
 NEUTRON_STAKING_VAULT_BINARY_ID=$(store_binary          "$NEUTRON_STAKING_VAULT_CONTRACT")
+NEUTRON_STAKING_TRACKER_BINARY_ID=$(store_binary        "$NEUTRON_STAKING_TRACKER_CONTRACT")
 
 # WARNING!
 # The following code is needed to pre-generate the contract addresses
@@ -249,6 +255,7 @@ GRANTS_SUBDAO_GROUP_CONTRACT_ADDRESS=$(genaddr         "$CW4_GROUP_CONTRACT_BINA
 
 NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_CHAIN_MANAGER_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_STAKING_VAULT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS=$(genaddr     "$NEUTRON_STAKING_TRACKER_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
 function check_json() {
   MSG=$1
@@ -639,8 +646,15 @@ NEUTRON_CHAIN_MANAGER_INIT_MSG='{
 }'
 
 NEUTRON_STAKING_VAULT_INIT_MSG='{
+  "staking_tracker_contract_address": "'"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS"'",
   "name": "'"$NEUTRON_STAKING_VAULT_NAME"'",
   "description": "'"$NEUTRON_STAKING_VAULT_DESCRIPTION"'",
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
+}'
+
+NEUTRON_STAKING_TRACKER_INIT_MSG='{
+  "name": "'"$NEUTRON_STAKING_TRACKER_NAME"'",
+  "description": "'"$NEUTRON_STAKING_TRACKER_DESCRIPTION"'",
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
   "denom": "untrn"
 }'
@@ -660,16 +674,17 @@ function init_contract() {
 # The following code is to add contracts instantiations messages to genesis
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
-init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"            "$NEUTRON_VAULT_INIT"             "$NEUTRON_VAULT_LABEL"
-init_contract "$NEUTRON_INVESTORS_VAULT_CONTRACT_BINARY_ID"  "$NEUTRON_INVESTORS_VAULT_INIT"   "$NEUTRON_INVESTORS_VAULT_LABEL"
-init_contract "$NEUTRON_VESTING_INVESTORS_BINARY_ID"         "$NEUTRON_VESTING_INVESTORS_INIT" "$NEUTRON_VESTING_INVESTORS_LABEL"
-init_contract "$DAO_CONTRACT_BINARY_ID"                      "$DAO_INIT"                       "$DAO_CORE_LABEL"
-init_contract "$RESERVE_CONTRACT_BINARY_ID"                  "$RESERVE_INIT"                   "$RESERVE_LABEL"
-init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"             "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"
-init_contract "$SUBDAO_CORE_BINARY_ID"                       "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL"
-init_contract "$SUBDAO_CORE_BINARY_ID"                       "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"
-init_contract "$NEUTRON_CHAIN_MANAGER_BINARY_ID"             "$NEUTRON_CHAIN_MANAGER_INIT_MSG" "$NEUTRON_CHAIN_MANAGER_LABEL"
-init_contract "$NEUTRON_STAKING_VAULT_BINARY_ID"             "$NEUTRON_STAKING_VAULT_INIT_MSG" "$NEUTRON_STAKING_VAULT_LABEL"
+init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"            "$NEUTRON_VAULT_INIT"               "$NEUTRON_VAULT_LABEL"
+init_contract "$NEUTRON_INVESTORS_VAULT_CONTRACT_BINARY_ID"  "$NEUTRON_INVESTORS_VAULT_INIT"     "$NEUTRON_INVESTORS_VAULT_LABEL"
+init_contract "$NEUTRON_VESTING_INVESTORS_BINARY_ID"         "$NEUTRON_VESTING_INVESTORS_INIT"   "$NEUTRON_VESTING_INVESTORS_LABEL"
+init_contract "$DAO_CONTRACT_BINARY_ID"                      "$DAO_INIT"                         "$DAO_CORE_LABEL"
+init_contract "$RESERVE_CONTRACT_BINARY_ID"                  "$RESERVE_INIT"                     "$RESERVE_LABEL"
+init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"             "$DISTRIBUTION_INIT"                "$DISTRIBUTION_LABEL"
+init_contract "$SUBDAO_CORE_BINARY_ID"                       "$SECURITY_SUBDAO_CORE_INIT_MSG"    "$SECURITY_SUBDAO_CORE_LABEL"
+init_contract "$SUBDAO_CORE_BINARY_ID"                       "$GRANTS_SUBDAO_CORE_INIT_MSG"      "$GRANTS_SUBDAO_CORE_LABEL"
+init_contract "$NEUTRON_CHAIN_MANAGER_BINARY_ID"             "$NEUTRON_CHAIN_MANAGER_INIT_MSG"   "$NEUTRON_CHAIN_MANAGER_LABEL"
+init_contract "$NEUTRON_STAKING_VAULT_BINARY_ID"             "$NEUTRON_STAKING_VAULT_INIT_MSG"   "$NEUTRON_STAKING_VAULT_LABEL"
+init_contract "$NEUTRON_STAKING_TRACKER_BINARY_ID"           "$NEUTRON_STAKING_TRACKER_INIT_MSG" "$NEUTRON_STAKING_TRACKER_LABEL"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
