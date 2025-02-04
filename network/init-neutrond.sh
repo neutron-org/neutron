@@ -649,7 +649,7 @@ NEUTRON_STAKING_VAULT_INIT_MSG='{
   "staking_tracker_contract_address": "'"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS"'",
   "name": "'"$NEUTRON_STAKING_VAULT_NAME"'",
   "description": "'"$NEUTRON_STAKING_VAULT_DESCRIPTION"'",
-  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'"
 }'
 
 NEUTRON_STAKING_TRACKER_INIT_MSG='{
@@ -800,15 +800,15 @@ set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED" 
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 1},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 2},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 4},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 5},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 7},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 8},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 9},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 10},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 11}]"
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 1},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 2},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 4},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 5},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 7},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 8},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 9},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 10},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 11}]"
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
@@ -817,3 +817,4 @@ fi
 
 echo "DAO $DAO_CONTRACT_ADDRESS"
 echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS
+echo "STAKING TRACKER" $NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS
