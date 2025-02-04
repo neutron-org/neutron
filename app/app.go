@@ -927,14 +927,6 @@ func New(
 	// AddRoute(ccvconsumertypes.ModuleName, consumerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
-	// Create the aggregation function that will be used to aggregate oracle data
-	// from each validator.
-	aggregatorFn := voteweighted.MedianFromContext(
-		app.Logger(),
-		app.StakingKeeper,
-		voteweighted.DefaultPowerThreshold,
-	)
-
 	app.RevenueKeeper = revenuekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[revenuetypes.StoreKey]),
@@ -1294,6 +1286,14 @@ func New(
 	)
 
 	app.SetCheckTx(parityCheckTx.CheckTx())
+
+	// Create the aggregation function that will be used to aggregate oracle data
+	// from each validator.
+	aggregatorFn := voteweighted.MedianFromContext(
+		app.Logger(),
+		app.StakingKeeper,
+		voteweighted.DefaultPowerThreshold,
+	)
 
 	// Create a pre-finalize block hook that will be used to apply oracle data
 	// to the state before any transactions are executed (in finalize block).
