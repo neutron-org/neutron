@@ -196,16 +196,22 @@ func (k Keeper) SwapOnDeposit(
 		limitPrice0 := types.MustCalcPrice(-depositTickToken0)
 		tradePairID := types.MustNewTradePairID(pairID.Token0, pairID.Token1)
 
-		token0In, token1Out, _, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice0)
+		swapToken0In, swapToken1Out, orderFilled, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice0)
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
 		}
 
-		if token0In.IsPositive() {
-			inAmount0 = amount0
-			depositAmount0 = amount0.Sub(token0In.Amount)
+		if swapToken0In.IsPositive() {
+			if orderFilled {
+				// due to monotonic rounding we may not be able to swap all of Token0.
+				// but we can't deposit the remainder because it's still behind enemy lines so we don't use it
+				inAmount0 = swapToken0In.Amount
+			} // else inAmount0 = amount0  we have swapped through all opposing BEL liquidity,
+			// so we can safely deposit the full amount
+
+			depositAmount0 = inAmount0.Sub(swapToken0In.Amount)
 			inAmount1 = amount1
-			depositAmount1 = amount1.Add(token1Out.Amount)
+			depositAmount1 = amount1.Add(swapToken1Out.Amount)
 			swappedToken0 = true
 		}
 
@@ -217,12 +223,12 @@ func (k Keeper) SwapOnDeposit(
 		limitPrice1 := types.MustCalcPrice(-depositTickToken1)
 		tradePairID := types.MustNewTradePairID(pairID.Token1, pairID.Token0)
 
-		token1In, token0Out, _, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice1)
+		swapToken1In, swapToken0Out, orderFilled, err := k.Swap(ctx, tradePairID, amount1, nil, &limitPrice1)
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
 		}
 
-		if token1In.IsPositive() {
+		if swapToken1In.IsPositive() {
 
 			if swappedToken0 {
 				// This should be impossible, but leaving this as an extra precaution
@@ -230,9 +236,13 @@ func (k Keeper) SwapOnDeposit(
 			}
 
 			inAmount0 = amount0
-			depositAmount0 = amount0.Add(token0Out.Amount)
-			inAmount1 = amount1
-			depositAmount1 = amount1.Sub(token1In.Amount)
+			depositAmount0 = amount0.Add(swapToken0Out.Amount)
+
+			// see note above on logic
+			if orderFilled {
+				inAmount1 = swapToken1In.Amount
+			} // else inAmount1 = amount1
+			depositAmount1 = inAmount1.Sub(swapToken1In.Amount)
 		}
 
 	}
