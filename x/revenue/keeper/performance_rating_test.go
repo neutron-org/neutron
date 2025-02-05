@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 func TestPerformanceRating(t *testing.T) {

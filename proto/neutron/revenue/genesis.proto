@@ -21,6 +21,9 @@ message GenesisState {
 
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
+
+  // CumulativePrices is accumulate prices of the Revenue denom to calculate TWAP price for a given period of time
+  repeated CumulativePrice cumulative_prices = 4;
 }
 
 // Contains information about a validator.
@@ -75,4 +78,29 @@ message EmptyPaymentSchedule {
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.equal) = false;
   option (cosmos_proto.implements_interface) = "neutron.revenue.PaymentSchedule";
+}
+
+// Represents a type that contains the cumulative price of an asset over the
+// entire observation period, as well as the last recorded asset price
+// and the timestamp at which this price is valid.
+//
+// It is used to calculate TWAP as:
+// twap_from_time_t(n)_to_time_t(n-1) = (cumulative_price_at_t(n) - cumulative_price_at_t(n-1))/(t(n) - t(n-1))
+message CumulativePrice {
+  // Cumulative price of a denom from the start of monitoring to the last block
+  // calculates as
+  // `cumulative_price at timestamp t(n)` = `last_price at t(n-1)` * (t(n) - t(n-1)) + `cumulative_price at timestamp t(n-1)`
+  string cumulative_price = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // Specifies the price at the current timestamp
+  string last_price = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // The timestamp when the price has been saved.
+  int64 timestamp = 3;
 }

@@ -5,8 +5,9 @@ import (
 
 	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"github.com/stretchr/testify/require"
+
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 func TestDefaultGenesis(t *testing.T) {

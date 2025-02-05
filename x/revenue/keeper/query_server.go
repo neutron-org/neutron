@@ -94,10 +94,16 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 		int64(blocksPerPeriod),
 	)
 
+	amount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	return &revenuetypes.QueryValidatorStatsResponse{
 		Stats: revenuetypes.ValidatorStats{
 			ValidatorInfo:     valInfo,
 			PerformanceRating: pr,
+			ExpectedRevenue:   pr.MulInt(amount).TruncateInt(),
 		},
 	}, nil
 }
@@ -129,6 +135,11 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 		return nil, status.Errorf(codes.Internal, "expected state.PaymentSchedule to be of type PaymentSchedule, but got %T", pscv)
 	}
 
+	amount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	valStats := make([]revenuetypes.ValidatorStats, 0, len(valsInfo))
 	for _, valInfo := range valsInfo {
 		blocksPerPeriod := ps.TotalBlocksInPeriod(ctx)
@@ -142,6 +153,7 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 		valStats = append(valStats, revenuetypes.ValidatorStats{
 			ValidatorInfo:     valInfo,
 			PerformanceRating: pr,
+			ExpectedRevenue:   pr.MulInt(amount).TruncateInt(),
 		})
 	}
 

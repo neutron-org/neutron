@@ -56,6 +56,11 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 			return response, nil
 		}
 
+		err = h.revenueKeeper.UpdateCumulativePrice(ctx)
+		if err != nil {
+			h.revenueKeeper.Logger(ctx).Error("failed to update cumulative price", "err", err)
+		}
+
 		if err := h.PaymentScheduleCheck(ctx); err != nil {
 			return response, fmt.Errorf("error checking payment schedule: %w", err)
 		}

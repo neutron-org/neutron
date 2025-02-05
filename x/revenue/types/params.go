@@ -4,8 +4,9 @@ import (
 	fmt "fmt"
 
 	"cosmossdk.io/math"
-	"github.com/neutron-org/neutron/v5/app/params"
 	"gopkg.in/yaml.v2"
+
+	"github.com/neutron-org/neutron/v5/app/params"
 )
 
 var (
@@ -15,6 +16,8 @@ var (
 	DefaultBaseCompensation uint64 = 2500
 	// DefaultPaymentScheduleType represents the default payment schedule type.
 	DefaultPaymentScheduleType = &Params_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
+	// DefaultPaymentScheduleType represents default time to calculate TWAP
+	DefaultTWAPWindow int64 = 24 * 3600
 )
 
 // NewParams creates a new Params instance.
@@ -31,6 +34,7 @@ func NewParams(
 		BlocksPerformanceRequirement:      blocksPerformanceRequirement,
 		OracleVotesPerformanceRequirement: oraclePricesPerformanceRequirement,
 		PaymentScheduleType:               paymentScheduleType,
+		TwapWindow:                        DefaultTWAPWindow,
 	}
 }
 

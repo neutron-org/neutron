@@ -9,14 +9,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
-	"github.com/stretchr/testify/require"
 )
 
 func RevenueKeeper(
 	t testing.TB,
 	bankKeeper revenuetypes.BankKeeper,
+	oracleKeeper revenuetypes.OracleKeeper,
 	authority string,
 ) (*keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(revenuetypes.StoreKey)
@@ -31,6 +33,7 @@ func RevenueKeeper(
 		cdc,
 		ss,
 		bankKeeper,
+		oracleKeeper,
 		authority,
 	)
 

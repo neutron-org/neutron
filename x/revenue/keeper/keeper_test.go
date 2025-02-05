@@ -7,6 +7,7 @@ import (
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
+
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
@@ -23,7 +24,9 @@ const (
 func TestParams(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	// assert default params
 	params, err := keeper.GetParams(ctx)
@@ -48,7 +51,9 @@ func TestValidatorInfo(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1
@@ -77,7 +82,9 @@ func TestProcessRevenue(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1000
@@ -87,6 +94,15 @@ func TestProcessRevenue(t *testing.T) {
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
+	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	require.Nil(t, err)
+
+	params, err := keeper.GetParams(ctx)
+	require.Nil(t, err)
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	require.Nil(t, err)
+
 	// expect one successful SendCoinsFromModuleToAccount call
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 		gomock.Any(),
@@ -94,7 +110,7 @@ func TestProcessRevenue(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
 	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), 1000)
@@ -106,13 +122,18 @@ func TestProcessRevenueNoReward(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	// set val1 info as if they haven't committed any blocks and prices
 	val1Info := val1Info()
 
 	// prepare keeper state
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	require.Nil(t, err)
+
+	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
 	// no SendCoinsFromModuleToAccount calls expected
@@ -127,7 +148,9 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	// define test specific performance requirements
 	params := revenuetypes.DefaultParams()
@@ -155,6 +178,12 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val2Info.ValOperAddress), val2Info)
 	require.Nil(t, err)
 
+	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	require.Nil(t, err)
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	require.Nil(t, err)
+
 	// expect one successful SendCoinsFromModuleToAccount call for val1 75% of rewards
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 		gomock.Any(),
@@ -162,7 +191,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.LegacyNewDecWithPrec(75, 2).MulInt(math.NewInt(keeper.CalcBaseRevenueAmount(ctx))).RoundInt(),
+			math.LegacyNewDecWithPrec(75, 2).MulInt(baseRevenueAmount).RoundInt(),
 		)),
 	).Times(1).Return(nil)
 
@@ -173,7 +202,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val2OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
 	err = keeper.ProcessRevenue(ctx, params, 1000)
@@ -185,7 +214,9 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	// known validator (set in keeper below) with 100% performance
 	val1Info := val1Info()

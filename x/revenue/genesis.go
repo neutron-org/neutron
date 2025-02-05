@@ -22,6 +22,14 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 		}
 	}
 
+	// TODO: test export import genesis
+	for _, elem := range genState.CumulativePrices {
+		err := k.SaveCumulativePrice(ctx, elem.LastPrice, elem.Timestamp)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	err := k.SetParams(ctx, genState.Params)
 	if err != nil {
 		panic(err)
@@ -47,6 +55,11 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 	}
 
 	genesis.Validators, err = k.GetAllValidatorInfo(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	genesis.CumulativePrices, err = k.GetAllCumulativePrices(ctx)
 	if err != nil {
 		panic(err)
 	}

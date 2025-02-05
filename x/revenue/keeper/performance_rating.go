@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
+
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 

@@ -39,7 +39,9 @@ func TestPaymentScheduleCheckEmptyPaymentSchedule(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 	preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 	g := revenuetypes.DefaultGenesis()
@@ -71,7 +73,9 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set monthly payment schedule to the module's state and params
@@ -113,7 +117,9 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set monthly payment schedule to the module's state and params
@@ -137,6 +143,15 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
 
+		err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		require.Nil(t, err)
+
+		params, err := keeper.GetParams(ctx)
+		require.Nil(t, err)
+
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		require.Nil(t, err)
+
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 			gomock.Any(),
@@ -144,7 +159,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
 				revenuetypes.DefaultDenomCompensation,
-				math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+				baseRevenueAmount)),
 		).Times(1).Return(nil)
 
 		// next block in the next month with expected revenue distribution
@@ -173,7 +188,9 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set block-based payment schedule to the module's state and params
@@ -215,7 +232,9 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
 		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+		oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
 
 		// set block-based payment schedule to the module's state and params
@@ -239,6 +258,15 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
 
+		err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		require.Nil(t, err)
+
+		params, err := keeper.GetParams(ctx)
+		require.Nil(t, err)
+
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		require.Nil(t, err)
+
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 			gomock.Any(),
@@ -246,7 +274,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
 				revenuetypes.DefaultDenomCompensation,
-				math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
+				baseRevenueAmount)),
 		).Times(1).Return(nil)
 
 		// next block in the next period with expected revenue distribution

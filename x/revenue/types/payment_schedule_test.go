@@ -5,16 +5,19 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMonthlyPaymentSchedule(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	_, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	_, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	// a monthly schedule for January with first block height = 1
 	s := &revenuetypes.MonthlyPaymentSchedule{
@@ -48,7 +51,9 @@ func TestMonthlyPaymentSchedule(t *testing.T) {
 func TestBlockBasedPaymentSchedule(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	_, ctx := testkeeper.RevenueKeeper(t, bankKeeper, "")
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	_, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
 	// a block based schedule of 100 blocks period and period start block = 1
 	s := &revenuetypes.BlockBasedPaymentSchedule{

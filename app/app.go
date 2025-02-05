@@ -127,6 +127,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+
 	"github.com/neutron-org/neutron/v5/x/revenue"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
@@ -931,6 +932,7 @@ func New(
 		appCodec,
 		runtime.NewKVStoreService(keys[revenuetypes.StoreKey]),
 		&app.BankKeeper,
+		app.OracleKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -983,6 +985,7 @@ func New(
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		revenue.NewAppModule(appCodec, app.RevenueKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1564,6 +1567,11 @@ func (app *App) BlockedAddrs() map[string]bool {
 	bankBlockedAddrs := app.ModuleAccountAddrs()
 	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
 		ccvconsumertypes.ConsumerToSendToProviderName).String())
+
+	// TODO: added to easily top up module account in tests.
+	// remove the line on release
+	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
+		revenuetypes.RevenueTreasuryPoolName).String())
 
 	return bankBlockedAddrs
 }

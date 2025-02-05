@@ -12,7 +12,7 @@ import (
 )
 
 func TestInitAndExportGenesis(t *testing.T) {
-	k, ctx := keeper.RevenueKeeper(t, nil, "")
+	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 
 	// create some non-default genesis state
 	genesisState := revenuetypes.DefaultGenesis()
