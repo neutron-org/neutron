@@ -113,7 +113,7 @@ func (msg *MsgDeposit) Validate() error {
 			return err
 		}
 
-		if msg.Options[i].DisableAutoswap && msg.Options[i].SwapOnDeposit {
+		if msg.Options[i] != nil && msg.Options[i].DisableAutoswap && msg.Options[i].SwapOnDeposit {
 			return ErrSwapOnDepositWithoutAutoswap
 		}
 	}

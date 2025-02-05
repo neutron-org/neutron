@@ -139,7 +139,7 @@ func (k Keeper) ExecuteDeposit(
 		if option.DisableAutoswap {
 			// If autoswap is disabled inAmount might change.
 			// SwapOnDeposit cannot be used without autoswap, so nothing is affected here.
-			inAmount1, inAmount1 = depositAmount0, depositAmount0
+			inAmount0, inAmount1 = depositAmount0, depositAmount1
 		}
 
 		// Save updates to both sides of the pool
