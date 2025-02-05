@@ -21,7 +21,7 @@ func TestGenesis(t *testing.T) {
 				Name:              "a",
 				Period:            5,
 				Msgs:              nil,
-				LastExecuteHeight: uint64(ctx.BlockHeight()),
+				LastExecuteHeight: uint64(ctx.BlockHeight()), //nolint:gosec
 			},
 		},
 	}

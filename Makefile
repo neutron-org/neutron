@@ -7,8 +7,8 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
-GO_VERSION=1.22
-GOLANGCI_LINT_VERSION=v1.55.2
+GO_VERSION=1.23
+GOLANGCI_LINT_VERSION=v1.63.4
 BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
@@ -202,14 +202,14 @@ test-sim-multi-seed-short: runsim
 ###############################################################################
 
 lint:
-	golangci-lint run --skip-files ".*.pb.go"
+	golangci-lint run --exclude-files ".*.pb.go"
 	find . -name '*.go' -not -name "*.pb.go" -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*_test.go" | xargs gofmt -d -s
 
 format:
 	@go install mvdan.cc/gofumpt@latest
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name "*.pb.go" -not -name "*.pb.gw.go" -not -name "*.pulsar.go" -not -path "./crypto/keys/secp256k1/*" | xargs -I % sh -c 'gofumpt -w -l % && goimports -w -local github.com/neutron-org %'
-	golangci-lint run --fix --skip-files ".*.pb.go"
+	golangci-lint run --fix --exclude-files ".*.pb.go"
 
 .PHONY: format
 

@@ -51,7 +51,7 @@ func (suite *MiddlewareTestSuite) MessageFromAToB(denom string, amount sdkmath.I
 		accountFrom,
 		accountTo,
 		timeoutHeight,
-		uint64(time.Now().UnixNano()),
+		uint64(time.Now().UnixNano()), //nolint:gosec
 		"",
 	)
 }
@@ -70,7 +70,7 @@ func (suite *MiddlewareTestSuite) MessageFromBToA(denom string, amount sdkmath.I
 		accountFrom,
 		accountTo,
 		timeoutHeight,
-		uint64(time.Now().UnixNano()),
+		uint64(time.Now().UnixNano()), //nolint:gosec
 		"",
 	)
 }
@@ -89,7 +89,7 @@ func (suite *MiddlewareTestSuite) MessageFromAToC(denom string, amount sdkmath.I
 		accountFrom,
 		accountTo,
 		timeoutHeight,
-		uint64(time.Now().UnixNano()),
+		uint64(time.Now().UnixNano()), //nolint:gosec
 		"",
 	)
 }

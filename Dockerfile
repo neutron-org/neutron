@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.22-bullseye
+FROM golang:1.23-bullseye
 RUN apt-get update && apt-get install -y jq xxd
 EXPOSE 26656 26657 1317 9090
 COPY --from=app . /opt/neutron
