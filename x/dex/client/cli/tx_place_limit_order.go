@@ -57,7 +57,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 				const timeFormat = "01/02/2006 15:04:05"
 				tm, err := time.Parse(timeFormat, args[6])
 				if err != nil {
-					return sdkerrors.Wrapf(types.ErrInvalidTimeString, err.Error())
+					return sdkerrors.Wrapf(types.ErrInvalidTimeString, "%s", err.Error())
 				}
 				goodTil = &tm
 			}

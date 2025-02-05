@@ -112,7 +112,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	}
 
 	for _, item := range schedules {
-		ctx = ctx.WithBlockHeight(int64(item.LastExecuteHeight))
+		ctx = ctx.WithBlockHeight(int64(item.LastExecuteHeight)) //nolint:gosec
 		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.ExecutionStage)
 		require.NoError(t, err)
 	}
@@ -280,7 +280,7 @@ func TestGetAllSchedules(t *testing.T) {
 			Name:              strconv.Itoa(i),
 			Period:            5,
 			Msgs:              nil,
-			LastExecuteHeight: uint64(ctx.BlockHeight()),
+			LastExecuteHeight: uint64(ctx.BlockHeight()), //nolint:gosec
 			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER,
 		}
 		expectedSchedules = append(expectedSchedules, s)
