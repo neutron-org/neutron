@@ -1570,11 +1570,6 @@ func (app *App) BlockedAddrs() map[string]bool {
 	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
 		ccvconsumertypes.ConsumerToSendToProviderName).String())
 
-	// TODO: added to easily top up module account in tests.
-	// remove the line on release
-	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
-		revenuetypes.RevenueTreasuryPoolName).String())
-
 	return bankBlockedAddrs
 }
 
