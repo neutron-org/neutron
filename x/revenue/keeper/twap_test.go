@@ -23,21 +23,21 @@ func TestCumulative(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 0)
 
-	err = keeper.SaveCumulativePrice(ctx, math.LegacyMustNewDecFromStr("10.0"), 1)
+	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("10.0"), 1)
 	require.Nil(t, err)
 
 	prices, err = keeper.GetAllCumulativePrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 1)
 
-	err = keeper.SaveCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 11)
+	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 11)
 	require.Nil(t, err)
 
 	prices, err = keeper.GetAllCumulativePrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 2)
 
-	err = keeper.SaveCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 21)
+	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 21)
 	require.Nil(t, err)
 
 	// get twap 11-21
@@ -50,7 +50,7 @@ func TestCumulative(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, price, math.LegacyMustNewDecFromStr("15.0"))
 
-	err = keeper.SaveCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 111)
+	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 111)
 	require.Nil(t, err)
 
 	// get twap 0-111

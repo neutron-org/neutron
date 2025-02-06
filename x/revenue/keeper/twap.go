@@ -42,7 +42,7 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	}
 
 	price := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals))
-	err = k.SaveCumulativePrice(ctx, price, ctx.BlockTime().Unix())
+	err = k.CalcNewCumulativePrice(ctx, price, ctx.BlockTime().Unix())
 	if err != nil {
 		return fmt.Errorf("failed to save cumulative price: %w", err)
 	}
@@ -56,11 +56,10 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	return nil
 }
 
-// SaveCumulativePrice saves new cumulative price
-// accepts price and current timestamp as arguments
-// and calculates cumulative price taking into account
-// a time passed since last saved cumulative price
-func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price math.LegacyDec, timestamp int64) error {
+// CalcNewCumulativePrice calculates and saves a new cumulative price. It accepts price and current
+// timestamp as arguments and calculates cumulative price taking into account a time passed since
+// the last saved cumulative price.
+func (k *Keeper) CalcNewCumulativePrice(ctx sdk.Context, price math.LegacyDec, timestamp int64) error {
 	cumulativePrevious, err := k.GetLastCumulativePrice(ctx)
 	if err != nil {
 		return err
@@ -72,13 +71,18 @@ func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price math.LegacyDec, time
 		Timestamp:       timestamp,
 	}
 
+	return k.SaveCumulativePrice(ctx, &cumulativeNew)
+}
+
+// SaveCumulativePrice saves a cumulative price.
+func (k *Keeper) SaveCumulativePrice(ctx sdk.Context, price *types.CumulativePrice) error {
 	store := k.storeService.OpenKVStore(ctx)
-	bz, err := k.cdc.Marshal(&cumulativeNew)
+	bz, err := k.cdc.Marshal(price)
 	if err != nil {
 		return fmt.Errorf("failed to marshal cumulative price: %w", err)
 	}
 
-	err = store.Set(types.GetAccumulatedPriceKey(timestamp), bz)
+	err = store.Set(types.GetAccumulatedPriceKey(price.Timestamp), bz)
 	if err != nil {
 		return fmt.Errorf("failed to store cumulative price: %w", err)
 	}

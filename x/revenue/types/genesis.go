@@ -2,6 +2,7 @@ package types
 
 import (
 	fmt "fmt"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
@@ -20,7 +21,8 @@ func DefaultGenesis() *GenesisState {
 		State: State{
 			PaymentSchedule: paymentSchedule,
 		},
-		Validators: nil,
+		Validators:       []ValidatorInfo{},
+		CumulativePrices: []*CumulativePrice{},
 	}
 }
 

@@ -22,9 +22,8 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 		}
 	}
 
-	// TODO: test export import genesis
 	for _, elem := range genState.CumulativePrices {
-		err := k.SaveCumulativePrice(ctx, elem.LastPrice, elem.Timestamp)
+		err := k.SaveCumulativePrice(ctx, elem)
 		if err != nil {
 			panic(err)
 		}

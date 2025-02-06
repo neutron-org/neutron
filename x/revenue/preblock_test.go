@@ -143,7 +143,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
 
-		err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		err = keeper.CalcNewCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 		require.Nil(t, err)
 
 		params, err := keeper.GetParams(ctx)
@@ -258,7 +258,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
 
-		err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		err = keeper.CalcNewCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 		require.Nil(t, err)
 
 		params, err := keeper.GetParams(ctx)

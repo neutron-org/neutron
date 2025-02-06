@@ -3,6 +3,7 @@ package revenue_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
@@ -14,7 +15,7 @@ import (
 func TestInitAndExportGenesis(t *testing.T) {
 	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 
-	// create some non-default genesis state
+	// create some non-default genesis state with all fields populated
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
 		ValOperAddress:              "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70",
@@ -28,6 +29,13 @@ func TestInitAndExportGenesis(t *testing.T) {
 	var err error
 	genesisState.State.PaymentSchedule, err = codectypes.NewAnyWithValue(ps)
 	require.Nil(t, err)
+	genesisState.CumulativePrices = []*revenuetypes.CumulativePrice{
+		{
+			LastPrice:       math.LegacyOneDec(),
+			CumulativePrice: math.LegacyOneDec(),
+			Timestamp:       1000,
+		},
+	}
 
 	// apply genesis state, export it, and compare
 	revenue.InitGenesis(ctx, k, *genesisState)
@@ -40,7 +48,23 @@ func TestGenesisSerialization(t *testing.T) {
 	revenuetypes.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 
+	// create some non-default genesis state with all fields populated
 	genesisState := revenuetypes.DefaultGenesis()
+	genesisState.Validators = []revenuetypes.ValidatorInfo{
+		{
+			ValOperAddress:              "neutronvaloper1...",
+			CommitedBlocksInPeriod:      100,
+			CommitedOracleVotesInPeriod: 100,
+		},
+	}
+	genesisState.CumulativePrices = []*revenuetypes.CumulativePrice{
+		{
+			LastPrice:       math.LegacyOneDec(),
+			CumulativePrice: math.LegacyOneDec(),
+			Timestamp:       1000,
+		},
+	}
+
 	data, err := cdc.MarshalJSON(genesisState)
 	require.NoError(t, err)
 	err = genesisState.Validate()
@@ -52,4 +76,9 @@ func TestGenesisSerialization(t *testing.T) {
 
 	err = genesisState2.Validate()
 	require.NoError(t, err)
+	require.Equal(t, genesisState.Params, genesisState2.Params)
+	require.Equal(t, genesisState.Validators, genesisState2.Validators)
+	require.Equal(t, genesisState.CumulativePrices, genesisState2.CumulativePrices)
+	require.Equal(t, genesisState.State.PaymentSchedule.TypeUrl, genesisState2.State.PaymentSchedule.TypeUrl)
+	require.Equal(t, genesisState.State.PaymentSchedule.Value, genesisState2.State.PaymentSchedule.Value)
 }

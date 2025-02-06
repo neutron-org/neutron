@@ -71,7 +71,7 @@ func TestQueryValidatorStats(t *testing.T) {
 	require.Nil(t, err)
 	require.Nil(t, k.SetState(ctx, revenuetypes.State{PaymentSchedule: psAny}))
 
-	err = k.SaveCumulativePrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix())
+	err = k.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
 	// val 1 with 100/100 performance (ctx.WithBlockHeight(100))

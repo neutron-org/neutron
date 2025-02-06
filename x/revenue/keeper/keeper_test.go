@@ -93,7 +93,7 @@ func TestProcessRevenue(t *testing.T) {
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
-	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
 	params, err := keeper.GetParams(ctx)
@@ -132,7 +132,7 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
-	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
 	// no SendCoinsFromModuleToAccount calls expected
@@ -177,7 +177,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val2Info.ValOperAddress), val2Info)
 	require.Nil(t, err)
 
-	err = keeper.SaveCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
 	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
