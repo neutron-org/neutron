@@ -29,7 +29,7 @@ func GetTxCmd() *cobra.Command {
 func CmdFundTreasury() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "fund-treasury [amount]",
-		Short: "Fund the revenue-treasury module account. The amount's denom must match the module's denom compensation param",
+		Short: "Fund the revenue-treasury module account. The amount's denom must match the reward asset denom",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)

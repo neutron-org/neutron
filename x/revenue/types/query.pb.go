@@ -380,7 +380,7 @@ type ValidatorStats struct {
 	// The validator's performance rating. Represented as a decimal value.
 	PerformanceRating cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=performance_rating,json=performanceRating,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"performance_rating"`
 	// Contains expected revenue for the validator
-	// based on performance rating of ongoing performance window and current TWAP price.
+	// based on performance rating of ongoing performance window and current TWAP.
 	ExpectedRevenue cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=expected_revenue,json=expectedRevenue,proto3,customtype=cosmossdk.io/math.Int" json:"expected_revenue"`
 }
 

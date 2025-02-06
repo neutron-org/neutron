@@ -158,7 +158,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			revenuetypes.RevenueTreasuryPoolName,
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
-				revenuetypes.DefaultDenomCompensation,
+				revenuetypes.RewardDenom,
 				baseRevenueAmount)),
 		).Times(1).Return(nil)
 
@@ -273,7 +273,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 			revenuetypes.RevenueTreasuryPoolName,
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
-				revenuetypes.DefaultDenomCompensation,
+				revenuetypes.RewardDenom,
 				baseRevenueAmount)),
 		).Times(1).Return(nil)
 

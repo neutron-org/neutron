@@ -12,28 +12,26 @@ option go_package = "github.com/neutron-org/neutron/v5/x/revenue/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
 
-  // The denom to be used for compensation.
-  string denom_compensation = 1;
-
-  // The compensation amount in USD.
-  uint64 base_compensation = 2;
+  // The compensation amount measured in USD.
+  uint64 base_compensation = 1;
 
   // Specifies performance requirements for validators in scope of blocks signing and creation. If
   // not met, the validator is not rewarded.
-  PerformanceRequirement blocks_performance_requirement = 3;
+  PerformanceRequirement blocks_performance_requirement = 2;
 
   // Specifies performance requirements for validators in scope of the oracle price votes. If not
   // met, the validator is not rewarded.
-  PerformanceRequirement oracle_votes_performance_requirement = 4;
+  PerformanceRequirement oracle_votes_performance_requirement = 3;
 
   // Indicates the currently active type of payment schedule.
   oneof payment_schedule_type {
-    MonthlyPaymentScheduleType monthly_payment_schedule_type = 5 [(amino.oneof_name) = "revenue/Params/MonthlyPaymentScheduleType"];
-    BlockBasedPaymentScheduleType block_based_payment_schedule_type = 6 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentScheduleType"];
-    EmptyPaymentScheduleType empty_payment_schedule_type = 7 [(amino.oneof_name) = "revenue/Params/EmptyPaymentScheduleType"];
+    MonthlyPaymentScheduleType monthly_payment_schedule_type = 4 [(amino.oneof_name) = "revenue/Params/MonthlyPaymentScheduleType"];
+    BlockBasedPaymentScheduleType block_based_payment_schedule_type = 5 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentScheduleType"];
+    EmptyPaymentScheduleType empty_payment_schedule_type = 6 [(amino.oneof_name) = "revenue/Params/EmptyPaymentScheduleType"];
   }
-  // Represents the window in seconds to calculate TWAP price of `denom_compensation`
-  int64 twap_window = 8;
+
+  // The time window, in seconds, used to calculate the TWAP of the reward asset.
+  int64 twap_window = 7;
 }
 
 // Monthly periods with payments made at the end of each month.

@@ -13,14 +13,14 @@ import (
 )
 
 const (
-	NTRNSlinkyDenom = "NTRN"
-	USDSlinkyDenom  = "USD"
+	// ntrnSlinkyDenom is the Slinky identifier of the reward denom.
+	ntrnSlinkyDenom = "NTRN"
+	// usdSlinkyDenom is the Slinky identifier of USD.
+	usdSlinkyDenom = "USD"
 )
 
-// TODO: We currently store prices under a single store prefix. We need to handle cases where DenomCompensation is changed.
-
 // UpdateCumulativePrice updates cumulative prices and
-// does the maintenance of the storage by removing outdated TWAP prices.
+// does the maintenance of the storage by removing outdated TWAP.
 func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -28,8 +28,8 @@ func (k *Keeper) UpdateCumulativePrice(ctx sdk.Context) error {
 	}
 
 	pair := slinkytypes.CurrencyPair{
-		Base:  NTRNSlinkyDenom,
-		Quote: USDSlinkyDenom,
+		Base:  ntrnSlinkyDenom,
+		Quote: usdSlinkyDenom,
 	}
 	priceInt, err := k.oracleKeeper.GetPriceForCurrencyPair(ctx, pair)
 	if err != nil {
@@ -183,7 +183,7 @@ func (k *Keeper) CleanOutdatedCumulativePrices(ctx sdk.Context, cleanUntil int64
 	return nil
 }
 
-// GetTWAPStartFromTime returns a TWAP price for window
+// GetTWAPStartFromTime returns a TWAP for window
 // from `startAt` till last saved value (saved at every block)
 func (k *Keeper) GetTWAPStartFromTime(ctx sdk.Context, startAt int64) (math.LegacyDec, error) {
 	lastPrice, err := k.GetLastCumulativePrice(ctx)

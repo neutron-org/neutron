@@ -86,7 +86,7 @@ message ValidatorStats {
   ];
 
   // Contains expected revenue for the validator
-  // based on performance rating of ongoing performance window and current TWAP price.
+  // based on performance rating of ongoing performance window and current TWAP.
   string expected_revenue = 3 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false

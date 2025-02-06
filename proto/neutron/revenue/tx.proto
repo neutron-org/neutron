@@ -52,8 +52,7 @@ message MsgFundTreasury {
   // The signer of the message.
   string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
-  // The amount of coins to fund the revenue treasury pool with. Must match the denom compensation
-  // defined in the module's params.
+  // The amount of coins to fund the revenue treasury pool with. Must match the reward asset denom.
   repeated cosmos.base.v1beta1.Coin amount = 2 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true,

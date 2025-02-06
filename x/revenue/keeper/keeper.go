@@ -2,9 +2,10 @@ package keeper
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"errors"
 	"fmt"
+
+	"cosmossdk.io/math"
 
 	coretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
@@ -13,7 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32types "github.com/cosmos/cosmos-sdk/types/bech32"
-
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
@@ -235,7 +235,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 				return fmt.Errorf("failed to convert valoper address %s to bytes: %w", info.ValOperAddress, err)
 			}
 
-			revenueAmt := sdk.NewCoins(sdk.NewCoin(params.DenomCompensation, valCompensation))
+			revenueAmt := sdk.NewCoins(sdk.NewCoin(revenuetypes.RewardDenom, valCompensation))
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(
 				ctx,
 				revenuetypes.RevenueTreasuryPoolName,
@@ -288,15 +288,15 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 }
 
 // CalcBaseRevenueAmount calculates the base compensation amount for validators based on the current
-// price of the compensation denomination. The final compensation amount for a validator is
-// determined by multiplying the base revenue amount by the validator's performance rating.
+// price of the reward denom. The final compensation amount for a validator is determined by
+// multiplying the base revenue amount by the validator's performance rating.
 func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64) (math.Int, error) {
 	assetPrice, err := k.GetTWAPStartFromTime(ctx, ctx.BlockHeader().Time.Unix())
 	if err != nil {
-		return math.ZeroInt(), fmt.Errorf("failed to get TWAP price: %w", err)
+		return math.ZeroInt(), fmt.Errorf("failed to get TWAP: %w", err)
 	}
 	if assetPrice.Equal(math.LegacyZeroDec()) {
-		return math.ZeroInt(), fmt.Errorf("invalid TWAP price, price must be greater than zero")
+		return math.ZeroInt(), fmt.Errorf("invalid TWAP: price must be greater than zero")
 	}
 	return math.LegacyNewDec(int64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil
 }

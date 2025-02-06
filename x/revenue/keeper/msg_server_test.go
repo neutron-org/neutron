@@ -29,8 +29,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -51,8 +50,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -73,8 +71,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -95,8 +92,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec().Sub(math.LegacyOneDec()),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -117,8 +113,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -139,8 +134,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyOneDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -161,8 +155,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -183,8 +176,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -205,8 +197,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -225,8 +216,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -245,8 +235,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -265,8 +254,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					DenomCompensation: "untrn",
-					BaseCompensation:  1500,
+					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -337,7 +325,7 @@ func TestFundTreasury(t *testing.T) {
 				Sender: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Amount: sdktypes.NewCoins(sdktypes.NewCoin("uatom", math.NewInt(1000))),
 			},
-			"provided denom doesn't match the denom for compensation untrn",
+			"provided denom doesn't match the reward denom untrn",
 		},
 	}
 

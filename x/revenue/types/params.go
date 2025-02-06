@@ -5,13 +5,9 @@ import (
 
 	"cosmossdk.io/math"
 	"gopkg.in/yaml.v2"
-
-	"github.com/neutron-org/neutron/v5/app/params"
 )
 
 var (
-	// DefaultDenomCompensation represents the default denom compensation.
-	DefaultDenomCompensation = params.DefaultDenom
 	// DefaultBaseCompensation represents the default compensation amount in USD.
 	DefaultBaseCompensation uint64 = 2500
 	// DefaultPaymentScheduleType represents the default payment schedule type.
@@ -22,14 +18,12 @@ var (
 
 // NewParams creates a new Params instance.
 func NewParams(
-	denomCompensation string,
 	baseCompensation uint64,
 	blocksPerformanceRequirement *PerformanceRequirement,
 	oraclePricesPerformanceRequirement *PerformanceRequirement,
 	paymentScheduleType isParams_PaymentScheduleType,
 ) Params {
 	return Params{
-		DenomCompensation:                 denomCompensation,
 		BaseCompensation:                  baseCompensation,
 		BlocksPerformanceRequirement:      blocksPerformanceRequirement,
 		OracleVotesPerformanceRequirement: oraclePricesPerformanceRequirement,
@@ -41,7 +35,6 @@ func NewParams(
 // DefaultParams returns the default set of parameters.
 func DefaultParams() Params {
 	return NewParams(
-		DefaultDenomCompensation,
 		DefaultBaseCompensation,
 		DefaultBlocksPerformanceRequirement(),
 		DefaultOracleVotesPerformanceRequirement(),

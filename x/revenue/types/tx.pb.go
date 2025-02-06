@@ -132,8 +132,7 @@ var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 type MsgFundTreasury struct {
 	// The signer of the message.
 	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	// The amount of coins to fund the revenue treasury pool with. Must match the denom compensation
-	// defined in the module's params.
+	// The amount of coins to fund the revenue treasury pool with. Must match the reward asset denom.
 	Amount github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
 }
 

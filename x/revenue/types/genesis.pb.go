@@ -37,7 +37,8 @@ type GenesisState struct {
 	State State `protobuf:"bytes,2,opt,name=state,proto3" json:"state"`
 	// Revenue module list of validators.
 	Validators []ValidatorInfo `protobuf:"bytes,3,rep,name=validators,proto3" json:"validators"`
-	// CumulativePrices is accumulate prices of the Revenue denom to calculate TWAP price for a given period of time
+	// CumulativePrices is accumulate prices of the reward asset to calculate TWAP for a given
+	// period of time.
 	CumulativePrices []*CumulativePrice `protobuf:"bytes,4,rep,name=cumulative_prices,json=cumulativePrices,proto3" json:"cumulative_prices,omitempty"`
 }
 
@@ -340,7 +341,7 @@ var xxx_messageInfo_EmptyPaymentSchedule proto.InternalMessageInfo
 // It is used to calculate TWAP as:
 // twap_from_time_t(n)_to_time_t(n-1) = (cumulative_price_at_t(n) - cumulative_price_at_t(n-1))/(t(n) - t(n-1))
 type CumulativePrice struct {
-	// Cumulative price of a denom from the start of monitoring to the last block
+	// Cumulative price of the reward asset from the start of monitoring to the last block
 	// calculates as
 	// `cumulative_price at timestamp t(n)` = `last_price at t(n-1)` * (t(n) - t(n-1)) + `cumulative_price at timestamp t(n-1)`
 	CumulativePrice cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=cumulative_price,json=cumulativePrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"cumulative_price"`

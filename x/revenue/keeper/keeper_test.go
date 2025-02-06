@@ -7,7 +7,6 @@ import (
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
-
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
@@ -35,12 +34,12 @@ func TestParams(t *testing.T) {
 
 	// set new params and assert they are changed
 	newParams := revenuetypes.DefaultParams()
-	newParams.DenomCompensation = "uibcatom"
+	newParams.TwapWindow = revenuetypes.DefaultTWAPWindow + 10
 	err = keeper.SetParams(ctx, newParams)
 	require.Nil(t, err)
 	params, err = keeper.GetParams(ctx)
 	require.Nil(t, err)
-	require.Equal(t, "uibcatom", params.DenomCompensation)
+	require.Equal(t, revenuetypes.DefaultTWAPWindow+10, params.TwapWindow)
 	require.Equal(t, revenuetypes.DefaultParams().BaseCompensation, params.BaseCompensation)
 	require.Equal(t, revenuetypes.DefaultParams().BlocksPerformanceRequirement, params.BlocksPerformanceRequirement)
 	require.Equal(t, revenuetypes.DefaultParams().OracleVotesPerformanceRequirement, params.OracleVotesPerformanceRequirement)
@@ -109,7 +108,7 @@ func TestProcessRevenue(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.DefaultDenomCompensation,
+			revenuetypes.RewardDenom,
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -190,7 +189,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.DefaultDenomCompensation,
+			revenuetypes.RewardDenom,
 			math.LegacyNewDecWithPrec(75, 2).MulInt(baseRevenueAmount).RoundInt(),
 		)),
 	).Times(1).Return(nil)
@@ -201,7 +200,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val2OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.DefaultDenomCompensation,
+			revenuetypes.RewardDenom,
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
