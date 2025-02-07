@@ -669,7 +669,8 @@ NEUTRON_STAKING_TRACKER_INIT_MSG='{
   "name": "'"$NEUTRON_STAKING_TRACKER_NAME"'",
   "description": "'"$NEUTRON_STAKING_TRACKER_DESCRIPTION"'",
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
-  "denom": "untrn"
+  "denom": "untrn",
+  "staking_proxy_info_contract_address": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'"
 }'
 
 NEUTRON_STAKING_REWARDS_INIT_MSG='{
