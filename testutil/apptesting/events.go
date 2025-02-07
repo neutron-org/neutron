@@ -65,6 +65,18 @@ func (s *KeeperTestHelper) AssertNEventValuesEmitted(eventValue string, nEvents 
 	s.Equal(nEvents, emissions, "Expected %v events, got %v", nEvents, emissions)
 }
 
+func (s *KeeperTestHelper) GetAllMatchingEvents(eventValue string) (events []sdk.Event) {
+	allEvents := s.Ctx.EventManager().Events()
+	for _, event := range allEvents {
+		for _, attr := range event.Attributes {
+			if attr.Value == eventValue {
+				events = append(events, event)
+			}
+		}
+	}
+	return events
+}
+
 func (s *KeeperTestHelper) AssertEventValueNotEmitted(eventValue, message string) {
 	allEvents := s.Ctx.EventManager().Events()
 	if len(allEvents) != 0 {
