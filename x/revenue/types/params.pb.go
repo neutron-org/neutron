@@ -29,7 +29,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Defines the parameters for the module.
 type Params struct {
-	// The compensation amount measured in USD.
+	// The compensation amount measured in USD. USD is used as a quote in price queries to the dex
+	// module to determine the price of the reward denom. The base compensation amount is multiplied
+	// by the price of the reward denom to determine the final compensation amount.
 	BaseCompensation uint64 `protobuf:"varint,1,opt,name=base_compensation,json=baseCompensation,proto3" json:"base_compensation,omitempty"`
 	// Specifies performance requirements for validators in scope of blocks signing and creation. If
 	// not met, the validator is not rewarded.

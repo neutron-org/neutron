@@ -12,7 +12,7 @@ var (
 	DefaultBaseCompensation uint64 = 2500
 	// DefaultPaymentScheduleType represents the default payment schedule type.
 	DefaultPaymentScheduleType = &Params_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
-	// DefaultPaymentScheduleType represents default time to calculate TWAP
+	// DefaultTWAPWindow represents default time span to calculate TWAP for. Measured in seconds.
 	DefaultTWAPWindow int64 = 24 * 3600
 )
 

@@ -22,8 +22,7 @@ message GenesisState {
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
 
-  // CumulativePrices is accumulate prices of the reward asset to calculate TWAP for a given
-  // period of time.
+  // Accumulated prices of the reward denom. Used to calculate the reward denom TWAP.
   repeated CumulativePrice cumulative_prices = 4;
 }
 

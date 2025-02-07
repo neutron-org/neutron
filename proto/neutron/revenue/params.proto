@@ -12,7 +12,9 @@ option go_package = "github.com/neutron-org/neutron/v5/x/revenue/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
 
-  // The compensation amount measured in USD.
+  // The compensation amount measured in USD. USD is used as a quote in price queries to the dex
+  // module to determine the price of the reward denom. The base compensation amount is multiplied
+  // by the price of the reward denom to determine the final compensation amount.
   uint64 base_compensation = 1;
 
   // Specifies performance requirements for validators in scope of blocks signing and creation. If

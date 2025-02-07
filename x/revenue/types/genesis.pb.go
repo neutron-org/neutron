@@ -37,8 +37,7 @@ type GenesisState struct {
 	State State `protobuf:"bytes,2,opt,name=state,proto3" json:"state"`
 	// Revenue module list of validators.
 	Validators []ValidatorInfo `protobuf:"bytes,3,rep,name=validators,proto3" json:"validators"`
-	// CumulativePrices is accumulate prices of the reward asset to calculate TWAP for a given
-	// period of time.
+	// Accumulated prices of the reward denom. Used to calculate the reward denom TWAP.
 	CumulativePrices []*CumulativePrice `protobuf:"bytes,4,rep,name=cumulative_prices,json=cumulativePrices,proto3" json:"cumulative_prices,omitempty"`
 }
 

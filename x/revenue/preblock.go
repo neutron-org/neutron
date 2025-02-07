@@ -41,8 +41,8 @@ type PreBlockHandler struct { //golint:ignore
 }
 
 // WrappedPreBlocker is called by the base app before the block is finalized. It is responsible for
-// calling the oraclePreBlocker, distributing revenue to validators, and recording validators'
-// participation in network operations.
+// calling the oraclePreBlocker, maintaining data for proper reward asset TWAP calculation,
+// distributing revenue to validators, and recording validators' participation in network operations.
 func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker) sdktypes.PreBlocker {
 	return func(ctx sdktypes.Context, req *cometabcitypes.RequestFinalizeBlock) (response *sdktypes.ResponsePreBlock, err error) {
 		response, err = oraclePreBlocker(ctx, req)
