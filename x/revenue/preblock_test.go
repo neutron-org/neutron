@@ -46,7 +46,8 @@ func TestPaymentScheduleCheckEmptyPaymentSchedule(t *testing.T) {
 
 	g := revenuetypes.DefaultGenesis()
 	require.Nil(t, keeper.SetParams(ctx, g.Params))
-	require.Nil(t, keeper.SetState(ctx, g.State))
+	psi := &revenuetypes.EmptyPaymentSchedule{}
+	require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 	// init a fresh validator
 	val1Info := val1Info()
@@ -55,14 +56,14 @@ func TestPaymentScheduleCheckEmptyPaymentSchedule(t *testing.T) {
 	// prepare keeper state by setting validator info
 	require.Nil(t, keeper.SetValidatorInfo(ctx, va1, val1Info))
 
-	// no state updates are expected ever for the empty payment schedule
+	// no payment schedule updates are ever expected for the empty payment schedule
 	for _, height := range []int64{1, 10, 1000, 100000, 1000000000} {
 		err := preBlock.PaymentScheduleCheck(ctx.WithBlockHeight(height))
 		require.Nil(t, err)
 
-		state, err := keeper.GetState(ctx)
+		gotPsi, err := keeper.GetPaymentScheduleI(ctx)
 		require.Nil(t, err)
-		require.Equal(t, state.PaymentSchedule.GetCachedValue(), g.State.PaymentSchedule.GetCachedValue())
+		require.Equal(t, psi, gotPsi)
 	}
 }
 
@@ -83,11 +84,9 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		g.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{
 			MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
 		}
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{
-			CurrentMonth: 1, CurrentMonthStartBlock: 1,
-		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		require.Nil(t, keeper.SetState(ctx, g.State))
+		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
 
 		// init a fresh validator
 		val1Info := val1Info()
@@ -100,14 +99,14 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		// expect no revenue distribution within the same period
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-		// no state updates are expected since the current period (month) hasn't ended yet
+		// no payment schedule updates are expected since the current period (month) hasn't ended yet
 		for _, day := range []int{1, 10, 20, 31} {
 			err = preBlock.PaymentScheduleCheck(ctx.WithBlockHeight(2).WithBlockTime(time.Date(2000, 1, day, 0, 0, 0, 0, time.UTC)))
 			require.Nil(t, err)
 
-			state, err := keeper.GetState(ctx)
+			gotPsi, err := keeper.GetPaymentScheduleI(ctx)
 			require.Nil(t, err)
-			require.Equal(t, state, g.State)
+			require.Equal(t, psi, gotPsi)
 		}
 	})
 
@@ -127,11 +126,9 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		g.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{
 			MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
 		}
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.MonthlyPaymentSchedule{
-			CurrentMonth: 1, CurrentMonthStartBlock: 1,
-		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		require.Nil(t, keeper.SetState(ctx, g.State))
+		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
 
 		// init a validator with 100% performance (the next block will be the 6th one)
 		val1Info := val1Info()
@@ -166,10 +163,9 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		err = preBlock.PaymentScheduleCheck(ctx.WithBlockHeight(6).WithBlockTime(time.Date(2000, 2, 1, 0, 0, 0, 0, time.UTC)))
 		require.Nil(t, err)
 
-		// make sure state is updated to the new period (month)
-		state, err := keeper.GetState(ctx)
-		require.Nil(t, err)
-		newPs := state.PaymentSchedule.GetCachedValue().(*revenuetypes.MonthlyPaymentSchedule)
+		// make sure payment schedule is updated to the new period (month)
+		newPsi, err := keeper.GetPaymentScheduleI(ctx)
+		newPs := newPsi.(*revenuetypes.MonthlyPaymentSchedule)
 		require.Equal(t, uint64(2), newPs.CurrentMonth)
 		require.Equal(t, uint64(6), newPs.CurrentMonthStartBlock)
 
@@ -198,11 +194,9 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		g.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
 			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
 		}
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{
-			BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1,
-		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		require.Nil(t, keeper.SetState(ctx, g.State))
+		psi := (&revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
+		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
 
 		// init a fresh validator
 		val1Info := val1Info()
@@ -215,14 +209,14 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		// no SendCoinsFromModuleToAccount calls expected
 		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-		// no state updates are expected since the current period hasn't ended yet
+		// no payment schedule updates are expected since the current period hasn't ended yet
 		for _, height := range []int64{2, 3, 4, 5} {
 			err = preBlock.PaymentScheduleCheck(ctx.WithBlockHeight(height))
 			require.Nil(t, err)
 
-			state, err := keeper.GetState(ctx)
+			gotPsi, err := keeper.GetPaymentScheduleI(ctx)
 			require.Nil(t, err)
-			require.Equal(t, state, g.State)
+			require.Equal(t, psi, gotPsi)
 		}
 	})
 
@@ -242,11 +236,9 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		g.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
 			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
 		}
-		g.State.PaymentSchedule = mustNewAnyWithValue(t, &revenuetypes.BlockBasedPaymentSchedule{
-			BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1,
-		})
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		require.Nil(t, keeper.SetState(ctx, g.State))
+		psi := (&revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
+		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
 
 		// init a validator with 100% performance (the next block will be the 6th one)
 		val1Info := val1Info()
@@ -281,10 +273,9 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		err = preBlock.PaymentScheduleCheck(ctx.WithBlockHeight(6))
 		require.Nil(t, err)
 
-		// make sure state is updated to the new period
-		state, err := keeper.GetState(ctx)
-		require.Nil(t, err)
-		newPs := state.PaymentSchedule.GetCachedValue().(*revenuetypes.BlockBasedPaymentSchedule)
+		// make sure payment schedule is updated to the new period
+		newPsi, err := keeper.GetPaymentScheduleI(ctx)
+		newPs := newPsi.(*revenuetypes.BlockBasedPaymentSchedule)
 		require.Equal(t, uint64(5), newPs.BlocksPerPeriod)
 		require.Equal(t, uint64(6), newPs.CurrentPeriodStartBlock)
 

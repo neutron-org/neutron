@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
@@ -37,22 +36,25 @@ func TestQueryParams(t *testing.T) {
 	require.Equal(t, params, paramsResp.Params)
 }
 
-func TestQueryState(t *testing.T) {
+func TestQueryPaymentInfo(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
 	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
-	ps := revenuetypes.BlockBasedPaymentSchedule{
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         10,
 		CurrentPeriodStartBlock: 1,
 	}
-	psAny, err := codectypes.NewAnyWithValue(&ps)
-	require.Nil(t, err)
-	require.Nil(t, k.SetState(ctx, revenuetypes.State{PaymentSchedule: psAny}))
+	require.Nil(t, k.SetPaymentScheduleI(ctx, ps))
+	require.Nil(t, k.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
+
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
 
-	state, err := queryServer.State(ctx, &revenuetypes.QueryStateRequest{})
+	paymentInfo, err := queryServer.PaymentInfo(ctx, &revenuetypes.QueryPaymentInfoRequest{})
 	require.Nil(t, err)
-	require.Equal(t, psAny, state.State.PaymentSchedule)
+	require.Equal(t, ps, paymentInfo.PaymentSchedule.BlockBasedPaymentSchedule)
+	require.Equal(t, revenuetypes.RewardDenom, paymentInfo.RewardDenom)
+	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), paymentInfo.RewardDenomTwap)
+	require.Equal(t, math.NewInt(5000), paymentInfo.BaseRevenueAmount)
 }
 
 func TestQueryValidatorStats(t *testing.T) {
@@ -63,16 +65,12 @@ func TestQueryValidatorStats(t *testing.T) {
 	require.Nil(t, k.SetParams(ctx, params))
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
 
-	ps := revenuetypes.BlockBasedPaymentSchedule{
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         500,
 		CurrentPeriodStartBlock: 1,
 	}
-	psAny, err := codectypes.NewAnyWithValue(&ps)
-	require.Nil(t, err)
-	require.Nil(t, k.SetState(ctx, revenuetypes.State{PaymentSchedule: psAny}))
-
-	err = k.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix())
-	require.Nil(t, err)
+	require.Nil(t, k.SetPaymentScheduleI(ctx, ps))
+	require.Nil(t, k.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
 
 	// val 1 with 100/100 performance (ctx.WithBlockHeight(100))
 	val1 := val1Info()

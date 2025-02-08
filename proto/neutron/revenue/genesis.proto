@@ -16,14 +16,31 @@ message GenesisState {
   // Revenue module parameters.
   Params params = 1 [(gogoproto.nullable) = false];
 
-  // Revenue module state.
-  State state = 2 [(gogoproto.nullable) = false];
+  // The current payment schedule.
+  PaymentSchedule payment_schedule = 2;
 
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
 
   // Accumulated prices of the reward denom. Used to calculate the reward denom TWAP.
   repeated CumulativePrice cumulative_prices = 4;
+}
+
+// Information specific to the current payment schedule. This can represent different types of
+// payment schedules (e.g., monthly or block-based).
+message PaymentSchedule {
+  MonthlyPaymentSchedule monthly_payment_schedule = 1 [
+    (amino.oneof_name) = "revenue/Params/MonthlyPaymentSchedule",
+    (gogoproto.nullable) = true
+  ];
+  BlockBasedPaymentSchedule block_based_payment_schedule = 2 [
+    (amino.oneof_name) = "revenue/Params/BlockBasedPaymentSchedule",
+    (gogoproto.nullable) = true
+  ];
+  EmptyPaymentSchedule empty_payment_schedule = 3 [
+    (amino.oneof_name) = "revenue/Params/EmptyPaymentSchedule",
+    (gogoproto.nullable) = true
+  ];
 }
 
 // Contains information about a validator.
@@ -38,13 +55,6 @@ message ValidatorInfo {
   uint64 commited_oracle_votes_in_period = 3;
 }
 
-// Contains information about the current state of the revenue module.
-message State {
-  // Information specific to the current payment schedule. This can represent different types of
-  // payment schedules (e.g., monthly or block-based).
-  google.protobuf.Any payment_schedule = 1 [(cosmos_proto.accepts_interface) = "neutron.revenue.PaymentSchedule"];
-}
-
 // Represents a payment schedule where revenue payments are processed once a month.
 message MonthlyPaymentSchedule {
   option (amino.name) = "neutron/MonthlyPaymentSchedule";
@@ -54,6 +64,7 @@ message MonthlyPaymentSchedule {
 
   // A numeric representation of the current month.
   uint64 current_month = 1;
+
   // The block height at which the current month started.
   uint64 current_month_start_block = 2;
 }
@@ -68,6 +79,7 @@ message BlockBasedPaymentSchedule {
 
   // The number of blocks in each payment period.
   uint64 blocks_per_period = 1;
+
   // The block height at which the current payment period started.
   uint64 current_period_start_block = 2;
 }
@@ -95,12 +107,14 @@ message CumulativePrice {
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
+
   // Specifies the price at the current timestamp
   string last_price = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
+
   // The timestamp when the price has been saved.
   int64 timestamp = 3;
 }

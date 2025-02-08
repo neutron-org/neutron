@@ -9,6 +9,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -115,22 +116,22 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
-// Request type for the Query/State RPC method.
-type QueryStateRequest struct {
+// Request type for the Query/PaymentInfo RPC method.
+type QueryPaymentInfoRequest struct {
 }
 
-func (m *QueryStateRequest) Reset()         { *m = QueryStateRequest{} }
-func (m *QueryStateRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryStateRequest) ProtoMessage()    {}
-func (*QueryStateRequest) Descriptor() ([]byte, []int) {
+func (m *QueryPaymentInfoRequest) Reset()         { *m = QueryPaymentInfoRequest{} }
+func (m *QueryPaymentInfoRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryPaymentInfoRequest) ProtoMessage()    {}
+func (*QueryPaymentInfoRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_e0a7ecde965b0d6a, []int{2}
 }
-func (m *QueryStateRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryPaymentInfoRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryStateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryPaymentInfoRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryStateRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryPaymentInfoRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -140,36 +141,44 @@ func (m *QueryStateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *QueryStateRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryStateRequest.Merge(m, src)
+func (m *QueryPaymentInfoRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPaymentInfoRequest.Merge(m, src)
 }
-func (m *QueryStateRequest) XXX_Size() int {
+func (m *QueryPaymentInfoRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryStateRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryStateRequest.DiscardUnknown(m)
+func (m *QueryPaymentInfoRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPaymentInfoRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryStateRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryPaymentInfoRequest proto.InternalMessageInfo
 
-// Response type for the Query/State RPC method.
-type QueryStateResponse struct {
-	// Contains the current state of the revenue module.
-	State State `protobuf:"bytes,1,opt,name=state,proto3" json:"state"`
+// Response type for the Query/PaymentInfo RPC method.
+type QueryPaymentInfoResponse struct {
+	// The current payment schedule.
+	PaymentSchedule PaymentSchedule `protobuf:"bytes,1,opt,name=payment_schedule,json=paymentSchedule,proto3" json:"payment_schedule"`
+	// The denom used in revenue payments.
+	RewardDenom string `protobuf:"bytes,2,opt,name=reward_denom,json=rewardDenom,proto3" json:"reward_denom,omitempty"`
+	// The current TWAP of the reward denom in USD.
+	RewardDenomTwap cosmossdk_io_math.LegacyDec `protobuf:"bytes,3,opt,name=reward_denom_twap,json=rewardDenomTwap,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"reward_denom_twap"`
+	// The current evaluation of the base revenue amount. This whole amount will be paid to the
+	// validators with impeccable performance (at least as good as allowed_to_miss). For the others
+	// this amount will be multiplied by their performance rating.
+	BaseRevenueAmount cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=base_revenue_amount,json=baseRevenueAmount,proto3,customtype=cosmossdk.io/math.Int" json:"base_revenue_amount"`
 }
 
-func (m *QueryStateResponse) Reset()         { *m = QueryStateResponse{} }
-func (m *QueryStateResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryStateResponse) ProtoMessage()    {}
-func (*QueryStateResponse) Descriptor() ([]byte, []int) {
+func (m *QueryPaymentInfoResponse) Reset()         { *m = QueryPaymentInfoResponse{} }
+func (m *QueryPaymentInfoResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryPaymentInfoResponse) ProtoMessage()    {}
+func (*QueryPaymentInfoResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_e0a7ecde965b0d6a, []int{3}
 }
-func (m *QueryStateResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryPaymentInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryStateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryPaymentInfoResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryStateResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryPaymentInfoResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -179,23 +188,30 @@ func (m *QueryStateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *QueryStateResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryStateResponse.Merge(m, src)
+func (m *QueryPaymentInfoResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPaymentInfoResponse.Merge(m, src)
 }
-func (m *QueryStateResponse) XXX_Size() int {
+func (m *QueryPaymentInfoResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryStateResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryStateResponse.DiscardUnknown(m)
+func (m *QueryPaymentInfoResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPaymentInfoResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryStateResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryPaymentInfoResponse proto.InternalMessageInfo
 
-func (m *QueryStateResponse) GetState() State {
+func (m *QueryPaymentInfoResponse) GetPaymentSchedule() PaymentSchedule {
 	if m != nil {
-		return m.State
+		return m.PaymentSchedule
 	}
-	return State{}
+	return PaymentSchedule{}
+}
+
+func (m *QueryPaymentInfoResponse) GetRewardDenom() string {
+	if m != nil {
+		return m.RewardDenom
+	}
+	return ""
 }
 
 // Request type for the Query/ValidatorStats RPC method.
@@ -427,8 +443,8 @@ func (m *ValidatorStats) GetValidatorInfo() ValidatorInfo {
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "neutron.revenue.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "neutron.revenue.QueryParamsResponse")
-	proto.RegisterType((*QueryStateRequest)(nil), "neutron.revenue.QueryStateRequest")
-	proto.RegisterType((*QueryStateResponse)(nil), "neutron.revenue.QueryStateResponse")
+	proto.RegisterType((*QueryPaymentInfoRequest)(nil), "neutron.revenue.QueryPaymentInfoRequest")
+	proto.RegisterType((*QueryPaymentInfoResponse)(nil), "neutron.revenue.QueryPaymentInfoResponse")
 	proto.RegisterType((*QueryValidatorStatsRequest)(nil), "neutron.revenue.QueryValidatorStatsRequest")
 	proto.RegisterType((*QueryValidatorStatsResponse)(nil), "neutron.revenue.QueryValidatorStatsResponse")
 	proto.RegisterType((*QueryValidatorsStatsRequest)(nil), "neutron.revenue.QueryValidatorsStatsRequest")
@@ -439,50 +455,57 @@ func init() {
 func init() { proto.RegisterFile("neutron/revenue/query.proto", fileDescriptor_e0a7ecde965b0d6a) }
 
 var fileDescriptor_e0a7ecde965b0d6a = []byte{
-	// 676 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xbd, 0x4e, 0x1b, 0x4d,
-	0x14, 0xf5, 0xf2, 0x27, 0x7d, 0xf3, 0x29, 0xfc, 0x0c, 0x04, 0xcc, 0x02, 0x6b, 0xb2, 0xa4, 0x20,
-	0x3f, 0xde, 0x95, 0x89, 0xa8, 0x52, 0xc5, 0xa2, 0x00, 0x81, 0x94, 0x64, 0x91, 0x52, 0x90, 0xc2,
-	0x8c, 0xd7, 0x97, 0x65, 0x15, 0x7b, 0x66, 0x99, 0x19, 0x5b, 0xd0, 0xa6, 0x4b, 0x17, 0x29, 0x4a,
-	0x91, 0x3a, 0xaf, 0xc0, 0x43, 0x50, 0x22, 0xd2, 0x44, 0x29, 0x50, 0x84, 0xf3, 0x20, 0x91, 0x67,
-	0x66, 0x83, 0xed, 0x35, 0x84, 0x74, 0xf6, 0x3d, 0xe7, 0x9e, 0x73, 0x66, 0xe6, 0xde, 0x45, 0x0b,
-	0x14, 0x9a, 0x92, 0x33, 0xea, 0x73, 0x68, 0x01, 0x6d, 0x82, 0x7f, 0xd4, 0x04, 0x7e, 0xe2, 0x25,
-	0x9c, 0x49, 0x86, 0x27, 0x0c, 0xe8, 0x19, 0xd0, 0x7e, 0x1c, 0x32, 0xd1, 0x60, 0xc2, 0xaf, 0x12,
-	0x61, 0x98, 0x7e, 0xab, 0x54, 0x05, 0x49, 0x4a, 0x7e, 0x42, 0xa2, 0x98, 0x12, 0x19, 0x33, 0xaa,
-	0x9b, 0xed, 0x79, 0xcd, 0xad, 0xa8, 0x7f, 0xbe, 0xfe, 0x63, 0xa0, 0x99, 0x88, 0x45, 0x4c, 0xd7,
-	0x3b, 0xbf, 0x4c, 0x75, 0x31, 0x62, 0x2c, 0xaa, 0x83, 0x4f, 0x92, 0xd8, 0x27, 0x94, 0x32, 0xa9,
-	0xd4, 0xd2, 0x9e, 0xa5, 0xfe, 0xa0, 0x11, 0x50, 0x10, 0x71, 0x0a, 0x2f, 0xf6, 0xc3, 0x09, 0xe1,
-	0xa4, 0x91, 0xa2, 0xf9, 0x7e, 0x54, 0x1e, 0x6b, 0xc4, 0x9d, 0x41, 0xf8, 0x75, 0xe7, 0x1c, 0xaf,
-	0x14, 0x3d, 0x80, 0xa3, 0x26, 0x08, 0xe9, 0xee, 0xa0, 0xe9, 0x9e, 0xaa, 0x48, 0x18, 0x15, 0x80,
-	0xd7, 0xd1, 0x98, 0x96, 0xcd, 0x5b, 0xcb, 0xd6, 0xea, 0xff, 0x6b, 0x73, 0x5e, 0xdf, 0x05, 0x79,
-	0xba, 0xa1, 0x3c, 0x72, 0x76, 0x59, 0xc8, 0x05, 0x86, 0xec, 0x4e, 0xa3, 0x29, 0xa5, 0xb6, 0x2b,
-	0x89, 0x84, 0xd4, 0x62, 0xd3, 0x18, 0x9b, 0xa2, 0x71, 0x58, 0x43, 0xa3, 0xa2, 0x53, 0x30, 0x06,
-	0xb3, 0x19, 0x03, 0x45, 0x37, 0xfa, 0x9a, 0xea, 0xee, 0x23, 0x5b, 0x29, 0xbd, 0x21, 0xf5, 0xb8,
-	0x46, 0x24, 0xe3, 0x1d, 0x4e, 0x7a, 0x14, 0x5c, 0x46, 0x93, 0x2d, 0x52, 0xaf, 0xb0, 0x04, 0x78,
-	0x85, 0xd4, 0x6a, 0x1c, 0x84, 0x4e, 0xff, 0x5f, 0x39, 0x7f, 0x71, 0x5a, 0x9c, 0x31, 0xef, 0xf2,
-	0x42, 0x23, 0xbb, 0x92, 0xc7, 0x34, 0x0a, 0xc6, 0x5b, 0xa4, 0xfe, 0x32, 0x01, 0x6e, 0xaa, 0xee,
-	0x1e, 0x5a, 0x18, 0xe8, 0x60, 0x42, 0x3f, 0xd7, 0xa1, 0xd3, 0x5b, 0x29, 0x64, 0x42, 0xf7, 0xf6,
-	0x75, 0xa7, 0x17, 0xee, 0x52, 0xbf, 0xb6, 0xe8, 0x8e, 0xef, 0xbe, 0x45, 0x8b, 0x83, 0xe1, 0xac,
-	0xf7, 0xf0, 0x3f, 0x7b, 0x7f, 0x18, 0x42, 0xe3, 0xbd, 0x38, 0xde, 0x46, 0x9d, 0xc3, 0xeb, 0x4a,
-	0x25, 0xa6, 0x07, 0xcc, 0x1c, 0xca, 0xb9, 0x59, 0x78, 0x8b, 0x1e, 0x30, 0xa3, 0x7b, 0xaf, 0xd5,
-	0x5d, 0xc4, 0xfb, 0x08, 0x27, 0xc0, 0x0f, 0x18, 0x6f, 0x10, 0x1a, 0x42, 0x85, 0x13, 0x19, 0xd3,
-	0x28, 0x3f, 0xa4, 0x6e, 0xbf, 0xd4, 0x69, 0xf8, 0x71, 0x59, 0x58, 0xd0, 0x2f, 0x20, 0x6a, 0xef,
-	0xbc, 0x98, 0xf9, 0x0d, 0x22, 0x0f, 0xbd, 0x1d, 0x88, 0x48, 0x78, 0xb2, 0x01, 0xe1, 0xc5, 0x69,
-	0x11, 0x99, 0x07, 0xda, 0x80, 0x30, 0x98, 0xea, 0x12, 0x0b, 0x94, 0x16, 0xde, 0x44, 0x93, 0x70,
-	0x9c, 0x40, 0x28, 0xa1, 0x56, 0x31, 0xc1, 0xf2, 0xc3, 0x4a, 0x7f, 0xc9, 0xe8, 0xdf, 0xcf, 0xea,
-	0x6f, 0x51, 0x19, 0x4c, 0xa4, 0x6d, 0x81, 0xee, 0x5a, 0xfb, 0x3a, 0x82, 0x46, 0xd5, 0x4d, 0x63,
-	0x89, 0xc6, 0xf4, 0x18, 0xe3, 0x95, 0xcc, 0xa1, 0xb3, 0xbb, 0x62, 0x3f, 0xbc, 0x9d, 0xa4, 0xdf,
-	0xc9, 0x2d, 0xbc, 0xff, 0xf6, 0xeb, 0xd3, 0xd0, 0x3c, 0x9e, 0xf3, 0x07, 0x2f, 0x2a, 0x4e, 0xd0,
-	0xa8, 0x9a, 0x6d, 0xec, 0x0e, 0xd6, 0xeb, 0x5e, 0x1e, 0x7b, 0xe5, 0x56, 0x8e, 0xb1, 0x74, 0x94,
-	0x65, 0x1e, 0xcf, 0x66, 0x2c, 0xd5, 0xde, 0xe0, 0xcf, 0x56, 0xe6, 0xf5, 0x9f, 0x0c, 0xd6, 0x1d,
-	0xb8, 0x59, 0xf6, 0xd3, 0xbb, 0x91, 0x4d, 0x9a, 0x55, 0x95, 0xc6, 0xc5, 0xcb, 0x99, 0x34, 0xd7,
-	0xf3, 0xa6, 0xa6, 0x12, 0x7f, 0xb1, 0xd0, 0x44, 0xdf, 0xb8, 0xe3, 0xbf, 0x79, 0xf5, 0x2c, 0x8d,
-	0x5d, 0xbc, 0x23, 0xdb, 0x44, 0x7b, 0xa4, 0xa2, 0xad, 0xe0, 0x07, 0x37, 0x47, 0x13, 0x3a, 0x5b,
-	0x79, 0xfb, 0xec, 0xca, 0xb1, 0xce, 0xaf, 0x1c, 0xeb, 0xe7, 0x95, 0x63, 0x7d, 0x6c, 0x3b, 0xb9,
-	0xf3, 0xb6, 0x93, 0xfb, 0xde, 0x76, 0x72, 0x7b, 0xa5, 0x28, 0x96, 0x87, 0xcd, 0xaa, 0x17, 0xb2,
-	0x46, 0x2a, 0x53, 0x64, 0x3c, 0xfa, 0x23, 0xd9, 0x5a, 0xf7, 0x8f, 0xaf, 0x3f, 0xbf, 0x27, 0x09,
-	0x88, 0xea, 0x98, 0xfa, 0x04, 0x3f, 0xfb, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x05, 0xe2, 0x37, 0xaf,
-	0x84, 0x06, 0x00, 0x00,
+	// 789 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0x4d, 0x4f, 0xdb, 0x4a,
+	0x14, 0x8d, 0xc3, 0x87, 0xc4, 0xf0, 0x1e, 0x21, 0x03, 0x4f, 0x84, 0x40, 0x3e, 0x30, 0xef, 0x49,
+	0xe1, 0xd1, 0xc4, 0x0a, 0x15, 0xab, 0xae, 0x88, 0x58, 0x14, 0x81, 0xd4, 0x62, 0xaa, 0x2e, 0x40,
+	0x95, 0x99, 0xd8, 0x83, 0xb1, 0x1a, 0xcf, 0x98, 0xf1, 0x24, 0x90, 0x6d, 0x77, 0xec, 0x2a, 0x55,
+	0x5d, 0xf4, 0x7f, 0xb0, 0xed, 0x9e, 0x45, 0x17, 0x88, 0x6e, 0xaa, 0x2e, 0x50, 0x05, 0xfd, 0x21,
+	0x95, 0x3d, 0xe3, 0x92, 0xd8, 0x81, 0xd2, 0x6e, 0xa2, 0xf8, 0x9e, 0x33, 0xe7, 0x9c, 0xf1, 0xbd,
+	0x33, 0x06, 0x73, 0x04, 0xb7, 0x39, 0xa3, 0x44, 0x63, 0xb8, 0x83, 0x49, 0x1b, 0x6b, 0x47, 0x6d,
+	0xcc, 0xba, 0x35, 0x8f, 0x51, 0x4e, 0x61, 0x46, 0x82, 0x35, 0x09, 0xe6, 0xb3, 0xc8, 0x75, 0x08,
+	0xd5, 0xc2, 0x5f, 0xc1, 0xc9, 0xff, 0x6f, 0x52, 0xdf, 0xa5, 0xbe, 0xd6, 0x44, 0xbe, 0x5c, 0xac,
+	0x75, 0xea, 0x4d, 0xcc, 0x51, 0x5d, 0xf3, 0x90, 0xed, 0x10, 0xc4, 0x1d, 0x4a, 0x24, 0x77, 0x56,
+	0x70, 0x8d, 0xf0, 0x49, 0x13, 0x0f, 0x12, 0x9a, 0xb6, 0xa9, 0x4d, 0x45, 0x3d, 0xf8, 0x27, 0xab,
+	0xf3, 0x36, 0xa5, 0x76, 0x0b, 0x6b, 0xc8, 0x73, 0x34, 0x44, 0x08, 0xe5, 0xa1, 0x5a, 0xb4, 0xa6,
+	0x10, 0xcf, 0x6e, 0x63, 0x82, 0x7d, 0x27, 0x82, 0xe7, 0xe3, 0xb0, 0x87, 0x18, 0x72, 0x23, 0x34,
+	0x17, 0x47, 0xf9, 0x89, 0x40, 0xd4, 0x69, 0x00, 0xb7, 0x83, 0x7d, 0x3c, 0x0f, 0xe9, 0x3a, 0x3e,
+	0x6a, 0x63, 0x9f, 0xab, 0x5b, 0x60, 0xaa, 0xaf, 0xea, 0x7b, 0x94, 0xf8, 0x18, 0xae, 0x82, 0x51,
+	0x21, 0x9b, 0x53, 0xca, 0x4a, 0x65, 0x7c, 0x65, 0xa6, 0x16, 0x7b, 0x67, 0x35, 0xb1, 0xa0, 0x31,
+	0x7c, 0x7e, 0x55, 0x4a, 0xe9, 0x92, 0xac, 0xce, 0x82, 0x19, 0xa9, 0xd6, 0x75, 0x31, 0xe1, 0x1b,
+	0xe4, 0x80, 0x46, 0x46, 0x9f, 0xd2, 0x20, 0x97, 0xc4, 0xa4, 0xdd, 0x36, 0x98, 0xf4, 0x44, 0xd9,
+	0xf0, 0xcd, 0x43, 0x6c, 0xb5, 0x5b, 0x58, 0x1a, 0x97, 0x07, 0x18, 0x87, 0xc4, 0x1d, 0xc9, 0x93,
+	0x09, 0x32, 0x5e, 0x7f, 0x19, 0x2e, 0x80, 0xbf, 0x18, 0x3e, 0x46, 0xcc, 0x32, 0x2c, 0x4c, 0xa8,
+	0x9b, 0x4b, 0x97, 0x95, 0xca, 0x98, 0x3e, 0x2e, 0x6a, 0xeb, 0x41, 0x09, 0xbe, 0x02, 0xd9, 0x5e,
+	0x8a, 0xc1, 0x8f, 0x91, 0x97, 0x1b, 0x0a, 0x78, 0x8d, 0x7a, 0x20, 0xfa, 0xf5, 0xaa, 0x34, 0x27,
+	0xba, 0xe9, 0x5b, 0xaf, 0x6b, 0x0e, 0xd5, 0x5c, 0xc4, 0x0f, 0x6b, 0x5b, 0xd8, 0x46, 0x66, 0x77,
+	0x1d, 0x9b, 0x97, 0x67, 0x55, 0x20, 0x9b, 0xbd, 0x8e, 0x4d, 0x3d, 0xd3, 0x23, 0xfd, 0xe2, 0x18,
+	0x79, 0x70, 0x0f, 0x4c, 0x05, 0xd3, 0x63, 0xc8, 0xe0, 0x06, 0x72, 0x69, 0x9b, 0xf0, 0xdc, 0x70,
+	0x68, 0xb0, 0x2c, 0x0d, 0xfe, 0x49, 0x1a, 0x6c, 0x10, 0x1e, 0x93, 0xce, 0x06, 0x3a, 0xba, 0x90,
+	0x59, 0x0b, 0x55, 0xd4, 0x7d, 0x90, 0x0f, 0xdf, 0xe6, 0x4b, 0xd4, 0x72, 0x2c, 0xc4, 0x29, 0xdb,
+	0xe1, 0x88, 0x47, 0x5d, 0x85, 0x0d, 0x30, 0xd9, 0x41, 0x2d, 0x83, 0x7a, 0x98, 0x19, 0xc8, 0xb2,
+	0x18, 0xf6, 0x45, 0x23, 0xc7, 0x1a, 0xb9, 0xcb, 0xb3, 0xea, 0xb4, 0x94, 0x5e, 0x13, 0xc8, 0x0e,
+	0x67, 0x0e, 0xb1, 0xf5, 0x89, 0x0e, 0x6a, 0x3d, 0xf3, 0x30, 0x93, 0x55, 0x75, 0x17, 0xcc, 0x0d,
+	0x74, 0x90, 0x2d, 0x7b, 0x02, 0x46, 0xfc, 0xa0, 0x20, 0xfb, 0x54, 0x4a, 0xf4, 0xa9, 0x7f, 0x9d,
+	0x6c, 0x93, 0x58, 0xa3, 0x16, 0xe2, 0xda, 0x7e, 0x6f, 0x7c, 0x75, 0x0f, 0xcc, 0x0f, 0x86, 0x93,
+	0xde, 0x43, 0xbf, 0xed, 0x7d, 0x9a, 0x06, 0x13, 0xfd, 0x38, 0xdc, 0x04, 0xc1, 0xe6, 0x45, 0xc5,
+	0x70, 0xc8, 0x01, 0x95, 0x9b, 0x2a, 0xde, 0x2d, 0x1c, 0x8c, 0xaf, 0xd4, 0xfd, 0xbb, 0xd3, 0x5b,
+	0x84, 0xfb, 0x00, 0x7a, 0x98, 0x1d, 0x50, 0xe6, 0x22, 0x62, 0x62, 0x83, 0x21, 0xee, 0x10, 0x5b,
+	0x8c, 0xdf, 0x9f, 0x8c, 0x55, 0xb6, 0x47, 0x4c, 0x0f, 0xb5, 0xe0, 0x53, 0x30, 0x89, 0x4f, 0x3c,
+	0x6c, 0x72, 0x6c, 0x45, 0xc3, 0x25, 0xc7, 0xb6, 0x70, 0xef, 0x54, 0xe9, 0x99, 0x68, 0x99, 0x9c,
+	0xa5, 0x95, 0x8f, 0xc3, 0x60, 0x24, 0x7c, 0xd3, 0x90, 0x83, 0x51, 0x71, 0xa2, 0xe1, 0x62, 0x62,
+	0xd3, 0xc9, 0x6b, 0x23, 0xff, 0xef, 0xfd, 0x24, 0xd1, 0x27, 0xb5, 0xf4, 0xe6, 0xf3, 0xf7, 0x77,
+	0xe9, 0x59, 0x38, 0xa3, 0x0d, 0xbe, 0xb3, 0xe0, 0xa9, 0x02, 0xc6, 0x7b, 0xee, 0x03, 0x58, 0xb9,
+	0x4b, 0x36, 0x7e, 0x9d, 0xe4, 0x97, 0x1e, 0xc0, 0x94, 0x29, 0xfe, 0x0b, 0x53, 0x94, 0x60, 0x61,
+	0x40, 0x0a, 0x71, 0xe7, 0x04, 0x2d, 0x87, 0xef, 0x95, 0xc4, 0x5c, 0x2c, 0x0f, 0x36, 0x19, 0x78,
+	0xe6, 0xf2, 0x8f, 0x1e, 0x46, 0x96, 0xa1, 0x2a, 0x61, 0x28, 0x15, 0x96, 0x13, 0xa1, 0x6e, 0x27,
+	0x31, 0x9c, 0x57, 0xf8, 0x41, 0x01, 0x99, 0xd8, 0x41, 0x80, 0xbf, 0xf2, 0xea, 0x3b, 0x4e, 0xf9,
+	0xea, 0x03, 0xd9, 0x32, 0xda, 0x52, 0x18, 0x6d, 0x11, 0x2e, 0xdc, 0x1d, 0xcd, 0x17, 0xd9, 0x1a,
+	0x9b, 0xe7, 0xd7, 0x45, 0xe5, 0xe2, 0xba, 0xa8, 0x7c, 0xbb, 0x2e, 0x2a, 0x6f, 0x6f, 0x8a, 0xa9,
+	0x8b, 0x9b, 0x62, 0xea, 0xcb, 0x4d, 0x31, 0xb5, 0x5b, 0xb7, 0x1d, 0x7e, 0xd8, 0x6e, 0xd6, 0x4c,
+	0xea, 0x46, 0x32, 0x55, 0xca, 0xec, 0x9f, 0x92, 0x9d, 0x55, 0xed, 0xe4, 0xf6, 0x1b, 0xd5, 0xf5,
+	0xb0, 0xdf, 0x1c, 0x0d, 0xbf, 0x53, 0x8f, 0x7f, 0x04, 0x00, 0x00, 0xff, 0xff, 0x4e, 0xd3, 0x29,
+	0xca, 0xbc, 0x07, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -499,8 +522,8 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Fetches the current parameters of the revenue module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Fetches the current state of the revenue module.
-	State(ctx context.Context, in *QueryStateRequest, opts ...grpc.CallOption) (*QueryStateResponse, error)
+	// Fetches the current payment info of the module such as payment schedule and revenue details.
+	PaymentInfo(ctx context.Context, in *QueryPaymentInfoRequest, opts ...grpc.CallOption) (*QueryPaymentInfoResponse, error)
 	// Fetches a given validator's stats from the revenue module's state.
 	ValidatorStats(ctx context.Context, in *QueryValidatorStatsRequest, opts ...grpc.CallOption) (*QueryValidatorStatsResponse, error)
 	// Fetches all validators' stats from the revenue module's state.
@@ -524,9 +547,9 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) State(ctx context.Context, in *QueryStateRequest, opts ...grpc.CallOption) (*QueryStateResponse, error) {
-	out := new(QueryStateResponse)
-	err := c.cc.Invoke(ctx, "/neutron.revenue.Query/State", in, out, opts...)
+func (c *queryClient) PaymentInfo(ctx context.Context, in *QueryPaymentInfoRequest, opts ...grpc.CallOption) (*QueryPaymentInfoResponse, error) {
+	out := new(QueryPaymentInfoResponse)
+	err := c.cc.Invoke(ctx, "/neutron.revenue.Query/PaymentInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -555,8 +578,8 @@ func (c *queryClient) ValidatorsStats(ctx context.Context, in *QueryValidatorsSt
 type QueryServer interface {
 	// Fetches the current parameters of the revenue module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Fetches the current state of the revenue module.
-	State(context.Context, *QueryStateRequest) (*QueryStateResponse, error)
+	// Fetches the current payment info of the module such as payment schedule and revenue details.
+	PaymentInfo(context.Context, *QueryPaymentInfoRequest) (*QueryPaymentInfoResponse, error)
 	// Fetches a given validator's stats from the revenue module's state.
 	ValidatorStats(context.Context, *QueryValidatorStatsRequest) (*QueryValidatorStatsResponse, error)
 	// Fetches all validators' stats from the revenue module's state.
@@ -570,8 +593,8 @@ type UnimplementedQueryServer struct {
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-func (*UnimplementedQueryServer) State(ctx context.Context, req *QueryStateRequest) (*QueryStateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method State not implemented")
+func (*UnimplementedQueryServer) PaymentInfo(ctx context.Context, req *QueryPaymentInfoRequest) (*QueryPaymentInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PaymentInfo not implemented")
 }
 func (*UnimplementedQueryServer) ValidatorStats(ctx context.Context, req *QueryValidatorStatsRequest) (*QueryValidatorStatsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidatorStats not implemented")
@@ -602,20 +625,20 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_State_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryStateRequest)
+func _Query_PaymentInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPaymentInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).State(ctx, in)
+		return srv.(QueryServer).PaymentInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/neutron.revenue.Query/State",
+		FullMethod: "/neutron.revenue.Query/PaymentInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).State(ctx, req.(*QueryStateRequest))
+		return srv.(QueryServer).PaymentInfo(ctx, req.(*QueryPaymentInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -665,8 +688,8 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Params_Handler,
 		},
 		{
-			MethodName: "State",
-			Handler:    _Query_State_Handler,
+			MethodName: "PaymentInfo",
+			Handler:    _Query_PaymentInfo_Handler,
 		},
 		{
 			MethodName: "ValidatorStats",
@@ -737,7 +760,7 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryStateRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryPaymentInfoRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -747,12 +770,12 @@ func (m *QueryStateRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryStateRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryPaymentInfoRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryStateRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryPaymentInfoRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -760,7 +783,7 @@ func (m *QueryStateRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryStateResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryPaymentInfoResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -770,18 +793,45 @@ func (m *QueryStateResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryStateResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryPaymentInfoResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryStateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryPaymentInfoResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	{
-		size, err := m.State.MarshalToSizedBuffer(dAtA[:i])
+		size := m.BaseRevenueAmount.Size()
+		i -= size
+		if _, err := m.BaseRevenueAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	{
+		size := m.RewardDenomTwap.Size()
+		i -= size
+		if _, err := m.RewardDenomTwap.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if len(m.RewardDenom) > 0 {
+		i -= len(m.RewardDenom)
+		copy(dAtA[i:], m.RewardDenom)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.RewardDenom)))
+		i--
+		dAtA[i] = 0x12
+	}
+	{
+		size, err := m.PaymentSchedule.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -1000,7 +1050,7 @@ func (m *QueryParamsResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryStateRequest) Size() (n int) {
+func (m *QueryPaymentInfoRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1009,13 +1059,21 @@ func (m *QueryStateRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryStateResponse) Size() (n int) {
+func (m *QueryPaymentInfoResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.State.Size()
+	l = m.PaymentSchedule.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	l = len(m.RewardDenom)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = m.RewardDenomTwap.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	l = m.BaseRevenueAmount.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
@@ -1222,7 +1280,7 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryStateRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryPaymentInfoRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1245,10 +1303,10 @@ func (m *QueryStateRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryStateRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryPaymentInfoRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryStateRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryPaymentInfoRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -1272,7 +1330,7 @@ func (m *QueryStateRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryStateResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryPaymentInfoResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1295,15 +1353,15 @@ func (m *QueryStateResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryStateResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryPaymentInfoResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryStateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryPaymentInfoResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field State", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PaymentSchedule", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1330,7 +1388,107 @@ func (m *QueryStateResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.State.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.PaymentSchedule.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardDenom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RewardDenom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardDenomTwap", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RewardDenomTwap.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseRevenueAmount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.BaseRevenueAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

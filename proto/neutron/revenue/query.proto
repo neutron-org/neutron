@@ -1,6 +1,7 @@
 syntax = "proto3";
 package neutron.revenue;
 
+import "amino/amino.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
@@ -18,9 +19,9 @@ service Query {
     option (google.api.http).get = "/neutron/revenue/params";
   }
 
-  // Fetches the current state of the revenue module.
-  rpc State(QueryStateRequest) returns (QueryStateResponse) {
-    option (google.api.http).get = "/neutron/revenue/state";
+  // Fetches the current payment info of the module such as payment schedule and revenue details.
+  rpc PaymentInfo(QueryPaymentInfoRequest) returns (QueryPaymentInfoResponse) {
+    option (google.api.http).get = "/neutron/revenue/payment_info";
   }
 
   // Fetches a given validator's stats from the revenue module's state.
@@ -43,13 +44,32 @@ message QueryParamsResponse {
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
-// Request type for the Query/State RPC method.
-message QueryStateRequest {}
+// Request type for the Query/PaymentInfo RPC method.
+message QueryPaymentInfoRequest {}
 
-// Response type for the Query/State RPC method.
-message QueryStateResponse {
-  // Contains the current state of the revenue module.
-  State state = 1 [(gogoproto.nullable) = false];
+// Response type for the Query/PaymentInfo RPC method.
+message QueryPaymentInfoResponse {
+  // The current payment schedule.
+  PaymentSchedule payment_schedule = 1 [(gogoproto.nullable) = false];
+
+  // The denom used in revenue payments.
+  string reward_denom = 2;
+
+  // The current TWAP of the reward denom in USD.
+  string reward_denom_twap = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // The current evaluation of the base revenue amount. This whole amount will be paid to the
+  // validators with impeccable performance (at least as good as allowed_to_miss). For the others
+  // this amount will be multiplied by their performance rating.
+  string base_revenue_amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // Request type for the Query/ValidatorStats RPC method.

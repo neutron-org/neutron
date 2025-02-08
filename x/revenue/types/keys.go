@@ -19,7 +19,7 @@ const (
 
 var (
 	ParamsKey                 = []byte{0x01}
-	StateKey                  = []byte{0x02}
+	PaymentScheduleKey        = []byte{0x02}
 	PrefixValidatorInfoKey    = []byte{0x03}
 	PrefixAccumulatedPriceKey = []byte{0x04}
 )

@@ -34,7 +34,7 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 		panic(err)
 	}
 
-	err = k.SetState(ctx, genState.State)
+	err = k.SetPaymentSchedule(ctx, genState.PaymentSchedule)
 	if err != nil {
 		panic(err)
 	}
@@ -48,10 +48,11 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 	if err != nil {
 		panic(err)
 	}
-	genesis.State, err = k.GetState(ctx)
+	ps, err := k.GetPaymentScheduleI(ctx)
 	if err != nil {
 		panic(err)
 	}
+	genesis.PaymentSchedule = ps.IntoPaymentSchedule()
 
 	genesis.Validators, err = k.GetAllValidatorInfo(ctx)
 	if err != nil {

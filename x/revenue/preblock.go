@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	cometabcitypes "github.com/cometbft/cometbft/abci/types"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
@@ -83,24 +82,18 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 // PaymentScheduleCheck maintains payment schedule state and consistency, and ensures revenue is
 // distributed across validators according to the payment schedule.
 func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
-	state, err := h.revenueKeeper.GetState(ctx)
+	ps, err := h.revenueKeeper.GetPaymentScheduleI(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get module state: %w", err)
+		return fmt.Errorf("failed to get payment schedule: %w", err)
 	}
 	params, err := h.revenueKeeper.GetParams(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get module params: %w", err)
 	}
 
-	pscv := state.PaymentSchedule.GetCachedValue()
-	ps, ok := pscv.(revenuetypes.PaymentSchedule)
-	if !ok {
-		return fmt.Errorf("expected state.PaymentSchedule to be of type PaymentSchedule, but got %T", pscv)
-	}
+	var psRequiresUpdate bool
 
-	var stateRequiresUpdate bool
-
-	// if the period has ended, revenue needs to be processed and module's state set to the next period
+	// if the period has ended, revenue needs to be processed and payment schedule set to the next period
 	if ps.PeriodEnded(ctx) {
 		h.revenueKeeper.Logger(ctx).Debug("payment period has ended, processing revenue")
 		if err := h.revenueKeeper.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
@@ -110,13 +103,13 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 			return fmt.Errorf("failed to reset validators info on revenue distribution: %w", err)
 		}
 		ps.StartNewPeriod(ctx)
-		stateRequiresUpdate = true
+		psRequiresUpdate = true
 	}
 
 	// a mismatch means that the payment schedule type has been changed in the previous block by
 	// a MsgUpdateParams submission
-	// in this case, we need to reflect the change in the module's State by storing the corresponding
-	// payment schedule implementation in the module's State and prepare for the a new period
+	// in this case, we need to reflect the change in the payment schedule by storing the corresponding
+	// payment schedule implementation in the module's store and prepare for the a new period
 	if !ps.MatchesType(params.PaymentScheduleType) {
 		h.revenueKeeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
 			"new_payment_schedule_type", fmt.Sprintf("%+v", params.PaymentScheduleType),
@@ -126,21 +119,16 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 			return fmt.Errorf("failed to reset validators info on payment schedule change: %w", err)
 		}
 
-		ps = revenuetypes.PaymentScheduleByType(params.PaymentScheduleType)
+		ps = revenuetypes.PaymentScheduleIByType(params.PaymentScheduleType)
 		ps.StartNewPeriod(ctx)
-		stateRequiresUpdate = true
+		psRequiresUpdate = true
 	}
 
-	if stateRequiresUpdate {
-		packedPs, err := codectypes.NewAnyWithValue(ps)
-		if err != nil {
-			return fmt.Errorf("failed to pack new payment schedule %+v: %w", ps, err)
+	if psRequiresUpdate {
+		if err := h.revenueKeeper.SetPaymentScheduleI(ctx, ps); err != nil {
+			return fmt.Errorf("failed to set payment schedule after changing: %w", err)
 		}
-		state.PaymentSchedule = packedPs
-		if err := h.revenueKeeper.SetState(ctx, state); err != nil {
-			return fmt.Errorf("failed to set module state after changing payment schedule: %w", err)
-		}
-		h.revenueKeeper.Logger(ctx).Debug("module state updated", "new_state", state.String())
+		h.revenueKeeper.Logger(ctx).Debug("module payment schedule updated", "new_payment_schedule", ps.String())
 	}
 
 	return nil

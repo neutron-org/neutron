@@ -24,7 +24,7 @@ func GetQueryCmd(_ string) *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdQueryParams())
-	cmd.AddCommand(CmdQueryState())
+	cmd.AddCommand(CmdQueryPaymentInfo())
 	cmd.AddCommand(CmdQueryValidatorStats())
 	cmd.AddCommand(CmdQueryValidatorsStats())
 
@@ -55,17 +55,17 @@ func CmdQueryParams() *cobra.Command {
 	return cmd
 }
 
-func CmdQueryState() *cobra.Command {
+func CmdQueryPaymentInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "state",
-		Short: "shows the state of the module",
+		Use:   "payment-info",
+		Short: "shows the payment into of the module",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			res, err := queryClient.State(context.Background(), &types.QueryStateRequest{})
+			res, err := queryClient.PaymentInfo(context.Background(), &types.QueryPaymentInfoRequest{})
 			if err != nil {
 				return err
 			}

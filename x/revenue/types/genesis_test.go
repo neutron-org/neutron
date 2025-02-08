@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/stretchr/testify/require"
 
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
@@ -16,9 +15,9 @@ func TestDefaultGenesis(t *testing.T) {
 	require.Equal(t, revenuetypes.DefaultParams(), defaultGenesis.Params)
 	require.Equal(t, 0, len(defaultGenesis.Validators))
 
-	ps, ok := defaultGenesis.State.PaymentSchedule.GetCachedValue().(revenuetypes.PaymentSchedule)
-	require.True(t, ok)
-	require.Equal(t, &revenuetypes.EmptyPaymentSchedule{}, ps)
+	psi, err := defaultGenesis.PaymentSchedule.IntoPaymentScheduleI()
+	require.Nil(t, err)
+	require.Equal(t, &revenuetypes.EmptyPaymentSchedule{}, psi)
 
 	require.Nil(t, defaultGenesis.Validate())
 }
@@ -32,8 +31,7 @@ func TestInvalidGenesisPaymentScheduleTypeMismatch(t *testing.T) {
 	require.ErrorContains(t, err, "does not match payment schedule")
 
 	defaultGenesis = revenuetypes.DefaultGenesis()
-	defaultGenesis.State.PaymentSchedule, err = codectypes.NewAnyWithValue(&revenuetypes.MonthlyPaymentSchedule{})
-	require.Nil(t, err)
+	defaultGenesis.PaymentSchedule = (&revenuetypes.MonthlyPaymentSchedule{}).IntoPaymentSchedule()
 	err = defaultGenesis.Validate()
 	require.ErrorContains(t, err, "does not match payment schedule")
 }
@@ -75,4 +73,12 @@ func TestInvalidGenesisParams(t *testing.T) {
 	defaultGenesis.Params.OracleVotesPerformanceRequirement.AllowedToMiss = math.LegacyOneDec()
 	defaultGenesis.Params.OracleVotesPerformanceRequirement.RequiredAtLeast = math.LegacySmallestDec()
 	require.ErrorContains(t, defaultGenesis.Validate(), "sum of oracle votes allowed to miss and required at least must not be greater than 1.0")
+
+	defaultGenesis = revenuetypes.DefaultGenesis()
+	defaultGenesis.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{}}
+	require.ErrorContains(t, defaultGenesis.Validate(), "payment schedule type *types.Params_MonthlyPaymentScheduleType does not match payment schedule of type *types.EmptyPaymentSchedule in genesis state")
+
+	defaultGenesis = revenuetypes.DefaultGenesis()
+	defaultGenesis.PaymentSchedule = (&revenuetypes.MonthlyPaymentSchedule{}).IntoPaymentSchedule()
+	require.ErrorContains(t, defaultGenesis.Validate(), "payment schedule type *types.Params_EmptyPaymentScheduleType does not match payment schedule of type *types.MonthlyPaymentSchedule in genesis state")
 }

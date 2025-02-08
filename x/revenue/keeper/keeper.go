@@ -76,33 +76,34 @@ func (k *Keeper) SetParams(ctx context.Context, params revenuetypes.Params) erro
 	return store.Set(revenuetypes.ParamsKey, bz)
 }
 
-func (k *Keeper) GetState(ctx sdk.Context) (state revenuetypes.State, err error) {
-	store := k.storeService.OpenKVStore(ctx)
-	bz, err := store.Get(revenuetypes.StateKey)
+// GetPaymentScheduleI reads the payment schedule from the module store and returns it as a
+// PaymentScheduleI.
+func (k *Keeper) GetPaymentScheduleI(ctx sdk.Context) (revenuetypes.PaymentScheduleI, error) {
+	ps, err := k.getPaymentSchedule(ctx)
 	if err != nil {
-		return state, fmt.Errorf("failed to read state from the store: %w", err)
-	}
-	if bz == nil {
-		return state, nil
+		return nil, err
 	}
 
-	if err = k.cdc.Unmarshal(bz, &state); err != nil {
-		return state, fmt.Errorf("failed to unmarshal state: %w", err)
-	}
-	return state, nil
+	return ps.IntoPaymentScheduleI()
 }
 
-func (k *Keeper) SetState(ctx sdk.Context, state revenuetypes.State) error {
+// SetPaymentSchedule stores a payment schedule.
+func (k *Keeper) SetPaymentSchedule(ctx sdk.Context, ps *revenuetypes.PaymentSchedule) error {
 	store := k.storeService.OpenKVStore(ctx)
-	bz, err := k.cdc.Marshal(&state)
+	bz, err := k.cdc.Marshal(ps)
 	if err != nil {
-		return fmt.Errorf("failed to marshal state: %w", err)
+		return fmt.Errorf("failed to marshal payment schedule: %w", err)
 	}
 
-	if err = store.Set(revenuetypes.StateKey, bz); err != nil {
-		return fmt.Errorf("failed to write state to the store: %w", err)
+	if err := store.Set(revenuetypes.PaymentScheduleKey, bz); err != nil {
+		return fmt.Errorf("failed to write payment schedule to the store: %w", err)
 	}
 	return nil
+}
+
+// SetPaymentScheduleI wraps a given PaymentScheduleI into a PaymentSchedule and stores it.
+func (k *Keeper) SetPaymentScheduleI(ctx sdk.Context, psi revenuetypes.PaymentScheduleI) error {
+	return k.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
 }
 
 func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []revenuetypes.ValidatorInfo, err error) {
@@ -323,4 +324,22 @@ func (k *Keeper) getOrCreateValidatorInfo(
 	}
 	k.Logger(ctx).Debug("new validator info created", "info", info)
 	return info, nil
+}
+
+// getPaymentSchedule gets the current payment schedule without any transformations.
+func (k *Keeper) getPaymentSchedule(ctx sdk.Context) (*revenuetypes.PaymentSchedule, error) {
+	store := k.storeService.OpenKVStore(ctx)
+	bz, err := store.Get(revenuetypes.PaymentScheduleKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read payment schedule from the store: %w", err)
+	}
+	if bz == nil {
+		return nil, fmt.Errorf("no payment schedule found in the module store")
+	}
+
+	var ps revenuetypes.PaymentSchedule
+	if err = k.cdc.Unmarshal(bz, &ps); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal payment schedule: %w", err)
+	}
+	return &ps, nil
 }

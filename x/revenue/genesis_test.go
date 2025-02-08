@@ -26,9 +26,7 @@ func TestInitAndExportGenesis(t *testing.T) {
 		BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
 	}
 	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1}
-	var err error
-	genesisState.State.PaymentSchedule, err = codectypes.NewAnyWithValue(ps)
-	require.Nil(t, err)
+	genesisState.PaymentSchedule = ps.IntoPaymentSchedule()
 	genesisState.CumulativePrices = []*revenuetypes.CumulativePrice{
 		{
 			LastPrice:       math.LegacyOneDec(),
@@ -79,6 +77,5 @@ func TestGenesisSerialization(t *testing.T) {
 	require.Equal(t, genesisState.Params, genesisState2.Params)
 	require.Equal(t, genesisState.Validators, genesisState2.Validators)
 	require.Equal(t, genesisState.CumulativePrices, genesisState2.CumulativePrices)
-	require.Equal(t, genesisState.State.PaymentSchedule.TypeUrl, genesisState2.State.PaymentSchedule.TypeUrl)
-	require.Equal(t, genesisState.State.PaymentSchedule.Value, genesisState2.State.PaymentSchedule.Value)
+	require.Equal(t, genesisState.PaymentSchedule, genesisState2.PaymentSchedule)
 }

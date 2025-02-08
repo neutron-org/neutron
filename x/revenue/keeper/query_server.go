@@ -36,18 +36,38 @@ func (s queryServer) Params(goCtx context.Context, request *revenuetypes.QueryPa
 	return &revenuetypes.QueryParamsResponse{Params: params}, nil
 }
 
-func (s queryServer) State(goCtx context.Context, request *revenuetypes.QueryStateRequest) (*revenuetypes.QueryStateResponse, error) {
+func (s queryServer) PaymentInfo(goCtx context.Context, request *revenuetypes.QueryPaymentInfoRequest) (*revenuetypes.QueryPaymentInfoResponse, error) {
 	if request == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
 	ctx := sdktypes.UnwrapSDKContext(goCtx)
-	state, err := s.keeper.GetState(ctx)
+
+	ps, err := s.keeper.getPaymentSchedule(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
-	return &revenuetypes.QueryStateResponse{State: state}, nil
+	twap, err := s.keeper.GetTWAPStartFromTime(ctx, ctx.BlockTime().Unix())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to calc TWAP: %s", err)
+	}
+
+	params, err := s.keeper.GetParams(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get module params: %s", err)
+	}
+	bra, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to calc base revenue amount: %s", err)
+	}
+
+	return &revenuetypes.QueryPaymentInfoResponse{
+		PaymentSchedule:   *ps,
+		RewardDenom:       revenuetypes.RewardDenom,
+		RewardDenomTwap:   twap,
+		BaseRevenueAmount: bra,
+	}, nil
 }
 
 func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes.QueryValidatorStatsRequest) (*revenuetypes.QueryValidatorStatsResponse, error) {
@@ -72,17 +92,12 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 
 	params, err := s.keeper.GetParams(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to get module params: %s", err)
 	}
 
-	state, err := s.keeper.GetState(ctx)
+	ps, err := s.keeper.GetPaymentScheduleI(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	pscv := state.PaymentSchedule.GetCachedValue()
-	ps, ok := pscv.(revenuetypes.PaymentSchedule)
-	if !ok {
-		return nil, status.Errorf(codes.Internal, "expected state.PaymentSchedule to be of type PaymentSchedule, but got %T", pscv)
+		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
 	blocksPerPeriod := ps.TotalBlocksInPeriod(ctx)
@@ -125,14 +140,9 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	state, err := s.keeper.GetState(ctx)
+	ps, err := s.keeper.GetPaymentScheduleI(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	pscv := state.PaymentSchedule.GetCachedValue()
-	ps, ok := pscv.(revenuetypes.PaymentSchedule)
-	if !ok {
-		return nil, status.Errorf(codes.Internal, "expected state.PaymentSchedule to be of type PaymentSchedule, but got %T", pscv)
+		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
 	amount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
