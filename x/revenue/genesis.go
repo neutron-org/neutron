@@ -16,26 +16,25 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 			panic(err)
 		}
 
-		err = k.SetValidatorInfo(ctx, addr, elem)
-		if err != nil {
+		if err := k.SetValidatorInfo(ctx, addr, elem); err != nil {
 			panic(err)
 		}
 	}
 
 	for _, elem := range genState.CumulativePrices {
-		err := k.SaveCumulativePrice(ctx, elem)
-		if err != nil {
+		if err := k.SaveCumulativePrice(ctx, elem); err != nil {
 			panic(err)
 		}
 	}
 
-	err := k.SetParams(ctx, genState.Params)
-	if err != nil {
+	if err := k.SetParams(ctx, genState.Params); err != nil {
 		panic(err)
 	}
 
-	err = k.SetPaymentSchedule(ctx, genState.PaymentSchedule)
-	if err != nil {
+	if genState.PaymentSchedule == nil {
+		genState.PaymentSchedule = types.PaymentScheduleIByType(genState.Params.PaymentScheduleType).IntoPaymentSchedule()
+	}
+	if err := k.SetPaymentSchedule(ctx, genState.PaymentSchedule); err != nil {
 		panic(err)
 	}
 }

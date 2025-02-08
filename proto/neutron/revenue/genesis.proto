@@ -16,7 +16,8 @@ message GenesisState {
   // Revenue module parameters.
   Params params = 1 [(gogoproto.nullable) = false];
 
-  // The current payment schedule.
+  // The current payment schedule. If nil, the module will use the respective payment schedule for
+  // the payment schedule type specified in the params.
   PaymentSchedule payment_schedule = 2;
 
   // Revenue module list of validators.
@@ -29,18 +30,11 @@ message GenesisState {
 // Information specific to the current payment schedule. This can represent different types of
 // payment schedules (e.g., monthly or block-based).
 message PaymentSchedule {
-  MonthlyPaymentSchedule monthly_payment_schedule = 1 [
-    (amino.oneof_name) = "revenue/Params/MonthlyPaymentSchedule",
-    (gogoproto.nullable) = true
-  ];
-  BlockBasedPaymentSchedule block_based_payment_schedule = 2 [
-    (amino.oneof_name) = "revenue/Params/BlockBasedPaymentSchedule",
-    (gogoproto.nullable) = true
-  ];
-  EmptyPaymentSchedule empty_payment_schedule = 3 [
-    (amino.oneof_name) = "revenue/Params/EmptyPaymentSchedule",
-    (gogoproto.nullable) = true
-  ];
+  oneof payment_schedule {
+    MonthlyPaymentSchedule monthly_payment_schedule = 1 [(amino.oneof_name) = "revenue/Params/MonthlyPaymentSchedule"];
+    BlockBasedPaymentSchedule block_based_payment_schedule = 2 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentSchedule"];
+    EmptyPaymentSchedule empty_payment_schedule = 3 [(amino.oneof_name) = "revenue/Params/EmptyPaymentSchedule"];
+  }
 }
 
 // Contains information about a validator.
@@ -57,11 +51,6 @@ message ValidatorInfo {
 
 // Represents a payment schedule where revenue payments are processed once a month.
 message MonthlyPaymentSchedule {
-  option (amino.name) = "neutron/MonthlyPaymentSchedule";
-  option (gogoproto.goproto_getters) = false;
-  option (gogoproto.equal) = false;
-  option (cosmos_proto.implements_interface) = "neutron.revenue.PaymentSchedule";
-
   // A numeric representation of the current month.
   uint64 current_month = 1;
 
@@ -72,11 +61,6 @@ message MonthlyPaymentSchedule {
 // Represents a payment schedule where revenue payments are processed after a specified number
 // of blocks.
 message BlockBasedPaymentSchedule {
-  option (amino.name) = "neutron/BlockBasedPaymentSchedule";
-  option (gogoproto.goproto_getters) = false;
-  option (gogoproto.equal) = false;
-  option (cosmos_proto.implements_interface) = "neutron.revenue.PaymentSchedule";
-
   // The number of blocks in each payment period.
   uint64 blocks_per_period = 1;
 
@@ -85,12 +69,7 @@ message BlockBasedPaymentSchedule {
 }
 
 // Represents a payment schedule where revenue is never distributed.
-message EmptyPaymentSchedule {
-  option (amino.name) = "neutron/EmptyPaymentSchedule";
-  option (gogoproto.goproto_getters) = false;
-  option (gogoproto.equal) = false;
-  option (cosmos_proto.implements_interface) = "neutron.revenue.PaymentSchedule";
-}
+message EmptyPaymentSchedule {}
 
 // Represents a type that contains the cumulative price of an asset over the
 // entire observation period, as well as the last recorded asset price

@@ -51,7 +51,11 @@ func TestQueryPaymentInfo(t *testing.T) {
 
 	paymentInfo, err := queryServer.PaymentInfo(ctx, &revenuetypes.QueryPaymentInfoRequest{})
 	require.Nil(t, err)
-	require.Equal(t, ps, paymentInfo.PaymentSchedule.BlockBasedPaymentSchedule)
+	require.Equal(t, ps, paymentInfo.
+		PaymentSchedule.
+		PaymentSchedule.(*revenuetypes.PaymentSchedule_BlockBasedPaymentSchedule).
+		BlockBasedPaymentSchedule,
+	)
 	require.Equal(t, revenuetypes.RewardDenom, paymentInfo.RewardDenom)
 	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), paymentInfo.RewardDenomTwap)
 	require.Equal(t, math.NewInt(5000), paymentInfo.BaseRevenueAmount)

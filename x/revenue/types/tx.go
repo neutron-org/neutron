@@ -16,7 +16,7 @@ func (msg *MsgUpdateParams) Validate() error {
 	return nil
 }
 
-func (msg *MsgFundTreasury) Validate(params Params) error {
+func (msg *MsgFundTreasury) Validate() error {
 	if len(msg.Amount) != 1 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "exactly one coin must be provided")
 	}

@@ -60,7 +60,7 @@ func (s *MonthlyPaymentSchedule) MatchesType(t isParams_PaymentScheduleType) boo
 
 // IntoPaymentSchedule creates a PaymentSchedule with a oneof value populated accordingly.
 func (s *MonthlyPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
-	return &PaymentSchedule{MonthlyPaymentSchedule: s}
+	return &PaymentSchedule{PaymentSchedule: &PaymentSchedule_MonthlyPaymentSchedule{MonthlyPaymentSchedule: s}}
 }
 
 // PeriodEnded checks whether the end of the current payment period has come. The current period
@@ -89,7 +89,7 @@ func (s *BlockBasedPaymentSchedule) MatchesType(t isParams_PaymentScheduleType) 
 
 // IntoPaymentSchedule creates a PaymentSchedule with a oneof value populated accordingly.
 func (s *BlockBasedPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
-	return &PaymentSchedule{BlockBasedPaymentSchedule: s}
+	return &PaymentSchedule{PaymentSchedule: &PaymentSchedule_BlockBasedPaymentSchedule{BlockBasedPaymentSchedule: s}}
 }
 
 // PeriodEnded always returns false for the EmptyPaymentSchedule.
@@ -114,7 +114,7 @@ func (s *EmptyPaymentSchedule) MatchesType(t isParams_PaymentScheduleType) bool 
 
 // IntoPaymentSchedule creates a PaymentSchedule with a oneof value populated accordingly.
 func (s *EmptyPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
-	return &PaymentSchedule{EmptyPaymentSchedule: s}
+	return &PaymentSchedule{PaymentSchedule: &PaymentSchedule_EmptyPaymentSchedule{EmptyPaymentSchedule: s}}
 }
 
 // PaymentScheduleIByType returns a PaymentScheduleI that corresponds to the given
@@ -162,13 +162,13 @@ func ValidatePaymentScheduleType(paymentScheduleType isParams_PaymentScheduleTyp
 // IntoPaymentScheduleI returns the oneof value populated in a given PaymentSchedule as a
 // PaymentScheduleI.
 func (s *PaymentSchedule) IntoPaymentScheduleI() (PaymentScheduleI, error) {
-	switch {
-	case s.BlockBasedPaymentSchedule != nil:
-		return s.BlockBasedPaymentSchedule, nil
-	case s.MonthlyPaymentSchedule != nil:
-		return s.MonthlyPaymentSchedule, nil
-	case s.EmptyPaymentSchedule != nil:
-		return s.EmptyPaymentSchedule, nil
+	switch v := s.PaymentSchedule.(type) {
+	case *PaymentSchedule_BlockBasedPaymentSchedule:
+		return v.BlockBasedPaymentSchedule, nil
+	case *PaymentSchedule_MonthlyPaymentSchedule:
+		return v.MonthlyPaymentSchedule, nil
+	case *PaymentSchedule_EmptyPaymentSchedule:
+		return v.EmptyPaymentSchedule, nil
 	default:
 		return nil, fmt.Errorf("no set oneof field found in payment schedule %+v", s)
 	}
