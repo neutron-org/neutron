@@ -173,10 +173,9 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		require.Equal(t, uint64(6), newPs.CurrentMonthStartBlock)
 
 		// make sure validators' info is reset
-		info, err := keeper.GetValidatorInfo(ctx, va1)
+		info, err := keeper.GetAllValidatorInfo(ctx)
 		require.Nil(t, err)
-		require.Equal(t, uint64(0), info.CommitedBlocksInPeriod)
-		require.Equal(t, uint64(0), info.CommitedOracleVotesInPeriod)
+		require.Equal(t, 0, len(info))
 	})
 }
 
@@ -288,10 +287,9 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		require.Equal(t, uint64(6), newPs.CurrentPeriodStartBlock)
 
 		// make sure validators' info is reset
-		info, err := keeper.GetValidatorInfo(ctx, va1)
+		info, err := keeper.GetAllValidatorInfo(ctx)
 		require.Nil(t, err)
-		require.Equal(t, uint64(0), info.CommitedBlocksInPeriod)
-		require.Equal(t, uint64(0), info.CommitedOracleVotesInPeriod)
+		require.Equal(t, 0, len(info))
 	})
 }
 

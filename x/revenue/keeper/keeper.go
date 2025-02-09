@@ -271,17 +271,15 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
 	}
+	store := k.storeService.OpenKVStore(ctx)
 
 	for _, info := range infos {
 		valOperAddr, err := sdk.ValAddressFromBech32(info.ValOperAddress)
 		if err != nil {
 			return fmt.Errorf("failed to create valoper addr from bech32 %s: %w", info.ValOperAddress, err)
 		}
-
-		info.CommitedBlocksInPeriod = 0
-		info.CommitedOracleVotesInPeriod = 0
-		if err := k.SetValidatorInfo(ctx, valOperAddr, info); err != nil {
-			return fmt.Errorf("failed to reset a validator %s info: %w", info.ValOperAddress, err)
+		if err := store.Delete(revenuetypes.GetValidatorInfoKey(valOperAddr)); err != nil {
+			return fmt.Errorf("failed to remove validator info from the store: %w", err)
 		}
 	}
 	k.Logger(ctx).Debug("all validators info has been reset")
