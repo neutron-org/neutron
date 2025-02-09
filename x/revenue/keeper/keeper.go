@@ -292,7 +292,7 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 // price of the reward denom. The final compensation amount for a validator is determined by
 // multiplying the base revenue amount by the validator's performance rating.
 func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64) (math.Int, error) {
-	assetPrice, err := k.GetTWAPStartFromTime(ctx, ctx.BlockHeader().Time.Unix())
+	assetPrice, err := k.GetTWAPStartingFromTime(ctx, ctx.BlockHeader().Time.Unix())
 	if err != nil {
 		return math.ZeroInt(), fmt.Errorf("failed to get TWAP: %w", err)
 	}

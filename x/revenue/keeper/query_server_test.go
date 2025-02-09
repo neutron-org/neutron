@@ -45,7 +45,7 @@ func TestQueryPaymentInfo(t *testing.T) {
 		CurrentPeriodStartBlock: 1,
 	}
 	require.Nil(t, k.SetPaymentScheduleI(ctx, ps))
-	require.Nil(t, k.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
+	require.Nil(t, k.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
 
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
 
@@ -74,7 +74,7 @@ func TestQueryValidatorStats(t *testing.T) {
 		CurrentPeriodStartBlock: 1,
 	}
 	require.Nil(t, k.SetPaymentScheduleI(ctx, ps))
-	require.Nil(t, k.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
+	require.Nil(t, k.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
 
 	// val 1 with 100/100 performance (ctx.WithBlockHeight(100))
 	val1 := val1Info()

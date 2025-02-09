@@ -13,44 +13,44 @@ import (
 	"github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
-func TestCumulative(t *testing.T) {
+func TestTWAP(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
-	prices, err := keeper.GetAllCumulativePrices(ctx)
+	prices, err := keeper.GetAllRewardAssetPrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 0)
 
-	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("10.0"), 1)
+	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("10.0"), 1)
 	require.Nil(t, err)
 
-	prices, err = keeper.GetAllCumulativePrices(ctx)
+	prices, err = keeper.GetAllRewardAssetPrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 1)
 
-	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 11)
+	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 11)
 	require.Nil(t, err)
 
-	prices, err = keeper.GetAllCumulativePrices(ctx)
+	prices, err = keeper.GetAllRewardAssetPrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 2)
 
-	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 21)
+	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 21)
 	require.Nil(t, err)
 
 	// get twap 11-21
-	price, err := keeper.GetTWAPStartFromTime(ctx, 10)
+	price, err := keeper.GetTWAPStartingFromTime(ctx, 10)
 	require.Nil(t, err)
 	require.Equal(t, price, math.LegacyMustNewDecFromStr("20.0"))
 
 	// get twap 0-21
-	price, err = keeper.GetTWAPStartFromTime(ctx, 0)
+	price, err = keeper.GetTWAPStartingFromTime(ctx, 0)
 	require.Nil(t, err)
 	require.Equal(t, price, math.LegacyMustNewDecFromStr("15.0"))
 
-	err = keeper.CalcNewCumulativePrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 111)
+	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("20.0"), 111)
 	require.Nil(t, err)
 
 	// get twap 0-111
@@ -70,24 +70,24 @@ func TestCumulative(t *testing.T) {
 			+----------------------------------------------------> block
 			          10                           100           110
 	*/
-	price, err = keeper.GetTWAPStartFromTime(ctx, 0)
+	price, err = keeper.GetTWAPStartingFromTime(ctx, 0)
 	require.Nil(t, err)
 	require.Equal(t, price, math.LegacyMustNewDecFromStr("19.090909090909090909"))
 
-	prices, err = keeper.GetAllCumulativePrices(ctx)
+	prices, err = keeper.GetAllRewardAssetPrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 4)
 
 	ctx = ctx.WithBlockTime(time.Unix(types.DefaultTWAPWindow+2, 0))
 	// now price at time 1 is outdated
-	err = keeper.CleanOutdatedCumulativePrices(ctx, ctx.BlockTime().Unix()-types.DefaultTWAPWindow)
+	err = keeper.CleanOutdatedRewardAssetPrices(ctx, ctx.BlockTime().Unix()-types.DefaultTWAPWindow)
 	require.Nil(t, err)
 
-	prices, err = keeper.GetAllCumulativePrices(ctx)
+	prices, err = keeper.GetAllRewardAssetPrices(ctx)
 	require.Nil(t, err)
 	require.Equal(t, len(prices), 3)
 
-	price, err = keeper.GetTWAPStartFromTime(ctx, 0)
+	price, err = keeper.GetTWAPStartingFromTime(ctx, 0)
 	require.Nil(t, err)
 	require.Equal(t, price, math.LegacyMustNewDecFromStr("20.0"))
 }

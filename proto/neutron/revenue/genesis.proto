@@ -23,8 +23,8 @@ message GenesisState {
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
 
-  // Accumulated prices of the reward denom. Used to calculate the reward denom TWAP.
-  repeated CumulativePrice cumulative_prices = 4;
+  // Prices of the reward denom. Used to calculate the reward denom TWAP.
+  repeated RewardAssetPrice prices = 4;
 }
 
 // Information specific to the current payment schedule. This can represent different types of
@@ -71,29 +71,25 @@ message BlockBasedPaymentSchedule {
 // Represents a payment schedule where revenue is never distributed.
 message EmptyPaymentSchedule {}
 
-// Represents a type that contains the cumulative price of an asset over the
-// entire observation period, as well as the last recorded asset price
-// and the timestamp at which this price is valid.
-//
-// It is used to calculate TWAP as:
-// twap_from_time_t(n)_to_time_t(n-1) = (cumulative_price_at_t(n) - cumulative_price_at_t(n-1))/(t(n) - t(n-1))
-message CumulativePrice {
-  // Cumulative price of the reward asset from the start of monitoring to the last block
-  // calculates as
-  // `cumulative_price at timestamp t(n)` = `last_price at t(n-1)` * (t(n) - t(n-1)) + `cumulative_price at timestamp t(n-1)`
+// Represents a data structure that tracks the cumulative price of an asset over the entire
+// observation period, along with the last absolute asset price and the timestamp when this
+// price was last recorded.
+message RewardAssetPrice {
+  // The cumulative price of the reward asset within the TWAP window. It is calculated as:
+  // `cumulative_price_at_timestamp_t(n)` = `last_price_at_t(n-1)` * (t(n) - t(n-1)) + `cumulative_price_at_timestamp_t(n-1)`
   string cumulative_price = 1 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
 
-  // Specifies the price at the current timestamp
-  string last_price = 2 [
+  // The price of the asset in USD that corresponds to the timestamp.
+  string absolute_price = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
 
-  // The timestamp when the price has been saved.
+  // The timestamp of the last update of the absolute and cumulative price.
   int64 timestamp = 3;
 }

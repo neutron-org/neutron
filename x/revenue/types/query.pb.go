@@ -159,7 +159,8 @@ type QueryPaymentInfoResponse struct {
 	PaymentSchedule PaymentSchedule `protobuf:"bytes,1,opt,name=payment_schedule,json=paymentSchedule,proto3" json:"payment_schedule"`
 	// The denom used in revenue payments.
 	RewardDenom string `protobuf:"bytes,2,opt,name=reward_denom,json=rewardDenom,proto3" json:"reward_denom,omitempty"`
-	// The current TWAP of the reward denom in USD.
+	// The current TWAP of the reward denom in USD. Is calculated as:
+	// twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) - cumulative_price_at_t(m)) / (t(n) - t(m))
 	RewardDenomTwap cosmossdk_io_math.LegacyDec `protobuf:"bytes,3,opt,name=reward_denom_twap,json=rewardDenomTwap,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"reward_denom_twap"`
 	// The current evaluation of the base revenue amount. This whole amount will be paid to the
 	// validators with impeccable performance (at least as good as allowed_to_miss). For the others

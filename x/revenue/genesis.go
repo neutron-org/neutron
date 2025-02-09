@@ -21,8 +21,8 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 		}
 	}
 
-	for _, elem := range genState.CumulativePrices {
-		if err := k.SaveCumulativePrice(ctx, elem); err != nil {
+	for _, elem := range genState.Prices {
+		if err := k.SaveRewardAssetPrice(ctx, elem); err != nil {
 			panic(err)
 		}
 	}
@@ -58,7 +58,7 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 		panic(err)
 	}
 
-	genesis.CumulativePrices, err = k.GetAllCumulativePrices(ctx)
+	genesis.Prices, err = k.GetAllRewardAssetPrices(ctx)
 	if err != nil {
 		panic(err)
 	}

@@ -55,7 +55,8 @@ message QueryPaymentInfoResponse {
   // The denom used in revenue payments.
   string reward_denom = 2;
 
-  // The current TWAP of the reward denom in USD.
+  // The current TWAP of the reward denom in USD. Is calculated as:
+  // twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) - cumulative_price_at_t(m)) / (t(n) - t(m))
   string reward_denom_twap = 3 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",

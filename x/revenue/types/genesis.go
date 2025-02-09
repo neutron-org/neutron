@@ -8,10 +8,10 @@ import (
 func DefaultGenesis() *GenesisState {
 	params := DefaultParams()
 	return &GenesisState{
-		Params:           params,
-		PaymentSchedule:  PaymentScheduleIByType(params.PaymentScheduleType).IntoPaymentSchedule(),
-		Validators:       []ValidatorInfo{},
-		CumulativePrices: []*CumulativePrice{},
+		Params:          params,
+		PaymentSchedule: PaymentScheduleIByType(params.PaymentScheduleType).IntoPaymentSchedule(),
+		Validators:      []ValidatorInfo{},
+		Prices:          []*RewardAssetPrice{},
 	}
 }
 
