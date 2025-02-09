@@ -229,37 +229,44 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 			int64(blocksInPeriod),
 		)
 		valCompensation := rating.MulInt(baseCompensation).TruncateInt()
+		_, valOperAddrBytes, err := bech32types.DecodeAndConvert(info.ValOperAddress)
+		if err != nil {
+			return fmt.Errorf("failed to convert valoper address %s to bytes: %w", info.ValOperAddress, err)
+		}
 
-		if valCompensation.IsPositive() {
-			_, valOperAddrBytes, err := bech32types.DecodeAndConvert(info.ValOperAddress)
-			if err != nil {
-				return fmt.Errorf("failed to convert valoper address %s to bytes: %w", info.ValOperAddress, err)
-			}
-
-			revenueAmt := sdk.NewCoins(sdk.NewCoin(revenuetypes.RewardDenom, valCompensation))
-			err = k.bankKeeper.SendCoinsFromModuleToAccount(
+		if !valCompensation.IsPositive() {
+			emitDistributeRevenueEvent(
 				ctx,
-				revenuetypes.RevenueTreasuryPoolName,
-				valOperAddrBytes,
-				revenueAmt,
+				info,
+				sdk.NewCoin(revenuetypes.RewardDenom, math.ZeroInt()),
+				rating,
+				blocksInPeriod,
 			)
-			if err != nil {
-				ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
-					sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
-					sdk.NewAttribute(revenuetypes.EventAttributePaymentFailure, err.Error()),
-				))
-				k.Logger(ctx).Debug("failed to send revenue to validator", "validator", info.ValOperAddress, "err", err)
-			} else {
-				ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
-					sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
-					sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, revenueAmt.String()),
-					sdk.NewAttribute(revenuetypes.EventAttributePerformanceRating, rating.String()),
-					sdk.NewAttribute(revenuetypes.EventAttributeCommittedBlocksInPeriod, fmt.Sprintf("%d", info.CommitedBlocksInPeriod)),
-					sdk.NewAttribute(revenuetypes.EventAttributeCommittedOracleVotesInPeriod, fmt.Sprintf("%d", info.CommitedOracleVotesInPeriod)),
-					sdk.NewAttribute(revenuetypes.EventAttributeTotalBlockInPeriod, fmt.Sprintf("%d", blocksInPeriod)),
-				))
-				k.Logger(ctx).Debug("revenue sent to validator", "validator", info.ValOperAddress, "revenue", revenueAmt.String())
-			}
+			continue
+		}
+
+		revenueAmt := sdk.NewCoin(revenuetypes.RewardDenom, valCompensation)
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(
+			ctx,
+			revenuetypes.RevenueTreasuryPoolName,
+			valOperAddrBytes,
+			sdk.NewCoins(revenueAmt),
+		)
+		if err != nil {
+			ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
+				sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
+				sdk.NewAttribute(revenuetypes.EventAttributePaymentFailure, err.Error()),
+			))
+			k.Logger(ctx).Debug("failed to send revenue to validator", "validator", info.ValOperAddress, "err", err)
+		} else {
+			emitDistributeRevenueEvent(
+				ctx,
+				info,
+				revenueAmt,
+				rating,
+				blocksInPeriod,
+			)
+			k.Logger(ctx).Debug("revenue sent to validator", "validator", info.ValOperAddress, "revenue", revenueAmt.String())
 		}
 	}
 	return nil
@@ -340,4 +347,21 @@ func (k *Keeper) getPaymentSchedule(ctx sdk.Context) (*revenuetypes.PaymentSched
 		return nil, fmt.Errorf("failed to unmarshal payment schedule: %w", err)
 	}
 	return &ps, nil
+}
+
+func emitDistributeRevenueEvent(
+	ctx sdk.Context,
+	info revenuetypes.ValidatorInfo,
+	revenueAmt sdk.Coin,
+	rating math.LegacyDec,
+	blocksInPeriod uint64,
+) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
+		sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
+		sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, revenueAmt.String()),
+		sdk.NewAttribute(revenuetypes.EventAttributePerformanceRating, rating.String()),
+		sdk.NewAttribute(revenuetypes.EventAttributeCommittedBlocksInPeriod, fmt.Sprintf("%d", info.CommitedBlocksInPeriod)),
+		sdk.NewAttribute(revenuetypes.EventAttributeCommittedOracleVotesInPeriod, fmt.Sprintf("%d", info.CommitedOracleVotesInPeriod)),
+		sdk.NewAttribute(revenuetypes.EventAttributeTotalBlockInPeriod, fmt.Sprintf("%d", blocksInPeriod)),
+	))
 }
