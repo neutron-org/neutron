@@ -32,7 +32,9 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 	}
 
 	if genState.PaymentSchedule == nil {
-		genState.PaymentSchedule = types.PaymentScheduleIByType(genState.Params.PaymentScheduleType).IntoPaymentSchedule()
+		genState.PaymentSchedule = types.PaymentScheduleIByType(
+			genState.Params.PaymentScheduleType.PaymentScheduleType,
+		).IntoPaymentSchedule()
 	}
 	if err := k.SetPaymentSchedule(ctx, genState.PaymentSchedule); err != nil {
 		panic(err)

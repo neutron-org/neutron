@@ -103,8 +103,12 @@ func (m *GenesisState) GetPrices() []*RewardAssetPrice {
 	return nil
 }
 
-// Information specific to the current payment schedule. This can represent different types of
-// payment schedules (e.g., monthly or block-based).
+// A model that contains information specific to the currently active payment schedule. The oneof
+// implementations define conditions for payment periods ending and track the progress of the
+// current payment period. This is a module's state variable.
+// The inner oneof must correspond with the respective payment schedule type defined in the module
+// params. In runtime, on a mismatch due to e.g. MsgUpdateParams execution, the module will switch
+// to the payment schedule that corresponds to the payment schedule type automatically.
 type PaymentSchedule struct {
 	// Types that are valid to be assigned to PaymentSchedule:
 	//	*PaymentSchedule_MonthlyPaymentSchedule

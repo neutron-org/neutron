@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/gogoproto/proto"
 	"github.com/golang/mock/gomock"
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
@@ -81,12 +79,14 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{
-			MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+		g.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+			PaymentScheduleType: &revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{
+				MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
-		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
+		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a fresh validator
 		val1Info := val1Info()
@@ -123,12 +123,14 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 
 		// set monthly payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{
-			MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+		g.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+			PaymentScheduleType: &revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{
+				MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
-		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
+		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a validator with 100% performance (the next block will be the 6th one)
 		val1Info := val1Info()
@@ -165,6 +167,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 
 		// make sure payment schedule is updated to the new period (month)
 		newPsi, err := keeper.GetPaymentScheduleI(ctx)
+		require.Nil(t, err)
 		newPs := newPsi.(*revenuetypes.MonthlyPaymentSchedule)
 		require.Equal(t, uint64(2), newPs.CurrentMonth)
 		require.Equal(t, uint64(6), newPs.CurrentMonthStartBlock)
@@ -191,12 +194,14 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
-			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		g.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+			PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+				BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		psi := (&revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
-		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
+		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a fresh validator
 		val1Info := val1Info()
@@ -233,12 +238,14 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 
 		// set block-based payment schedule to the module's state and params
 		g := revenuetypes.DefaultGenesis()
-		g.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
-			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		g.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+			PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+				BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		psi := (&revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1})
-		keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule())
+		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a validator with 100% performance (the next block will be the 6th one)
 		val1Info := val1Info()
@@ -275,6 +282,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 
 		// make sure payment schedule is updated to the new period
 		newPsi, err := keeper.GetPaymentScheduleI(ctx)
+		require.Nil(t, err)
 		newPs := newPsi.(*revenuetypes.BlockBasedPaymentSchedule)
 		require.Equal(t, uint64(5), newPs.BlocksPerPeriod)
 		require.Equal(t, uint64(6), newPs.CurrentPeriodStartBlock)
@@ -291,15 +299,6 @@ func val1Info() revenuetypes.ValidatorInfo {
 	return revenuetypes.ValidatorInfo{
 		ValOperAddress: val1OperAddr,
 	}
-}
-
-func mustNewAnyWithValue(
-	t *testing.T,
-	m proto.Message,
-) *codectypes.Any {
-	v, err := codectypes.NewAnyWithValue(m)
-	require.Nil(t, err)
-	return v
 }
 
 func mustGetFromBech32(

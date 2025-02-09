@@ -24,8 +24,10 @@ func TestDefaultGenesis(t *testing.T) {
 
 func TestInvalidGenesisPaymentScheduleTypeMismatch(t *testing.T) {
 	defaultGenesis := revenuetypes.DefaultGenesis()
-	defaultGenesis.Params.PaymentScheduleType = &revenuetypes.Params_BlockBasedPaymentScheduleType{
-		BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 1},
+	defaultGenesis.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+		PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 1},
+		},
 	}
 	err := defaultGenesis.Validate()
 	require.ErrorContains(t, err, "does not match payment schedule")
@@ -75,10 +77,14 @@ func TestInvalidGenesisParams(t *testing.T) {
 	require.ErrorContains(t, defaultGenesis.Validate(), "sum of oracle votes allowed to miss and required at least must not be greater than 1.0")
 
 	defaultGenesis = revenuetypes.DefaultGenesis()
-	defaultGenesis.Params.PaymentScheduleType = &revenuetypes.Params_MonthlyPaymentScheduleType{MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{}}
-	require.ErrorContains(t, defaultGenesis.Validate(), "payment schedule type *types.Params_MonthlyPaymentScheduleType does not match payment schedule of type *types.EmptyPaymentSchedule in genesis state")
+	defaultGenesis.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+		PaymentScheduleType: &revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{
+			MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+		},
+	}
+	require.ErrorContains(t, defaultGenesis.Validate(), "payment schedule type *types.PaymentScheduleType_MonthlyPaymentScheduleType does not match payment schedule of type *types.EmptyPaymentSchedule in genesis state")
 
 	defaultGenesis = revenuetypes.DefaultGenesis()
 	defaultGenesis.PaymentSchedule = (&revenuetypes.MonthlyPaymentSchedule{}).IntoPaymentSchedule()
-	require.ErrorContains(t, defaultGenesis.Validate(), "payment schedule type *types.Params_EmptyPaymentScheduleType does not match payment schedule of type *types.MonthlyPaymentSchedule in genesis state")
+	require.ErrorContains(t, defaultGenesis.Validate(), "payment schedule type *types.PaymentScheduleType_EmptyPaymentScheduleType does not match payment schedule of type *types.MonthlyPaymentSchedule in genesis state")
 }

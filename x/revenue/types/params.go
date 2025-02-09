@@ -11,7 +11,7 @@ var (
 	// DefaultBaseCompensation represents the default compensation amount in USD.
 	DefaultBaseCompensation uint64 = 2500
 	// DefaultPaymentScheduleType represents the default payment schedule type.
-	DefaultPaymentScheduleType = &Params_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
+	DefaultPaymentScheduleType = &PaymentScheduleType_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
 	// DefaultTWAPWindow represents default time span to calculate TWAP for. Measured in seconds.
 	DefaultTWAPWindow int64 = 24 * 3600
 )
@@ -21,13 +21,13 @@ func NewParams(
 	baseCompensation uint64,
 	blocksPerformanceRequirement *PerformanceRequirement,
 	oraclePricesPerformanceRequirement *PerformanceRequirement,
-	paymentScheduleType isParams_PaymentScheduleType,
+	paymentScheduleType isPaymentScheduleType_PaymentScheduleType,
 ) Params {
 	return Params{
 		BaseCompensation:                  baseCompensation,
 		BlocksPerformanceRequirement:      blocksPerformanceRequirement,
 		OracleVotesPerformanceRequirement: oraclePricesPerformanceRequirement,
-		PaymentScheduleType:               paymentScheduleType,
+		PaymentScheduleType:               &PaymentScheduleType{PaymentScheduleType: paymentScheduleType},
 		TwapWindow:                        DefaultTWAPWindow,
 	}
 }
@@ -75,7 +75,7 @@ func (p Params) Validate() error {
 		return fmt.Errorf("sum of oracle votes allowed to miss and required at least must not be greater than 1.0")
 	}
 
-	if err := ValidatePaymentScheduleType(p.PaymentScheduleType); err != nil {
+	if err := ValidatePaymentScheduleType(p.PaymentScheduleType.PaymentScheduleType); err != nil {
 		return fmt.Errorf("validation of payment schedule type failed: %w", err)
 	}
 

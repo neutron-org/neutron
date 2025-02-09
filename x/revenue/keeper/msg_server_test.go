@@ -38,8 +38,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_BlockBasedPaymentScheduleType{
-						BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+							BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+						},
 					},
 				},
 			},
@@ -59,8 +61,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{
-						EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+							EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+						},
 					},
 				},
 			},
@@ -80,8 +84,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{
-						EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+							EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+						},
 					},
 				},
 			},
@@ -101,8 +107,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{
-						EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+							EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+						},
 					},
 				},
 			},
@@ -122,8 +130,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec().Add(math.LegacyOneDec()),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{
-						EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+							EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+						},
 					},
 				},
 			},
@@ -143,8 +153,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{
-						EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+							EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+						},
 					},
 				},
 			},
@@ -164,8 +176,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyOneDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{
-						EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+							EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+						},
 					},
 				},
 			},
@@ -185,8 +199,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyOneDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{
-						EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+							EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+						},
 					},
 				},
 			},
@@ -206,7 +222,9 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_EmptyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{},
+					},
 				},
 			},
 			"inner empty payment schedule is nil",
@@ -225,7 +243,9 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_MonthlyPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{},
+					},
 				},
 			},
 			"inner monthly payment schedule is nil",
@@ -244,7 +264,9 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_BlockBasedPaymentScheduleType{},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{},
+					},
 				},
 			},
 			"inner block based payment schedule is nil",
@@ -263,8 +285,10 @@ func TestUpdateParams(t *testing.T) {
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
 					},
-					PaymentScheduleType: &revenuetypes.Params_BlockBasedPaymentScheduleType{
-						BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 0},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+							BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 0},
+						},
 					},
 				},
 			},

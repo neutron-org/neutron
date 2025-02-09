@@ -9,7 +9,7 @@ func DefaultGenesis() *GenesisState {
 	params := DefaultParams()
 	return &GenesisState{
 		Params:          params,
-		PaymentSchedule: PaymentScheduleIByType(params.PaymentScheduleType).IntoPaymentSchedule(),
+		PaymentSchedule: PaymentScheduleIByType(params.PaymentScheduleType.PaymentScheduleType).IntoPaymentSchedule(),
 		Validators:      []ValidatorInfo{},
 		Prices:          []*RewardAssetPrice{},
 	}
@@ -27,8 +27,8 @@ func (gs GenesisState) Validate() error {
 		return fmt.Errorf("invalid payment schedule: %w", err)
 	}
 
-	if !ps.MatchesType(gs.Params.PaymentScheduleType) {
-		return fmt.Errorf("payment schedule type %T does not match payment schedule of type %T in genesis state", gs.Params.PaymentScheduleType, ps)
+	if !ps.MatchesType(gs.Params.PaymentScheduleType.PaymentScheduleType) {
+		return fmt.Errorf("payment schedule type %T does not match payment schedule of type %T in genesis state", gs.Params.PaymentScheduleType.PaymentScheduleType, ps)
 	}
 
 	return nil

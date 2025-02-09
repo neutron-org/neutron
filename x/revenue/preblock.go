@@ -110,7 +110,7 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 	// a MsgUpdateParams submission
 	// in this case, we need to reflect the change in the payment schedule by storing the corresponding
 	// payment schedule implementation in the module's store and prepare for the a new period
-	if !ps.MatchesType(params.PaymentScheduleType) {
+	if !ps.MatchesType(params.PaymentScheduleType.PaymentScheduleType) {
 		h.revenueKeeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
 			"new_payment_schedule_type", fmt.Sprintf("%+v", params.PaymentScheduleType),
 			"old_payment_schedule_value", ps.String(),
@@ -119,7 +119,7 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 			return fmt.Errorf("failed to reset validators info on payment schedule change: %w", err)
 		}
 
-		ps = revenuetypes.PaymentScheduleIByType(params.PaymentScheduleType)
+		ps = revenuetypes.PaymentScheduleIByType(params.PaymentScheduleType.PaymentScheduleType)
 		ps.StartNewPeriod(ctx)
 		psRequiresUpdate = true
 	}

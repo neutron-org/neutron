@@ -29,7 +29,7 @@ type PaymentScheduleI interface {
 	// context is used to define the new period's start conditions.
 	StartNewPeriod(ctx sdktypes.Context)
 	// MatchesType checks whether the payment schedule matches a given payment schedule type.
-	MatchesType(t isParams_PaymentScheduleType) bool
+	MatchesType(t isPaymentScheduleType_PaymentScheduleType) bool
 	// IntoPaymentSchedule creates a PaymentSchedule with a oneof value populated accordingly.
 	IntoPaymentSchedule() *PaymentSchedule
 }
@@ -53,8 +53,8 @@ func (s *MonthlyPaymentSchedule) StartNewPeriod(ctx sdktypes.Context) {
 }
 
 // MatchesType checks whether the payment schedule matches a given payment schedule type.
-func (s *MonthlyPaymentSchedule) MatchesType(t isParams_PaymentScheduleType) bool {
-	_, ok := t.(*Params_MonthlyPaymentScheduleType)
+func (s *MonthlyPaymentSchedule) MatchesType(t isPaymentScheduleType_PaymentScheduleType) bool {
+	_, ok := t.(*PaymentScheduleType_MonthlyPaymentScheduleType)
 	return ok
 }
 
@@ -80,8 +80,8 @@ func (s *BlockBasedPaymentSchedule) StartNewPeriod(ctx sdktypes.Context) {
 }
 
 // MatchesType checks whether the payment schedule matches a given payment schedule type.
-func (s *BlockBasedPaymentSchedule) MatchesType(t isParams_PaymentScheduleType) bool {
-	v, ok := t.(*Params_BlockBasedPaymentScheduleType)
+func (s *BlockBasedPaymentSchedule) MatchesType(t isPaymentScheduleType_PaymentScheduleType) bool {
+	v, ok := t.(*PaymentScheduleType_BlockBasedPaymentScheduleType)
 	return ok &&
 		v.BlockBasedPaymentScheduleType != nil &&
 		s.BlocksPerPeriod == v.BlockBasedPaymentScheduleType.BlocksPerPeriod
@@ -107,8 +107,8 @@ func (s *EmptyPaymentSchedule) StartNewPeriod(_ sdktypes.Context) {
 }
 
 // MatchesType checks whether the payment schedule matches a given payment schedule type.
-func (s *EmptyPaymentSchedule) MatchesType(t isParams_PaymentScheduleType) bool {
-	_, ok := t.(*Params_EmptyPaymentScheduleType)
+func (s *EmptyPaymentSchedule) MatchesType(t isPaymentScheduleType_PaymentScheduleType) bool {
+	_, ok := t.(*PaymentScheduleType_EmptyPaymentScheduleType)
 	return ok
 }
 
@@ -119,13 +119,13 @@ func (s *EmptyPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
 
 // PaymentScheduleIByType returns a PaymentScheduleI that corresponds to the given
 // PaymentScheduleType.
-func PaymentScheduleIByType(paymentScheduleType isParams_PaymentScheduleType) PaymentScheduleI {
+func PaymentScheduleIByType(paymentScheduleType isPaymentScheduleType_PaymentScheduleType) PaymentScheduleI {
 	switch v := paymentScheduleType.(type) {
-	case *Params_BlockBasedPaymentScheduleType:
+	case *PaymentScheduleType_BlockBasedPaymentScheduleType:
 		return &BlockBasedPaymentSchedule{BlocksPerPeriod: v.BlockBasedPaymentScheduleType.BlocksPerPeriod}
-	case *Params_MonthlyPaymentScheduleType:
+	case *PaymentScheduleType_MonthlyPaymentScheduleType:
 		return &MonthlyPaymentSchedule{}
-	case *Params_EmptyPaymentScheduleType:
+	case *PaymentScheduleType_EmptyPaymentScheduleType:
 		return &EmptyPaymentSchedule{}
 	default:
 		panic(fmt.Sprintf("invalid payment schedule type: %T", paymentScheduleType))
@@ -134,9 +134,9 @@ func PaymentScheduleIByType(paymentScheduleType isParams_PaymentScheduleType) Pa
 
 // ValidatePaymentScheduleType checks whether a given payment schedule type implementation is
 // properly initialized.
-func ValidatePaymentScheduleType(paymentScheduleType isParams_PaymentScheduleType) error {
+func ValidatePaymentScheduleType(paymentScheduleType isPaymentScheduleType_PaymentScheduleType) error {
 	switch v := paymentScheduleType.(type) {
-	case *Params_BlockBasedPaymentScheduleType:
+	case *PaymentScheduleType_BlockBasedPaymentScheduleType:
 		if v.BlockBasedPaymentScheduleType == nil {
 			return fmt.Errorf("inner block based payment schedule is nil")
 		}
@@ -144,12 +144,12 @@ func ValidatePaymentScheduleType(paymentScheduleType isParams_PaymentScheduleTyp
 			return fmt.Errorf("block based payment schedule type has zero blocks per period")
 		}
 		return nil
-	case *Params_MonthlyPaymentScheduleType:
+	case *PaymentScheduleType_MonthlyPaymentScheduleType:
 		if v.MonthlyPaymentScheduleType == nil {
 			return fmt.Errorf("inner monthly payment schedule is nil")
 		}
 		return nil
-	case *Params_EmptyPaymentScheduleType:
+	case *PaymentScheduleType_EmptyPaymentScheduleType:
 		if v.EmptyPaymentScheduleType == nil {
 			return fmt.Errorf("inner empty payment schedule is nil")
 		}

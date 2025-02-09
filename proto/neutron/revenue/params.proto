@@ -26,14 +26,22 @@ message Params {
   PerformanceRequirement oracle_votes_performance_requirement = 3;
 
   // Indicates the currently active type of payment schedule.
+  PaymentScheduleType payment_schedule_type = 4;
+
+  // The time window, in seconds, used to calculate the TWAP of the reward asset.
+  int64 twap_window = 5;
+}
+
+// A model that contains information specific to the currently active payment schedule type. The
+// oneof implementations define the payment schedule that must be used currently.
+// This is a module's parameter. It's not updated automatically in runtime in contrast to the
+// payment schedule which is a state variable, but is updated via MsgUpdateParams.
+message PaymentScheduleType {
   oneof payment_schedule_type {
     MonthlyPaymentScheduleType monthly_payment_schedule_type = 4 [(amino.oneof_name) = "revenue/Params/MonthlyPaymentScheduleType"];
     BlockBasedPaymentScheduleType block_based_payment_schedule_type = 5 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentScheduleType"];
     EmptyPaymentScheduleType empty_payment_schedule_type = 6 [(amino.oneof_name) = "revenue/Params/EmptyPaymentScheduleType"];
   }
-
-  // The time window, in seconds, used to calculate the TWAP of the reward asset.
-  int64 twap_window = 7;
 }
 
 // Monthly periods with payments made at the end of each month.
