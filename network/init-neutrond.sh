@@ -687,7 +687,7 @@ NEUTRON_STAKING_INFO_PROXY_INIT_MSG='{
   "staking_rewards": "'"$NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS"'",
   "staking_denom": "untrn",
   "providers": [
-    "'"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS"'"
+    "'"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS"'"
   ]
 }'
 
