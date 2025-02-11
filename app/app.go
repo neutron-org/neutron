@@ -15,6 +15,8 @@ import (
 	v505 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.5"
 	v510 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.0"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
+	"github.com/neutron-org/neutron/v5/x/freelane"
+	freelanetypes "github.com/neutron-org/neutron/v5/x/freelane/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -174,6 +176,7 @@ import (
 	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
 	"github.com/neutron-org/neutron/v5/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/v5/x/feerefunder/keeper"
+	freelanekeeper "github.com/neutron-org/neutron/v5/x/freelane/keeper"
 	ibchooks "github.com/neutron-org/neutron/v5/x/ibc-hooks"
 	ibchookstypes "github.com/neutron-org/neutron/v5/x/ibc-hooks/types"
 	"github.com/neutron-org/neutron/v5/x/interchainqueries"
@@ -291,6 +294,7 @@ var (
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
+		freelane.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 	)
 
@@ -373,6 +377,7 @@ type App struct {
 	FeeGrantKeeper      feegrantkeeper.Keeper
 	FeeMarkerKeeper     *feemarketkeeper.Keeper
 	DynamicFeesKeeper   *dynamicfeeskeeper.Keeper
+	FreeLaneKeeper      *freelanekeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
@@ -496,7 +501,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibcratelimittypes.ModuleName, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey,
+		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, freelanetypes.StoreKey, globalfeetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -590,6 +595,12 @@ func New(
 		keys[feemarkettypes.StoreKey],
 		app.AccountKeeper,
 		app.DynamicFeesKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	app.FreeLaneKeeper = freelanekeeper.NewKeeper(
+		appCodec,
+		keys[freelanetypes.StoreKey],
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -931,6 +942,7 @@ func New(
 		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
 		feemarket.NewAppModule(appCodec, *app.FeeMarkerKeeper),
 		dynamicfees.NewAppModule(appCodec, *app.DynamicFeesKeeper),
+		freelane.NewAppModule(appCodec, *app.FreeLaneKeeper),
 		dexModule,
 		marketmapModule,
 		oracleModule,
@@ -1062,6 +1074,7 @@ func New(
 		marketmaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
+		freelanetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
 
@@ -1110,8 +1123,8 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	// create the lanes
-	baseLane := app.CreateLanes()
-	mempool, err := blocksdk.NewLanedMempool(app.Logger(), []blocksdk.Lane{baseLane})
+	freeLane, baseLane := app.CreateLanes()
+	mempool, err := blocksdk.NewLanedMempool(app.Logger(), []blocksdk.Lane{freeLane, baseLane})
 	if err != nil {
 		panic(err)
 	}
@@ -1135,6 +1148,7 @@ func New(
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 			ConsumerKeeper:        app.ConsumerKeeper,
 			FeeMarketKeeper:       app.FeeMarkerKeeper,
+			FreeLane:              freeLane,
 		},
 		app.Logger(),
 	)
@@ -1158,6 +1172,7 @@ func New(
 	opts := []base.LaneOption{
 		base.WithAnteHandler(anteHandler),
 	}
+	freeLane.WithOptions(opts...)
 	baseLane.WithOptions(opts...)
 
 	// set the block-sdk prepare / process-proposal handlers
@@ -1375,6 +1390,7 @@ func (app *App) setupUpgradeHandlers() {
 					MarketmapKeeper:     app.MarketMapKeeper,
 					FeeMarketKeeper:     app.FeeMarkerKeeper,
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
+					FreeLaneKeeper:      app.FreeLaneKeeper,
 					DexKeeper:           &app.DexKeeper,
 					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
 					ChannelKeeper:       &app.IBCKeeper.ChannelKeeper,

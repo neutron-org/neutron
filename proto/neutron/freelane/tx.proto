@@ -1,0 +1,38 @@
+syntax = "proto3";
+package neutron.freelane;
+
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "neutron/freelane/params.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/freelane/types";
+
+// Defines the Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // Updates the module parameters.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+// The MsgUpdateParams request type.
+message MsgUpdateParams {
+  option (amino.name) = "freelane/MsgUpdateParams";
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // The address of the governance account.
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // Defines the x/freelane parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// Defines the response structure for executing a MsgUpdateParams message.
+message MsgUpdateParamsResponse {}
