@@ -457,7 +457,7 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapPartial() {
 		NewDepositWithOptions(50, 0, 2006, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN some of alice's tokenA is swapped and she deposits ~13TokenA & ~30TokenB
+	// THEN some of alice's tokenA is swapped and she deposits ~13TokenA & ~30TokenB
 	// A = 50 - 30 * 1.0001^~2003 = 13.3
 	// SharesIssued = 13.3 + 30 * 1.0001^2006 = 50
 
@@ -483,7 +483,7 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapAll() {
 		NewDepositWithOptions(25, 0, 2006, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN all of alice's TokenA is swapped and she deposits 0TokenA & ~20TokenB
+	// THEN all of alice's TokenA is swapped and she deposits 0TokenA & ~20TokenB
 	// B = 25 / 1.0001^~2003 = 20.4
 	// SharesIssued = 20.4 * 1.0001^2006 = 25
 
@@ -506,7 +506,7 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapAll2() {
 		NewDepositWithOptions(20, 0, 10003, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN (almost) all of alice's TokenA is swapped with 2 coins not swapped due to monotonic rounding
+	// THEN (almost) all of alice's TokenA is swapped with 2 coins not swapped due to monotonic rounding
 	// and she deposits 0TokenA & ~7.3TokenB
 	// B = 20 / 1.0001^100001 = 7.3
 	// SharesIssued = 7.3 * 1.0001^10003 = 20
@@ -533,7 +533,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapPartial() {
 		NewDepositWithOptions(0, 50, -5005, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN some of alice's tokenB is swapped and she deposits 20TokenA & ~17TokenB
+	// THEN some of alice's tokenB is swapped and she deposits 20TokenA & ~17TokenB
 	// B = 50 - 20 * 1.0001^~5002 = ~17
 	// SharesIssued = 20 +  17 * 1.0001^-5005 = 30.3
 
@@ -559,7 +559,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
 		NewDepositWithOptions(0, 5, 4999, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN all of alice's TokenB is swapped and she deposits ~15TokenA & 0TokenB
+	// THEN all of alice's TokenB is swapped and she deposits ~15TokenA & 0TokenB
 	// A = 5 / 1.0001^~-5001 = 8.2
 	// SharesIssued = 8.2
 
@@ -577,12 +577,12 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll2() {
 
 	// GIVEN TokenA liquidity at tick 10,003
 	s.bobDeposits(NewDeposit(10, 0, -10002, 1))
-	// WHEN alice deposits TokenB at tick 10,004 (BEL)
+	// WHEN alice deposits TokenB at tick -10,004 (BEL)
 	resp := s.aliceDeposits(
 		NewDepositWithOptions(0, 20, -10005, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN (almost) all of alice's TokenB is swapped with 2 coins not swapped due to monotonic rounding
+	// THEN (almost) all of alice's TokenB is swapped with 2 coins not swapped due to monotonic rounding
 	// and she deposits 0TokenA & ~7.3TokenB
 	// A = 20 / 1.0001^100003 = 7.3
 	// SharesIssued = 7.3

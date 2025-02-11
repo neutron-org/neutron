@@ -220,7 +220,7 @@ func (s *DexTestSuite) TestDepositToken0BELWithSwapPartial() {
 		NewDepositWithOptions(50, 10, 2006, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN some of alice's token0 is swapped and she deposits ~13TokenA & 40TokenB
+	// THEN some of alice's token0 is swapped and she deposits ~13TokenA & 40TokenB
 	// A = 50 - 30 * 1.0001^~2002 = 13.3
 	// B = 30(from swap) + 10 (initial deposit) = 40
 	// SharesIssued = 13.3 + 40 * 1.0001^2006 = 62
@@ -244,7 +244,7 @@ func (s *DexTestSuite) TestDepositToken0BELWithSwapAll() {
 		NewDepositWithOptions(20, 10, 10003, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN all of alice's token0 is swapped with 2 coins not swapped due to rounding
+	// THEN all of alice's token0 is swapped with 2 coins not swapped due to rounding
 	// and she deposits 0TokenA & ~17.3TokenB
 	// B = 10 + 20 / 1.0001^100001 = 17.3
 	// SharesIssued = 17.3 * 1.0001^10003 = 47
@@ -271,7 +271,7 @@ func (s *DexTestSuite) TestDepositToken1BELWithSwapPartial() {
 		NewDepositWithOptions(10, 50, 1998, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN some of alice's tokenB is swapped and she deposits ~13TokenA & 40TokenB
+	// THEN some of alice's tokenB is swapped and she deposits ~13TokenA & 40TokenB
 	//
 	// A = 30(from swap) + 10 (initial deposit) = 40
 	// B = 50 - 30 * 1.0001^~-2001 = 25.4
@@ -296,7 +296,7 @@ func (s *DexTestSuite) TestDepositToken1BELWithSwapAll() {
 		NewDepositWithOptions(10, 20, -10004, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	//THEN all of alice's token0 is swapped
+	// THEN all of alice's token0 is swapped
 	// and she deposits 0TokenA & ~17.3TokenB
 	// B = 10 + 20 / 1.0001^100003 = 17.3
 	// SharesIssued = 17.3
