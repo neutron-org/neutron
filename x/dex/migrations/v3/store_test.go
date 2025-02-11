@@ -55,7 +55,7 @@ func (suite *V3DexMigrationTestSuite) TestParamsUpgrade() {
 }
 
 func v2TimeBytes(timestamp time.Time) []byte {
-	unixMs := uint64(timestamp.UnixMilli())
+	unixMs := uint64(timestamp.UnixMilli()) //nolint:gosec
 	str := utils.Uint64ToSortableString(unixMs)
 	return []byte(str)
 }

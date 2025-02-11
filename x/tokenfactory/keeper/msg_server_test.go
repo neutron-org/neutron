@@ -58,7 +58,6 @@ func TestMsgCreateDenomValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.CreateDenom(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -152,7 +151,6 @@ func TestMsgMintValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.Mint(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -246,7 +244,6 @@ func TestMsgBurnValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.Burn(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -365,7 +362,6 @@ func TestMsgForceTransferValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.ForceTransfer(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -440,7 +436,6 @@ func TestMsgChangeAdminValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.ChangeAdmin(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -771,7 +766,6 @@ func TestMsgSetDenomMetadataValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.SetDenomMetadata(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
@@ -837,7 +831,6 @@ func TestMsgSetBeforeSendHookValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.SetBeforeSendHook(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -903,7 +896,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := k.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
@@ -959,7 +951,6 @@ func TestMsgUpdateParamsWhitelistedHooks(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			msg := &types.MsgUpdateParams{
 				Authority: testutil.TestOwnerAddress,

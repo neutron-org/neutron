@@ -87,7 +87,7 @@ func TestScheduleQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(schedules); i += step {
-			resp, err := k.Schedules(ctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := k.Schedules(ctx, request(nil, uint64(i), uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Schedules), step)
 			require.Subset(t,
@@ -100,7 +100,7 @@ func TestScheduleQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(schedules); i += step {
-			resp, err := k.Schedules(ctx, request(next, 0, uint64(step), false))
+			resp, err := k.Schedules(ctx, request(next, 0, uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Schedules), step)
 			require.Subset(t,
@@ -113,7 +113,7 @@ func TestScheduleQueryPaginated(t *testing.T) {
 	t.Run("Total", func(t *testing.T) {
 		resp, err := k.Schedules(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
-		require.Equal(t, len(schedules), int(resp.Pagination.Total))
+		require.Equal(t, len(schedules), int(resp.Pagination.Total)) //nolint:gosec
 		require.ElementsMatch(t,
 			nullify.Fill(schedules),
 			nullify.Fill(resp.Schedules),
@@ -132,7 +132,7 @@ func createNSchedule(t *testing.T, ctx sdk.Context, k *cronkeeper.Keeper, n int3
 		item.Name = strconv.Itoa(idx)
 		item.Period = 1000
 		item.Msgs = nil
-		item.LastExecuteHeight = uint64(ctx.BlockHeight())
+		item.LastExecuteHeight = uint64(ctx.BlockHeight()) //nolint:gosec
 		item.ExecutionStage = types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER
 
 		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.ExecutionStage)

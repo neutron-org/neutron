@@ -76,7 +76,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 		}},
 		// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 		Block:    nil,
-		Height:   uint64(chainBResp.Height),
+		Height:   uint64(chainBResp.Height), //nolint:gosec
 		Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 	}
 	err = neutron.InterchainQueriesKeeper.SaveKVQueryResult(ctx, lastID, expectedQueryResult)
@@ -92,7 +92,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
-	suite.Require().Equal(uint64(chainBResp.Height), resp.Result.Height)
+	suite.Require().Equal(uint64(chainBResp.Height), resp.Result.Height) //nolint:gosec
 	suite.Require().Equal(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
 	suite.Require().Empty(resp.Result.Block)
 	suite.Require().NotEmpty(resp.Result.KvResults)

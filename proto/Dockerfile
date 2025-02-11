@@ -15,6 +15,6 @@ RUN npm install -g swagger-combine
 RUN npm install -g swagger-merger
 RUN npm install -g swagger2openapi
 
-COPY --from=golang:1.22-alpine /usr/local/go/ /usr/local/go/
+COPY --from=golang:1.23-alpine /usr/local/go/ /usr/local/go/
 
 ENV PATH="/usr/local/go/bin:${PATH}"

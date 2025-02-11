@@ -44,7 +44,7 @@ func createNFailure(k *keeper.Keeper, ctx sdk.Context, addresses, failures int) 
 				SourcePort: "port-n",
 			}
 			items[i][c].Address = acc.String()
-			items[i][c].Id = uint64(c)
+			items[i][c].Id = uint64(c) //nolint:gosec
 			sudo, err := keeper.PrepareSudoCallbackMessage(p, nil)
 			if err != nil {
 				panic(err)

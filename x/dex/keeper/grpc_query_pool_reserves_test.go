@@ -93,7 +93,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.PoolReservesAll(ctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := keeper.PoolReservesAll(ctx, request(nil, uint64(i), uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.PoolReserves), step)
 			require.Subset(t,
@@ -106,7 +106,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.PoolReservesAll(ctx, request(next, 0, uint64(step), false))
+			resp, err := keeper.PoolReservesAll(ctx, request(next, 0, uint64(step), false)) //nolint:gosec
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.PoolReserves), step)
 			require.Subset(t,
@@ -119,7 +119,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 	t.Run("Total", func(t *testing.T) {
 		resp, err := keeper.PoolReservesAll(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
-		require.Equal(t, len(msgs), int(resp.Pagination.Total))
+		require.Equal(t, uint64(len(msgs)), resp.Pagination.Total)
 		require.ElementsMatch(t,
 			msgs,
 			resp.PoolReserves,

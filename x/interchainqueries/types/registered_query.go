@@ -30,7 +30,7 @@ func (q *RegisteredQuery) ValidateRemoval(ctx sdk.Context, caller string) error 
 
 	registrationTimeoutBlock := q.RegisteredAtHeight + q.SubmitTimeout
 	submitTimeoutBlock := q.LastSubmittedResultLocalHeight + q.SubmitTimeout
-	currentBlock := uint64(ctx.BlockHeader().Height)
+	currentBlock := uint64(ctx.BlockHeader().Height) //nolint:gosec
 	if currentBlock <= registrationTimeoutBlock || currentBlock <= submitTimeoutBlock {
 		return fmt.Errorf("only owner can remove a query within its service period")
 	}
