@@ -165,7 +165,7 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 		}
 		q.OrderType = dextypes.LimitOrderType(orderTypeInt)
 		if query.EstimatePlaceLimitOrder.ExpirationTime != nil {
-			t := time.Unix(int64(*query.EstimatePlaceLimitOrder.ExpirationTime), 0)
+			t := time.Unix(int64(*query.EstimatePlaceLimitOrder.ExpirationTime), 0) //nolint:gosec
 			q.ExpirationTime = &t
 		}
 		data, err = dexQuery(ctx, &q, qp.dexKeeper.EstimatePlaceLimitOrder)
@@ -216,8 +216,6 @@ func (qp *QueryPlugin) OracleQuery(ctx sdk.Context, query bindings.OracleQuery) 
 		return processResponse(oracleQueryServer.GetAllCurrencyPairs(ctx, query.GetAllCurrencyPairs))
 	case query.GetPrice != nil:
 		return processResponse(oracleQueryServer.GetPrice(ctx, query.GetPrice))
-	case query.GetPrices != nil:
-		return processResponse(oracleQueryServer.GetPrices(ctx, query.GetPrices))
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.oracle query type"}
 	}
@@ -231,8 +229,6 @@ func (qp *QueryPlugin) MarketMapQuery(ctx sdk.Context, query bindings.MarketMapQ
 		return processResponse(marketMapQueryServer.Params(ctx, query.Params))
 	case query.LastUpdated != nil:
 		return processResponse(marketMapQueryServer.LastUpdated(ctx, query.LastUpdated))
-	case query.MarketMap != nil:
-		return processResponse(marketMapQueryServer.MarketMap(ctx, query.MarketMap))
 	case query.Market != nil:
 		return processResponse(marketMapQueryServer.Market(ctx, query.Market))
 	default:
@@ -243,7 +239,7 @@ func (qp *QueryPlugin) MarketMapQuery(ctx sdk.Context, query bindings.MarketMapQ
 func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context.Context, query *T) (R, error)) ([]byte, error) {
 	resp, err := queryHandler(ctx, query)
 	if err != nil {
-		return nil, errors.Wrapf(err, fmt.Sprintf("failed to query request %T", query))
+		return nil, errors.Wrapf(err, "%s", fmt.Sprintf("failed to query request %T", query))
 	}
 	var data []byte
 
@@ -254,7 +250,7 @@ func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, fmt.Sprintf("failed to marshal response %T", resp))
+		return nil, errors.Wrapf(err, "%s", fmt.Sprintf("failed to marshal response %T", resp))
 	}
 
 	return data, nil

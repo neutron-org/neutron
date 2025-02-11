@@ -119,7 +119,7 @@ func (k Keeper) ExecuteDeposit(
 			if option.FailTxOnBel {
 				return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
 			}
-			failedDeposits = append(failedDeposits, &types.FailedDeposit{DepositIdx: uint64(i), Error: err.Error()})
+			failedDeposits = append(failedDeposits, &types.FailedDeposit{DepositIdx: uint64(i), Error: err.Error()}) //nolint:gosec
 			continue
 		}
 

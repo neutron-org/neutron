@@ -10,10 +10,11 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
@@ -107,7 +108,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
 
 		// marketmap
-		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
+		"/slinky.marketmap.v1.Query/Markets":     &marketmaptypes.MarketsResponse{},
 		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
 		"/slinky.marketmap.v1.Query/Market":      &marketmaptypes.MarketResponse{},
