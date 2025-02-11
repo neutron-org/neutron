@@ -189,6 +189,7 @@ func (k Keeper) SwapOnDeposit(
 ) (inAmount0, inAmount1, depositAmount0, depositAmount1 math.Int, err error) {
 	feeInt64 := dexutils.MustSafeUint64ToInt64(fee)
 	inAmount0, inAmount1 = amount0, amount1
+	depositAmount0, depositAmount1 = inAmount0, inAmount1
 	swappedToken0 := false
 	if amount0.IsPositive() {
 		// Use Amount0 Swap any Token1 ticks < -depositTick0
@@ -238,7 +239,7 @@ func (k Keeper) SwapOnDeposit(
 			inAmount0 = amount0
 			depositAmount0 = amount0.Add(swapToken0Out.Amount)
 
-			// see note above on logic
+			// see note above on monotonic rounding logic
 			if orderFilled {
 				inAmount1 = swapToken1In.Amount
 			} // else inAmount1 = amount1
