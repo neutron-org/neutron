@@ -11,6 +11,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -85,7 +86,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*stakingtypes.MsgUpdateParams,
 		*globalfeetypes.MsgUpdateParams,
 		*ibcratelimittypes.MsgUpdateParams,
-		*harpoontypes.MsgManageHookSubscription:
+		*harpoontypes.MsgManageHookSubscription,
+		*slashingtypes.MsgUpdateParams:
 		return true
 	}
 	return false
