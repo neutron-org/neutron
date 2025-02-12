@@ -52,11 +52,9 @@ func (k Keeper) Swap(
 		// this avoids unnecessary iteration since outAmount will always be 0 going forward
 		// this also catches the normal exit case where remainingTakerDenom == 0
 
-		// NOTE: In theory this check should be:  remainingTakerDenom / price  < 1
-		// but due to rounding and inaccuracy of fixed decimal math, it is possible
-		// for liq.swap to use the full the amount of taker liquidity and have a leftover
-		// amount of the taker Denom > than 1 token worth of maker denom
-		if math_utils.NewPrecDecFromInt(remainingTakerDenom).Quo(liq.Price()).LT(math_utils.NewPrecDec(2)) {
+		// This also allows us to handle a corner case where totalTakerCoin < maxAmountAmountTakerDenom
+		// and there is still valid tradeable liquidity but the order cannot be filled any further due to monotonic rounding. 
+		if math_utils.NewPrecDecFromInt(remainingTakerDenom).Quo(liq.Price()).LT(math_utils.OnePrecDec()) {
 			orderFilled = true
 			break
 		}
