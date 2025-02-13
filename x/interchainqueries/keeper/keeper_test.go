@@ -396,7 +396,6 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	}
 
 	for i, tt := range tests {
-		tt := tt
 		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i+1, len(tests)), func() {
 			suite.SetupTest()
 
@@ -497,7 +496,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				}
 				// types.DefaultTxQueryRemovalLimit is used here for it is both big and can be
 				// removed in a single tx hashes cleanup iteration
-				hashesCount := int(iqtypes.DefaultTxQueryRemovalLimit)
+				hashesCount := int(iqtypes.DefaultTxQueryRemovalLimit) //nolint:gosec
 				txQueryHashes = make([][]byte, 0, hashesCount)
 				for i := 1; i <= hashesCount; i++ {
 					txQueryHashes = append(txQueryHashes, []byte(fmt.Sprintf("txhash_%d", i)))
@@ -780,7 +779,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -830,7 +829,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -885,7 +884,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -934,7 +933,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -984,7 +983,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1033,7 +1032,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1084,7 +1083,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1136,7 +1135,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1185,7 +1184,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1234,7 +1233,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1287,7 +1286,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1343,7 +1342,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:  nil,
-						Height: uint64(resp.Height),
+						Height: uint64(resp.Height), //nolint:gosec
 						// we forecefully "updated" revision height
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -1398,7 +1397,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
 						Block:    nil,
-						Height:   uint64(resp.Height),
+						Height:   uint64(resp.Height), //nolint:gosec
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
@@ -1536,7 +1535,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		// set TxQueryRemovalLimit to a low value
 		limit := 50
 		params := iqkeeper.GetParams(ctx)
-		params.TxQueryRemovalLimit = uint64(limit)
+		params.TxQueryRemovalLimit = uint64(limit) //nolint:gosec
 		err := iqkeeper.SetParams(ctx, params)
 		suite.Require().NoError(err)
 
@@ -1584,7 +1583,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		// set TxQueryRemovalLimit to a low value
 		limit := 50
 		params := iqkeeper.GetParams(ctx)
-		params.TxQueryRemovalLimit = uint64(limit)
+		params.TxQueryRemovalLimit = uint64(limit) //nolint:gosec
 		err := iqkeeper.SetParams(ctx, params)
 		suite.Require().NoError(err)
 
@@ -1659,7 +1658,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		suite.Require().NoError(err)
 		_, err = iqkeeper.GetQueryByID(ctx, queryID)
 		suite.Require().NoError(err)
-		txHashes := suite.buildTxHashes(int(iqtypes.DefaultTxQueryRemovalLimit) * 2)
+		txHashes := suite.buildTxHashes(int(iqtypes.DefaultTxQueryRemovalLimit) * 2) //nolint:gosec
 		for _, hash := range txHashes {
 			iqkeeper.SaveTransactionAsProcessed(ctx, queryID, hash)
 			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash))
@@ -1716,10 +1715,10 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 
 	registeredQuery, err := iqkeeper.GetQueryByID(ctx, 1)
 	suite.Require().NoError(err)
-	suite.Require().Equal(uint64(ctx.BlockHeight()), registeredQuery.RegisteredAtHeight)
+	suite.Require().Equal(uint64(ctx.BlockHeight()), registeredQuery.RegisteredAtHeight) //nolint:gosec
 	suite.Require().Equal(uint64(0), registeredQuery.LastSubmittedResultLocalHeight)
 	suite.Require().Equal(params.QuerySubmitTimeout, registeredQuery.SubmitTimeout)
-	suite.Require().Greater(uint64(ctx.BlockHeight()), registeredQuery.LastSubmittedResultLocalHeight+registeredQuery.SubmitTimeout)
+	suite.Require().Greater(uint64(ctx.BlockHeight()), registeredQuery.LastSubmittedResultLocalHeight+registeredQuery.SubmitTimeout) //nolint:gosec
 
 	newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 	suite.Require().NotEmpty(newContractAddress)

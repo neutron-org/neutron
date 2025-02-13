@@ -26,30 +26,40 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Information about an Interchain Query registered in the interchainqueries module.
 type RegisteredQuery struct {
 	// The unique id of the registered query.
 	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	// The address that registered the query.
+	// The address of the contract that registered the query.
 	Owner string `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
-	// The query type identifier: `kv` or `tx` now
+	// The query type identifier: `kv` or `tx`.
 	QueryType string `protobuf:"bytes,3,opt,name=query_type,json=queryType,proto3" json:"query_type,omitempty"`
-	// The KV-storage keys for which we want to get values from remote chain
+	// The KV-storage keys for which to get values from the remote chain. Only applicable for the
+	// KV Interchain Queries. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+	// parameters.
 	Keys []*KVKey `protobuf:"bytes,4,rep,name=keys,proto3" json:"keys,omitempty"`
-	// The filter for transaction search ICQ
+	// A stringified list of filters for remote transactions search. Only applicable for the TX
+	// Interchain Queries. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+	// Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is limited
+	// by the module's `max_transactions_filters` parameters.
 	TransactionsFilter string `protobuf:"bytes,5,opt,name=transactions_filter,json=transactionsFilter,proto3" json:"transactions_filter,omitempty"`
-	// The IBC connection ID for getting ConsensusState to verify proofs
+	// The IBC connection ID to the remote chain (the source of querying data). Is used for getting
+	// ConsensusState from the respective IBC client to verify query result proofs.
 	ConnectionId string `protobuf:"bytes,6,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	// Parameter that defines how often the query must be updated.
+	// Parameter that defines the minimal delay between consecutive query executions (i.e. the
+	// minimal delay between query results update).
 	UpdatePeriod uint64 `protobuf:"varint,7,opt,name=update_period,json=updatePeriod,proto3" json:"update_period,omitempty"`
-	// The local chain last block height when the query result was updated.
+	// The local chain block height of the last query results update.
 	LastSubmittedResultLocalHeight uint64 `protobuf:"varint,8,opt,name=last_submitted_result_local_height,json=lastSubmittedResultLocalHeight,proto3" json:"last_submitted_result_local_height,omitempty"`
-	// The remote chain last block height when the query result was updated.
+	// The remote chain block height that corresponds to the last query result update.
 	LastSubmittedResultRemoteHeight *types.Height `protobuf:"bytes,9,opt,name=last_submitted_result_remote_height,json=lastSubmittedResultRemoteHeight,proto3" json:"last_submitted_result_remote_height,omitempty"`
-	// Amount of coins deposited for the query.
+	// Amount of coins paid for the Interchain Query registration. The deposit is paid back to the
+	// remover. The remover can be either the query owner (during the submit timeout) or anybody.
 	Deposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,10,rep,name=deposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"deposit"`
-	// Timeout before query becomes available for everybody to remove.
+	// The duration, measured in blocks, that must pass since the query's registration or its last
+	// result submission before the query becomes eligible for removal by anyone.
 	SubmitTimeout uint64 `protobuf:"varint,11,opt,name=submit_timeout,json=submitTimeout,proto3" json:"submit_timeout,omitempty"`
-	// The local chain height when the query was registered.
+	// The local chain block height of the Interchain Query registration.
 	RegisteredAtHeight uint64 `protobuf:"varint,12,opt,name=registered_at_height,json=registeredAtHeight,proto3" json:"registered_at_height,omitempty"`
 }
 
@@ -170,11 +180,12 @@ func (m *RegisteredQuery) GetRegisteredAtHeight() uint64 {
 	return 0
 }
 
+// Represents a path to an IAVL storage node.
 type KVKey struct {
-	// Path (storage prefix) to the storage where you want to read value by key
-	// (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+	// The substore name used in an Interchain Query. Typically, this corresponds to the keeper's
+	// storeKey, usually the module's name, such as "bank", "staking", etc.
 	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	// Key you want to read from the storage
+	// A bytes field representing the key for specific data in the module's storage.
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
@@ -225,9 +236,11 @@ func (m *KVKey) GetKey() []byte {
 	return nil
 }
 
-// GenesisState defines the interchainqueries module's genesis state.
+// The interchainqueries module's genesis state model.
 type GenesisState struct {
-	Params            Params             `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+	// The parameters of the module.
+	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+	// A list of registered Interchain Queries.
 	RegisteredQueries []*RegisteredQuery `protobuf:"bytes,2,rep,name=registered_queries,json=registeredQueries,proto3" json:"registered_queries,omitempty"`
 }
 

@@ -25,16 +25,16 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Params defines the parameters for the module.
+// The parameters for the module.
 type Params struct {
-	// Defines amount of blocks required before query becomes available for
-	// removal by anybody
+	// The duration, measured in blocks, that must pass since the query's registration or its last
+	// result submission before the query becomes eligible for removal by anyone. Is used to set
+	// `submit_timeout` on Interchain Query registration.
 	QuerySubmitTimeout uint64 `protobuf:"varint,1,opt,name=query_submit_timeout,json=querySubmitTimeout,proto3" json:"query_submit_timeout,omitempty"`
-	// Amount of coins deposited for the query.
+	// Amount of coins required to be provided as deposit on Interchain Query registration.
 	QueryDeposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=query_deposit,json=queryDeposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"query_deposit"`
-	// Amount of tx hashes to be removed during a single EndBlock. Can vary to
-	// balance between network cleaning speed and EndBlock duration. A zero value
-	// means no limit.
+	// Amount of tx hashes to be removed during a single EndBlock. Can vary to balance between
+	// network cleaning speed and EndBlock duration. A zero value means no limit.
 	TxQueryRemovalLimit uint64 `protobuf:"varint,3,opt,name=tx_query_removal_limit,json=txQueryRemovalLimit,proto3" json:"tx_query_removal_limit,omitempty"`
 	// Maximum amount of keys in a registered key value query
 	MaxKvQueryKeysCount uint64 `protobuf:"varint,4,opt,name=max_kv_query_keys_count,json=maxKvQueryKeysCount,proto3" json:"max_kv_query_keys_count,omitempty"`

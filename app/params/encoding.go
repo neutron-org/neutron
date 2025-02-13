@@ -20,7 +20,7 @@ type EncodingConfig struct {
 	Amino             *codec.LegacyAmino
 }
 
-// makeEncodingConfig creates an EncodingConfig for an amino based test configuration.
+// MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.
 func MakeEncodingConfig() EncodingConfig {
 	amino := codec.NewLegacyAmino()
 	reg, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
