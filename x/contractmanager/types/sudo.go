@@ -5,20 +5,34 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
-// MessageTxQueryResult is passed to a contract's sudo() entrypoint when a tx was submitted
-// for a transaction query.
+// MessageTxQueryResult is the model of the `sudo` message sent to a smart contract when a TX
+// Interchain Query result is submitted. The owner of a TX Interchain Query must implement a `sudo`
+// entry point to handle `tx_query_result` messages and include the necessary logic in it. The
+// `tx_query_result` handler functions as a callback, triggered by the `interchainqueries` module
+// each time a TX query result is submitted.
 type MessageTxQueryResult struct {
 	TxQueryResult struct {
-		QueryID uint64                `json:"query_id"`
-		Height  ibcclienttypes.Height `json:"height"`
-		Data    []byte                `json:"data"`
+		// QueryID is the ID of the TX query which result is being submitted.
+		QueryID uint64 `json:"query_id"`
+		// Height is the remote chain's block height the transaction was included in.
+		Height ibcclienttypes.Height `json:"height"`
+		// Data is the body of the transaction.
+		Data []byte `json:"data"`
 	} `json:"tx_query_result"`
 }
 
-// MessageKVQueryResult is passed to a contract's sudo() entrypoint when a result
-// was submitted for a kv-query.
+// MessageKvQueryResult is the model of the `sudo` message sent to a smart contract when a KV
+// Interchain Query result is submitted. If the owner of a KV Interchain Query wants to handle
+// query updates as part of the result submission transaction, they must implement a `sudo` entry
+// point to process `kv_query_result` messages and include the necessary logic in it. The
+// `kv_query_result` handler acts as a callback, triggered by the interchainqueries module whenever
+// a KV query result is submitted.
+//
+// Note that the message does not include the actual query result, only the query ID. To access the
+// result data, use the `Query/QueryResult` RPC of the `interchainqueries` module.
 type MessageKVQueryResult struct {
 	KVQueryResult struct {
+		// QueryID is the ID of the KV query which result is being submitted.
 		QueryID uint64 `json:"query_id"`
 	} `json:"kv_query_result"`
 }

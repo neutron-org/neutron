@@ -15,7 +15,7 @@ import (
 func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {
 	items := make([]*types.Pool, n)
 	for i := range items {
-		pool, err := k.InitPool(ctx, types.MustNewPairID("TokenA", "TokenB"), int64(i), uint64(i))
+		pool, err := k.InitPool(ctx, types.MustNewPairID("TokenA", "TokenB"), int64(i), uint64(i)) //nolint:gosec
 		if err != nil {
 			panic("failed to create pool")
 		}

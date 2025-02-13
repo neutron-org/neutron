@@ -763,7 +763,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITTooManyFails() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN Alice places JITS up to the MaxJITPerBlock limit
-	for i := 0; i < int(types.DefaultMaxJITsPerBlock); i++ {
+	for i := 0; i < int(types.DefaultMaxJITsPerBlock); i++ { //nolint:gosec
 		s.aliceLimitSells("TokenA", i, 1, types.LimitOrderType_JUST_IN_TIME)
 	}
 	// WHEN Alive places another JIT order it fails
