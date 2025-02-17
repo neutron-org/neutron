@@ -13,7 +13,7 @@ import (
 )
 
 // NOTE: This file is nearly direct copy from cosmossdk.io/math/dec.go @v1.01
-// The Precession has been changed from 18 to 27
+// The precision has been changed from 18 to 27
 
 // NOTE: never use new(Dec) or else we will panic unmarshalling into the
 // nil embedded big.Int
