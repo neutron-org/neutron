@@ -38,6 +38,6 @@ linters-settings:
     extra-rules: true
   nolintlint:
     allow-unused: true
-    allow-leading-space: true
+    #allow-leading-space: true
     require-explanation: false
     require-specific: false
