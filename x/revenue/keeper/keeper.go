@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32types "github.com/cosmos/cosmos-sdk/types/bech32"
+
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
@@ -297,7 +298,12 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 // price of the reward denom. The final compensation amount for a validator is determined by
 // multiplying the base revenue amount by the validator's performance rating.
 func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64) (math.Int, error) {
-	assetPrice, err := k.GetTWAPStartingFromTime(ctx, ctx.BlockHeader().Time.Unix())
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return math.ZeroInt(), fmt.Errorf("failed to get params: %w", err)
+	}
+
+	assetPrice, err := k.GetTWAPStartingFromTime(ctx, ctx.BlockHeader().Time.Unix()-params.TwapWindow)
 	if err != nil {
 		return math.ZeroInt(), fmt.Errorf("failed to get TWAP: %w", err)
 	}

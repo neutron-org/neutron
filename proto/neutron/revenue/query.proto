@@ -2,7 +2,6 @@ syntax = "proto3";
 package neutron.revenue;
 
 import "amino/amino.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";

@@ -7,8 +7,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"github.com/spf13/cobra"
+
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

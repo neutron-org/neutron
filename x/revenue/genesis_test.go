@@ -6,10 +6,11 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	"github.com/neutron-org/neutron/v5/x/revenue"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestInitAndExportGenesis(t *testing.T) {

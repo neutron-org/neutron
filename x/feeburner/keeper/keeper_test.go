@@ -9,8 +9,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"github.com/stretchr/testify/require"
+
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/feeburner/types"
 	"github.com/neutron-org/neutron/v5/x/feeburner/keeper"
