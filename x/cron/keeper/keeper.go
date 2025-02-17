@@ -231,7 +231,7 @@ func (k *Keeper) scheduleExists(ctx sdk.Context, name string) bool {
 }
 
 func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
-	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period) //nolint:gosec
+	return uint64(ctx.BlockHeight()) >= (schedule.LastExecuteHeight + schedule.Period) //nolint:gosec
 }
 
 func (k *Keeper) changeTotalCount(ctx sdk.Context, incrementAmount int32) {
