@@ -19,7 +19,7 @@ require (
 	github.com/CosmWasm/wasmvm/v2 v2.1.5
 	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
-	github.com/cosmos/cosmos-db v1.1.0
+	github.com/cosmos/cosmos-db v1.1.1
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/cosmos-sdk v0.50.11
 	github.com/cosmos/gogoproto v1.7.0
