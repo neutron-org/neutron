@@ -5,11 +5,12 @@ import (
 
 	cometabcitypes "github.com/cometbft/cometbft/abci/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"github.com/skip-mev/slinky/abci/strategies/codec"
 	slinkyabcitypes "github.com/skip-mev/slinky/abci/types"
 	slinkyve "github.com/skip-mev/slinky/abci/ve"
+
+	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 // NewPreBlockHandler returns a new PreBlockHandler. The handler is responsible for recording

@@ -15,8 +15,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"github.com/stretchr/testify/require"
+
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 
 	"github.com/neutron-org/neutron/v5/x/feeburner/keeper"
 	"github.com/neutron-org/neutron/v5/x/feeburner/types"

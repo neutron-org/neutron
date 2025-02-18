@@ -6,11 +6,8 @@ import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "google/protobuf/any.proto";
 import "neutron/revenue/genesis.proto";
 import "neutron/revenue/params.proto";
-import "tendermint/abci/types.proto";
-import "tendermint/crypto/proof.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/revenue/types";
 

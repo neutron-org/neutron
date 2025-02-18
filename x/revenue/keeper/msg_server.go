@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/errors"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 

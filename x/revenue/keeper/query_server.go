@@ -5,9 +5,10 @@ import (
 	"errors"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 type queryServer struct {
