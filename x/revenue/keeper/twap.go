@@ -188,6 +188,12 @@ func (k *Keeper) CleanOutdatedRewardAssetPrices(ctx sdk.Context, cleanUntil int6
 	return nil
 }
 
+// GetTWAP returns a TWAP for a whole observation period.
+// Observation period is limited with `params.TwapWindow`
+func (k *Keeper) GetTWAP(ctx sdk.Context) (math.LegacyDec, error) {
+	return k.GetTWAPStartingFromTime(ctx, 0)
+}
+
 // GetTWAPStartingFromTime returns a TWAP for window from `startAt` till the last saved value.
 func (k *Keeper) GetTWAPStartingFromTime(ctx sdk.Context, startAt int64) (math.LegacyDec, error) {
 	lastPrice, err := k.GetLastRewardAssetPrice(ctx)
