@@ -14,6 +14,7 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
@@ -83,6 +84,7 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*stakingtypes.MsgUpdateParams,
 		*globalfeetypes.MsgUpdateParams,
 		*ibcratelimittypes.MsgUpdateParams,
+		*revenuetypes.MsgUpdateParams,
 		*harpoontypes.MsgManageHookSubscription:
 		return true
 	}
