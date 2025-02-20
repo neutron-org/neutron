@@ -164,11 +164,10 @@ NEUTRON_STAKING_VAULT_LABEL="neutron.voting.vaults.staking"
 
 NEUTRON_STAKING_TRACKER_NAME="Neutron Staking Tracker"
 NEUTRON_STAKING_TRACKER_DESCRIPTION="Tracks the Staking module for querying historical voting power and notifying about staking changes"
-NEUTRON_STAKING_TRACKER_LABEL="neutron.staking_tracker" # TODO: assign correct label
+NEUTRON_STAKING_TRACKER_LABEL="neutron.staking_tracker"
 
-NEUTRON_STAKING_REWARDS_LABEL="neutron.staking_rewards" # TODO: assign correct label
-NEUTRON_STAKING_INFO_PROXY_LABEL="neutron.staking_proxy" # TODO: assign correct label
-
+NEUTRON_STAKING_REWARDS_LABEL="neutron.staking_rewards"
+NEUTRON_STAKING_INFO_PROXY_LABEL="neutron.staking_proxy"
 
 echo "Initializing dao contract in genesis..."
 
@@ -211,7 +210,6 @@ NEUTRON_STAKING_TRACKER_BINARY_ID=$(store_binary        "$NEUTRON_STAKING_TRACKE
 NEUTRON_STAKING_VAULT_BINARY_ID=$(store_binary          "$NEUTRON_STAKING_VAULT_CONTRACT")
 NEUTRON_STAKING_REWARDS_BINARY_ID=$(store_binary        "$NEUTRON_STAKING_REWARDS_CONTRACT")
 NEUTRON_STAKING_INFO_PROXY_BINARY_ID=$(store_binary     "$NEUTRON_STAKING_INFO_PROXY_CONTRACT")
-
 
 # WARNING!
 # The following code is needed to pre-generate the contract addresses
@@ -267,7 +265,6 @@ NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS=$(genaddr     "$NEUTRON_STAKING_TRACKER
 NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_STAKING_VAULT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS=$(genaddr     "$NEUTRON_STAKING_REWARDS_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS=$(genaddr  "$NEUTRON_STAKING_INFO_PROXY_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-
 
 function check_json() {
   MSG=$1
@@ -706,17 +703,17 @@ function init_contract() {
 # The following code is to add contracts instantiations messages to genesis
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
-init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"            "$NEUTRON_VAULT_INIT"                  "$NEUTRON_VAULT_LABEL"
-init_contract "$NEUTRON_INVESTORS_VAULT_CONTRACT_BINARY_ID"  "$NEUTRON_INVESTORS_VAULT_INIT"        "$NEUTRON_INVESTORS_VAULT_LABEL"
-init_contract "$NEUTRON_VESTING_INVESTORS_BINARY_ID"         "$NEUTRON_VESTING_INVESTORS_INIT"      "$NEUTRON_VESTING_INVESTORS_LABEL"
-init_contract "$DAO_CONTRACT_BINARY_ID"                      "$DAO_INIT"                            "$DAO_CORE_LABEL"
-init_contract "$RESERVE_CONTRACT_BINARY_ID"                  "$RESERVE_INIT"                        "$RESERVE_LABEL"
-init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"             "$DISTRIBUTION_INIT"                   "$DISTRIBUTION_LABEL"
-init_contract "$SUBDAO_CORE_BINARY_ID"                       "$SECURITY_SUBDAO_CORE_INIT_MSG"       "$SECURITY_SUBDAO_CORE_LABEL"
-init_contract "$SUBDAO_CORE_BINARY_ID"                       "$GRANTS_SUBDAO_CORE_INIT_MSG"         "$GRANTS_SUBDAO_CORE_LABEL"
-init_contract "$NEUTRON_CHAIN_MANAGER_BINARY_ID"             "$NEUTRON_CHAIN_MANAGER_INIT_MSG"      "$NEUTRON_CHAIN_MANAGER_LABEL"
-init_contract "$NEUTRON_STAKING_TRACKER_BINARY_ID"           "$NEUTRON_STAKING_TRACKER_INIT_MSG"    "$NEUTRON_STAKING_TRACKER_LABEL"
-init_contract "$NEUTRON_STAKING_VAULT_BINARY_ID"             "$NEUTRON_STAKING_VAULT_INIT_MSG"      "$NEUTRON_STAKING_VAULT_LABEL"
+init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"            "$NEUTRON_VAULT_INIT"               "$NEUTRON_VAULT_LABEL"
+init_contract "$NEUTRON_INVESTORS_VAULT_CONTRACT_BINARY_ID"  "$NEUTRON_INVESTORS_VAULT_INIT"     "$NEUTRON_INVESTORS_VAULT_LABEL"
+init_contract "$NEUTRON_VESTING_INVESTORS_BINARY_ID"         "$NEUTRON_VESTING_INVESTORS_INIT"   "$NEUTRON_VESTING_INVESTORS_LABEL"
+init_contract "$DAO_CONTRACT_BINARY_ID"                      "$DAO_INIT"                         "$DAO_CORE_LABEL"
+init_contract "$RESERVE_CONTRACT_BINARY_ID"                  "$RESERVE_INIT"                     "$RESERVE_LABEL"
+init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"             "$DISTRIBUTION_INIT"                "$DISTRIBUTION_LABEL"
+init_contract "$SUBDAO_CORE_BINARY_ID"                       "$SECURITY_SUBDAO_CORE_INIT_MSG"    "$SECURITY_SUBDAO_CORE_LABEL"
+init_contract "$SUBDAO_CORE_BINARY_ID"                       "$GRANTS_SUBDAO_CORE_INIT_MSG"      "$GRANTS_SUBDAO_CORE_LABEL"
+init_contract "$NEUTRON_CHAIN_MANAGER_BINARY_ID"             "$NEUTRON_CHAIN_MANAGER_INIT_MSG"   "$NEUTRON_CHAIN_MANAGER_LABEL"
+init_contract "$NEUTRON_STAKING_TRACKER_BINARY_ID"           "$NEUTRON_STAKING_TRACKER_INIT_MSG" "$NEUTRON_STAKING_TRACKER_LABEL"
+init_contract "$NEUTRON_STAKING_VAULT_BINARY_ID"             "$NEUTRON_STAKING_VAULT_INIT_MSG"   "$NEUTRON_STAKING_VAULT_LABEL"
 init_contract "$NEUTRON_STAKING_REWARDS_BINARY_ID"           "$NEUTRON_STAKING_REWARDS_INIT_MSG"    "$NEUTRON_STAKING_REWARDS_LABEL"
 init_contract "$NEUTRON_STAKING_INFO_PROXY_BINARY_ID"        "$NEUTRON_STAKING_INFO_PROXY_INIT_MSG" "$NEUTRON_STAKING_INFO_PROXY_LABEL"
 
