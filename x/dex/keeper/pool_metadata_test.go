@@ -15,7 +15,7 @@ import (
 func createNPoolMetadata(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.PoolMetadata {
 	items := make([]types.PoolMetadata, n)
 	for i := range items {
-		items[i].Id = uint64(i)
+		items[i].Id = uint64(i) //nolint:gosec
 		keeper.SetPoolMetadata(ctx, items[i])
 	}
 

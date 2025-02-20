@@ -102,12 +102,12 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 		invPrice := math_utils.OnePrecDec().Quo(price)
 		tick := BinarySearchPriceToTick(invPrice)
 		// flip the sign back the other direction
-		return int64(tick) * -1, nil
+		return int64(tick) * -1, nil //nolint:gosec
 	}
 
 	tick := BinarySearchPriceToTick(price)
 
-	return int64(tick), nil
+	return int64(tick), nil //nolint:gosec
 }
 
 func MustCalcPrice(relativeTickIndex int64) math_utils.PrecDec {

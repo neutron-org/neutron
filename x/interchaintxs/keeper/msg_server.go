@@ -163,7 +163,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		Owner:           icaOwner,
 		ConnectionId:    msg.ConnectionId,
 		PacketData:      packetData,
-		RelativeTimeout: uint64(time.Duration(msg.Timeout) * time.Second),
+		RelativeTimeout: uint64(time.Duration(msg.Timeout) * time.Second), //nolint:gosec
 	})
 	if err != nil {
 		// usually we use DEBUG level for such errors, but in this case we have checked full input before running SendTX, so error here may be critical

@@ -150,7 +150,6 @@ func TestParseFieldFromArg(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			val := reflect.ValueOf(&tc.testingStruct).Elem()
 			typ := reflect.TypeOf(&tc.testingStruct).Elem()

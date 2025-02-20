@@ -460,7 +460,6 @@ func (suite *KeeperTestSuite) TestRegisteredQueries() {
 			suite.SetupTest()
 
 			for _, q := range tt.registeredQueries {
-				q := q
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.SaveQuery(suite.ChainA.GetContext(), &q))
 			}
 
@@ -521,7 +520,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 			// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 			// and we don't have access to it here
 			Block:    nil,
-			Height:   uint64(resp.Height),
+			Height:   uint64(resp.Height), //nolint:gosec
 			Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 		},
 	}
