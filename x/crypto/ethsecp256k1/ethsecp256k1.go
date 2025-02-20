@@ -2,17 +2,18 @@ package ethsecp256k1
 
 import (
 	"bytes"
-	errorsmod "cosmossdk.io/errors"
 	"crypto/subtle"
 	"errors"
 	"fmt"
+	"io"
+	"math/big"
+
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"golang.org/x/crypto/sha3"
-	"io"
-	"math/big"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
@@ -169,7 +170,7 @@ func NewPubKeyFromBytes(key []byte) (*PubKey, error) {
 // Address returns the address of the ECDSA public key.
 // The function will return an empty address if the public key is invalid.
 func (pubKey PubKey) Address() crypto.Address {
-	if len(pubKey.Key) != PubKeySize {
+	if len(pubKey.Key) != PubKeySize && len(pubKey.Key) != UncompressedPubKeySize {
 		panic("length of pubKey is incorrect")
 	}
 
