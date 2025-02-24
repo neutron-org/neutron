@@ -11,16 +11,16 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyFeeTiers                         = []byte("FeeTiers")
-	DefaultFeeTiers                     = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
-	KeyPaused                           = []byte("Paused")
-	DefaultPaused                       = false
-	KeyMaxJITsPerBlock                  = []byte("MaxJITs")
-	DefaultMaxJITsPerBlock       uint64 = 25
-	KeyGoodTilPurgeAllowance            = []byte("PurgeAllowance")
-	DefaultGoodTilPurgeAllowance uint64 = 540_000
-	KeyWhitelistedLPs                   = []byte("PurgeAllowance")
-	DefaultKeyWhitelistedLPs     []string
+	KeyFeeTiers                           = []byte("FeeTiers")
+	DefaultFeeTiers                       = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
+	KeyPaused                             = []byte("Paused")
+	DefaultPaused                         = false
+	KeyMaxJITsPerBlock                    = []byte("MaxJITs")
+	DefaultMaxJITsPerBlock       uint64   = 25
+	KeyGoodTilPurgeAllowance              = []byte("PurgeAllowance")
+	DefaultGoodTilPurgeAllowance uint64   = 540_000
+	KeyWhitelistedLPs                     = []byte("WhiteListedLPs")
+	DefaultKeyWhitelistedLPs     []string = []string{}
 )
 
 // ParamKeyTable the param key table for launch module
@@ -138,7 +138,7 @@ func validateWhitelistedLPs(v interface{}) error {
 	for _, addr := range whitelistedLPs {
 		_, err := sdk.AccAddressFromBech32(addr)
 		if err != nil {
-			return fmt.Errorf("invalid Reserve address (%s): %w, ", addr, err)
+			return fmt.Errorf("invalid LP address (%s): %w, ", addr, err)
 		}
 	}
 
