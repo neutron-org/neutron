@@ -63,24 +63,24 @@ func (p Params) String() string {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	err := validateFeeTiers(p.FeeTiers)
-	if err != nil {
+	if err := validateFeeTiers(p.FeeTiers); err != nil {
 		return fmt.Errorf("invalid fee tiers: %w", err)
 	}
 
-	err = validatePaused(p.Paused)
-	if err != nil {
+	if err := validatePaused(p.Paused); err != nil {
 		return fmt.Errorf("invalid paused: %w", err)
 	}
+
 	if err := validateMaxJITsPerBlock(p.MaxJitsPerBlock); err != nil {
-		return err
+		return fmt.Errorf("invalid max JITs per block: %w", err)
 	}
+
 	if err := validatePurgeAllowance(p.GoodTilPurgeAllowance); err != nil {
-		return err
+		return fmt.Errorf("invalid good til purge allowance: %w", err)
 	}
 
 	if err := validateWhitelistedLPs(p.WhitelistedLps); err != nil {
-		return err
+		return fmt.Errorf("invalid whitelisted LPs: %w", err)
 	}
 
 	return nil
