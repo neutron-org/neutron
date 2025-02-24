@@ -10,6 +10,11 @@ import (
 	"path/filepath"
 	"time"
 
+	v502 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.2"
+	v504 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.4"
+	v505 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.5"
+	v510 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.0"
+	v513 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.3"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
@@ -228,6 +233,11 @@ const (
 var (
 	Upgrades = []upgrades.Upgrade{
 		v500.Upgrade,
+		v502.Upgrade,
+		v504.Upgrade,
+		v505.Upgrade,
+		v510.Upgrade,
+		v513.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
@@ -471,6 +481,7 @@ func New(
 	overrideWasmVariables()
 
 	appCodec := encodingConfig.Marshaler
+
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
@@ -619,6 +630,17 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
+		appCodec,
+		app.keys[tokenfactorytypes.StoreKey],
+		maccPerms,
+		app.AccountKeeper,
+		&app.BankKeeper,
+		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	app.TokenFactoryKeeper = &tokenFactoryKeeper
+
 	app.WireICS20PreWasmKeeper(appCodec)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
@@ -681,17 +703,6 @@ func New(
 	)
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
-
-	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
-		appCodec,
-		app.keys[tokenfactorytypes.StoreKey],
-		maccPerms,
-		app.AccountKeeper,
-		&app.BankKeeper,
-		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-	app.TokenFactoryKeeper = &tokenFactoryKeeper
 
 	app.BankKeeper.BaseSendKeeper = app.BankKeeper.BaseSendKeeper.SetHooks(
 		banktypes.NewMultiBankHooks(
@@ -1336,7 +1347,6 @@ func (app *App) setupUpgradeStoreLoaders() {
 	}
 
 	for _, upgrd := range Upgrades {
-		upgrd := upgrd
 		if upgradeInfo.Name == upgrd.UpgradeName {
 			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrd.StoreUpgrades))
 		}
@@ -1369,6 +1379,8 @@ func (app *App) setupUpgradeHandlers() {
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
 					DexKeeper:           &app.DexKeeper,
 					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
+					ChannelKeeper:       &app.IBCKeeper.ChannelKeeper,
+					TransferKeeper:      app.TransferKeeper.Keeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1575,8 +1587,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
-
 	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
@@ -1668,7 +1678,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.keys[pfmtypes.StoreKey],
 		app.TransferKeeper.Keeper, // set later
 		app.IBCKeeper.ChannelKeeper,
-		app.FeeBurnerKeeper,
 		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -1718,11 +1727,11 @@ func (app *App) WireICS20PreWasmKeeper(
 		transferSudo.NewIBCModule(
 			app.TransferKeeper,
 			contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+			app.TokenFactoryKeeper,
 		),
 		app.PFMKeeper,
 		0,
 		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
 	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)

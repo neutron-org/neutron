@@ -32,3 +32,8 @@ type AccountKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress
 	GetModuleAccount(ctx context.Context, name string) sdk.ModuleAccountI
 }
+
+// TokenfactoryKeeper defines the tokenfactory keeper.
+type TokenfactoryKeeper interface {
+	StoreEscrowAddress(ctx sdk.Context, address sdk.AccAddress)
+}

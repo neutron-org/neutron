@@ -288,6 +288,16 @@ func (suite *IBCConnectionTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coi
 	suite.Require().NoError(err)
 }
 
+// FundModuleAcc funds target modules with specified amount.
+func (suite *IBCConnectionTestSuite) FundModuleAcc(moduleName string, amounts sdk.Coins) {
+	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
+	err := bankKeeper.MintCoins(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, amounts)
+	suite.Require().NoError(err)
+
+	err = bankKeeper.SendCoinsFromModuleToModule(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, moduleName, amounts)
+	suite.Require().NoError(err)
+}
+
 // update CCV path with correct info
 func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
 	// - set provider endpoint's clientID

@@ -25,25 +25,25 @@ func Abs(x int64) uint64 {
 }
 
 func MinIntArr(vals []sdkmath.Int) sdkmath.Int {
-	min := vals[0]
+	minInt := vals[0]
 	for _, val := range vals {
-		if val.LT(min) {
-			min = val
+		if val.LT(minInt) {
+			minInt = val
 		}
 	}
 
-	return min
+	return minInt
 }
 
 func MaxIntArr(vals []sdkmath.Int) sdkmath.Int {
-	max := vals[0]
+	maxInt := vals[0]
 	for _, val := range vals {
-		if val.GT(max) {
-			max = val
+		if val.GT(maxInt) {
+			maxInt = val
 		}
 	}
 
-	return max
+	return maxInt
 }
 
 func Uint64ToSortableString(i uint64) string {
@@ -56,7 +56,7 @@ func Uint64ToSortableString(i uint64) string {
 }
 
 func SafeUint64ToInt64(in uint64) (out int64, overflow bool) {
-	return int64(in), in > math.MaxInt64
+	return int64(in), in > math.MaxInt64 //nolint:gosec
 }
 
 func MustSafeUint64ToInt64(in uint64) (out int64) {

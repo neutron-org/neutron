@@ -212,7 +212,7 @@ func NewTrancheKey(ctx sdk.Context) string {
 	blockGas := utils.MustGetBlockGasUsed(ctx)
 	totalGas := blockGas + txGas
 
-	blockStr := utils.Uint64ToSortableString(uint64(blockHeight))
+	blockStr := utils.Uint64ToSortableString(uint64(blockHeight)) //nolint:gosec
 	gasStr := utils.Uint64ToSortableString(totalGas)
 
 	return fmt.Sprintf("%s%s", blockStr, gasStr)
