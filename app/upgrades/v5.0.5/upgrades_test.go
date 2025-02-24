@@ -21,7 +21,7 @@ func (suite *UpgradeTestSuite) SetupTest() {
 }
 
 // TODO: fix the test
-//func (suite *UpgradeTestSuite) TestUpgrade() {
+// func (suite *UpgradeTestSuite) TestUpgrade() {
 //	app := suite.GetNeutronZoneApp(suite.ChainA)
 //	ctx := suite.ChainA.GetContext().WithChainID("neutron-1")
 //	t := suite.T()

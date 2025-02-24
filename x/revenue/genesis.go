@@ -1,0 +1,69 @@
+package revenue
+
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
+
+	"github.com/neutron-org/neutron/v5/x/revenue/keeper"
+	"github.com/neutron-org/neutron/v5/x/revenue/types"
+)
+
+// InitGenesis initializes the module's state from a provided genesis state.
+func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState) {
+	for _, elem := range genState.Validators {
+		_, addr, err := bech32.DecodeAndConvert(elem.ValOperAddress)
+		if err != nil {
+			panic(err)
+		}
+
+		if err := k.SetValidatorInfo(ctx, addr, elem); err != nil {
+			panic(err)
+		}
+	}
+
+	for _, elem := range genState.Prices {
+		if err := k.SaveRewardAssetPrice(ctx, elem); err != nil {
+			panic(err)
+		}
+	}
+
+	if err := k.SetParams(ctx, genState.Params); err != nil {
+		panic(err)
+	}
+
+	if genState.PaymentSchedule == nil {
+		genState.PaymentSchedule = types.PaymentScheduleIByType(
+			genState.Params.PaymentScheduleType.PaymentScheduleType,
+		).IntoPaymentSchedule()
+	}
+	if err := k.SetPaymentSchedule(ctx, genState.PaymentSchedule); err != nil {
+		panic(err)
+	}
+}
+
+// ExportGenesis returns the module's exported genesis
+func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
+	var err error
+	genesis := types.DefaultGenesis()
+	genesis.Params, err = k.GetParams(ctx)
+	if err != nil {
+		panic(err)
+	}
+	ps, err := k.GetPaymentScheduleI(ctx)
+	if err != nil {
+		panic(err)
+	}
+	genesis.PaymentSchedule = ps.IntoPaymentSchedule()
+
+	genesis.Validators, err = k.GetAllValidatorInfo(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	genesis.Prices, err = k.GetAllRewardAssetPrices(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return genesis
+}
