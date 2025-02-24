@@ -253,7 +253,7 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		msg.OrderType = dextypes.LimitOrderType(orderTypeInt)
 
 		if dex.PlaceLimitOrder.ExpirationTime != nil {
-			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
+			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0) //nolint:gosec
 			msg.ExpirationTime = &t
 		}
 

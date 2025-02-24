@@ -114,7 +114,6 @@ func TestMsgAddScheduleValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.AddSchedule(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
@@ -159,7 +158,6 @@ func TestMsgRemoveScheduleValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.RemoveSchedule(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
@@ -214,7 +212,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)

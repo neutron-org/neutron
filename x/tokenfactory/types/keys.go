@@ -25,6 +25,7 @@ const (
 const (
 	KeySeparator    = "|"
 	prefixParamsKey = iota + 1
+	prefixEscrowAddressKey
 )
 
 var (
@@ -34,6 +35,7 @@ var (
 	AdminPrefixKey                 = "admin"
 	BeforeSendHookAddressPrefixKey = "beforesendhook"
 	ParamsKey                      = []byte{prefixParamsKey}
+	EscrowAddressKey               = []byte{prefixEscrowAddressKey}
 )
 
 // GetDenomPrefixStore returns the store prefix where all the data associated with a specific denom
@@ -42,7 +44,7 @@ func GetDenomPrefixStore(denom string) []byte {
 	return []byte(strings.Join([]string{DenomsPrefixKey, denom, ""}, KeySeparator))
 }
 
-// GetCreatorsPrefix returns the store prefix where the list of the denoms created by a specific
+// GetCreatorPrefix returns the store prefix where the list of the denoms created by a specific
 // creator are stored
 func GetCreatorPrefix(creator string) []byte {
 	return []byte(strings.Join([]string{CreatorPrefixKey, creator, ""}, KeySeparator))

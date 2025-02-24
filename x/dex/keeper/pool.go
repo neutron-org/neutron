@@ -56,7 +56,7 @@ func (k Keeper) incrementPoolCount(ctx sdk.Context) {
 	k.SetPoolCount(ctx, currentCount+1)
 }
 
-// GetNextPoolId get ID for the next pool to be created
+// GetNextPoolID get ID for the next pool to be created
 func (k Keeper) GetNextPoolID(ctx sdk.Context) uint64 {
 	return k.GetPoolCount(ctx)
 }

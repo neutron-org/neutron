@@ -1,6 +1,6 @@
 module github.com/neutron-org/neutron/v5/tests/feemarket
 
-go 1.22.6
+go 1.23.4
 
 replace (
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0

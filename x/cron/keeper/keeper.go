@@ -90,10 +90,11 @@ func (k *Keeper) AddSchedule(
 	}
 
 	schedule := types.Schedule{
-		Name:              name,
-		Period:            period,
-		Msgs:              msgs,
-		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
+		Name:   name,
+		Period: period,
+		Msgs:   msgs,
+		// let's execute newly added schedule on `now + period` block
+		LastExecuteHeight: uint64(ctx.BlockHeight()), //nolint:gosec
 		ExecutionStage:    executionStage,
 	}
 
@@ -181,7 +182,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context, executionStage t
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error {
 	// Even if contract execution returned an error, we still increase the height
 	// and execute it after this interval
-	schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
+	schedule.LastExecuteHeight = uint64(ctx.BlockHeight()) //nolint:gosec
 	k.storeSchedule(ctx, schedule)
 
 	cacheCtx, writeFn := ctx.CacheContext()
@@ -230,7 +231,7 @@ func (k *Keeper) scheduleExists(ctx sdk.Context, name string) bool {
 }
 
 func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
-	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period)
+	return uint64(ctx.BlockHeight()) >= (schedule.LastExecuteHeight + schedule.Period) //nolint:gosec
 }
 
 func (k *Keeper) changeTotalCount(ctx sdk.Context, incrementAmount int32) {

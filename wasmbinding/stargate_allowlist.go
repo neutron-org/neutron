@@ -108,7 +108,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
 
 		// marketmap
-		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
+		"/slinky.marketmap.v1.Query/Markets":     &marketmaptypes.MarketsResponse{},
 		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
 		"/slinky.marketmap.v1.Query/Market":      &marketmaptypes.MarketResponse{},
