@@ -199,7 +199,7 @@ func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBA
 	autoSwapAmountA, autoswapAmountB := calcAutoswapAmount(params)
 	autoswapValueAsToken0 := calcDepositValueAsToken0(params.Tick, autoSwapAmountA, autoswapAmountB)
 
-	autoswapFeeAsPrice := dextypes.MustCalcPrice(-int64(params.Fee))
+	autoswapFeeAsPrice := dextypes.MustCalcPrice(-int64(params.Fee)) //nolint:gosec
 	autoswapFeePct := math_utils.OnePrecDec().Sub(autoswapFeeAsPrice)
 	autoswapFee := autoswapValueAsToken0.Mul(autoswapFeePct)
 

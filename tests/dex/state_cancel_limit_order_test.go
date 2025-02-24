@@ -146,7 +146,7 @@ func removeRedundantCancelLOTests(params []cancelLimitOrderTestParams) []cancelL
 
 func (s *DexStateTestSuite) handleCancelErrors(params cancelLimitOrderTestParams, err error) {
 	if params.Filled == 100 && params.WithdrawnCreator {
-		if errors.Is(dextypes.ErrValidLimitOrderTrancheNotFound, err) {
+		if errors.Is(err, dextypes.ErrValidLimitOrderTrancheNotFound) {
 			s.T().Skip()
 		}
 	}

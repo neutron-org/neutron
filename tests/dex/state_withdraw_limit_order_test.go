@@ -157,7 +157,7 @@ func removeRedundantWithdrawLOTests(params []withdrawLimitOrderTestParams) []wit
 
 func (s *DexStateTestSuite) handleWithdrawLimitOrderErrors(params withdrawLimitOrderTestParams, err error) {
 	if params.Filled == 0 {
-		if errors.Is(dextypes.ErrWithdrawEmptyLimitOrder, err) {
+		if errors.Is(err, dextypes.ErrWithdrawEmptyLimitOrder) {
 			s.T().Skip()
 		}
 	}
