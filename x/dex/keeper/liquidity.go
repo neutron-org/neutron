@@ -53,7 +53,7 @@ func (k Keeper) Swap(
 		// this also catches the normal exit case where remainingTakerDenom == 0
 
 		// This also allows us to handle a corner case where totalTakerCoin < maxAmountAmountTakerDenom
-		// and there is still valid tradeable liquidity but the order cannot be filled any further due to monotonic rounding. 
+		// and there is still valid tradeable liquidity but the order cannot be filled any further due to monotonic rounding.
 		if math_utils.NewPrecDecFromInt(remainingTakerDenom).Quo(liq.Price()).LT(math_utils.OnePrecDec()) {
 			orderFilled = true
 			break
