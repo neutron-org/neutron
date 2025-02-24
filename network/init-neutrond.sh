@@ -55,6 +55,8 @@ NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.was
 
 NEUTRON_STAKING_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_staking_vault.wasm
 NEUTRON_STAKING_TRACKER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_staking_tracker.wasm
+NEUTRON_STAKING_REWARDS_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_staking_rewards.wasm
+NEUTRON_STAKING_INFO_PROXY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_staking_info_proxy.wasm
 
 # Slinky genesis configs
 USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
@@ -162,7 +164,10 @@ NEUTRON_STAKING_VAULT_LABEL="neutron.voting.vaults.staking"
 
 NEUTRON_STAKING_TRACKER_NAME="Neutron Staking Tracker"
 NEUTRON_STAKING_TRACKER_DESCRIPTION="Tracks the Staking module for querying historical voting power and notifying about staking changes"
-NEUTRON_STAKING_TRACKER_LABEL="neutron.voting.staking_tracker" # TODO: assign correct label
+NEUTRON_STAKING_TRACKER_LABEL="neutron.staking_tracker"
+
+NEUTRON_STAKING_REWARDS_LABEL="neutron.staking_rewards"
+NEUTRON_STAKING_INFO_PROXY_LABEL="neutron.staking_proxy"
 
 echo "Initializing dao contract in genesis..."
 
@@ -203,6 +208,8 @@ NEUTRON_CHAIN_MANAGER_BINARY_ID=$(store_binary          "$NEUTRON_CHAIN_MANAGER_
 
 NEUTRON_STAKING_TRACKER_BINARY_ID=$(store_binary        "$NEUTRON_STAKING_TRACKER_CONTRACT")
 NEUTRON_STAKING_VAULT_BINARY_ID=$(store_binary          "$NEUTRON_STAKING_VAULT_CONTRACT")
+NEUTRON_STAKING_REWARDS_BINARY_ID=$(store_binary        "$NEUTRON_STAKING_REWARDS_CONTRACT")
+NEUTRON_STAKING_INFO_PROXY_BINARY_ID=$(store_binary     "$NEUTRON_STAKING_INFO_PROXY_CONTRACT")
 
 # WARNING!
 # The following code is needed to pre-generate the contract addresses
@@ -256,6 +263,8 @@ GRANTS_SUBDAO_GROUP_CONTRACT_ADDRESS=$(genaddr         "$CW4_GROUP_CONTRACT_BINA
 NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_CHAIN_MANAGER_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS=$(genaddr     "$NEUTRON_STAKING_TRACKER_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_STAKING_VAULT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS=$(genaddr     "$NEUTRON_STAKING_REWARDS_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS=$(genaddr  "$NEUTRON_STAKING_INFO_PROXY_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
 function check_json() {
   MSG=$1
@@ -657,7 +666,26 @@ NEUTRON_STAKING_TRACKER_INIT_MSG='{
   "name": "'"$NEUTRON_STAKING_TRACKER_NAME"'",
   "description": "'"$NEUTRON_STAKING_TRACKER_DESCRIPTION"'",
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
-  "denom": "untrn"
+  "denom": "untrn",
+  "staking_proxy_info_contract_address": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'"
+}'
+
+NEUTRON_STAKING_REWARDS_INIT_MSG='{
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
+  "annual_reward_rate_bps": 300,
+  "blocks_per_year": 10512000,
+  "dao_address": "'"$DAO_CONTRACT_ADDRESS"'",
+  "staking_info_proxy": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'",
+  "staking_denom": "untrn"
+}'
+
+NEUTRON_STAKING_INFO_PROXY_INIT_MSG='{
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
+  "staking_rewards": "'"$NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS"'",
+  "staking_denom": "untrn",
+  "providers": [
+    "'"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS"'"
+  ]
 }'
 
 echo "Instantiate contracts"
@@ -686,6 +714,8 @@ init_contract "$SUBDAO_CORE_BINARY_ID"                       "$GRANTS_SUBDAO_COR
 init_contract "$NEUTRON_CHAIN_MANAGER_BINARY_ID"             "$NEUTRON_CHAIN_MANAGER_INIT_MSG"   "$NEUTRON_CHAIN_MANAGER_LABEL"
 init_contract "$NEUTRON_STAKING_TRACKER_BINARY_ID"           "$NEUTRON_STAKING_TRACKER_INIT_MSG" "$NEUTRON_STAKING_TRACKER_LABEL"
 init_contract "$NEUTRON_STAKING_VAULT_BINARY_ID"             "$NEUTRON_STAKING_VAULT_INIT_MSG"   "$NEUTRON_STAKING_VAULT_LABEL"
+init_contract "$NEUTRON_STAKING_REWARDS_BINARY_ID"           "$NEUTRON_STAKING_REWARDS_INIT_MSG"    "$NEUTRON_STAKING_REWARDS_LABEL"
+init_contract "$NEUTRON_STAKING_INFO_PROXY_BINARY_ID"        "$NEUTRON_STAKING_INFO_PROXY_INIT_MSG" "$NEUTRON_STAKING_INFO_PROXY_LABEL"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
@@ -802,14 +832,11 @@ set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"       
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 1},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 2},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 4},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 5},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 7},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 8},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 9},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 10},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 11}]"
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 10}]"
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
@@ -819,3 +846,5 @@ fi
 echo "DAO $DAO_CONTRACT_ADDRESS"
 echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS
 echo "STAKING TRACKER" $NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS
+echo "STAKING_REWARDS" $NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS
+echo "STAKING INFO PROXY" $NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS
