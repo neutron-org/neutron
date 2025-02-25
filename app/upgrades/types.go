@@ -3,6 +3,7 @@ package upgrades
 import (
 	store "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -15,6 +16,8 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	harpoonkeeper "github.com/neutron-org/neutron/v5/x/harpoon/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
@@ -73,6 +76,9 @@ type UpgradeKeepers struct {
 	DexKeeper          *dexkeeper.Keeper
 	IbcRateLimitKeeper *ibcratelimitkeeper.Keeper
 	ChannelKeeper      *channelkeeper.Keeper
+	WasmKeeper         *wasmkeeper.Keeper
+	HarpoonKeeper      *harpoonkeeper.Keeper
+	RevenueKeeper      *revenuekeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace

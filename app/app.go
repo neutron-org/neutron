@@ -18,10 +18,6 @@ import (
 
 	sovereignUpgrade "github.com/neutron-org/neutron/v5/app/upgrades/sovereign"
 
-	v502 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.2"
-	v504 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.4"
-	v505 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.5"
-	v510 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.0"
 	v513 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.3"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
@@ -51,7 +47,6 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v5/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
@@ -247,11 +242,6 @@ const (
 
 var (
 	Upgrades = []upgrades.Upgrade{
-		v500.Upgrade,
-		v502.Upgrade,
-		v504.Upgrade,
-		v505.Upgrade,
-		v510.Upgrade,
 		v513.Upgrade,
 		sovereignUpgrade.Upgrade,
 	}
@@ -1457,6 +1447,9 @@ func (app *App) setupUpgradeHandlers() {
 					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
 					ChannelKeeper:       &app.IBCKeeper.ChannelKeeper,
 					TransferKeeper:      app.TransferKeeper.Keeper,
+					WasmKeeper:          &app.WasmKeeper,
+					HarpoonKeeper:       app.HarpoonKeeper,
+					RevenueKeeper:       app.RevenueKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
