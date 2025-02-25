@@ -13,7 +13,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "sovereign3"
+	UpgradeName = "sovereign"
 
 	StakingTrackerContractAddress = "neutron1r50m5lafnmctat4xpvwdpzqndynlxt2skhr4fhzh76u0qar2y9hqyaf9ku"
 	StakingVaultContractAddress   = "neutron1xqju350rsytdrgvyc27zljjvpygefmnvdjnfel8rcannyn6zt2rq8fjxj2"
