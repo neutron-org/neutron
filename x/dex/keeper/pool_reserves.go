@@ -44,7 +44,7 @@ func (k Keeper) RemovePoolReserves(ctx sdk.Context, poolReservesID *types.PoolRe
 // UpdatePoolReserves handles the logic for all updates to PoolReserves in the KV Store.
 // NOTE: This method should always be called even if not all logic branches are applicable.
 // It avoids unnecessary repetition of logic and provides a single place to attach update event handlers.
-func (k Keeper) UpdatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves) {
+func (k Keeper) UpdatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves, swapMetadata ...types.SwapMetadata) {
 	if reserves.HasToken() {
 		// The pool still has ReservesMakerDenom; save it as is
 		k.SetPoolReserves(ctx, reserves)
@@ -57,5 +57,5 @@ func (k Keeper) UpdatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves
 	// TODO: This will create a bit of extra noise since UpdatePoolReserves is called for both sides of the pool,
 	// but not in some cases only one side has been updated
 	// This should be solved upstream by better tracking of dirty ticks
-	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*reserves))
+	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*reserves, swapMetadata...))
 }
