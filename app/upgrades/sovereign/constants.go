@@ -37,6 +37,7 @@ var Upgrade = upgrades.Upgrade{
 
 // CodesToPin - codes to pin of the new stored contracts:
 // rewards, vault, tracker, proxy
+// TODO: fill before migration
 var CodesToPin = []uint64{
 	0,
 }
