@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	types2 "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	"github.com/neutron-org/neutron/v5/app/params"
 	"io/fs"
 	"path/filepath"
 	"time"
@@ -25,9 +26,14 @@ import (
 )
 
 const (
-	SovereignSelfStake  = 1_000_000
-	ICSValoperSelfStake = 1
-	UnbondingTime       = 21 * 24 * time.Hour
+	// set of constants defines self delegation amount for newly created validator
+	// ICS and Sovereign ones
+	SovereignMinSelfDelegation = 1_000_000
+	SovereignSelfStake         = 1_000_000
+	ICSMinSelfDelegation       = 1
+	ICSSelfStake               = 1
+
+	UnbondingTime = 21 * 24 * time.Hour
 	// neutron1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx4y0zvay
 	OperatorSk1 = "neutronvaloper1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx47jm4mq"
 	// neutron1tedsrwal9n2qlp6j3xcs3fjz9khx7z4reep8k3
@@ -89,13 +95,13 @@ func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKe
 			MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
 			MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
 		},
-		MinSelfDelegation: math.NewInt(1),
+		MinSelfDelegation: math.NewInt(SovereignMinSelfDelegation),
 		DelegatorAddress:  "",
 		// WARN: Operator must have enough funds
 		ValidatorAddress: valoper,
 		Pubkey:           pubkey,
 		Value: sdk.Coin{
-			Denom:  "untrn",
+			Denom:  params.DefaultDenom,
 			Amount: math.NewInt(stake),
 		},
 	}
@@ -112,8 +118,8 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 	for i, v := range consumerValidators {
 		// funding ICS valopers from DAO to stake a coin
 		err := bk.SendCoins(ctx, DAOaddr, v.GetAddress(), sdk.NewCoins(sdk.Coin{
-			Denom:  "untrn",
-			Amount: math.NewInt(ICSValoperSelfStake),
+			Denom:  params.DefaultDenom,
+			Amount: math.NewInt(ICSSelfStake),
 		}))
 		if err != nil {
 			return err
@@ -136,13 +142,13 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 				MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
 				MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
 			},
-			MinSelfDelegation: math.NewInt(1),
+			MinSelfDelegation: math.NewInt(ICSMinSelfDelegation),
 			// WARN: valoper must have enough funds to selfbond
 			ValidatorAddress: valoperAddr,
 			Pubkey:           v.GetPubkey(),
 			Value: sdk.Coin{
-				Denom:  "untrn",
-				Amount: math.NewInt(ICSValoperSelfStake),
+				Denom:  params.DefaultDenom,
+				Amount: math.NewInt(ICSSelfStake),
 			},
 		})
 		if err != nil {
@@ -167,7 +173,7 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 		}
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(int64(len(consumerValidators)*ICSValoperSelfStake))))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(len(consumerValidators)*ICSSelfStake))))
 	// since we forced to set bond status for ics validators during the upgrade, we have to move ICS staked funds from NotBondedPoolName to BondedPoolName
 	return bk.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, coins)
 }
@@ -181,7 +187,7 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
-	params := types.Params{
+	p := types.Params{
 		UnbondingTime: UnbondingTime,
 		// During migration MaxValidators MUST be >= all the validators number, old and new ones.
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
@@ -190,13 +196,13 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)),
 		MaxEntries:        100,
 		HistoricalEntries: 100,
-		BondDenom:         "untrn",
+		BondDenom:         params.DefaultDenom,
 		MinCommissionRate: math.LegacyMustNewDecFromStr("0.0"),
 	}
 
 	_, err = srv.UpdateParams(ctx, &types.MsgUpdateParams{
 		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		Params:    params,
+		Params:    p,
 	})
 	if err != nil {
 		return err
@@ -220,7 +226,7 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 
 		// prefund validator to make selfbond
 		err = bk.SendCoins(ctx, DAOaddr, valAddr, sdk.NewCoins(sdk.Coin{
-			Denom:  "untrn",
+			Denom:  params.DefaultDenom,
 			Amount: math.NewInt(SovereignSelfStake),
 		}))
 		if err != nil {

@@ -107,7 +107,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	bondedBalanceBefore, err := app.BankKeeper.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: authtypes.NewModuleAddress(types.BondedPoolName).String(),
-		Denom:   "untrn",
+		Denom:   params.DefaultDenom,
 	})
 	require.NoError(t, err)
 
@@ -131,7 +131,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 		if _, ok := ccvVals[newVal.OperatorAddress]; ok {
 			countCCV++
 			require.Equal(t, newVal.Status, types.Bonded)
-			require.Equal(t, newVal.Tokens, math.NewInt(v600.ICSValoperSelfStake))
+			require.Equal(t, newVal.Tokens, math.NewInt(v600.ICSSelfStake))
 		}
 	}
 	// all expected new vals in the set
@@ -142,15 +142,15 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	bondedBalanceAfter, err := app.BankKeeper.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: authtypes.NewModuleAddress(types.BondedPoolName).String(),
-		Denom:   "untrn",
+		Denom:   params.DefaultDenom,
 	})
 	require.NoError(t, err)
 	// ICS set adds stake to bonded pool
-	require.Equal(t, bondedBalanceAfter.Balance.Amount.Sub(bondedBalanceBefore.Balance.Amount), math.NewInt(v600.ICSValoperSelfStake).MulRaw(int64(ccvNumber)))
+	require.Equal(t, bondedBalanceAfter.Balance.Amount.Sub(bondedBalanceBefore.Balance.Amount), math.NewInt(v600.ICSSelfStake).MulRaw(int64(ccvNumber)))
 
 	nonbondedBalanceAfter, err := app.BankKeeper.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: authtypes.NewModuleAddress(types.NotBondedPoolName).String(),
-		Denom:   "untrn",
+		Denom:   params.DefaultDenom,
 	})
 	require.NoError(t, err)
 	// Sovereign set adds stake to nonbonded pool
