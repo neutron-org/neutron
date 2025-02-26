@@ -12,7 +12,6 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
 	globalfeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
@@ -27,7 +26,6 @@ type HandlerOptions struct {
 	BankKeeper            bankkeeper.Keeper
 	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
-	ConsumerKeeper        ibcconsumerkeeper.Keeper
 	GlobalFeeKeeper       globalfeekeeper.Keeper
 	WasmConfig            *wasmTypes.WasmConfig
 	TXCounterStoreService corestoretypes.KVStoreService
