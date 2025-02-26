@@ -229,7 +229,7 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		}
 	}
 
-	return sk.SetLastTotalPower(ctx, math.NewInt(1))
+	return nil
 }
 
 // copied from staking module https://github.com/cosmos/cosmos-sdk/blob/v0.50.6/x/staking/keeper/val_state_change.go#L336
