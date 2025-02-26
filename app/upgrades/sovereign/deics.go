@@ -25,6 +25,7 @@ import (
 )
 
 const (
+	SovereignSelfStake  = 1_000_000
 	ICSValoperSelfStake = 1
 	UnbondingTime       = 21 * 24 * time.Hour
 	// neutron1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx4y0zvay
@@ -62,8 +63,9 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 		if err != nil {
 			return err
 		}
-		msg := StakingValMsg(filepath.Base(path), 1000000, skval.Valoper, skval.PK)
+		msg := StakingValMsg(filepath.Base(path), SovereignSelfStake, skval.Valoper, skval.PK)
 		msgs = append(msgs, msg)
+
 		return nil
 	})
 	return msgs, errWalk
@@ -185,7 +187,7 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		// During migration MaxValidators MUST be >= all the validators number, old and new ones.
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
 		// otherwise panic during staking begin blocker happens
-		// It's allowed to checge the value at the very next block
+		// It's allowed to change the value at the very next block
 		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)),
 		MaxEntries:        100,
 		HistoricalEntries: 100,
@@ -206,8 +208,23 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
+	DAOaddr, err := sdk.AccAddressFromBech32(MainDAOContractAddress)
+	if err != nil {
+		return err
+	}
+
 	for _, msg := range newValMsgs {
 		_, err = srv.CreateValidator(ctx, &msg)
+		if err != nil {
+			return err
+		}
+
+		valAddr := sdk.MustAccAddressFromBech32(msg.ValidatorAddress)
+
+		err := bk.SendCoins(ctx, DAOaddr, valAddr, sdk.NewCoins(sdk.Coin{
+			Denom:  "untrn",
+			Amount: math.NewInt(SovereignSelfStake),
+		}))
 		if err != nil {
 			return err
 		}
