@@ -213,17 +213,21 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 	}
 
 	for _, msg := range newValMsgs {
-		_, err = srv.CreateValidator(ctx, &msg)
+		valAddr, err := sdk.GetFromBech32(msg.ValidatorAddress, "neutronvaloper")
 		if err != nil {
 			return err
 		}
 
-		valAddr := sdk.MustAccAddressFromBech32(msg.ValidatorAddress)
-
-		err := bk.SendCoins(ctx, DAOaddr, valAddr, sdk.NewCoins(sdk.Coin{
+		// prefund validator to make selfbond
+		err = bk.SendCoins(ctx, DAOaddr, valAddr, sdk.NewCoins(sdk.Coin{
 			Denom:  "untrn",
 			Amount: math.NewInt(SovereignSelfStake),
 		}))
+		if err != nil {
+			return err
+		}
+
+		_, err = srv.CreateValidator(ctx, &msg)
 		if err != nil {
 			return err
 		}
