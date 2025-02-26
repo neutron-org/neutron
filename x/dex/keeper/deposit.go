@@ -89,6 +89,7 @@ func (k Keeper) ExecuteDeposit(
 		amounts0Deposited[i] = math.ZeroInt()
 		amounts1Deposited[i] = math.ZeroInt()
 	}
+	isWhitelistedLP := k.IsWhitelistedLP(ctx, callerAddr)
 
 	for i, amount0 := range amounts0 {
 		amount1 := amounts1[i]
@@ -100,8 +101,11 @@ func (k Keeper) ExecuteDeposit(
 		}
 		autoswap := !option.DisableAutoswap
 
-		if err := k.ValidateFee(ctx, fee); err != nil {
-			return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
+		// Enforce deposits only at valid fee tiers. This does not apply to whitelistedLPs
+		if !isWhitelistedLP {
+			if err := k.ValidateFee(ctx, fee); err != nil {
+				return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
+			}
 		}
 
 		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, amount0, amount1) {
