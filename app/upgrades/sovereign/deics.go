@@ -34,12 +34,6 @@ const (
 	ICSSelfStake               = 1
 
 	UnbondingTime = 21 * 24 * time.Hour
-	// neutron1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx4y0zvay
-	OperatorSk1 = "neutronvaloper1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx47jm4mq"
-	// neutron1tedsrwal9n2qlp6j3xcs3fjz9khx7z4reep8k3
-	OperatorSk2 = "neutronvaloper1tedsrwal9n2qlp6j3xcs3fjz9khx7z4rryc7s4"
-	// neutron1xdlvhs2l2wq0cc3eskyxphstns3348elwzvemh
-	OperatorSk3 = "neutronvaloper1xdlvhs2l2wq0cc3eskyxphstns3348el5l4qan"
 )
 
 //go:embed validators/staking
@@ -107,6 +101,8 @@ func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKe
 	}
 }
 
+// MoveICSToStaking crates CCV validators in staking module, forces to change status to bonded
+// to generate valsetupdate with 0 vp the same block
 func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keeper, consumerValidators []types2.CrossChainValidator) error {
 	srv := stakingkeeper.NewMsgServerImpl(&sk)
 	DAOaddr, err := sdk.AccAddressFromBech32(MainDAOContractAddress)
@@ -178,6 +174,29 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 	return bk.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, coins)
 }
 
+// DeICS - does the deics, The whole point of the method is force staking module to remove ICS validators
+// and add STAKING(sovereign) ones, by generating valsetupdates (https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L269)
+// We add STAKING and ICS to staking module in a special way.
+// STAKING added in natural staking way, just submit `MsgCreateValidator` msg with vp >=1.
+// ICS added with the message (with vp = 0). And to force staking to remove the ICS validators the same block,
+// we force validators to join "active" set by bonding them with `bondValidator` method and move stake from nonbonded pool to bonded.
+//
+// The same block migration happened, in a staking module we have STAKING validators in `unbonded` state with vp>=1 and ICS in `bonded` state with vp==0.
+//
+// In the endblocker, staking module iterates over all validators in order of decreasing vp. https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L155
+// STAKING validators change the status from unbonded to bonded https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L174,
+// and valupdete generated https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L202. STAKING validators removed from list `last` https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L209 which at the start of endblocker contains STAKING+ICS validators.
+// when the iterator reaches first ICS validator, it stopes processing https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L168
+// By that time only ICS left in `last` list
+// `last` list becomes `noLongerBonded` https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L215
+// and valupdate with zero power (to remove from cometbft) generated https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L235
+// Right after migration (preblocker) we have
+// ICS - bonded, STAKING - unbonded
+// At the end of the block, after endblocker
+// ICS - unbonded, STAKING - bonded
+// cometbft valset gets updated with a lag
+// upgrade + `next block` still sogned by ICS validators
+// upgrade + 2 the first block signed by STAKING validators.
 func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerkeeper.Keeper, bk bankkeeper.Keeper) error {
 	srv := stakingkeeper.NewMsgServerImpl(&sk)
 	consumerValidators := consumerKeeper.GetAllCCValidator(ctx)
