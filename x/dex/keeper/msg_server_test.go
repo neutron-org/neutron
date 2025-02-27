@@ -482,7 +482,7 @@ func (s *DexTestSuite) limitSellsInt(
 		return "", err
 	}
 
-	return msg.TrancheKey, err
+	return msg.TrancheKey, nil
 }
 
 func (s *DexTestSuite) limitSells(
