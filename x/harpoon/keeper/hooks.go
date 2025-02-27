@@ -118,11 +118,12 @@ func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddre
 }
 
 // BeforeValidatorSlashed calls the sudo method on the contracts subscribed to the BeforeValidatorSlashed hook
-func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction sdkmath.LegacyDec) error {
+func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction sdkmath.LegacyDec, tokensToBurn sdkmath.Int) error {
 	message := types.BeforeValidatorSlashedSudoMsg{
 		BeforeValidatorSlashed: types.BeforeValidatorSlashedMsg{
-			ValAddr:  valAddr.String(),
-			Fraction: fraction,
+			ValAddr:      valAddr.String(),
+			Fraction:     fraction,
+			TokensToBurn: tokensToBurn,
 		},
 	}
 	return h.k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_BEFORE_VALIDATOR_SLASHED, message)
