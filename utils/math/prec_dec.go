@@ -13,7 +13,7 @@ import (
 )
 
 // NOTE: This file is nearly direct copy from cosmossdk.io/math/dec.go @v1.01
-// The Precesion has been changed from 18 to 27
+// The precision has been changed from 18 to 27
 
 // NOTE: never use new(Dec) or else we will panic unmarshalling into the
 // nil embedded big.Int
@@ -718,7 +718,7 @@ func (d PrecDec) TruncatePrecDec() PrecDec {
 	return NewPrecDecFromBigInt(chopPrecisionAndTruncateNonMutative(d.i))
 }
 
-// Ceil returns the smallest interger value (as a decimal) that is greater than
+// Ceil returns the smallest integer value (as a decimal) that is greater than
 // or equal to the given decimal.
 func (d PrecDec) Ceil() PrecDec {
 	tmp := new(big.Int).Set(d.i)
