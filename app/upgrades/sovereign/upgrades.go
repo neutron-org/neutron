@@ -89,7 +89,7 @@ func CreateUpgradeHandler(
 		if err != nil {
 			return vm, err
 		}
-		
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
@@ -246,6 +246,8 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: add dNTRN as fee denom
 	return nil
 }
 
