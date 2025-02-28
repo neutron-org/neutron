@@ -258,7 +258,7 @@ func (m *QueryDenomsFromCreatorRequest) GetCreator() string {
 	return ""
 }
 
-// QueryDenomsFromCreatorRequest defines the response structure for the
+// QueryDenomsFromCreatorResponse defines the response structure for the
 // DenomsFromCreator gRPC query.
 type QueryDenomsFromCreatorResponse struct {
 	Denoms []string `protobuf:"bytes,1,rep,name=denoms,proto3" json:"denoms,omitempty" yaml:"denoms"`
