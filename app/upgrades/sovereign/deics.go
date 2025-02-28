@@ -2,16 +2,10 @@ package v600
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"embed"
 	"encoding/json"
 	"fmt"
-	types2 "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	"github.com/neutron-org/neutron/v5/app/params"
-	"io/fs"
-	"path/filepath"
-	"time"
-
-	"cosmossdk.io/math"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -23,6 +17,11 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	types2 "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	"github.com/neutron-org/neutron/v5/app/params"
+	"io/fs"
+	"path/filepath"
+	"time"
 )
 
 const (
@@ -32,8 +31,13 @@ const (
 	SovereignSelfStake         = 1_000_000
 	ICSMinSelfDelegation       = 1
 	ICSSelfStake               = 1
+)
 
-	UnbondingTime = 21 * 24 * time.Hour
+// TODO: remove before release
+// TEST ONLY CONSTS
+const (
+	Devnet                = true
+	OverrideUnbondingTime = 5 * time.Minute
 )
 
 //go:embed validators/staking
@@ -206,17 +210,27 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
+	cp, err := consumerKeeper.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
 	p := types.Params{
-		UnbondingTime: UnbondingTime,
+		UnbondingTime: cp.UnbondingTime,
 		// During migration MaxValidators MUST be >= all the validators number, old and new ones.
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
 		// otherwise panic during staking begin blocker happens
 		// It's allowed to change the value at the very next block
 		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)),
-		MaxEntries:        100,
-		HistoricalEntries: 100,
+		MaxEntries:        7,
+		HistoricalEntries: 10_000,
 		BondDenom:         params.DefaultDenom,
 		MinCommissionRate: math.LegacyMustNewDecFromStr("0.0"),
+	}
+
+	// TODO: Remove before release
+	if Devnet {
+		p.UnbondingTime = OverrideUnbondingTime
 	}
 
 	_, err = srv.UpdateParams(ctx, &types.MsgUpdateParams{
