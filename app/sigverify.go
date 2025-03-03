@@ -3,11 +3,14 @@ package app
 import (
 	"bytes"
 	"context"
-	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+
+	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
+
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+
 	"github.com/neutron-org/neutron/v5/x/crypto/ethsecp256k1"
 
 	"google.golang.org/protobuf/types/known/anypb"
@@ -34,7 +37,6 @@ var (
 	// simulation signature values used to estimate gas consumption
 	key                = make([]byte, secp256k1.PubKeySize)
 	simSecp256k1Pubkey = &secp256k1.PubKey{Key: key}
-	simSecp256k1Sig    [64]byte
 )
 
 func init() {
@@ -340,10 +342,10 @@ func (vscd ValidateSigCountDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 		return ctx, err
 	}
 
-	sigCount := 0
+	var sigCount uint64
 	for _, pk := range pubKeys {
 		sigCount += CountSubKeys(pk)
-		if uint64(sigCount) > params.TxSigLimit {
+		if sigCount > params.TxSigLimit {
 			return ctx, errorsmod.Wrapf(sdkerrors.ErrTooManySignatures,
 				"signatures: %d, limit: %d", sigCount, params.TxSigLimit)
 		}
@@ -428,7 +430,7 @@ func GetSignerAcc(ctx sdk.Context, ak ante.AccountKeeper, addr sdk.AccAddress) (
 // CountSubKeys counts the total number of keys for a multi-sig public key.
 // A non-multisig, i.e. a regular signature, it naturally a count of 1. If it is a multisig,
 // then it recursively calls it on its pubkeys.
-func CountSubKeys(pub cryptotypes.PubKey) int {
+func CountSubKeys(pub cryptotypes.PubKey) (numKeys uint64) {
 	if pub == nil {
 		return 0
 	}
@@ -437,7 +439,7 @@ func CountSubKeys(pub cryptotypes.PubKey) int {
 		return 1
 	}
 
-	numKeys := 0
+	numKeys = 0
 	for _, subkey := range v.GetPubKeys() {
 		numKeys += CountSubKeys(subkey)
 	}
@@ -554,7 +556,7 @@ func APISignModeToInternal(mode signingv1beta1.SignMode) (signing.SignMode, erro
 		return signing.SignMode_SIGN_MODE_TEXTUAL, nil
 	case signingv1beta1.SignMode_SIGN_MODE_DIRECT_AUX:
 		return signing.SignMode_SIGN_MODE_DIRECT_AUX, nil
-	case signingv1beta1.SignMode_SIGN_MODE_EIP_191:
+	case signingv1beta1.SignMode_SIGN_MODE_EIP_191: //nolint
 		return signing.SignMode_SIGN_MODE_EIP_191, nil //nolint
 	default:
 		return signing.SignMode_SIGN_MODE_UNSPECIFIED, fmt.Errorf("unsupported sign mode %s", mode)
@@ -572,7 +574,7 @@ func internalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, erro
 		return signingv1beta1.SignMode_SIGN_MODE_TEXTUAL, nil
 	case signing.SignMode_SIGN_MODE_DIRECT_AUX:
 		return signingv1beta1.SignMode_SIGN_MODE_DIRECT_AUX, nil
-	case signing.SignMode_SIGN_MODE_EIP_191:
+	case signing.SignMode_SIGN_MODE_EIP_191: //nolint
 		return signingv1beta1.SignMode_SIGN_MODE_EIP_191, nil //nolint
 	default:
 		return signingv1beta1.SignMode_SIGN_MODE_UNSPECIFIED, fmt.Errorf("unsupported sign mode %s", mode)

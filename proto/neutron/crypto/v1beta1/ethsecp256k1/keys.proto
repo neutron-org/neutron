@@ -1,8 +1,8 @@
 syntax = "proto3";
 package neutron.crypto.v1beta1.ethsecp256k1;
 
-import "gogoproto/gogo.proto";
 import "amino/amino.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/crypto/ethsecp256k1";
 

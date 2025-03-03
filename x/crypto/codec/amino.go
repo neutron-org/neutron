@@ -3,6 +3,7 @@ package codec
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
+
 	"github.com/neutron-org/neutron/v5/x/crypto/ethsecp256k1"
 )
 

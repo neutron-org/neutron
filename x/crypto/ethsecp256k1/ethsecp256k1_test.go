@@ -63,10 +63,11 @@ func TestPrivKey_PubKey(t *testing.T) {
 	res := pubKey.VerifySignature(msg, sig)
 	require.True(t, res)
 }
+
 func TestVerifySignatureECDSA(t *testing.T) {
 	// Given data (message, signature, and public key)
 	msg := "Hello, MetaMask!"
-	//msgHash := keccak256([]byte(msg))
+	// msgHash := keccak256([]byte(msg))
 	formattedMsg := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(msg), msg)
 	sigHex := "3dadd2820aad62a5e545f7b18178708f0f63afd667f9d2535e43870b52e57a1f333f416aa9485deaed22ac1e2ffe35485afdb45989c797acd654b73a881ace1f1b"
 	pubKeyHex := "044c352d52ba4e507085205e9a029432defbc8d8f05ed828cbce0eb1a8823097723dc9caa6c60c17ad9073c2cdcdb409fe20110c40359607a64ca22d6607770655"

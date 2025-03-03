@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/neutron-org/neutron/v5/x/crypto/keyring"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/neutron-org/neutron/v5/x/crypto/keyring"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"

@@ -26,6 +26,7 @@ import (
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 
 	"github.com/skip-mev/slinky/abci/strategies/aggregator"

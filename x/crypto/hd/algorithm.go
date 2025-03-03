@@ -2,6 +2,7 @@ package hd
 
 import (
 	"github.com/cosmos/go-bip39"
+
 	"github.com/neutron-org/neutron/v5/x/crypto/ethsecp256k1"
 
 	"github.com/cosmos/cosmos-sdk/crypto/hd"

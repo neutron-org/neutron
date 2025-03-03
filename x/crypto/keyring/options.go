@@ -3,6 +3,7 @@ package keyring
 import (
 	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+
 	"github.com/neutron-org/neutron/v5/x/crypto/hd"
 )
 
