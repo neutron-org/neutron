@@ -411,6 +411,22 @@ func (s *DexTestSuite) TestDepositSingleInvalidFeeFails() {
 	)
 }
 
+func (s *DexTestSuite) TestDepositSinglewWhitelistedLPWithInvalidFee() {
+	s.fundAliceBalances(0, 50)
+
+	// Whitelist alice's address
+	params := s.App.DexKeeper.GetParams(s.Ctx)
+	params.WhitelistedLps = []string{s.alice.String()}
+	err := s.App.DexKeeper.SetParams(s.Ctx, params)
+	s.NoError(err)
+
+	// WHEN Deposit at fee 43 (invalid)
+	// THEN no error
+	s.aliceDeposits(
+		NewDeposit(0, 50, 10, 43),
+	)
+}
+
 func (s *DexTestSuite) TestDepositSingleToken0BELFails() {
 	s.fundAliceBalances(50, 50)
 
