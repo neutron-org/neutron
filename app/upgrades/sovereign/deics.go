@@ -2,15 +2,10 @@ package v600
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"embed"
 	"encoding/json"
 	"fmt"
-	types2 "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	"io/fs"
-	"path/filepath"
-	"time"
-
-	"cosmossdk.io/math"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -22,17 +17,27 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	types2 "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	"github.com/neutron-org/neutron/v5/app/params"
+	"io/fs"
+	"path/filepath"
+	"time"
 )
 
 const (
-	ICSValoperSelfStake = 1
-	UnbondingTime       = 21 * 24 * time.Hour
-	// neutron1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx4y0zvay
-	OperatorSk1 = "neutronvaloper1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx47jm4mq"
-	// neutron1tedsrwal9n2qlp6j3xcs3fjz9khx7z4reep8k3
-	OperatorSk2 = "neutronvaloper1tedsrwal9n2qlp6j3xcs3fjz9khx7z4rryc7s4"
-	// neutron1xdlvhs2l2wq0cc3eskyxphstns3348elwzvemh
-	OperatorSk3 = "neutronvaloper1xdlvhs2l2wq0cc3eskyxphstns3348el5l4qan"
+	// set of constants defines self delegation amount for newly created validator
+	// ICS and Sovereign ones
+	SovereignMinSelfDelegation = 1_000_000
+	SovereignSelfStake         = 1_000_000
+	ICSMinSelfDelegation       = 1
+	ICSSelfStake               = 1
+)
+
+// TODO: remove before release
+// TEST ONLY CONSTS
+const (
+	Devnet                = true
+	OverrideUnbondingTime = 5 * time.Minute
 )
 
 //go:embed validators/staking
@@ -62,8 +67,9 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 		if err != nil {
 			return err
 		}
-		msg := StakingValMsg(filepath.Base(path), 1000000, skval.Valoper, skval.PK)
+		msg := StakingValMsg(filepath.Base(path), SovereignSelfStake, skval.Valoper, skval.PK)
 		msgs = append(msgs, msg)
+
 		return nil
 	})
 	return msgs, errWalk
@@ -87,18 +93,20 @@ func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKe
 			MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
 			MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
 		},
-		MinSelfDelegation: math.NewInt(1),
+		MinSelfDelegation: math.NewInt(SovereignMinSelfDelegation),
 		DelegatorAddress:  "",
 		// WARN: Operator must have enough funds
 		ValidatorAddress: valoper,
 		Pubkey:           pubkey,
 		Value: sdk.Coin{
-			Denom:  "untrn",
+			Denom:  params.DefaultDenom,
 			Amount: math.NewInt(stake),
 		},
 	}
 }
 
+// MoveICSToStaking crates CCV validators in staking module, forces to change status to bonded
+// to generate valsetupdate with 0 vp the same block
 func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keeper, consumerValidators []types2.CrossChainValidator) error {
 	srv := stakingkeeper.NewMsgServerImpl(&sk)
 	DAOaddr, err := sdk.AccAddressFromBech32(MainDAOContractAddress)
@@ -110,8 +118,8 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 	for i, v := range consumerValidators {
 		// funding ICS valopers from DAO to stake a coin
 		err := bk.SendCoins(ctx, DAOaddr, v.GetAddress(), sdk.NewCoins(sdk.Coin{
-			Denom:  "untrn",
-			Amount: math.NewInt(ICSValoperSelfStake),
+			Denom:  params.DefaultDenom,
+			Amount: math.NewInt(ICSSelfStake),
 		}))
 		if err != nil {
 			return err
@@ -134,13 +142,13 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 				MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
 				MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
 			},
-			MinSelfDelegation: math.NewInt(1),
+			MinSelfDelegation: math.NewInt(ICSMinSelfDelegation),
 			// WARN: valoper must have enough funds to selfbond
 			ValidatorAddress: valoperAddr,
 			Pubkey:           v.GetPubkey(),
 			Value: sdk.Coin{
-				Denom:  "untrn",
-				Amount: math.NewInt(ICSValoperSelfStake),
+				Denom:  params.DefaultDenom,
+				Amount: math.NewInt(ICSSelfStake),
 			},
 		})
 		if err != nil {
@@ -165,12 +173,34 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 		}
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(int64(len(consumerValidators)*ICSValoperSelfStake))))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(len(consumerValidators)*ICSSelfStake))))
 	// since we forced to set bond status for ics validators during the upgrade, we have to move ICS staked funds from NotBondedPoolName to BondedPoolName
-	err = bk.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, coins)
-	return nil
+	return bk.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, coins)
 }
 
+// DeICS - does the deics, The whole point of the method is force staking module to remove ICS validators
+// and add STAKING(sovereign) ones, by generating valsetupdates (https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L269)
+// We add STAKING and ICS to staking module in a special way.
+// STAKING added in natural staking way, just submit `MsgCreateValidator` msg with vp >=1.
+// ICS added with the message (with vp = 0). And to force staking to remove the ICS validators the same block,
+// we force validators to join "active" set by bonding them with `bondValidator` method and move stake from nonbonded pool to bonded.
+//
+// The same block migration happened, in a staking module we have STAKING validators in `unbonded` state with vp>=1 and ICS in `bonded` state with vp==0.
+//
+// In the endblocker, staking module iterates over all validators in order of decreasing vp. https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L155
+// STAKING validators change the status from unbonded to bonded https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L174,
+// and valupdete generated https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L202. STAKING validators removed from list `last` https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L209 which at the start of endblocker contains STAKING+ICS validators.
+// when the iterator reaches first ICS validator, it stopes processing https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L168
+// By that time only ICS left in `last` list
+// `last` list becomes `noLongerBonded` https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L215
+// and valupdate with zero power (to remove from cometbft) generated https://github.com/cosmos/cosmos-sdk/blob/v0.50.9/x/staking/keeper/val_state_change.go#L235
+// Right after migration (preblocker) we have
+// ICS - bonded, STAKING - unbonded
+// At the end of the block, after endblocker
+// ICS - unbonded, STAKING - bonded
+// cometbft valset gets updated with a lag
+// upgrade + `next block` still sogned by ICS validators
+// upgrade + 2 the first block signed by STAKING validators.
 func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerkeeper.Keeper, bk bankkeeper.Keeper) error {
 	srv := stakingkeeper.NewMsgServerImpl(&sk)
 	consumerValidators := consumerKeeper.GetAllCCValidator(ctx)
@@ -180,22 +210,32 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
-	params := types.Params{
-		UnbondingTime: UnbondingTime,
+	cp, err := consumerKeeper.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
+	p := types.Params{
+		UnbondingTime: cp.UnbondingTime,
 		// During migration MaxValidators MUST be >= all the validators number, old and new ones.
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
 		// otherwise panic during staking begin blocker happens
-		// It's allowed to checge the value at the very next block
+		// It's allowed to change the value at the very next block
 		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)),
-		MaxEntries:        100,
-		HistoricalEntries: 100,
-		BondDenom:         "untrn",
+		MaxEntries:        7,
+		HistoricalEntries: 10_000,
+		BondDenom:         params.DefaultDenom,
 		MinCommissionRate: math.LegacyMustNewDecFromStr("0.0"),
+	}
+
+	// TODO: Remove before release
+	if Devnet {
+		p.UnbondingTime = OverrideUnbondingTime
 	}
 
 	_, err = srv.UpdateParams(ctx, &types.MsgUpdateParams{
 		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		Params:    params,
+		Params:    p,
 	})
 	if err != nil {
 		return err
@@ -206,14 +246,33 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
+	DAOaddr, err := sdk.AccAddressFromBech32(MainDAOContractAddress)
+	if err != nil {
+		return err
+	}
+
 	for _, msg := range newValMsgs {
+		valAddr, err := sdk.GetFromBech32(msg.ValidatorAddress, "neutronvaloper")
+		if err != nil {
+			return err
+		}
+
+		// prefund validator to make selfbond
+		err = bk.SendCoins(ctx, DAOaddr, valAddr, sdk.NewCoins(sdk.Coin{
+			Denom:  params.DefaultDenom,
+			Amount: math.NewInt(SovereignSelfStake),
+		}))
+		if err != nil {
+			return err
+		}
+
 		_, err = srv.CreateValidator(ctx, &msg)
 		if err != nil {
 			return err
 		}
 	}
 
-	return sk.SetLastTotalPower(ctx, math.NewInt(1))
+	return nil
 }
 
 // copied from staking module https://github.com/cosmos/cosmos-sdk/blob/v0.50.6/x/staking/keeper/val_state_change.go#L336

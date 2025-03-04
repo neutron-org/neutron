@@ -25,7 +25,8 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 
 	// delegate half, and check, if success, then delegate reminder
 	// if drop delegation fails, then delegate with native staking module
-	err = DropDelegate(ctx, wk, daoDelegateAmount.Balance.Amount.QuoRaw(2))
+	halfDelegation := daoDelegateAmount.Balance.Amount.QuoRaw(2)
+	err = DropDelegate(ctx, wk, halfDelegation)
 	if err != nil {
 		// ignore the error, because we have fallback logic
 		ctx.Logger().Error("Drop delegation failed", "error", err)
@@ -41,13 +42,24 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 		return err
 	}
 
-	delegatedByDrop := math.LegacyZeroDec()
+	delegatedByDropShares := math.LegacyZeroDec()
 	for _, d := range delegations {
-		delegatedByDrop = delegatedByDrop.Add(d.Shares)
+		delegatedByDropShares = delegatedByDropShares.Add(d.Shares)
 	}
 
-	toDelegateReminder := daoDelegateAmount.Balance.Amount.Sub(daoDelegateAmount.Balance.Amount.QuoRaw(2))
-	if delegatedByDrop.GTE(math.LegacyNewDecFromInt(daoDelegateAmount.Balance.Amount)) {
+	daoDelegateAmount, err = bk.Balance(ctx, &types2.QueryBalanceRequest{
+		Address: MainDAOContractAddress,
+		Denom:   appparams.DefaultDenom,
+	})
+	if err != nil {
+		return err
+	}
+	toDelegateReminder := daoDelegateAmount.Balance.Amount
+	// In general shares(delegatedByDropShares) and tokens(halfDelegation) have a conversion rate that depends on the validator’s prior slashes.
+	// However, in this specific case, validators are newly created in the same block, which means
+	// they have not been slashed yet. This ensures a 1:1 exchange rate between shares and tokens
+	// at this stage, making the **direct comparison valid**.
+	if delegatedByDropShares.GTE(math.LegacyNewDecFromInt(halfDelegation)) {
 		// drop delegation finished, delegate remainder
 		err = DropDelegate(ctx, wk, toDelegateReminder)
 		if err != nil {

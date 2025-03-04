@@ -1181,7 +1181,6 @@ func New(
 			GlobalFeeKeeper:       app.GlobalFeeKeeper,
 			WasmConfig:            &wasmConfig,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
-			ConsumerKeeper:        app.ConsumerKeeper,
 			FeeMarketKeeper:       app.FeeMarkerKeeper,
 		},
 		app.Logger(),
