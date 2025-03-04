@@ -170,10 +170,6 @@ func NewPubKeyFromBytes(key []byte) (*PubKey, error) {
 // Address returns the address of the ECDSA public key.
 // The function will return an empty address if the public key is invalid.
 func (pubKey PubKey) Address() crypto.Address {
-	if len(pubKey.Key) != PubKeySize && len(pubKey.Key) != UncompressedPubKeySize {
-		panic("length of pubKey is incorrect")
-	}
-
 	pub, err := secp256k1.ParsePubKey(pubKey.Key)
 	if err != nil {
 		panic(err)
