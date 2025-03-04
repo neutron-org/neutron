@@ -1,9 +1,10 @@
 package v600
 
 import (
-	"cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,7 +33,7 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 		ctx.Logger().Error("Drop delegation failed", "error", err)
 	}
 
-	dropAddress, err := sdk.AccAddressFromBech32(DropDelegateContract)
+	dropAddress, err := sdk.AccAddressFromBech32(DropCoreContractAddress)
 	if err != nil {
 		return fmt.Errorf("failed to parse DropDelegateContract contract address: %w", err)
 	}
@@ -130,7 +131,7 @@ func DropDelegate(ctx sdk.Context, wk *wasmkeeper.Keeper, amount math.Int) error
 	// Start drop delegation
 	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
 		Sender:   MainDAOContractAddress,
-		Contract: DropDelegateContract,
+		Contract: DropCoreContractAddress,
 		Msg:      msgDelegate,
 		Funds:    DropDelegateCoins,
 	})
@@ -148,7 +149,7 @@ func DropDelegate(ctx sdk.Context, wk *wasmkeeper.Keeper, amount math.Int) error
 	// execute delayed drop delegation
 	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
 		Sender:   MainDAOContractAddress,
-		Contract: DropDelegateContract,
+		Contract: DropCoreContractAddress,
 		Msg:      msgTick,
 		Funds:    nil,
 	})
