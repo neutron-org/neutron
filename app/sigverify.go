@@ -21,7 +21,6 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	kmultisig "github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256r1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -45,11 +44,6 @@ func init() {
 	copy(key, bz)
 	simSecp256k1Pubkey.Key = key
 }
-
-// SignatureVerificationGasConsumer is the type of function that is used to both
-// consume gas when verifying signatures and also to accept or reject different types of pubkeys
-// This is where apps can define their own PubKey
-type SignatureVerificationGasConsumer = func(meter storetypes.GasMeter, sig signing.SignatureV2, params types.Params) error
 
 // SetPubKeyDecorator sets PubKeys in context for any signer which does not already have pubkey set
 // PubKeys must be set in context for all signers before any other sigverify decorators run
@@ -101,7 +95,7 @@ func (spkd SetPubKeyDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 				"pubKey does not match signer address %s with signer index: %d", signerStrs[i], i)
 		}
 
-		acc, err := GetSignerAcc(ctx, spkd.ak, signers[i])
+		acc, err := ante.GetSignerAcc(ctx, spkd.ak, signers[i])
 		if err != nil {
 			return ctx, err
 		}
@@ -209,7 +203,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 	}
 
 	for i, sig := range sigs {
-		acc, err := GetSignerAcc(ctx, svd.ak, signers[i])
+		acc, err := ante.GetSignerAcc(ctx, svd.ak, signers[i])
 		if err != nil {
 			return ctx, err
 		}
@@ -267,87 +261,6 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 				}
 				return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
 			}
-		}
-	}
-
-	return next(ctx, tx, simulate)
-}
-
-// IncrementSequenceDecorator handles incrementing sequences of all signers.
-// Use the IncrementSequenceDecorator decorator to prevent replay attacks. Note,
-// there is need to execute IncrementSequenceDecorator on RecheckTx since
-// BaseApp.Commit() will set the check state based on the latest header.
-//
-// NOTE: Since CheckTx and DeliverTx state are managed separately, subsequent and
-// sequential txs orginating from the same account cannot be handled correctly in
-// a reliable way unless sequence numbers are managed and tracked manually by a
-// client. It is recommended to instead use multiple messages in a tx.
-type IncrementSequenceDecorator struct {
-	ak ante.AccountKeeper
-}
-
-func NewIncrementSequenceDecorator(ak ante.AccountKeeper) IncrementSequenceDecorator {
-	return IncrementSequenceDecorator{
-		ak: ak,
-	}
-}
-
-func (isd IncrementSequenceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	sigTx, ok := tx.(authsigning.SigVerifiableTx)
-	if !ok {
-		return ctx, errorsmod.Wrap(sdkerrors.ErrTxDecode, "invalid transaction type")
-	}
-
-	// increment sequence of all signers
-	signers, err := sigTx.GetSigners()
-	if err != nil {
-		return sdk.Context{}, err
-	}
-
-	for _, signer := range signers {
-		acc := isd.ak.GetAccount(ctx, signer)
-		if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
-			panic(err)
-		}
-
-		isd.ak.SetAccount(ctx, acc)
-	}
-
-	return next(ctx, tx, simulate)
-}
-
-// ValidateSigCountDecorator takes in Params and returns errors if there are too many signatures in the tx for the given params
-// otherwise it calls next AnteHandler
-// Use this decorator to set parameterized limit on number of signatures in tx
-// CONTRACT: Tx must implement SigVerifiableTx interface
-type ValidateSigCountDecorator struct {
-	ak ante.AccountKeeper
-}
-
-func NewValidateSigCountDecorator(ak ante.AccountKeeper) ValidateSigCountDecorator {
-	return ValidateSigCountDecorator{
-		ak: ak,
-	}
-}
-
-func (vscd ValidateSigCountDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	sigTx, ok := tx.(authsigning.SigVerifiableTx)
-	if !ok {
-		return ctx, errorsmod.Wrap(sdkerrors.ErrTxDecode, "Tx must be a sigTx")
-	}
-
-	params := vscd.ak.GetParams(ctx)
-	pubKeys, err := sigTx.GetPubKeys()
-	if err != nil {
-		return ctx, err
-	}
-
-	var sigCount uint64
-	for _, pk := range pubKeys {
-		sigCount += CountSubKeys(pk)
-		if sigCount > params.TxSigLimit {
-			return ctx, errorsmod.Wrapf(sdkerrors.ErrTooManySignatures,
-				"signatures: %d, limit: %d", sigCount, params.TxSigLimit)
 		}
 	}
 
@@ -415,36 +328,6 @@ func ConsumeMultisignatureVerificationGas(
 	}
 
 	return nil
-}
-
-// GetSignerAcc returns an account for a given address that is expected to sign
-// a transaction.
-func GetSignerAcc(ctx sdk.Context, ak ante.AccountKeeper, addr sdk.AccAddress) (sdk.AccountI, error) {
-	if acc := ak.GetAccount(ctx, addr); acc != nil {
-		return acc, nil
-	}
-
-	return nil, errorsmod.Wrapf(sdkerrors.ErrUnknownAddress, "account %s does not exist", addr)
-}
-
-// CountSubKeys counts the total number of keys for a multi-sig public key.
-// A non-multisig, i.e. a regular signature, it naturally a count of 1. If it is a multisig,
-// then it recursively calls it on its pubkeys.
-func CountSubKeys(pub cryptotypes.PubKey) (numKeys uint64) {
-	if pub == nil {
-		return 0
-	}
-	v, ok := pub.(*kmultisig.LegacyAminoPubKey)
-	if !ok {
-		return 1
-	}
-
-	numKeys = 0
-	for _, subkey := range v.GetPubKeys() {
-		numKeys += CountSubKeys(subkey)
-	}
-
-	return numKeys
 }
 
 // signatureDataToBz converts a SignatureData into raw bytes signature.
