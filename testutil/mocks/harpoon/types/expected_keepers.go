@@ -35,6 +35,20 @@ func (m *MockWasmKeeper) EXPECT() *MockWasmKeeperMockRecorder {
 	return m.recorder
 }
 
+// HasContractInfo mocks base method.
+func (m *MockWasmKeeper) HasContractInfo(ctx context.Context, contractAddress types.AccAddress) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasContractInfo", ctx, contractAddress)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasContractInfo indicates an expected call of HasContractInfo.
+func (mr *MockWasmKeeperMockRecorder) HasContractInfo(ctx, contractAddress interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasContractInfo", reflect.TypeOf((*MockWasmKeeper)(nil).HasContractInfo), ctx, contractAddress)
+}
+
 // Sudo mocks base method.
 func (m *MockWasmKeeper) Sudo(ctx context.Context, contractAddress types.AccAddress, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()

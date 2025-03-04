@@ -4,6 +4,9 @@ import (
 	"context"
 	"testing"
 
+	types2 "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/v5/testutil"
 
 	"github.com/stretchr/testify/require"
@@ -40,14 +43,10 @@ func TestManageHookSubscription(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
-
-	msgServer := keeper.NewMsgServerImpl(k)
-
 	tests := []struct {
 		name                      string
 		manageHookSubscriptionMsg types.MsgManageHookSubscription
+		malleate                  func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper)
 		expectedErr               string
 	}{
 		{
@@ -58,6 +57,8 @@ func TestManageHookSubscription(t *testing.T) {
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{},
 				},
+			},
+			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
 			},
 			"authority is invalid: empty address string is not allowed",
 		},
@@ -70,6 +71,8 @@ func TestManageHookSubscription(t *testing.T) {
 					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED},
 				},
 			},
+			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+			},
 			"subscription hooks are not unique",
 		},
 		{
@@ -81,7 +84,23 @@ func TestManageHookSubscription(t *testing.T) {
 					Hooks:           []types.HookType{types.HookType(100)},
 				},
 			},
+			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+			},
 			"non-existing hook type",
+		},
+		{
+			"bad case - non-existing contract",
+			types.MsgManageHookSubscription{
+				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				HookSubscription: &types.HookSubscription{
+					ContractAddress: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED},
+				},
+			},
+			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+				mockWasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32("neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")).Return(false)
+			},
+			errors.ErrInvalidAddress.Error(),
 		},
 		{
 			"good case - empty hooks",
@@ -91,6 +110,9 @@ func TestManageHookSubscription(t *testing.T) {
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{},
 				},
+			},
+			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+				mockWasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 			},
 			"",
 		},
@@ -103,11 +125,20 @@ func TestManageHookSubscription(t *testing.T) {
 					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED},
 				},
 			},
+			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+				mockWasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
+			},
 			"",
 		},
 	}
 
 	for _, tt := range tests {
+		wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+
+		k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
+		msgServer := keeper.NewMsgServerImpl(k)
+		tt.malleate(ctx, wasmKeeper)
+
 		res, err := msgServer.ManageHookSubscription(ctx, &tt.manageHookSubscriptionMsg)
 
 		if tt.expectedErr == "" {
