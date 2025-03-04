@@ -1,10 +1,13 @@
 package v600_test
 
 import (
-	"cosmossdk.io/math"
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
+	"testing"
+
+	"cosmossdk.io/math"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -23,8 +26,6 @@ import (
 	v600 "github.com/neutron-org/neutron/v5/app/upgrades/sovereign"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"io/fs"
-	"testing"
 
 	"github.com/neutron-org/neutron/v5/testutil"
 )
@@ -268,4 +269,11 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 		require.True(t, suite.ChainA.Vals.HasAddress(pk.Address()))
 		require.False(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
 	}
+
+	// dynamicfees
+	err = v600.SetupDynamicfees(ctx, app.DynamicFeesKeeper)
+	require.NoError(t, err)
+
+	dfkParams := app.DynamicFeesKeeper.GetParams(ctx)
+	require.Equal(t, dfkParams.NtrnPrices, sdk.DecCoins{sdk.DecCoin{Denom: v600.DropNtrnDenom, Amount: math.LegacyOneDec()}})
 }
