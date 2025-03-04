@@ -141,6 +141,7 @@ func TestVerifySignatureECDSA__compressedPublicKeyValid(t *testing.T) {
 
 	require.True(t, pubKey.VerifySignature([]byte(formattedMsg), sigBytes), "Valid signature should pass verification")
 }
+
 func TestVerifySignatureECDSA__invalidSignatureFails(t *testing.T) {
 	modifiedSig := make([]byte, len(sigBytes))
 	modifiedSig[10] ^= 0xFF // Flip one byte
@@ -149,7 +150,6 @@ func TestVerifySignatureECDSA__invalidSignatureFails(t *testing.T) {
 		Key: pubKeyBytes,
 	}
 	require.False(t, pubKey.verifySignatureECDSA([]byte(formattedMsg), modifiedSig), "modified signature should fail verification")
-
 }
 
 func TestVerifySignatureECDSA__invalidPubKeyFails(t *testing.T) {
@@ -168,7 +168,8 @@ func TestVerifySignatureECDSA__shortSignatureFails(t *testing.T) {
 }
 
 func TestVerifySignatureECDSA__longSignatureFails(t *testing.T) {
-	longSig := append(sigBytes, 0x1b)
+	longSig := make([]byte, len(sigBytes)+1)
+	longSig = append(longSig, 0x1b)
 	require.False(t, pubKey.verifySignatureECDSA([]byte(formattedMsg), longSig),
 		"long signature should fail verification")
 }
