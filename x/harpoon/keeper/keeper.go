@@ -35,6 +35,10 @@ type (
 	}
 )
 
+func (k *Keeper) GetWasmKeeper() types.WasmKeeper {
+	return k.wasmKeeper
+}
+
 // NewKeeper creates a new keeper.
 func NewKeeper(
 	cdc codec.BinaryCodec,

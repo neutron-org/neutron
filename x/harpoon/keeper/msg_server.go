@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -32,7 +33,7 @@ func (s msgServer) ManageHookSubscription(goCtx context.Context, req *types.MsgM
 
 	contractAddr := sdk.MustAccAddressFromBech32(req.HookSubscription.ContractAddress)
 	if !s.keeper.wasmKeeper.HasContractInfo(goCtx, contractAddr) {
-		return nil, errorsmod.Wrapf(errors.ErrInvalidAddress, "contract address not found")
+		return nil, errorsmod.Wrapf(errors.ErrInvalidAddress, fmt.Sprintf("contract address not found: %s", contractAddr))
 	}
 
 	if s.keeper.GetAuthority() != req.Authority {

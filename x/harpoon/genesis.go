@@ -1,7 +1,11 @@
 package harpoon
 
 import (
+	"fmt"
+
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/neutron-org/neutron/v5/x/harpoon/keeper"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
@@ -10,6 +14,12 @@ import (
 // InitGenesis initializes the module's state from a provided genesis state.
 func InitGenesis(ctx sdk.Context, k *keeper.Keeper, state types.GenesisState) {
 	for _, item := range state.HookSubscriptions {
+		for _, contractAddr := range item.ContractAddresses {
+			addr := sdk.MustAccAddressFromBech32(contractAddr)
+			if !k.GetWasmKeeper().HasContractInfo(ctx, addr) {
+				panic(errors.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("contract address not found: %s", contractAddr)))
+			}
+		}
 		k.SetHookSubscription(ctx, item)
 	}
 }
