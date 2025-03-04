@@ -1,4 +1,4 @@
-package v510_test
+package v513_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	v510 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.0"
+	v513 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.3"
 	"github.com/neutron-org/neutron/v5/testutil"
 )
 
@@ -29,15 +29,9 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
-		Name:   v510.UpgradeName,
+		Name:   v513.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
 	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
-
-	params, err := app.MarketMapKeeper.GetParams(ctx)
-	suite.Require().NoError(err)
-	suite.Require().Equal(params.MarketAuthorities[0], "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
-	suite.Require().Equal(params.MarketAuthorities[1], v510.MarketMapAuthorityMultisig)
-	suite.Require().Equal(params.Admin, "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
 }
