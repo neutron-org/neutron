@@ -48,6 +48,7 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("RunMigrations failed: %w", err)
 		}
 
+		// TODO: remove before release
 		err = FundAccounts(ctx, keepers.BankKeeper)
 		if err != nil {
 			return vm, fmt.Errorf("FundAccounts failed: %w", err)
