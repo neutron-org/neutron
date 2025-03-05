@@ -23,8 +23,8 @@ const (
 	VotingRegistryContractAddress = "neutron1f6jlx7d9y408tlzue7r2qcf79plp549n30yzqjajjud8vm7m4vdspg933s"
 )
 
-// WARNING! Below constants represent tuples of addresses and code IDs of the new contracts. If you
-// need to update an address, make sure to update the code ID as well (and the other way around).
+// WARNING! Constants below represent tuples of addresses and code IDs of the new contracts. If you
+// need to update an address, make sure to update the code ID as well (and vice versa).
 
 const (
 	DropCoreContractAddress = "TODO: populate when known"
