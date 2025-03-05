@@ -15,12 +15,32 @@ const (
 	// UpgradeName defines the on-chain upgrade name.
 	UpgradeName = "sovereign"
 
-	StakingTrackerContractAddress = "neutron1r50m5lafnmctat4xpvwdpzqndynlxt2skhr4fhzh76u0qar2y9hqyaf9ku"
-	StakingVaultContractAddress   = "neutron1xqju350rsytdrgvyc27zljjvpygefmnvdjnfel8rcannyn6zt2rq8fjxj2"
-	StakingRewardsContractAddress = ""
-	VotingRegistryContractAddress = "neutron13ehuhysn5mqjeaheeuew2gjs785f6k7jm8vfsqg3jhtpkwppcmzqu8vxt2"
-	MainDAOContractAddress        = "neutron1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8ts8g30fq"
-	DropDelegateContract          = "neutron1ypj29p92305sc8r9azz9h8jkjte8r0xx5xnw6lgdcezvnc777twswxgp99"
+	// DropNtrnDenom is the denom of the Drop's NTRN token.
+	DropNtrnDenom = "TODO: populate when known"
+	// MainDAOContractAddress is the address of the Neutron DAO core contract.
+	MainDAOContractAddress = "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
+	// VotingRegistryContractAddress is the address of the Neutron DAO voting registry contract.
+	VotingRegistryContractAddress = "neutron1f6jlx7d9y408tlzue7r2qcf79plp549n30yzqjajjud8vm7m4vdspg933s"
+)
+
+// WARNING! Constants below represent tuples of addresses and code IDs of the new contracts. If you
+// need to update an address, make sure to update the code ID as well (and vice versa).
+
+const (
+	DropCoreContractAddress = "TODO: populate when known"
+	DropCoreContractCodeID  = 0 // TODO: populate when known
+
+	StakingTrackerContractAddress = "TODO: populate when known"
+	StakingTrackerContractCodeID  = 0 // TODO: populate when known
+
+	StakingVaultContractAddress = "TODO: populate when known"
+	StakingVaultContractCodeID  = 0 // TODO: populate when known
+
+	StakingRewardsContractAddress = "TODO: populate when known"
+	StakingRewardsContractCodeID  = 0 // TODO: populate when known
+
+	StakingInfoProxyContractAddress = "TODO: populate when known"
+	StakingInfoProxyContractCodeID  = 0 // TODO: populate when known
 )
 
 var Upgrade = upgrades.Upgrade{
@@ -35,9 +55,12 @@ var Upgrade = upgrades.Upgrade{
 	},
 }
 
-// CodesToPin - codes to pin of the new stored contracts:
-// rewards, vault, tracker, proxy
-// TODO: fill before migration
+// CodesToPin is a list of code IDs to pin. Contains code IDs of contracts related to the Neutron
+// governance, staking, and DeFi.
 var CodesToPin = []uint64{
-	0,
+	DropCoreContractCodeID,
+	StakingTrackerContractCodeID,
+	StakingVaultContractCodeID,
+	StakingRewardsContractCodeID,
+	StakingInfoProxyContractCodeID,
 }

@@ -2,15 +2,17 @@ package v600
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	types2 "github.com/cosmos/cosmos-sdk/x/bank/types"
 	appparams "github.com/neutron-org/neutron/v5/app/params"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -43,51 +45,57 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info("Starting module migrations...")
 		vm, err := mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("RunMigrations failed: %w", err)
 		}
 
-		err = FuncAccounts(ctx, keepers.BankKeeper)
+		// TODO: remove before release
+		err = FundAccounts(ctx, keepers.BankKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("FundAccounts failed: %w", err)
 		}
 
 		err = SetupRewards(ctx, keepers.BankKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("SetupRewards failed: %w", err)
 		}
 
 		// subscribe tracing contract for staking hooks to mirror staking power into the contract
 		err = SetupTracking(ctx, keepers.HarpoonKeeper, keepers.WasmKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("SetupTracking failed: %w", err)
 		}
 
 		// initial setup revenue module
 		err = SetupRevenue(ctx, *keepers.RevenueKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("SetupRevenue failed: %w", err)
 		}
 
 		// move consensus from ICS validator (consumer module) to sovereign3 validators (staking module)
 		err = DeICS(ctx, *keepers.StakingKeeper, *keepers.ConsumerKeeper, keepers.BankKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("DeICS failed: %w", err)
 		}
 
 		// stake whole treasury through the Drop
 		err = StakeWithDrop(ctx, *keepers.StakingKeeper, keepers.BankKeeper, keepers.WasmKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("StakeWithDrop failed: %w", err)
 		}
 
 		err = SetupFeeMarket(ctx, keepers.FeeMarketKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("SetupFeeMarket failed: %w", err)
+		}
+
+		err = SetupDynamicfees(ctx, keepers.DynamicfeesKeeper)
+		if err != nil {
+			return vm, fmt.Errorf("SetupDynamicfees failed: %w", err)
 		}
 
 		err = PinNewCodes(ctx, keepers.WasmKeeper)
 		if err != nil {
-			return vm, err
+			return vm, fmt.Errorf("PinNewCodes failed: %w", err)
 		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
@@ -96,7 +104,7 @@ func CreateUpgradeHandler(
 }
 
 // TEST PURPOSES ONLY
-func FuncAccounts(ctx context.Context, bk bankkeeper.Keeper) error {
+func FundAccounts(ctx context.Context, bk bankkeeper.Keeper) error {
 	err := bk.MintCoins(ctx, "dex", sdk.NewCoins(sdk.Coin{
 		Denom:  "untrn",
 		Amount: math.NewInt(2_000_000_000_000),
@@ -168,7 +176,8 @@ func SetupTracking(ctx sdk.Context, harpoonKeeper *harpoonkeeper.Keeper, wasmKee
 			types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED,
 			types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED,
 			types.HOOK_TYPE_BEFORE_VALIDATOR_SLASHED,
-		}})
+		},
+	})
 
 	addVaultMsg := VotingRegistryExecuteMsg{AddVotingVault: AddVotingVaultMsg{NewVotingVaultContract: StakingVaultContractAddress}}
 	addVaultMsgBz, err := json.Marshal(addVaultMsg)
@@ -224,7 +233,8 @@ func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper) error {
 				BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{
 					BlocksPerPeriod: 600,
 				},
-			}},
+			},
+		},
 		TwapWindow: 900,
 	}
 	srv := revenuekeeper.NewMsgServerImpl(&rk)
@@ -247,7 +257,19 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 		return err
 	}
 
-	// TODO: add dNTRN as fee denom
+	return nil
+}
+
+func SetupDynamicfees(ctx sdk.Context, dfk *dynamicfeeskeeper.Keeper) error {
+	params := dfk.GetParams(sdk.UnwrapSDKContext(ctx))
+	params.NtrnPrices = append(params.NtrnPrices, sdk.DecCoin{
+		Denom:  DropNtrnDenom,
+		Amount: math.LegacyOneDec(),
+	})
+	if err := dfk.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
+		return fmt.Errorf("failed to set dynamicfees params with NtrnPrices updated: %w", err)
+	}
+
 	return nil
 }
 
