@@ -13,7 +13,7 @@ jobs:
     # This job only runs for pull request comments
     name: PR comment
     if: ${{ github.event.issue.pull_request }}
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     steps:
       - name: Send Notification
         uses: appleboy/telegram-action@master
@@ -26,7 +26,7 @@ jobs:
   pull_requests_and_review:
     name: Pull request action or review
     if: ${{ !github.event.issue.pull_request }}
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     steps:
     - name: Send Notification
       uses: appleboy/telegram-action@master
