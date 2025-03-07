@@ -57,7 +57,7 @@ func ParseSdkDecFromString(s, separator string) ([]math.LegacyDec, error) {
 	return parsedDec, nil
 }
 
-// CreateRandomAccounts is a function return a list of randomly generated AccAddresses
+// CreateRandomAccounts is a function that returns a list of randomly generated AccAddresses
 func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
 	testAddrs := make([]sdk.AccAddress, numAccts)
 	for i := 0; i < numAccts; i++ {
