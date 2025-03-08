@@ -46,6 +46,18 @@ func TestGenesisState_Validate(t *testing.T) {
 			valid: false,
 		},
 		{
+			desc: "unspecified hook type",
+			genState: &types.GenesisState{
+				HookSubscriptions: []types.HookSubscriptions{
+					{
+						HookType:          types.HOOK_TYPE_UNSPECIFIED,
+						ContractAddresses: []string{ContractAddress1},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
 			desc: "invalid address",
 			genState: &types.GenesisState{
 				HookSubscriptions: []types.HookSubscriptions{

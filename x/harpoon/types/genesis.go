@@ -19,8 +19,8 @@ func (gs GenesisState) Validate() error {
 	// Check for duplicate hook types
 	hookIndexMap := make(map[int32]bool)
 	for _, item := range gs.HookSubscriptions {
-		if _, ok := HookType_name[int32(item.HookType)]; !ok {
-			return fmt.Errorf("invalid hook type: %d", int32(item.HookType))
+		if err := ValidateHookType(item.HookType); err != nil {
+			return err
 		}
 		if _, ok := hookIndexMap[int32(item.HookType)]; ok {
 			return fmt.Errorf("duplicate hook type: %d", int32(item.HookType))
