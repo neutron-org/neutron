@@ -69,6 +69,34 @@ func TestGenesisState_Validate(t *testing.T) {
 			},
 			valid: false,
 		},
+		{
+			desc: "duplicate hook",
+			genState: &types.GenesisState{
+				HookSubscriptions: []types.HookSubscriptions{
+					{
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
+						ContractAddresses: []string{ContractAddress1},
+					},
+					{
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
+						ContractAddresses: []string{ContractAddress1},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicate contract address",
+			genState: &types.GenesisState{
+				HookSubscriptions: []types.HookSubscriptions{
+					{
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
+						ContractAddresses: []string{ContractAddress1, ContractAddress1},
+					},
+				},
+			},
+			valid: false,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
