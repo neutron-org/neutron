@@ -35,6 +35,10 @@ type (
 	}
 )
 
+func (k *Keeper) GetWasmKeeper() types.WasmKeeper {
+	return k.wasmKeeper
+}
+
 // NewKeeper creates a new keeper.
 func NewKeeper(
 	cdc codec.BinaryCodec,
@@ -97,7 +101,7 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.Hook
 	for _, item := range update.Hooks {
 		key := types.GetHookSubscriptionKey(item)
 		subscriptions := types.HookSubscriptions{
-			HookType: types.HookType(item),
+			HookType: item,
 		}
 		if store.Has(key) {
 			k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
