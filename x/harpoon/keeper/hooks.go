@@ -132,7 +132,7 @@ func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddres
 func (h Hooks) AfterUnbondingInitiated(ctx context.Context, id uint64) error {
 	message := types.AfterUnbondingInitiatedSudoMsg{
 		AfterUnbondingInitiated: types.AfterUnbondingInitiatedMsg{
-			Id: id,
+			ID: id,
 		},
 	}
 	return h.k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_AFTER_UNBONDING_INITIATED, message)

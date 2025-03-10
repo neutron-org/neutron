@@ -148,9 +148,9 @@ func (k Keeper) GetSubscribedAddressesForHookType(goCtx context.Context, hookTyp
 		subscriptions := types.HookSubscriptions{}
 		k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
 		return subscriptions.ContractAddresses
-	} else {
-		return []string{}
 	}
+
+	return []string{}
 }
 
 // GetAllSubscriptions retrieves subscriptions for all hooks.
@@ -189,7 +189,7 @@ func (k Keeper) doCallSudoForSubscriptionType(ctx context.Context, hookType type
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	msgJsonBz, err := json.Marshal(msg)
+	msgJSONBz, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal sudo subscription msg: %v", err)
 	}
@@ -201,9 +201,9 @@ func (k Keeper) doCallSudoForSubscriptionType(ctx context.Context, hookType type
 		if err != nil {
 			return errors.Wrapf(err, "could not parse acc address from bech32 for harpoon sudo call, contract_address=%s", contractAddress)
 		}
-		_, err = k.wasmKeeper.Sudo(sdkCtx, accContractAddress, msgJsonBz)
+		_, err = k.wasmKeeper.Sudo(sdkCtx, accContractAddress, msgJSONBz)
 		if err != nil {
-			return errors.Wrapf(err, "could not execute sudo call successfully for hook_type=%s, msg=%s, contract_address=%s", hookType.String(), string(msgJsonBz), contractAddress)
+			return errors.Wrapf(err, "could not execute sudo call successfully for hook_type=%s, msg=%s, contract_address=%s", hookType.String(), string(msgJSONBz), contractAddress)
 		}
 	}
 
