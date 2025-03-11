@@ -66,15 +66,9 @@ func (msg *MsgManageHookSubscription) checkHooksUnique() error {
 
 func (msg *MsgManageHookSubscription) checkHooksExist() error {
 	for _, item := range msg.HookSubscription.Hooks {
-		_, ok := HookType_name[int32(item)]
-		if !ok {
-			return fmt.Errorf("non-existing hook=%d", int32(item))
-		}
-
-		if item == HOOK_TYPE_UNSPECIFIED {
-			return fmt.Errorf("unspecified hooks are not allowed")
+		if err := ValidateHookType(item); err != nil {
+			return err
 		}
 	}
-
 	return nil
 }

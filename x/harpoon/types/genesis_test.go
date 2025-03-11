@@ -46,6 +46,18 @@ func TestGenesisState_Validate(t *testing.T) {
 			valid: false,
 		},
 		{
+			desc: "unspecified hook type",
+			genState: &types.GenesisState{
+				HookSubscriptions: []types.HookSubscriptions{
+					{
+						HookType:          types.HOOK_TYPE_UNSPECIFIED,
+						ContractAddresses: []string{ContractAddress1},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
 			desc: "invalid address",
 			genState: &types.GenesisState{
 				HookSubscriptions: []types.HookSubscriptions{
@@ -64,6 +76,34 @@ func TestGenesisState_Validate(t *testing.T) {
 					{
 						HookType:          types.HookType(-200),
 						ContractAddresses: []string{ContractAddress1},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicate hook",
+			genState: &types.GenesisState{
+				HookSubscriptions: []types.HookSubscriptions{
+					{
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
+						ContractAddresses: []string{ContractAddress1},
+					},
+					{
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
+						ContractAddresses: []string{ContractAddress1},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicate contract address",
+			genState: &types.GenesisState{
+				HookSubscriptions: []types.HookSubscriptions{
+					{
+						HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
+						ContractAddresses: []string{ContractAddress1, ContractAddress1},
 					},
 				},
 			},
