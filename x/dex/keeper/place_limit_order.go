@@ -84,6 +84,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		totalIn,
 		tickIndexInToOut,
 		orderType.String(),
+		maxAmountOut,
 		minAvgSellPrice,
 		sharesIssued,
 		trancheKey,
