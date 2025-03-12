@@ -5,10 +5,9 @@ import (
 	"errors"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 type queryServer struct {
@@ -101,25 +100,25 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
-	blocksPerPeriod := ps.TotalBlocksInPeriod(ctx)
-	pr := PerformanceRating(
-		params.BlocksPerformanceRequirement,
-		params.OracleVotesPerformanceRequirement,
-		int64(blocksPerPeriod-valInfo.GetCommitedBlocksInPeriod()),
-		int64(blocksPerPeriod-valInfo.GetCommitedOracleVotesInPeriod()),
-		int64(blocksPerPeriod),
-	)
-
-	amount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	totalBlocksInPeriod := ps.TotalBlocksInPeriod(ctx)
+
+	pr, valCompensation := evaluateValCommitment(
+		params,
+		baseRevenueAmount,
+		valInfo,
+		totalBlocksInPeriod,
+	)
 
 	return &revenuetypes.QueryValidatorStatsResponse{
 		Stats: revenuetypes.ValidatorStats{
-			ValidatorInfo:     valInfo,
-			PerformanceRating: pr,
-			ExpectedRevenue:   pr.MulInt(amount).TruncateInt(),
+			ValidatorInfo:               valInfo,
+			TotalProducedBlocksInPeriod: totalBlocksInPeriod,
+			PerformanceRating:           pr,
+			ExpectedRevenue:             valCompensation,
 		},
 	}, nil
 }
@@ -146,25 +145,26 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
-	amount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	totalBlocksInPeriod := ps.TotalBlocksInPeriod(ctx)
 
 	valStats := make([]revenuetypes.ValidatorStats, 0, len(valsInfo))
 	for _, valInfo := range valsInfo {
-		blocksPerPeriod := ps.TotalBlocksInPeriod(ctx)
-		pr := PerformanceRating(
-			params.BlocksPerformanceRequirement,
-			params.OracleVotesPerformanceRequirement,
-			int64(blocksPerPeriod-valInfo.GetCommitedBlocksInPeriod()),
-			int64(blocksPerPeriod-valInfo.GetCommitedOracleVotesInPeriod()),
-			int64(blocksPerPeriod),
+		pr, valCompensation := evaluateValCommitment(
+			params,
+			baseRevenueAmount,
+			valInfo,
+			totalBlocksInPeriod,
 		)
+
 		valStats = append(valStats, revenuetypes.ValidatorStats{
-			ValidatorInfo:     valInfo,
-			PerformanceRating: pr,
-			ExpectedRevenue:   pr.MulInt(amount).TruncateInt(),
+			ValidatorInfo:               valInfo,
+			TotalProducedBlocksInPeriod: totalBlocksInPeriod,
+			PerformanceRating:           pr,
+			ExpectedRevenue:             valCompensation,
 		})
 	}
 

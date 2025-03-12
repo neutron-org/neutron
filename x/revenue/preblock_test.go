@@ -137,6 +137,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		val1Info := val1Info()
 		val1Info.CommitedBlocksInPeriod = 5
 		val1Info.CommitedOracleVotesInPeriod = 5
+		val1Info.InActiveValsetForBlocksInPeriod = 5
 		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
 
 		// prepare keeper state by setting validator info
@@ -251,6 +252,7 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		val1Info := val1Info()
 		val1Info.CommitedBlocksInPeriod = 5
 		val1Info.CommitedOracleVotesInPeriod = 5
+		val1Info.InActiveValsetForBlocksInPeriod = 5
 		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
 
 		// prepare keeper state by setting validator info

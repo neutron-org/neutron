@@ -159,9 +159,12 @@ func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ValAddress, info rev
 // prices and updates their info in accordance with the results.
 func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuetypes.ValidatorParticipation) error {
 	for _, vote := range votes {
-		var blockVote bool  // whether the validator has voted for the block
-		var oracleVote bool // whether the validator has voted for the oracle prices
+		valInfo, err := k.getOrCreateValidatorInfo(ctx, vote.ValOperAddress)
+		if err != nil {
+			return err
+		}
 
+		valInfo.InActiveValsetForBlocksInPeriod++
 		// BlockIDFlagAbsent means that no block vote has been received from the validator
 		if vote.BlockVote == tmtypes.BlockIDFlagAbsent {
 			k.Logger(ctx).Debug("missing validator's block signature",
@@ -169,7 +172,7 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 				"height", ctx.BlockHeight(),
 			)
 		} else {
-			blockVote = true
+			valInfo.CommitedBlocksInPeriod++
 		}
 		// empty oracle prices means that no prices vote has been received from the validator
 		if len(vote.OracleVoteExtension.Prices) == 0 {
@@ -178,28 +181,15 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 				"height", ctx.BlockHeight(),
 			)
 		} else {
-			oracleVote = true
-		}
-		if !oracleVote && !blockVote {
-			continue // nothing to update for the validator
-		}
-
-		// update validator's info in the module state
-		valInfo, err := k.getOrCreateValidatorInfo(ctx, vote.ValOperAddress)
-		if err != nil {
-			return err
-		}
-		if oracleVote {
 			valInfo.CommitedOracleVotesInPeriod++
 		}
-		if blockVote {
-			valInfo.CommitedBlocksInPeriod++
-		}
+
 		if err := k.SetValidatorInfo(ctx, vote.ValOperAddress, valInfo); err != nil {
 			return err
 		}
 		k.Logger(ctx).Debug("validator participation recorded",
 			"validator", vote.ValOperAddress.String(),
+			"in_active_valset_for_blocks_in_period", valInfo.InActiveValsetForBlocksInPeriod,
 			"committed_blocks_in_period", valInfo.CommitedBlocksInPeriod,
 			"committed_oracle_votes_in_period", valInfo.CommitedOracleVotesInPeriod,
 		)
@@ -216,20 +206,19 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
 	}
-	baseCompensation, err := k.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := k.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
 	if err != nil {
 		return fmt.Errorf("failed to calculate base revenue amount: %w", err)
 	}
 
 	for _, info := range infos {
-		rating := PerformanceRating(
-			params.BlocksPerformanceRequirement,
-			params.OracleVotesPerformanceRequirement,
-			int64(blocksInPeriod-info.GetCommitedBlocksInPeriod()),
-			int64(blocksInPeriod-info.GetCommitedOracleVotesInPeriod()),
-			int64(blocksInPeriod),
+		pr, valCompensation := evaluateValCommitment(
+			params,
+			baseRevenueAmount,
+			info,
+			blocksInPeriod,
 		)
-		valCompensation := rating.MulInt(baseCompensation).TruncateInt()
+
 		_, valOperAddrBytes, err := bech32types.DecodeAndConvert(info.ValOperAddress)
 		if err != nil {
 			return fmt.Errorf("failed to convert valoper address %s to bytes: %w", info.ValOperAddress, err)
@@ -240,7 +229,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 				ctx,
 				info,
 				sdk.NewCoin(revenuetypes.RewardDenom, math.ZeroInt()),
-				rating,
+				pr,
 				blocksInPeriod,
 			)
 			continue
@@ -264,7 +253,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 				ctx,
 				info,
 				revenueAmt,
-				rating,
+				pr,
 				blocksInPeriod,
 			)
 			k.Logger(ctx).Debug("revenue sent to validator", "validator", info.ValOperAddress, "revenue", revenueAmt.String())
@@ -305,7 +294,7 @@ func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64)
 	if assetPrice.Equal(math.LegacyZeroDec()) {
 		return math.ZeroInt(), fmt.Errorf("invalid TWAP: price must be greater than zero")
 	}
-	return math.LegacyNewDec(int64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil
+	return math.LegacyNewDecFromInt(math.NewIntFromUint64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil
 }
 
 func (k *Keeper) getOrCreateValidatorInfo(
@@ -361,6 +350,7 @@ func emitDistributeRevenueEvent(
 		sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
 		sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, revenueAmt.String()),
 		sdk.NewAttribute(revenuetypes.EventAttributePerformanceRating, rating.String()),
+		sdk.NewAttribute(revenuetypes.EventAttributeInActiveValsetForBlocksInPeriod, fmt.Sprintf("%d", info.InActiveValsetForBlocksInPeriod)),
 		sdk.NewAttribute(revenuetypes.EventAttributeCommittedBlocksInPeriod, fmt.Sprintf("%d", info.CommitedBlocksInPeriod)),
 		sdk.NewAttribute(revenuetypes.EventAttributeCommittedOracleVotesInPeriod, fmt.Sprintf("%d", info.CommitedOracleVotesInPeriod)),
 		sdk.NewAttribute(revenuetypes.EventAttributeTotalBlockInPeriod, fmt.Sprintf("%d", blocksInPeriod)),
