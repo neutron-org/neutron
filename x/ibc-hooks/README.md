@@ -18,13 +18,13 @@ Wasm hooks is an IBC middleware that parses an ICS20 transfer, and if the `memo`
 
 ### Cosmwasm Contract Execution Format
 
-Before we dive into the IBC metadata format, we show the cosmwasm execute message format, so the reader has a sense of what are the fields we need to be setting in.
+Before we dive into the IBC metadata format, we show the cosmwasm execute message format, so the reader has a sense of what fields we need to be setting in.
 The cosmwasm `MsgExecuteContract` is defined [here](https://github.com/CosmWasm/wasmd/blob/4fe2fbc8f322efdaf187e2e5c99ce32fd1df06f0/x/wasm/types/tx.pb.go#L340-L349
 ) as the following type:
 
 ```go
 type MsgExecuteContract struct {
-// Sender is the that actor that signed the messages
+// Sender is the actor that signed the messages
 Sender string
 // Contract is the address of the smart contract
 Contract string
@@ -49,7 +49,7 @@ So our constructed cosmwasm message that we execute will look like:
 
 ```go
 msg := MsgExecuteContract{
-	// Sender is the that actor that signed the messages
+	// Sender is the actor that signed the messages
 	Sender: "ntrn-hash-of-channel-and-sender",
 	// Contract is the address of the smart contract
 	Contract: packet.data.memo["wasm"]["ContractAddress"],
