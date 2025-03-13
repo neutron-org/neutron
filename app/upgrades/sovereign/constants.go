@@ -16,31 +16,49 @@ const (
 	UpgradeName = "sovereign"
 
 	// DropNtrnDenom is the denom of the Drop's NTRN token.
-	DropNtrnDenom = "TODO: populate when known"
+	DropNtrnDenom = "factory/neutron1lzfk4aj26jz7gd3c4umxah9d22ezy8xfql677kev37vd0mq8y3tsn78saz/udntrn"
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
-	MainDAOContractAddress = "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
+	MainDAOContractAddress = "neutron1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8ts8g30fq"
 	// VotingRegistryContractAddress is the address of the Neutron DAO voting registry contract.
-	VotingRegistryContractAddress = "neutron1f6jlx7d9y408tlzue7r2qcf79plp549n30yzqjajjud8vm7m4vdspg933s"
+	VotingRegistryContractAddress = "neutron13ehuhysn5mqjeaheeuew2gjs785f6k7jm8vfsqg3jhtpkwppcmzqu8vxt2"
 )
 
 // WARNING! Constants below represent tuples of addresses and code IDs of the new contracts. If you
 // need to update an address, make sure to update the code ID as well (and vice versa).
 
 const (
-	DropCoreContractAddress = "TODO: populate when known"
-	DropCoreContractCodeID  = 0 // TODO: populate when known
+	DropCoreContractAddress = "neutron18ecx6f2ywwnfxsql2l98jscw97lezczx8ax0g5wp8uj9rm95m0ls798cdq"
+	DropCoreContractCodeID  = 25 // TODO: populate when known
 
-	StakingTrackerContractAddress = "TODO: populate when known"
-	StakingTrackerContractCodeID  = 0 // TODO: populate when known
+	StakingTrackerContractAddress = "neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj"
+	StakingTrackerContractCodeID  = 20 // TODO: populate when known
 
-	StakingVaultContractAddress = "TODO: populate when known"
-	StakingVaultContractCodeID  = 0 // TODO: populate when known
+	StakingVaultContractAddress = "neutron1jarq7kgdyd7dcfu2ezeqvg4w4hqdt3m5lv364d8mztnp9pzmwwwqjw7fvg"
+	StakingVaultContractCodeID  = 21 // TODO: populate when known
 
-	StakingRewardsContractAddress = "TODO: populate when known"
-	StakingRewardsContractCodeID  = 0 // TODO: populate when known
+	StakingRewardsContractAddress = "neutron1mygmlglvg9w45n3s6m6d4txneantmupy0sa0vy63angpvj0qp7usep7kdz"
+	StakingRewardsContractCodeID  = 22 // TODO: populate when known
 
-	StakingInfoProxyContractAddress = "TODO: populate when known"
-	StakingInfoProxyContractCodeID  = 0 // TODO: populate when known
+	StakingInfoProxyContractAddress = "neutron1xx35wwa2nhfvfm50lj3ukv077mjxuy9pefxxnctxe9kczk6tz3hqpxknre"
+	StakingInfoProxyContractCodeID  = 23 // TODO: populate when known
+)
+
+const (
+	// Constants defining the parameters of the assets redistribution process held by DAO.
+	TotalToStakeAmount     = int64(50_000_000_000_000)                   // untrn
+	StakeWithValenceAmount = 45_000_000_000_000                          // 90% of TotalToStakeAmount
+	StakeWithDropAmount    = TotalToStakeAmount - StakeWithValenceAmount // 10% of TotalToStakeAmount
+
+	ValenceStaker = "neutron1yvxarc3r8agzzky6g4zdxhk5xc59j7rdw2pugjarwskt8jmpkgus9jqvwk"
+
+	USDC_LP_Receiver = "neutron1l3pk6xsc8p74gwrduxj5qp7djqyx9j5uweufrw5kp8d37xc3hjqs53euye"
+	USDC_LP_Denom    = "factory/neutron1czkddm6xqyfa6ukzxqmf65tl4tudry4kve0n8fs5yfc8g6zv52lqznmnnl/astroport/share" // TODO: populate when known
+
+	dNTRN_NTRN_LiqAmount   = int64(22_500_000_000_000)
+	dNTRN_NTRN_LiqProvider = "neutron1dmhxfvggstv2k9xd4rg2nmvsdwesh9mj20dl70lmcala93zmfnfsmgls2c"
+
+	RewardContract = 6_000_000_000_000
+	RevenueModule  = 1_000_000_000_000
 )
 
 var Upgrade = upgrades.Upgrade{
