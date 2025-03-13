@@ -49,7 +49,7 @@ func (s queryServer) PaymentInfo(goCtx context.Context, request *revenuetypes.Qu
 		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
-	twap, err := s.keeper.GetTWAPStartingFromTime(ctx, ctx.BlockTime().Unix())
+	twap, err := s.keeper.GetTWAP(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to calc TWAP: %s", err)
 	}
