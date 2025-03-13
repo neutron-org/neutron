@@ -76,7 +76,7 @@ func (suite *UpgradeTestSuite) SetupTest() {
 }
 
 func (suite *UpgradeTestSuite) TopUpWallet(ctx sdk.Context, sender, contractAddress sdk.AccAddress) {
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000_000_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 	suite.Require().NoError(err)
@@ -216,7 +216,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	// Sovereign set adds stake to nonbonded pool
 	require.Equal(t, nonbondedBalanceAfter.Balance.Amount, math.NewInt(v600.SovereignSelfStake).MulRaw(int64(len(expectedVals))))
 
-	err = v600.SetupRevenue(ctx, *app.RevenueKeeper)
+	err = v600.SetupRevenue(ctx, *app.RevenueKeeper, app.BankKeeper)
 	require.NoError(t, err)
 
 	resp, err := app.RevenueKeeper.GetParams(ctx)
