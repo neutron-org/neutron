@@ -210,7 +210,7 @@ func (s *DexTestSuite) TestDepositToken0BELWithSwapPartial() {
 	s.fundAliceBalances(50, 10)
 	s.fundBobBalances(0, 30)
 
-	// GIVEN TokenB liquidity at tick 2002-2004
+	// GIVEN TokenA liquidity at tick 2002-2004
 	s.bobDeposits(NewDeposit(0, 10, 2001, 1),
 		NewDeposit(0, 10, 2002, 1),
 		NewDeposit(0, 10, 2003, 1),
@@ -220,7 +220,7 @@ func (s *DexTestSuite) TestDepositToken0BELWithSwapPartial() {
 		NewDepositWithOptions(50, 10, 2006, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	// THEN some of alice's token0 is swapped and she deposits ~13TokenA & 40TokenB
+	// THEN some of alice's TokenA is swapped and she deposits ~13TokenA & 40TokenB
 	// A = 50 - 30 * 1.0001^~2002 = 13.3
 	// B = 30(from swap) + 10 (initial deposit) = 40
 	// SharesIssued = 13.3 + 40 * 1.0001^2006 = 62
@@ -271,11 +271,11 @@ func (s *DexTestSuite) TestDepositToken1BELWithSwapPartial() {
 		NewDepositWithOptions(10, 50, 1998, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	// THEN some of alice's tokenB is swapped and she deposits ~13TokenA & 40TokenB
+	// THEN some of alice's tokenB is swapped and she deposits 40TokenA & ~25.4TokenB
 	//
 	// A = 30(from swap) + 10 (initial deposit) = 40
 	// B = 50 - 30 * 1.0001^~-2001 = 25.4
-	// SharesIssued = 40 + 25.4 * 1.0001^1998 = 62
+	// SharesIssued = 40 + 25.4 * 1.0001^1998 = ~71
 
 	s.Equal(math.NewInt(40000000), resp.Reserve0Deposited[0])
 	s.Equal(math.NewInt(25440286), resp.Reserve1Deposited[0])
