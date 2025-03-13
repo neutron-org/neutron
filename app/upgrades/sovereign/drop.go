@@ -123,8 +123,40 @@ func NativeDelegation(ctx sdk.Context, sk stakingkeeper.Keeper, amount math.Int)
 	return nil
 }
 
+// DropDelegate performs delegation with DROP protocol
+//
+//	General Delegation Mechanism via Drop Protocol:
+//	1. Execute **bond**.
+//	2. Execute **tick**.
+//
+// However, during testing, we discovered that **tick** does not always process the delegation queue.
+//
+// After consulting with the Drop team, we decided to slightly adjust the algorithm:
+//  1. Execute **tick**.
+//  2. Execute **bond**.
+//  3. Execute **tick** again.
+//
+// This adjustment aims to ensure that the protocol successfully delegates coins during the upgrade process.
 func DropDelegate(ctx sdk.Context, wk *wasmkeeper.Keeper, amount math.Int) error {
 	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
+
+	msgTick, err := json.Marshal(DropExecuteMsg{
+		Tick: &struct{}{},
+	})
+	if err != nil {
+		return err
+	}
+
+	// see description above why we need the call
+	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+		Sender:   MainDAOContractAddress,
+		Contract: DropCoreContractAddress,
+		Msg:      msgTick,
+		Funds:    nil,
+	})
+	if err != nil {
+		return err
+	}
 
 	msgDelegate, err := json.Marshal(DropExecuteMsg{
 		Bond: &struct{}{},
@@ -141,13 +173,6 @@ func DropDelegate(ctx sdk.Context, wk *wasmkeeper.Keeper, amount math.Int) error
 		Contract: DropCoreContractAddress,
 		Msg:      msgDelegate,
 		Funds:    DropDelegateCoins,
-	})
-	if err != nil {
-		return err
-	}
-
-	msgTick, err := json.Marshal(DropExecuteMsg{
-		Tick: &struct{}{},
 	})
 	if err != nil {
 		return err
