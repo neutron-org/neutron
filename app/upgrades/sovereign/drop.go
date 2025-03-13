@@ -16,7 +16,7 @@ import (
 )
 
 func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) error {
-	daoDelegateAmount, err := bk.Balance(ctx, &types2.QueryBalanceRequest{
+	daoBalanceBefore, err := bk.Balance(ctx, &types2.QueryBalanceRequest{
 		Address: MainDAOContractAddress,
 		Denom:   appparams.DefaultDenom,
 	})
@@ -26,7 +26,7 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 
 	// delegate half, and check, if success, then delegate reminder
 	// if drop delegation fails, then delegate with native staking module
-	halfDelegation := daoDelegateAmount.Balance.Amount.QuoRaw(2)
+	halfDelegation := math.NewInt(StakeWithDropAmount).QuoRaw(2)
 	err = DropDelegate(ctx, wk, halfDelegation)
 	if err != nil {
 		// ignore the error, because we have fallback logic
@@ -48,25 +48,32 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 		delegatedByDropShares = delegatedByDropShares.Add(d.Shares)
 	}
 
-	daoDelegateAmount, err = bk.Balance(ctx, &types2.QueryBalanceRequest{
-		Address: MainDAOContractAddress,
-		Denom:   appparams.DefaultDenom,
-	})
-	if err != nil {
-		return err
-	}
-	toDelegateReminder := daoDelegateAmount.Balance.Amount
+	toDelegateReminder := math.NewInt(StakeWithDropAmount).Sub(halfDelegation)
 	// In general shares(delegatedByDropShares) and tokens(halfDelegation) have a conversion rate that depends on the validator’s prior slashes.
 	// However, in this specific case, validators are newly created in the same block, which means
 	// they have not been slashed yet. This ensures a 1:1 exchange rate between shares and tokens
 	// at this stage, making the **direct comparison valid**.
+	ctx.Logger().Info("drop delegated", "wanted", halfDelegation, "got", delegatedByDropShares)
 	if delegatedByDropShares.GTE(math.LegacyNewDecFromInt(halfDelegation)) {
 		// drop delegation finished, delegate remainder
+		ctx.Logger().Info("delegating reminder with drop", "amount", toDelegateReminder)
 		err = DropDelegate(ctx, wk, toDelegateReminder)
 		if err != nil {
 			return err
 		}
 	} else {
+		daoBalanceAfter, err := bk.Balance(ctx, &types2.QueryBalanceRequest{
+			Address: MainDAOContractAddress,
+			Denom:   appparams.DefaultDenom,
+		})
+		if err != nil {
+			return err
+		}
+		if daoBalanceAfter.Balance.Amount.Equal(daoBalanceBefore.Balance.Amount) {
+			// dao completely failed to delegate with drop
+			toDelegateReminder = math.NewInt(StakeWithDropAmount)
+		}
+		ctx.Logger().Info("delegating reminder native way", "amount", toDelegateReminder)
 		// fallback to native staking
 		err = NativeDelegation(ctx, sk, toDelegateReminder)
 		if err != nil {

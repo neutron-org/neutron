@@ -10,7 +10,7 @@ import (
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	types2 "github.com/cosmos/cosmos-sdk/x/bank/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	appparams "github.com/neutron-org/neutron/v5/app/params"
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
@@ -48,16 +48,12 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("RunMigrations failed: %w", err)
 		}
 
-		// TODO: remove before release
-		err = FundAccounts(ctx, keepers.BankKeeper)
-		if err != nil {
-			return vm, fmt.Errorf("FundAccounts failed: %w", err)
-		}
-
-		err = SetupRewards(ctx, keepers.BankKeeper)
-		if err != nil {
-			return vm, fmt.Errorf("SetupRewards failed: %w", err)
-		}
+		// TODO: uncomment when https://github.com/neutron-org/neutron-private/pull/62 merged
+		//err = SetupRewards(ctx, keepers.BankKeeper, *keepers.RewardsKeeper)
+		//if err != nil {
+		//	return vm, fmt.Errorf("SetupRewards failed: %w", err)
+		//}
+		// ^^^^
 
 		// subscribe tracing contract for staking hooks to mirror staking power into the contract
 		err = SetupTracking(ctx, keepers.HarpoonKeeper, keepers.WasmKeeper)
@@ -66,7 +62,7 @@ func CreateUpgradeHandler(
 		}
 
 		// initial setup revenue module
-		err = SetupRevenue(ctx, *keepers.RevenueKeeper)
+		err = SetupRevenue(ctx, *keepers.RevenueKeeper, keepers.BankKeeper)
 		if err != nil {
 			return vm, fmt.Errorf("SetupRevenue failed: %w", err)
 		}
@@ -93,6 +89,21 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("SetupDynamicfees failed: %w", err)
 		}
 
+		err = FundValence(ctx, keepers.BankKeeper)
+		if err != nil {
+			return vm, fmt.Errorf("FundValence failed: %w", err)
+		}
+
+		err = FundLiqUSDCLPProvider(ctx, keepers.BankKeeper)
+		if err != nil {
+			return vm, fmt.Errorf("FundLiqUSDCLPProvider failed: %w", err)
+		}
+
+		err = FundDNTRNLiqProvider(ctx, keepers.BankKeeper)
+		if err != nil {
+			return vm, fmt.Errorf("FundDNTRNLiqProvider failed: %w", err)
+		}
+
 		err = PinNewCodes(ctx, keepers.WasmKeeper)
 		if err != nil {
 			return vm, fmt.Errorf("PinNewCodes failed: %w", err)
@@ -101,57 +112,6 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
-}
-
-// TEST PURPOSES ONLY
-func FundAccounts(ctx context.Context, bk bankkeeper.Keeper) error {
-	err := bk.MintCoins(ctx, "dex", sdk.NewCoins(sdk.Coin{
-		Denom:  "untrn",
-		Amount: math.NewInt(2_000_000_000_000),
-	}))
-	if err != nil {
-		return err
-	}
-
-	addr, err := sdk.AccAddressFromBech32(MainDAOContractAddress)
-	if err != nil {
-		return err
-	}
-	err = bk.SendCoinsFromModuleToAccount(ctx, "dex", addr, sdk.NewCoins(sdk.Coin{
-		Denom:  "untrn",
-		Amount: math.NewInt(1_000_000_000_000),
-	}))
-	if err != nil {
-		return err
-	}
-
-	//const (
-	//	// neutron1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx4y0zvay
-	//	OperatorSk1 = "neutronvaloper1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx47jm4mq"
-	//	// neutron1tedsrwal9n2qlp6j3xcs3fjz9khx7z4reep8k3
-	//	OperatorSk2 = "neutronvaloper1tedsrwal9n2qlp6j3xcs3fjz9khx7z4rryc7s4"
-	//	// neutron1xdlvhs2l2wq0cc3eskyxphstns3348elwzvemh
-	//	OperatorSk3 = "neutronvaloper1xdlvhs2l2wq0cc3eskyxphstns3348el5l4qan"
-	//)
-	vals := []string{
-		"neutron1jxxfkkxd9qfjzpvjyr9h3dy7l5693kx4y0zvay",
-		"neutron1tedsrwal9n2qlp6j3xcs3fjz9khx7z4reep8k3",
-		"neutron1xdlvhs2l2wq0cc3eskyxphstns3348elwzvemh",
-	}
-	for _, a := range vals {
-		addr, err := sdk.AccAddressFromBech32(a)
-		if err != nil {
-			return err
-		}
-		err = bk.SendCoinsFromModuleToAccount(ctx, "dex", addr, sdk.NewCoins(sdk.Coin{
-			Denom:  "untrn",
-			Amount: math.NewInt(1000000),
-		}))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 type VotingRegistryExecuteMsg struct {
@@ -167,12 +127,8 @@ func SetupTracking(ctx sdk.Context, harpoonKeeper *harpoonkeeper.Keeper, wasmKee
 		ContractAddress: StakingTrackerContractAddress,
 		Hooks: []types.HookType{
 			types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
-			types.HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED,
-			types.HOOK_TYPE_AFTER_VALIDATOR_REMOVED,
 			types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
 			types.HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING,
-			types.HOOK_TYPE_BEFORE_DELEGATION_CREATED,
-			types.HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED,
 			types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED,
 			types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED,
 			types.HOOK_TYPE_BEFORE_VALIDATOR_SLASHED,
@@ -199,31 +155,31 @@ func SetupTracking(ctx sdk.Context, harpoonKeeper *harpoonkeeper.Keeper, wasmKee
 	return nil
 }
 
-func SetupRewards(ctx context.Context, bk bankkeeper.Keeper) error {
-	daoBalance, err := bk.Balance(ctx, &types2.QueryBalanceRequest{
-		Address: MainDAOContractAddress,
-		Denom:   appparams.DefaultDenom,
-	})
-	if err != nil {
-		return err
-	}
+// TODO: uncomment when https://github.com/neutron-org/neutron-private/pull/62 merged
+//func SetupRewards(ctx context.Context, bk bankkeeper.Keeper, rk rewardskeeper.Keeper) error {
+//	rewardsAmount := math.NewInt(RewardContract)
+//
+//	err := bk.SendCoins(
+//		ctx,
+//		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
+//		sdk.MustAccAddressFromBech32(StakingRewardsContractAddress),
+//		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, rewardsAmount)),
+//	)
+//	if err != nil {
+//		return err
+//	}
+//
+//	params := rewardstypes.Params{
+//		StakingRewardsAddress: StakingRewardsContractAddress,
+//	}
+//	err = rk.SetParams(sdk.UnwrapSDKContext(ctx), params)
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}
 
-	// TODO: The real amount will be defined later. Send half of DAO in test purposes
-	rewardsAmount := daoBalance.Balance.Amount.QuoRaw(2)
-
-	err = bk.SendCoins(
-		ctx,
-		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(StakingRewardsContractAddress),
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, rewardsAmount)),
-	)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper) error {
+func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Keeper) error {
 	params := revenuetypes.Params{
 		BaseCompensation:                  2500,
 		BlocksPerformanceRequirement:      revenuetypes.DefaultBlocksPerformanceRequirement(),
@@ -242,6 +198,15 @@ func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper) error {
 		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		Params:    params,
 	})
+
+	revenueAmount := math.NewInt(RevenueModule)
+
+	err = bk.SendCoinsFromAccountToModule(
+		ctx,
+		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
+		revenuetypes.RevenueTreasuryPoolName,
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, revenueAmount)),
+	)
 	return err
 }
 
@@ -281,4 +246,57 @@ func PinNewCodes(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 		CodeIDs:   CodesToPin,
 	})
 	return err
+}
+
+func FundValence(ctx context.Context, bk bankkeeper.Keeper) error {
+	amount := math.NewInt(StakeWithValenceAmount)
+
+	err := bk.SendCoins(
+		ctx,
+		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
+		sdk.MustAccAddressFromBech32(ValenceStaker),
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, amount)),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
+
+	// query amount and transfer 100%
+	daoBalanceBefore, err := bk.Balance(ctx, &banktypes.QueryBalanceRequest{
+		Address: MainDAOContractAddress,
+		Denom:   USDC_LP_Denom,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = bk.SendCoins(
+		ctx,
+		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
+		sdk.MustAccAddressFromBech32(USDC_LP_Receiver),
+		sdk.NewCoins(*daoBalanceBefore.Balance),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func FundDNTRNLiqProvider(ctx context.Context, bk bankkeeper.Keeper) error {
+	amount := math.NewInt(dNTRN_NTRN_LiqAmount)
+
+	err := bk.SendCoins(
+		ctx,
+		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
+		sdk.MustAccAddressFromBech32(dNTRN_NTRN_LiqProvider),
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, amount)),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
