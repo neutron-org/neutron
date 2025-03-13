@@ -289,22 +289,22 @@ func (s *DexTestSuite) TestDepositToken1BELWithSwapAll() {
 	s.fundAliceBalances(10, 20)
 	s.fundBobBalances(30, 0)
 
-	// GIVEN TokenB liquidity at tick 10,003
-	s.bobDeposits(NewDeposit(10, 0, -10002, 1))
-	// WHEN alice deposits TokenA at tick 10,003 (BEL)
+	// GIVEN TokenA liquidity at tick 10,000
+	s.bobDeposits(NewDeposit(10, 0, -10001, 1))
+	// WHEN alice deposits TokenB at tick -10,003 (BEL)
 	resp := s.aliceDeposits(
 		NewDepositWithOptions(10, 20, -10004, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	// THEN all of alice's token0 is swapped
-	// and she deposits 0TokenA & ~17.3TokenB
-	// B = 10 + 20 / 1.0001^100003 = 17.3
+	// THEN all of alice's tokenB is swapped
+	// and she deposits ~17.3TokenA and 0TokenB
+	// A = 10 + 20 / 1.0001^10000 = 17.3
 	// SharesIssued = 17.3
 
-	s.Equal(math.NewInt(17355749), resp.Reserve0Deposited[0])
+	s.Equal(math.NewInt(17356485), resp.Reserve0Deposited[0])
 	s.True(resp.Reserve1Deposited[0].IsZero())
-	s.Equal(math.NewInt(17355749), resp.SharesIssued[0].Amount)
-	s.assertAliceBalancesInt(math.NewInt(0), math.NewInt(2))
+	s.Equal(math.NewInt(17356485), resp.SharesIssued[0].Amount)
+	s.assertAliceBalancesInt(math.NewInt(0), math.ZeroInt())
 
-	s.assertLiquidityAtTickInt(math.NewInt(17355749), math.ZeroInt(), -10004, 1)
+	s.assertLiquidityAtTickInt(math.NewInt(17356485), math.ZeroInt(), -10004, 1)
 }

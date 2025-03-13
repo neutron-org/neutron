@@ -192,9 +192,11 @@ func (k Keeper) SwapOnDeposit(
 	depositAmount0, depositAmount1 = inAmount0, inAmount1
 	swappedToken0 := false
 	if amount0.IsPositive() {
-		// Use Amount0 Swap any Token1 ticks < -depositTick0
+		// Use Amount0 to swap any Token1 ticks < (-depositTick0 -1 )
 		depositTickToken0 := -tickIndex + feeInt64
-		limitPrice0 := types.MustCalcPrice(-depositTickToken0)
+		// add -1 to limit price because we can have double-sided liquidity at the deposit tick
+		// we don't need to swap through opposing liquidity at the deposit tick
+		limitPrice0 := types.MustCalcPrice(-depositTickToken0 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token0, pairID.Token1)
 
 		swapToken0In, swapToken1Out, orderFilled, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice0)
@@ -221,7 +223,7 @@ func (k Keeper) SwapOnDeposit(
 	if amount1.IsPositive() {
 		// Use amount1 to swap any Token0 ticks < -depositTick1
 		depositTickToken1 := tickIndex + feeInt64
-		limitPrice1 := types.MustCalcPrice(-depositTickToken1)
+		limitPrice1 := types.MustCalcPrice(-depositTickToken1 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token1, pairID.Token0)
 
 		swapToken1In, swapToken0Out, orderFilled, err := k.Swap(ctx, tradePairID, amount1, nil, &limitPrice1)

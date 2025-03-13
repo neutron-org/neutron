@@ -595,6 +595,45 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll2() {
 	s.assertLiquidityAtTickInt(sdkmath.NewInt(7355749), sdkmath.ZeroInt(), -10005, 1)
 }
 
+func (s *DexTestSuite) TestDepositSingleToken1SameTickWithSwap() {
+	s.fundAliceBalances(0, 20)
+	s.fundBobBalances(10, 0)
+
+	// GIVEN TokenA liquidity at tick 10,004
+	s.bobDeposits(NewDeposit(10, 0, -10003, 1))
+	// WHEN alice deposits TokenB at tick -10,004 (double sided liquidity; but not BEL )
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(0, 20, -10005, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+	)
+
+	// THEN no swap happens all of alice's TokenB is deposited at -10004
+	s.True(resp.Reserve0Deposited[0].IsZero())
+	s.Equal(sdkmath.NewInt(20000000), resp.Reserve1Deposited[0])
+	s.Equal(sdkmath.NewInt(7354278), resp.SharesIssued[0].Amount)
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.ZeroInt())
+
+	s.assertLiquidityAtTickInt(sdkmath.ZeroInt(), sdkmath.NewInt(20000000), -10005, 1)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken0SwapTickWithSwap() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 10)
+
+	// GIVEN TokenB liquidity at tick 1000
+	s.bobDeposits(NewDeposit(0, 10, 999, 1))
+	// WHEN alice deposits TokenA at tick 1000 (BEL)
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+	)
+
+	// THEN no swap happens all of alice's TokenB is deposited at tick 1000
+	s.Equal(sdkmath.NewInt(10000000), resp.Reserve0Deposited[0])
+	s.True(resp.Reserve1Deposited[0].IsZero())
+	s.Equal(sdkmath.NewInt(10000000), resp.SharesIssued[0].Amount)
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.ZeroInt())
+
+	s.assertLiquidityAtTickInt(sdkmath.NewInt(10000000), sdkmath.ZeroInt(), 1001, 1)
+}
 func (s *DexTestSuite) TestDepositSingleToken0NotBELWithSwap() {
 	s.fundAliceBalances(20, 0)
 	s.fundBobBalances(0, 30)
