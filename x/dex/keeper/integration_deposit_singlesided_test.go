@@ -459,7 +459,7 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapPartial() {
 
 	// THEN some of alice's tokenA is swapped and she deposits ~13TokenA & ~30TokenB
 	// A = 50 - 30 * 1.0001^~2003 = 13.3
-	// SharesIssued = 13.3 + 30 * 1.0001^2006 = 50
+	// SharesIssued = 13.3 + 30 * 1.0001^2006 = ~50
 
 	s.Equal(sdkmath.NewInt(13347289), resp.Reserve0Deposited[0])
 	s.Equal(sdkmath.NewInt(30000000), resp.Reserve1Deposited[0])
@@ -508,7 +508,7 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapAll2() {
 
 	// THEN (almost) all of alice's TokenA is swapped with 2 coins not swapped due to monotonic rounding
 	// and she deposits 0TokenA & ~7.3TokenB
-	// B = 20 / 1.0001^100001 = 7.3
+	// B = 20 / 1.0001^10001 = 7.3
 	// SharesIssued = 7.3 * 1.0001^10003 = 20
 
 	s.True(resp.Reserve0Deposited[0].IsZero())
@@ -534,6 +534,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapPartial() {
 	)
 
 	// THEN some of alice's tokenB is swapped and she deposits 20TokenA & ~17TokenB
+	// A = 20 (from swap)
 	// B = 50 - 20 * 1.0001^~5002 = ~17
 	// SharesIssued = 20 +  17 * 1.0001^-5005 = 30.3
 
@@ -560,7 +561,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
 	)
 
 	// THEN all of alice's TokenB is swapped and she deposits ~15TokenA & 0TokenB
-	// A = 5 / 1.0001^~-5001 = 8.2
+	// A = 5 / 1.0001^-5001 = 8.2
 	// SharesIssued = 8.2
 
 	s.Equal(sdkmath.NewInt(8244224), resp.Reserve0Deposited[0])
@@ -583,8 +584,8 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll2() {
 	)
 
 	// THEN (almost) all of alice's TokenB is swapped with 2 coins not swapped due to monotonic rounding
-	// and she deposits 0TokenA & ~7.3TokenB
-	// A = 20 / 1.0001^100003 = 7.3
+	// and she deposits ~7.3TokenA & 0TokenB
+	// A = 20 / 1.0001^10003 = 7.3
 	// SharesIssued = 7.3
 
 	s.Equal(sdkmath.NewInt(7355749), resp.Reserve0Deposited[0])
@@ -621,12 +622,12 @@ func (s *DexTestSuite) TestDepositSingleToken0SwapTickWithSwap() {
 
 	// GIVEN TokenB liquidity at tick 1000
 	s.bobDeposits(NewDeposit(0, 10, 999, 1))
-	// WHEN alice deposits TokenA at tick 1000 (BEL)
+	// WHEN alice deposits TokenA at tick -1000 (BEL)
 	resp := s.aliceDeposits(
 		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	// THEN no swap happens all of alice's TokenB is deposited at tick 1000
+	// THEN no swap happens all of alice's TokenA is deposited at tick -1000
 	s.Equal(sdkmath.NewInt(10000000), resp.Reserve0Deposited[0])
 	s.True(resp.Reserve1Deposited[0].IsZero())
 	s.Equal(sdkmath.NewInt(10000000), resp.SharesIssued[0].Amount)
@@ -668,7 +669,6 @@ func (s *DexTestSuite) TestDepositSingleToken1NotBELWithSwap() {
 	// THEN there is no swap and the deposit goes through as specified
 	s.True(resp.Reserve0Deposited[0].IsZero())
 	s.Equal(sdkmath.NewInt(20000000), resp.Reserve1Deposited[0])
-
 	s.Equal(sdkmath.NewInt(7355749), resp.SharesIssued[0].Amount)
 	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.ZeroInt())
 
