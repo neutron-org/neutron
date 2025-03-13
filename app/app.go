@@ -15,6 +15,7 @@ import (
 	v505 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.5"
 	v507 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.7"
 	v510 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.0"
+	v513 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.3"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
@@ -238,6 +239,7 @@ var (
 		v505.Upgrade,
 		v507.Upgrade,
 		v510.Upgrade,
+		v513.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
