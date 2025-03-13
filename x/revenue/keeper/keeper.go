@@ -225,9 +225,9 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 		rating := PerformanceRating(
 			params.BlocksPerformanceRequirement,
 			params.OracleVotesPerformanceRequirement,
-			int64(blocksInPeriod-info.GetCommitedBlocksInPeriod()),
-			int64(blocksInPeriod-info.GetCommitedOracleVotesInPeriod()),
-			int64(blocksInPeriod),
+			int64(blocksInPeriod-info.GetCommitedBlocksInPeriod()),      //nolint:gosec
+			int64(blocksInPeriod-info.GetCommitedOracleVotesInPeriod()), //nolint:gosec
+			int64(blocksInPeriod),                                       //nolint:gosec
 		)
 		valCompensation := rating.MulInt(baseCompensation).TruncateInt()
 		_, valOperAddrBytes, err := bech32types.DecodeAndConvert(info.ValOperAddress)
@@ -305,7 +305,7 @@ func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64)
 	if assetPrice.Equal(math.LegacyZeroDec()) {
 		return math.ZeroInt(), fmt.Errorf("invalid TWAP: price must be greater than zero")
 	}
-	return math.LegacyNewDec(int64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil
+	return math.LegacyNewDec(int64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil //nolint:gosec
 }
 
 func (k *Keeper) getOrCreateValidatorInfo(

@@ -29,5 +29,5 @@ func GetValidatorInfoKey(addr sdk.ValAddress) []byte {
 }
 
 func GetAccumulatedPriceKey(time int64) []byte {
-	return append(PrefixAccumulatedPriceKey, types.Uint64ToBigEndian(uint64(time))...)
+	return append(PrefixAccumulatedPriceKey, types.Uint64ToBigEndian(uint64(time))...) //nolint:gosec
 }
