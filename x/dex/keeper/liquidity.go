@@ -43,7 +43,12 @@ func (k Keeper) Swap(
 
 		inAmount, outAmount := liq.Swap(remainingTakerDenom, remainingMakerDenom)
 
-		k.SaveLiquidity(ctx, liq)
+		swapMetadata := types.SwapMetadata{
+			AmountIn:  inAmount,
+			AmountOut: outAmount,
+			TokenIn:   tradePairID.TakerDenom,
+		}
+		k.SaveLiquidity(ctx, liq, swapMetadata)
 
 		remainingTakerDenom = remainingTakerDenom.Sub(inAmount)
 		totalMakerDenom = totalMakerDenom.Add(outAmount)
@@ -105,14 +110,14 @@ func (k Keeper) SwapWithCache(
 	return totalIn, totalOut, orderFilled, err
 }
 
-func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
+func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity, swapMetadata ...types.SwapMetadata) {
 	switch liquidity := liquidityI.(type) {
 	case *types.LimitOrderTranche:
 		// If there is still makerReserves we will save the tranche as active, if not, we will move it to inactive
-		k.UpdateTranche(sdkCtx, liquidity)
+		k.UpdateTranche(sdkCtx, liquidity, swapMetadata...)
 	case *types.PoolLiquidity:
 		// Save updated to both sides of the pool. If one of the sides is empty it will be deleted
-		k.UpdatePool(sdkCtx, liquidity.Pool)
+		k.UpdatePool(sdkCtx, liquidity.Pool, swapMetadata...)
 	default:
 		panic("Invalid liquidity type")
 	}
