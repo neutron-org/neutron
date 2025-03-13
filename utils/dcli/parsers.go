@@ -365,5 +365,5 @@ func ParseUintArray(arg string, _ *pflag.FlagSet) (any, FieldReadLocation, error
 		return nil, UsedArg, err
 	}
 
-	return arr, UsedArg, err
+	return arr, UsedArg, nil
 }
