@@ -239,4 +239,9 @@ var (
 		1167,
 		"Cannot disable autoswap when using swap_on_deposit",
 	)
+	ErrSwapOnDepositSlopToleranceNotSatisfied = sdkerrors.Register(
+		ModuleName,
+		1168,
+		"Swap on deposit true price is less than minimum allowed price",
+	)
 )

@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v5/utils"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 	"github.com/neutron-org/neutron/v5/x/dex/types"
 	dexutils "github.com/neutron-org/neutron/v5/x/dex/utils"
 )
@@ -110,7 +111,7 @@ func (k Keeper) ExecuteDeposit(
 			}
 		}
 		if option.SwapOnDeposit {
-			inAmount0, inAmount1, depositAmount0, depositAmount1, err = k.SwapOnDeposit(ctx, pairID, tickIndex, fee, depositAmount0, depositAmount1)
+			inAmount0, inAmount1, depositAmount0, depositAmount1, err = k.SwapOnDeposit(ctx, pairID, tickIndex, fee, depositAmount0, depositAmount1, option.SwapOnDepositSlopToleranceBps)
 			if err != nil {
 				return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
 			}
@@ -192,6 +193,7 @@ func (k Keeper) SwapOnDeposit(
 	tickIndex int64,
 	fee uint64,
 	amount0, amount1 math.Int,
+	slopToleranceBPs uint64,
 ) (inAmount0, inAmount1, depositAmount0, depositAmount1 math.Int, err error) {
 	feeInt64 := dexutils.MustSafeUint64ToInt64(fee)
 	inAmount0, inAmount1 = amount0, amount1
@@ -207,6 +209,10 @@ func (k Keeper) SwapOnDeposit(
 
 		swapToken0In, swapToken1Out, orderFilled, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice0)
 		if err != nil {
+			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
+		}
+
+		if err := CheckSwapOnDepositSlopTolerance(swapToken0In.Amount, swapToken1Out.Amount, limitPrice0, slopToleranceBPs); err != nil {
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
 		}
 
@@ -237,6 +243,10 @@ func (k Keeper) SwapOnDeposit(
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
 		}
 
+		if err := CheckSwapOnDepositSlopTolerance(swapToken1In.Amount, swapToken0Out.Amount, limitPrice1, slopToleranceBPs); err != nil {
+			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
+		}
+
 		if swapToken1In.IsPositive() {
 
 			if swappedToken0 {
@@ -257,4 +267,16 @@ func (k Keeper) SwapOnDeposit(
 	}
 
 	return inAmount0, inAmount1, depositAmount0, depositAmount1, nil
+}
+
+func CheckSwapOnDepositSlopTolerance(swapAmountIn, swapAmountOut math.Int, limitPrice math_utils.PrecDec, slopToleranceBPs uint64) error {
+	if swapAmountIn.IsPositive() {
+		trueTakerPrice := math_utils.NewPrecDecFromInt(swapAmountIn).QuoInt(swapAmountOut)
+		slopToleranceDec := math_utils.NewPrecDec(int64(slopToleranceBPs)).Quo(math_utils.NewPrecDecFromInt(math.NewInt(10000)))
+		maxAllowedTakerPrice := limitPrice.Mul(math_utils.OnePrecDec().Add(slopToleranceDec))
+		if trueTakerPrice.GTE(maxAllowedTakerPrice) {
+			return types.ErrSwapOnDepositSlopToleranceNotSatisfied
+		}
+	}
+	return nil
 }

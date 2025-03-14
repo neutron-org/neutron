@@ -241,7 +241,9 @@ func (s *DexTestSuite) TestDepositToken0BELWithSwapAll() {
 	s.bobDeposits(NewDeposit(0, 10, 10000, 1))
 	// WHEN alice deposits TokenA at tick -10,002 (BEL)
 	resp := s.aliceDeposits(
-		NewDepositWithOptions(20, 10, 10003, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+		NewDepositWithOptions(20, 10, 10003, 1,
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+		),
 	)
 
 	// THEN all of alice's token0 is swapped with 2 coins not swapped due to rounding
@@ -293,7 +295,9 @@ func (s *DexTestSuite) TestDepositToken1BELWithSwapAll() {
 	s.bobDeposits(NewDeposit(10, 0, -10001, 1))
 	// WHEN alice deposits TokenB at tick -10,003 (BEL)
 	resp := s.aliceDeposits(
-		NewDepositWithOptions(10, 20, -10004, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+		NewDepositWithOptions(10, 20, -10004, 1,
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+		),
 	)
 
 	// THEN all of alice's tokenB is swapped

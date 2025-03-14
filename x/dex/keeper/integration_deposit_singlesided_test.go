@@ -519,7 +519,9 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapAll2() {
 	s.bobDeposits(NewDeposit(0, 10, 10000, 1))
 	// WHEN alice deposits TokenA at tick -10,002 (BEL)
 	resp := s.aliceDeposits(
-		NewDepositWithOptions(20, 0, 10003, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+		NewDepositWithOptions(20, 0, 10003, 1,
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+		),
 	)
 
 	// THEN (almost) all of alice's TokenA is swapped with 2 coins not swapped due to monotonic rounding
@@ -573,7 +575,9 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
 	)
 	// WHEN alice deposits TokenB at tick 5000 (BEL)
 	resp := s.aliceDeposits(
-		NewDepositWithOptions(0, 5, 4999, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+		NewDepositWithOptions(0, 5, 4999, 1,
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+		),
 	)
 
 	// THEN all of alice's TokenB is swapped and she deposits ~15TokenA & 0TokenB
@@ -596,7 +600,8 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll2() {
 	s.bobDeposits(NewDeposit(10, 0, -10002, 1))
 	// WHEN alice deposits TokenB at tick -10,004 (BEL)
 	resp := s.aliceDeposits(
-		NewDepositWithOptions(0, 20, -10005, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+		NewDepositWithOptions(0, 20, -10005, 1,
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10}),
 	)
 
 	// THEN (almost) all of alice's TokenB is swapped with 2 coins not swapped due to monotonic rounding
@@ -689,4 +694,131 @@ func (s *DexTestSuite) TestDepositSingleToken1NotBELWithSwap() {
 	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.ZeroInt())
 
 	s.assertLiquidityAtTickInt(sdkmath.ZeroInt(), sdkmath.NewInt(20000000), -10003, 1)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopToleranceFails() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 1)
+
+	// GIVEN TokenB dust
+	s.limitSellsInt(s.bob, "TokenB", 999, sdkmath.NewInt(10))
+	s.limitSellsInt(s.bob, "TokenB", 998, sdkmath.NewInt(10))
+	s.limitSellsInt(s.bob, "TokenB", 997, sdkmath.NewInt(400))
+
+	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0 slop tolerance
+
+	// THEN deposit fails
+	s.assertAliceDepositFails(
+		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
+		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{
+			FailTxOnBel:                   true,
+			SwapOnDeposit:                 true,
+			SwapOnDepositSlopToleranceBps: 0, // 0% slop tolerance
+		}),
+	)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopToleranceFails2() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 1)
+
+	// GIVEN TokenB dust
+	s.limitSellsInt(s.bob, "TokenB", 999, sdkmath.NewInt(10))
+	s.limitSellsInt(s.bob, "TokenB", 998, sdkmath.NewInt(10))
+	s.limitSellsInt(s.bob, "TokenB", 997, sdkmath.NewInt(400))
+
+	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0.25% slop tolerance
+	// THEN deposit fails
+	s.assertAliceDepositFails(
+		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
+		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{
+			FailTxOnBel:                   true,
+			SwapOnDeposit:                 true,
+			SwapOnDepositSlopToleranceBps: 25, // 0.25% slop tolerance
+		}),
+	)
+
+}
+
+func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopTolerance() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 1)
+
+	// GIVEN TokenB dust
+	s.limitSellsInt(s.bob, "TokenB", 999, sdkmath.NewInt(10))
+	s.limitSellsInt(s.bob, "TokenB", 998, sdkmath.NewInt(10))
+	s.limitSellsInt(s.bob, "TokenB", 997, sdkmath.NewInt(400))
+
+	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0.5% slop tolerance
+	// THEN deposit succeeds
+	s.aliceDeposits(
+		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{
+			FailTxOnBel:                   true,
+			SwapOnDeposit:                 true,
+			SwapOnDepositSlopToleranceBps: 50, // 0.5% slop tolerance
+		}),
+	)
+
+}
+
+func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopToleranceFails() {
+	s.fundAliceBalances(0, 10)
+	s.fundBobBalances(1, 0)
+
+	// GIVEN TokenA dust
+	s.limitSellsInt(s.bob, "TokenA", 999, sdkmath.NewInt(20))
+	s.limitSellsInt(s.bob, "TokenA", 998, sdkmath.NewInt(20))
+	s.limitSellsInt(s.bob, "TokenA", 997, sdkmath.NewInt(300))
+
+	// WHEN alice deposits TokenB at tick 996 (BEL) with 0 slop tolerance
+	// THEN deposit fails
+	s.assertAliceDepositFails(
+		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
+		NewDepositWithOptions(0, 10, 995, 1, types.DepositOptions{
+			FailTxOnBel:                   true,
+			SwapOnDeposit:                 true,
+			SwapOnDepositSlopToleranceBps: 0, // 0% slop tolerance
+		}),
+	)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopToleranceFails2() {
+	s.fundAliceBalances(0, 10)
+	s.fundBobBalances(1, 0)
+
+	// GIVEN TokenA dust
+	s.limitSellsInt(s.bob, "TokenA", 999, sdkmath.NewInt(20))
+	s.limitSellsInt(s.bob, "TokenA", 998, sdkmath.NewInt(20))
+	s.limitSellsInt(s.bob, "TokenA", 997, sdkmath.NewInt(300))
+
+	// WHEN alice deposits TokenB at tick 996 (BEL) with 0.5% slop tolerance
+	// THEN deposit fails
+	s.assertAliceDepositFails(
+		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
+		NewDepositWithOptions(0, 10, 995, 1, types.DepositOptions{
+			FailTxOnBel:                   true,
+			SwapOnDeposit:                 true,
+			SwapOnDepositSlopToleranceBps: 50, // 0.5% slop tolerance
+		}),
+	)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopTolerance() {
+	s.fundAliceBalances(0, 10)
+	s.fundBobBalances(1, 0)
+
+	// GIVEN TokenA dust
+	s.limitSellsInt(s.bob, "TokenA", 999, sdkmath.NewInt(20))
+	s.limitSellsInt(s.bob, "TokenA", 998, sdkmath.NewInt(20))
+	s.limitSellsInt(s.bob, "TokenA", 997, sdkmath.NewInt(300))
+
+	// WHEN alice deposits TokenB at tick 996 (BEL) with 0.75% slop tolerance
+	// THEN deposit succeeds
+	s.aliceDeposits(
+		NewDepositWithOptions(0, 10, 995, 1, types.DepositOptions{
+			FailTxOnBel:                   true,
+			SwapOnDeposit:                 true,
+			SwapOnDepositSlopToleranceBps: 75, // 0.75% slop tolerance
+		}),
+	)
 }
