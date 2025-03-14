@@ -632,7 +632,7 @@ func (s *DexTestSuite) TestDepositSingleToken1SameTickWithSwap() {
 	s.assertLiquidityAtTickInt(sdkmath.ZeroInt(), sdkmath.NewInt(20000000), -10005, 1)
 }
 
-func (s *DexTestSuite) TestDepositSingleToken0SwapTickWithSwap() {
+func (s *DexTestSuite) TestDepositSingleToken0SameTickWithSwap() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 10)
 
