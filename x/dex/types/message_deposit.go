@@ -116,6 +116,10 @@ func (msg *MsgDeposit) Validate() error {
 		if msg.Options[i] != nil && msg.Options[i].DisableAutoswap && msg.Options[i].SwapOnDeposit {
 			return ErrSwapOnDepositWithoutAutoswap
 		}
+
+		if msg.Options[i] != nil && msg.Options[i].SwapOnDepositSlopToleranceBps > 10000 {
+			return ErrInvalidSlopTolerance
+		}
 	}
 
 	return nil

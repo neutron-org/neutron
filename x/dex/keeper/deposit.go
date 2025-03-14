@@ -272,7 +272,9 @@ func (k Keeper) SwapOnDeposit(
 func CheckSwapOnDepositSlopTolerance(swapAmountIn, swapAmountOut math.Int, limitPrice math_utils.PrecDec, slopToleranceBPs uint64) error {
 	if swapAmountIn.IsPositive() {
 		trueTakerPrice := math_utils.NewPrecDecFromInt(swapAmountIn).QuoInt(swapAmountOut)
-		slopToleranceDec := math_utils.NewPrecDec(int64(slopToleranceBPs)).Quo(math_utils.NewPrecDecFromInt(math.NewInt(10000)))
+		// slopToleranceBPs has already been validated so no risk of overflow
+		slopToleranceInt64 := dexutils.MustSafeUint64ToInt64(slopToleranceBPs)
+		slopToleranceDec := math_utils.NewPrecDec(slopToleranceInt64).Quo(math_utils.NewPrecDecFromInt(math.NewInt(10000)))
 		maxAllowedTakerPrice := limitPrice.Mul(math_utils.OnePrecDec().Add(slopToleranceDec))
 		if trueTakerPrice.GTE(maxAllowedTakerPrice) {
 			return types.ErrSwapOnDepositSlopToleranceNotSatisfied

@@ -1788,6 +1788,21 @@ func TestMsgDepositValidate(t *testing.T) {
 			},
 			types.ErrSwapOnDepositWithoutAutoswap,
 		},
+		{
+			"invalid slop tolerance",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10001}},
+			},
+			types.ErrInvalidSlopTolerance,
+		},
 	}
 
 	for _, tt := range tests {

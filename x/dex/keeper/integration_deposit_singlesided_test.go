@@ -656,6 +656,7 @@ func (s *DexTestSuite) TestDepositSingleToken0SameTickWithSwap() {
 
 	s.assertLiquidityAtTickInt(sdkmath.NewInt(10000000), sdkmath.ZeroInt(), 1001, 1)
 }
+
 func (s *DexTestSuite) TestDepositSingleToken0NotBELWithSwap() {
 	s.fundAliceBalances(20, 0)
 	s.fundBobBalances(0, 30)
@@ -737,7 +738,6 @@ func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopToleranceFails2() {
 			SwapOnDepositSlopToleranceBps: 25, // 0.25% slop tolerance
 		}),
 	)
-
 }
 
 func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopTolerance() {
@@ -758,7 +758,6 @@ func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopTolerance() {
 			SwapOnDepositSlopToleranceBps: 50, // 0.5% slop tolerance
 		}),
 	)
-
 }
 
 func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopToleranceFails() {
