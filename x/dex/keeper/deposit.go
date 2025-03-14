@@ -171,6 +171,8 @@ func (k Keeper) ExecuteDeposit(
 			pairID.Token1,
 			tickIndex,
 			fee,
+			depositAmount0,
+			depositAmount1,
 			inAmount0,
 			inAmount1,
 			outShares.Amount,
