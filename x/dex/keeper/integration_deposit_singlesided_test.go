@@ -702,9 +702,9 @@ func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopToleranceFails() {
 	s.fundBobBalances(0, 1)
 
 	// GIVEN TokenB dust
-	s.limitSellsInt(s.bob, "TokenB", 999, sdkmath.NewInt(10))
-	s.limitSellsInt(s.bob, "TokenB", 998, sdkmath.NewInt(10))
-	s.limitSellsInt(s.bob, "TokenB", 997, sdkmath.NewInt(400))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 999, sdkmath.NewInt(10))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 998, sdkmath.NewInt(10))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 997, sdkmath.NewInt(400))
 
 	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0 slop tolerance
 
@@ -724,9 +724,9 @@ func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopToleranceFails2() {
 	s.fundBobBalances(0, 1)
 
 	// GIVEN TokenB dust
-	s.limitSellsInt(s.bob, "TokenB", 999, sdkmath.NewInt(10))
-	s.limitSellsInt(s.bob, "TokenB", 998, sdkmath.NewInt(10))
-	s.limitSellsInt(s.bob, "TokenB", 997, sdkmath.NewInt(400))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 999, sdkmath.NewInt(10))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 998, sdkmath.NewInt(10))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 997, sdkmath.NewInt(400))
 
 	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0.25% slop tolerance
 	// THEN deposit fails
@@ -745,9 +745,9 @@ func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopTolerance() {
 	s.fundBobBalances(0, 1)
 
 	// GIVEN TokenB dust
-	s.limitSellsInt(s.bob, "TokenB", 999, sdkmath.NewInt(10))
-	s.limitSellsInt(s.bob, "TokenB", 998, sdkmath.NewInt(10))
-	s.limitSellsInt(s.bob, "TokenB", 997, sdkmath.NewInt(400))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 999, sdkmath.NewInt(10))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 998, sdkmath.NewInt(10))
+	s.limitSellsIntSuccess(s.bob, "TokenB", 997, sdkmath.NewInt(400))
 
 	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0.5% slop tolerance
 	// THEN deposit succeeds
@@ -765,9 +765,9 @@ func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopToleranceFails() {
 	s.fundBobBalances(1, 0)
 
 	// GIVEN TokenA dust
-	s.limitSellsInt(s.bob, "TokenA", 999, sdkmath.NewInt(20))
-	s.limitSellsInt(s.bob, "TokenA", 998, sdkmath.NewInt(20))
-	s.limitSellsInt(s.bob, "TokenA", 997, sdkmath.NewInt(300))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 999, sdkmath.NewInt(20))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 998, sdkmath.NewInt(20))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 997, sdkmath.NewInt(300))
 
 	// WHEN alice deposits TokenB at tick 996 (BEL) with 0 slop tolerance
 	// THEN deposit fails
@@ -786,9 +786,9 @@ func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopToleranceFails2() {
 	s.fundBobBalances(1, 0)
 
 	// GIVEN TokenA dust
-	s.limitSellsInt(s.bob, "TokenA", 999, sdkmath.NewInt(20))
-	s.limitSellsInt(s.bob, "TokenA", 998, sdkmath.NewInt(20))
-	s.limitSellsInt(s.bob, "TokenA", 997, sdkmath.NewInt(300))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 999, sdkmath.NewInt(20))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 998, sdkmath.NewInt(20))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 997, sdkmath.NewInt(300))
 
 	// WHEN alice deposits TokenB at tick 996 (BEL) with 0.5% slop tolerance
 	// THEN deposit fails
@@ -807,9 +807,9 @@ func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopTolerance() {
 	s.fundBobBalances(1, 0)
 
 	// GIVEN TokenA dust
-	s.limitSellsInt(s.bob, "TokenA", 999, sdkmath.NewInt(20))
-	s.limitSellsInt(s.bob, "TokenA", 998, sdkmath.NewInt(20))
-	s.limitSellsInt(s.bob, "TokenA", 997, sdkmath.NewInt(300))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 999, sdkmath.NewInt(20))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 998, sdkmath.NewInt(20))
+	s.limitSellsIntSuccess(s.bob, "TokenA", 997, sdkmath.NewInt(300))
 
 	// WHEN alice deposits TokenB at tick 996 (BEL) with 0.75% slop tolerance
 	// THEN deposit succeeds

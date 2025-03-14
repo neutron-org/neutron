@@ -485,6 +485,19 @@ func (s *DexTestSuite) limitSellsInt(
 	return msg.TrancheKey, err
 }
 
+func (s *DexTestSuite) limitSellsIntSuccess(
+	account sdk.AccAddress,
+	tokenIn string,
+	tickIndexNormalized int,
+	amountIn sdkmath.Int,
+	orderTypeOpt ...types.LimitOrderType,
+) string {
+	trancheKey, err := s.limitSellsInt(account, tokenIn, tickIndexNormalized, amountIn, orderTypeOpt...)
+	s.NoError(err)
+
+	return trancheKey
+}
+
 func (s *DexTestSuite) limitSells(
 	account sdk.AccAddress,
 	tokenIn string,
