@@ -82,6 +82,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		tokenIn,
 		tokenOut,
 		totalIn,
+		amountIn,
 		tickIndexInToOut,
 		orderType.String(),
 		maxAmountOut,
