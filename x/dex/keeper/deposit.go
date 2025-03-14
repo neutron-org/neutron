@@ -28,8 +28,8 @@ func (k Keeper) DepositCore(
 
 	amounts0Deposited,
 		amounts1Deposited,
-		totalAmountReserve0,
-		totalAmountReserve1,
+		totalInAmount0,
+		totalInAmount1,
 		sharesIssued,
 		events,
 		failedDeposits,
@@ -40,15 +40,15 @@ func (k Keeper) DepositCore(
 
 	ctx.EventManager().EmitEvents(events)
 
-	if totalAmountReserve0.IsPositive() {
-		coin0 := sdk.NewCoin(pairID.Token0, totalAmountReserve0)
+	if totalInAmount0.IsPositive() {
+		coin0 := sdk.NewCoin(pairID.Token0, totalInAmount0)
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin0}); err != nil {
 			return nil, nil, nil, nil, err
 		}
 	}
 
-	if totalAmountReserve1.IsPositive() {
-		coin1 := sdk.NewCoin(pairID.Token1, totalAmountReserve1)
+	if totalInAmount1.IsPositive() {
+		coin1 := sdk.NewCoin(pairID.Token1, totalInAmount1)
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin1}); err != nil {
 			return nil, nil, nil, nil, err
 		}
@@ -74,14 +74,14 @@ func (k Keeper) ExecuteDeposit(
 	fees []uint64,
 	options []*types.DepositOptions) (
 	amounts0Deposited, amounts1Deposited []math.Int,
-	totalAmountReserve0, totalAmountReserve1 math.Int,
+	totalInAmount0, totalInAmount1 math.Int,
 	sharesIssued sdk.Coins,
 	events sdk.Events,
 	failedDeposits []*types.FailedDeposit,
 	err error,
 ) {
-	totalAmountReserve0 = math.ZeroInt()
-	totalAmountReserve1 = math.ZeroInt()
+	totalInAmount0 = math.ZeroInt()
+	totalInAmount1 = math.ZeroInt()
 	amounts0Deposited = make([]math.Int, len(amounts0))
 	amounts1Deposited = make([]math.Int, len(amounts1))
 	sharesIssued = sdk.Coins{}
@@ -161,8 +161,8 @@ func (k Keeper) ExecuteDeposit(
 
 		amounts0Deposited[i] = depositAmount0
 		amounts1Deposited[i] = depositAmount1
-		totalAmountReserve0 = totalAmountReserve0.Add(inAmount0)
-		totalAmountReserve1 = totalAmountReserve1.Add(inAmount1)
+		totalInAmount0 = totalInAmount0.Add(inAmount0)
+		totalInAmount1 = totalInAmount1.Add(inAmount1)
 
 		depositEvent := types.CreateDepositEvent(
 			callerAddr,
@@ -183,7 +183,7 @@ func (k Keeper) ExecuteDeposit(
 	// At this point shares issued is not sorted and may have duplicates
 	// we must sanitize to convert it to a valid set of coins
 	sharesIssued = utils.SanitizeCoins(sharesIssued)
-	return amounts0Deposited, amounts1Deposited, totalAmountReserve0, totalAmountReserve1, sharesIssued, events, failedDeposits, nil
+	return amounts0Deposited, amounts1Deposited, totalInAmount0, totalInAmount1, sharesIssued, events, failedDeposits, nil
 }
 
 func (k Keeper) SwapOnDeposit(
