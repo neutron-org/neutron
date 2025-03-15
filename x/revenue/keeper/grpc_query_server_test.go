@@ -50,16 +50,22 @@ func TestQueryPaymentInfo(t *testing.T) {
 
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
 
-	paymentInfo, err := queryServer.PaymentInfo(ctx, &revenuetypes.QueryPaymentInfoRequest{})
+	paymentInfo, err := queryServer.PaymentInfo(ctx.WithBlockHeight(11), &revenuetypes.QueryPaymentInfoRequest{})
 	require.Nil(t, err)
 	require.Equal(t, ps, paymentInfo.
 		PaymentSchedule.
 		PaymentSchedule.(*revenuetypes.PaymentSchedule_BlockBasedPaymentSchedule).
 		BlockBasedPaymentSchedule,
 	)
+	require.Equal(t, math.LegacyNewDec(1), paymentInfo.PeriodCompleteness)
 	require.Equal(t, revenuetypes.RewardDenom, paymentInfo.RewardDenom)
 	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), paymentInfo.RewardDenomTwap)
 	require.Equal(t, math.NewInt(5000), paymentInfo.BaseRevenueAmount)
+
+	// query payment info in the middle of a period
+	paymentInfo, err = queryServer.PaymentInfo(ctx.WithBlockHeight(6), &revenuetypes.QueryPaymentInfoRequest{})
+	require.Nil(t, err)
+	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), paymentInfo.PeriodCompleteness)
 }
 
 func TestQueryValidatorStats(t *testing.T) {
@@ -71,7 +77,7 @@ func TestQueryValidatorStats(t *testing.T) {
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
 
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
-		BlocksPerPeriod:         500,
+		BlocksPerPeriod:         100,
 		CurrentPeriodStartBlock: 1,
 	}
 	require.Nil(t, k.SetPaymentScheduleI(ctx, ps))

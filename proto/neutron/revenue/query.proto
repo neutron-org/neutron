@@ -51,12 +51,19 @@ message QueryPaymentInfoResponse {
   // The current payment schedule.
   PaymentSchedule payment_schedule = 1 [(gogoproto.nullable) = false];
 
+  // Revenue amount multiplier value that corresponds to the completeness of the payment period.
+  string period_completeness = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
   // The denom used in revenue payments.
-  string reward_denom = 2;
+  string reward_denom = 3;
 
   // The current TWAP of the reward denom in USD. Is calculated as:
   // twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) - cumulative_price_at_t(m)) / (t(n) - t(m))
-  string reward_denom_twap = 3 [
+  string reward_denom_twap = 4 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
@@ -65,7 +72,7 @@ message QueryPaymentInfoResponse {
   // The current evaluation of the base revenue amount. This whole amount will be paid to the
   // validators with impeccable performance (at least as good as allowed_to_miss). For the others
   // this amount will be multiplied by their performance rating.
-  string base_revenue_amount = 4 [
+  string base_revenue_amount = 5 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
@@ -108,8 +115,9 @@ message ValidatorStats {
     (gogoproto.nullable) = false
   ];
 
-  // Contains expected revenue for the validator
-  // based on performance rating of ongoing performance window and current TWAP.
+  // Contains expected revenue for the validator based on their performance rating in the current
+  // payment period, current reward denom TWAP, completeness of the payment period, and duration
+  // of validator's presence in the active validator set.
   string expected_revenue = 4 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false

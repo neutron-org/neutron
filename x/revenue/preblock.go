@@ -83,44 +83,52 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 // PaymentScheduleCheck maintains payment schedule state and consistency, and ensures revenue is
 // distributed across validators according to the payment schedule.
 func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
-	ps, err := h.revenueKeeper.GetPaymentScheduleI(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get payment schedule: %w", err)
-	}
 	params, err := h.revenueKeeper.GetParams(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get module params: %w", err)
 	}
 
-	var psRequiresUpdate bool
-
-	// if the period has ended, revenue needs to be processed and payment schedule set to the next period
-	if ps.PeriodEnded(ctx) {
-		h.revenueKeeper.Logger(ctx).Debug("payment period has ended, processing revenue")
-		if err := h.revenueKeeper.ProcessRevenue(ctx, params, ps.TotalBlocksInPeriod(ctx)); err != nil {
-			return fmt.Errorf("failed to process revenue: %w", err)
-		}
-		if err := h.revenueKeeper.ResetValidatorsInfo(ctx); err != nil {
-			return fmt.Errorf("failed to reset validators info on revenue distribution: %w", err)
-		}
-		ps.StartNewPeriod(ctx)
-		psRequiresUpdate = true
+	ps, err := h.revenueKeeper.GetPaymentScheduleI(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get payment schedule: %w", err)
 	}
+	periodCompleteness := ps.PeriodCompleteness(ctx)
 
+	var psRequiresUpdate bool
+	switch {
 	// a mismatch means that the payment schedule type has been changed in the previous block by
-	// a MsgUpdateParams submission
-	// in this case, we need to reflect the change in the payment schedule by storing the corresponding
-	// payment schedule implementation in the module's store and prepare for the a new period
-	if !ps.MatchesType(params.PaymentScheduleType.PaymentScheduleType) {
+	// a MsgUpdateParams submission.
+	// in this case, we need to distribute revenue for passed part of the payment period, reflect the
+	// change in the payment schedule by storing the corresponding payment schedule implementation
+	// in the module's store, and prepare to the a new period
+	case !ps.MatchesType(params.PaymentScheduleType.PaymentScheduleType):
 		h.revenueKeeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
 			"new_payment_schedule_type", fmt.Sprintf("%+v", params.PaymentScheduleType),
 			"old_payment_schedule_value", ps.String(),
+			"payment_period_completeness", periodCompleteness.String(),
 		)
+
+		if err := h.revenueKeeper.ProcessRevenue(ctx, params, ps); err != nil {
+			return fmt.Errorf("failed to process revenue: %w", err)
+		}
+
 		if err := h.revenueKeeper.ResetValidatorsInfo(ctx); err != nil {
 			return fmt.Errorf("failed to reset validators info on payment schedule change: %w", err)
 		}
 
 		ps = revenuetypes.PaymentScheduleIByType(params.PaymentScheduleType.PaymentScheduleType)
+		ps.StartNewPeriod(ctx)
+		psRequiresUpdate = true
+
+	// if the period has ended, revenue needs to be processed and payment schedule set to the next period
+	case periodCompleteness == revenuetypes.PeriodCompletenessFull:
+		h.revenueKeeper.Logger(ctx).Debug("payment period has ended, processing revenue")
+		if err := h.revenueKeeper.ProcessRevenue(ctx, params, ps); err != nil {
+			return fmt.Errorf("failed to process revenue: %w", err)
+		}
+		if err := h.revenueKeeper.ResetValidatorsInfo(ctx); err != nil {
+			return fmt.Errorf("failed to reset validators info on revenue distribution: %w", err)
+		}
 		ps.StartNewPeriod(ctx)
 		psRequiresUpdate = true
 	}

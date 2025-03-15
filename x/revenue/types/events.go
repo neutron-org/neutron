@@ -3,6 +3,10 @@ package types
 const (
 	// EventTypeRevenueDistribution is emitted on every revenue distribution.
 	EventTypeRevenueDistribution = "revenue_distribution"
+	// EventTypeRevenueDistribution is emitted on revenue distribution errors.
+	EventTypeRevenueDistributionError = "revenue_distribution_error"
+	// EventTypeRevenueDistribution is emitted when revenue processing resulted in none revenue.
+	EventTypeRevenueDistributionNone = "revenue_distribution_none"
 	// EventAttributeValidator contains the validator address.
 	EventAttributeValidator = "validator"
 	// EventAttributeRevenueAmount contains the revenue amount sent to the validator.
@@ -18,6 +22,9 @@ const (
 	// EventAttributeCommittedOracleVotesInPeriod contains the number of blocks committed by the
 	// validator in the payment period.
 	EventAttributeCommittedOracleVotesInPeriod = "committed_oracle_votes_in_period"
+	// EventAttributePeriodCompleteness is the revenue amount multiplier value that corresponds
+	// to the completeness of the payment period.
+	EventAttributePeriodCompleteness = "period_completeness"
 	// EventAttributeTotalBlockInPeriod contains the total number of blocks in the payment period.
 	EventAttributeTotalBlockInPeriod = "total_block_in_period"
 	// EventAttributePaymentFailure is added to the event when a payment fails and contains the

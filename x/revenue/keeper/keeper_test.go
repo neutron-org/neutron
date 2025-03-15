@@ -88,6 +88,12 @@ func TestProcessRevenue(t *testing.T) {
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
+		BlocksPerPeriod:         1000,
+		CurrentPeriodStartBlock: 1,
+	}
+	ctx = ctx.WithBlockHeight(1001)
+
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1000
 	val1Info.CommitedOracleVotesInPeriod = 1000
@@ -116,7 +122,7 @@ func TestProcessRevenue(t *testing.T) {
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
-	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), 1000)
+	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), ps)
 	require.Nil(t, err)
 }
 
@@ -128,6 +134,12 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
+		BlocksPerPeriod:         1000,
+		CurrentPeriodStartBlock: 1,
+	}
+	ctx = ctx.WithBlockHeight(1001)
 
 	// set val1 info as if they haven't committed any blocks and prices
 	val1Info := val1Info()
@@ -143,7 +155,55 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	// no SendCoinsFromModuleToAccount calls expected
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), 1000)
+	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), ps)
+	require.Nil(t, err)
+}
+
+func TestProcessRevenuePaymentScheduleTypeChange(t *testing.T) {
+	appconfig.GetDefaultConfig()
+
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
+		BlocksPerPeriod:         1000,
+		CurrentPeriodStartBlock: 1,
+	}
+	ctx = ctx.WithBlockHeight(501) // 500/1000 == 1/2 of the payment period
+
+	val1Info := val1Info()
+	val1Info.CommitedBlocksInPeriod = 500
+	val1Info.CommitedOracleVotesInPeriod = 500
+	val1Info.InActiveValsetForBlocksInPeriod = 500
+
+	// prepare keeper state
+	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	require.Nil(t, err)
+
+	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	require.Nil(t, err)
+
+	params, err := keeper.GetParams(ctx)
+	require.Nil(t, err)
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	require.Nil(t, err)
+	expectedRevenueAmount := baseRevenueAmount.Quo(math.NewInt(2)) // for 1/2 of the payment period
+
+	// expect one successful SendCoinsFromModuleToAccount call
+	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
+		gomock.Any(),
+		revenuetypes.RevenueTreasuryPoolName,
+		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
+		sdktypes.NewCoins(sdktypes.NewCoin(
+			revenuetypes.RewardDenom,
+			expectedRevenueAmount)),
+	).Times(1).Return(nil)
+
+	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), ps)
 	require.Nil(t, err)
 }
 
@@ -155,6 +215,12 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
+		BlocksPerPeriod:         1000,
+		CurrentPeriodStartBlock: 1,
+	}
+	ctx = ctx.WithBlockHeight(1001)
 
 	// set val1 info as if they have committed all blocks and prices they could but joined
 	// the valset 300 blocks after the start of the payment period
@@ -191,11 +257,11 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
-	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), 1000)
+	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), ps)
 	require.Nil(t, err)
 }
 
-func TestProcessRevenueLateValsetJoinImperfectPerformance(t *testing.T) {
+func TestProcessRevenueReducedByAllFactors(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
 	ctrl := gomock.NewController(t)
@@ -203,6 +269,12 @@ func TestProcessRevenueLateValsetJoinImperfectPerformance(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
+		BlocksPerPeriod:         2000,
+		CurrentPeriodStartBlock: 1,
+	}
+	ctx = ctx.WithBlockHeight(1501) // 1500/2000 = 3/4 of the payment period
 
 	// define test specific performance requirements
 	params := revenuetypes.DefaultParams()
@@ -220,7 +292,7 @@ func TestProcessRevenueLateValsetJoinImperfectPerformance(t *testing.T) {
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 850
 	val1Info.CommitedOracleVotesInPeriod = 850
-	val1Info.InActiveValsetForBlocksInPeriod = 1000 // 1000/2000
+	val1Info.InActiveValsetForBlocksInPeriod = 1000 // 1000/1500
 
 	// prepare keeper state
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
@@ -233,8 +305,9 @@ func TestProcessRevenueLateValsetJoinImperfectPerformance(t *testing.T) {
 	require.Nil(t, err)
 
 	expectedRevenueAmount := math.LegacyNewDecFromInt(baseRevenueAmount).
-		Mul(math.LegacyNewDecWithPrec(5, 1)).  // been in valset for 1/2 of payment period
-		Mul(math.LegacyNewDecWithPrec(75, 2)). // missed 15% of blocks and oracle votes
+		Mul(math.LegacyNewDecWithPrec(66666, 5)). // 0.66666, been in valset for 2/3 of payment period
+		Mul(math.LegacyNewDecWithPrec(75, 2)).    // 0.75, missed 15% of blocks and oracle votes
+		Mul(math.LegacyNewDecWithPrec(75, 2)).    // 0.75, for 3/4 of the payment period
 		TruncateInt()
 
 	// expect one successful SendCoinsFromModuleToAccount call
@@ -247,7 +320,7 @@ func TestProcessRevenueLateValsetJoinImperfectPerformance(t *testing.T) {
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
-	err = keeper.ProcessRevenue(ctx, params, 2000)
+	err = keeper.ProcessRevenue(ctx, params, ps)
 	require.Nil(t, err)
 }
 
@@ -259,6 +332,12 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	ps := &revenuetypes.BlockBasedPaymentSchedule{
+		BlocksPerPeriod:         1000,
+		CurrentPeriodStartBlock: 1,
+	}
+	ctx = ctx.WithBlockHeight(1001)
 
 	// define test specific performance requirements
 	params := revenuetypes.DefaultParams()
@@ -315,7 +394,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
-	err = keeper.ProcessRevenue(ctx, params, 1000)
+	err = keeper.ProcessRevenue(ctx, params, ps)
 	require.Nil(t, err)
 }
 
