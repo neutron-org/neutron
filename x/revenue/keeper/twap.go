@@ -35,6 +35,10 @@ func (k *Keeper) UpdateRewardAssetPrice(ctx sdk.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get price for currency pair: %w", err)
 	}
+	// safecheck. Should never happen. Make sure the slinky price is valid
+	if priceInt.Price.LTE(math.ZeroInt()) {
+		return fmt.Errorf("price is invalid")
+	}
 
 	decimals, err := k.oracleKeeper.GetDecimalsForCurrencyPair(ctx, pair)
 	if err != nil {
