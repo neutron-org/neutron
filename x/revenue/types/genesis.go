@@ -11,7 +11,6 @@ func DefaultGenesis() *GenesisState {
 		Params:          params,
 		PaymentSchedule: PaymentScheduleIByType(params.PaymentScheduleType.PaymentScheduleType).IntoPaymentSchedule(),
 		Validators:      []ValidatorInfo{},
-		Prices:          []*RewardAssetPrice{},
 	}
 }
 
