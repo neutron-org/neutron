@@ -1,8 +1,16 @@
 package harpoon_test
 
 import (
+	"fmt"
 	"testing"
 
+	"cosmossdk.io/errors"
+	types2 "github.com/cosmos/cosmos-sdk/types"
+	errors2 "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/golang/mock/gomock"
+
+	"github.com/neutron-org/neutron/v5/app/config"
+	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/harpoon/types"
 	"github.com/neutron-org/neutron/v5/x/harpoon"
 
 	"github.com/stretchr/testify/require"
@@ -18,12 +26,18 @@ const (
 )
 
 func TestGenesis(t *testing.T) {
+	config.GetDefaultConfig()
+
+	ctrl := gomock.NewController(t)
+
+	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+
 	// nil state genesis works
 	genesisState := types.GenesisState{
 		HookSubscriptions: nil,
 	}
 
-	k, ctx := keepertest.HarpoonKeeper(t, nil)
+	k, ctx := keepertest.HarpoonKeeper(t, wasmKeeper)
 	harpoon.InitGenesis(ctx, k, genesisState)
 	got := harpoon.ExportGenesis(ctx, k)
 	require.NotNil(t, got)
@@ -46,7 +60,9 @@ func TestGenesis(t *testing.T) {
 			},
 		},
 	}
-	k, ctx = keepertest.HarpoonKeeper(t, nil)
+	k, ctx = keepertest.HarpoonKeeper(t, wasmKeeper)
+	wasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32(ContractAddress1)).Times(2).Return(true)
+	wasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32(ContractAddress2)).Times(1).Return(true)
 	harpoon.InitGenesis(ctx, k, genesisState2)
 	got2 := harpoon.ExportGenesis(ctx, k)
 	require.NotNil(t, got)
@@ -55,4 +71,17 @@ func TestGenesis(t *testing.T) {
 	nullify.Fill(got)
 
 	require.Equal(t, &genesisState2, got2)
+
+	// non nil genesis -  hook subscriptions, contract does not exist
+	genesisState3 := types.GenesisState{
+		HookSubscriptions: []types.HookSubscriptions{
+			{
+				HookType:          types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
+				ContractAddresses: []string{ContractAddress1},
+			},
+		},
+	}
+	k, ctx = keepertest.HarpoonKeeper(t, wasmKeeper)
+	wasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32(ContractAddress1)).Times(1).Return(false)
+	require.PanicsWithError(t, errors.Wrap(errors2.ErrInvalidAddress, fmt.Sprintf("contract address not found: %s", ContractAddress1)).Error(), func() { harpoon.InitGenesis(ctx, k, genesisState3) })
 }

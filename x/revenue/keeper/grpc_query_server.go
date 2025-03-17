@@ -105,9 +105,9 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 	pr := PerformanceRating(
 		params.BlocksPerformanceRequirement,
 		params.OracleVotesPerformanceRequirement,
-		int64(blocksPerPeriod-valInfo.GetCommitedBlocksInPeriod()),
-		int64(blocksPerPeriod-valInfo.GetCommitedOracleVotesInPeriod()),
-		int64(blocksPerPeriod),
+		int64(blocksPerPeriod-valInfo.GetCommitedBlocksInPeriod()),      //nolint:gosec
+		int64(blocksPerPeriod-valInfo.GetCommitedOracleVotesInPeriod()), //nolint:gosec
+		int64(blocksPerPeriod),                                          //nolint:gosec
 	)
 
 	amount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
@@ -157,9 +157,9 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 		pr := PerformanceRating(
 			params.BlocksPerformanceRequirement,
 			params.OracleVotesPerformanceRequirement,
-			int64(blocksPerPeriod-valInfo.GetCommitedBlocksInPeriod()),
-			int64(blocksPerPeriod-valInfo.GetCommitedOracleVotesInPeriod()),
-			int64(blocksPerPeriod),
+			int64(blocksPerPeriod-valInfo.GetCommitedBlocksInPeriod()),      //nolint:gosec
+			int64(blocksPerPeriod-valInfo.GetCommitedOracleVotesInPeriod()), //nolint:gosec
+			int64(blocksPerPeriod),                                          //nolint:gosec
 		)
 		valStats = append(valStats, revenuetypes.ValidatorStats{
 			ValidatorInfo:     valInfo,

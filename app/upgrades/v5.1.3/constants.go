@@ -1,4 +1,4 @@
-package v510
+package v513
 
 import (
 	storetypes "cosmossdk.io/store/types"
@@ -8,8 +8,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName                = "v5.1.0"
-	MarketMapAuthorityMultisig = "neutron1ldvrvhyvtssm0ptdq23hhaltprx8ctmjh92kzfs55sz2z997n76s72wr86"
+	UpgradeName = "v5.1.3"
 )
 
 var Upgrade = upgrades.Upgrade{

@@ -98,5 +98,5 @@ type AfterUnbondingInitiatedSudoMsg struct {
 }
 
 type AfterUnbondingInitiatedMsg struct {
-	Id uint64 `json:"id"`
+	ID uint64 `json:"id"`
 }

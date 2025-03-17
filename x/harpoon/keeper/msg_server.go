@@ -4,6 +4,7 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -27,6 +28,11 @@ var _ types.MsgServer = msgServer{}
 func (s msgServer) ManageHookSubscription(goCtx context.Context, req *types.MsgManageHookSubscription) (*types.MsgManageHookSubscriptionResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(err, "failed to validate manage hook subscription message")
+	}
+
+	contractAddr := sdk.MustAccAddressFromBech32(req.HookSubscription.ContractAddress)
+	if !s.keeper.wasmKeeper.HasContractInfo(goCtx, contractAddr) {
+		return nil, errorsmod.Wrapf(errors.ErrInvalidAddress, "contract address not found: %s", contractAddr)
 	}
 
 	if s.keeper.GetAuthority() != req.Authority {

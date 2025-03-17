@@ -30,3 +30,21 @@ func TestSubscribedContractsQuery(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &types.QuerySubscribedContractsResponse{ContractAddresses: []string{ContractAddress1}}, response)
 }
+
+func TestSubscribedContractsQueryUnspecifiedHookTypeFails(t *testing.T) {
+	k, ctx := keepertest.HarpoonKeeper(t, nil)
+	queryServer := keeper.NewQueryServerImpl(k)
+
+	response, err := queryServer.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: types.HOOK_TYPE_UNSPECIFIED})
+	require.Error(t, err)
+	require.Nil(t, response)
+}
+
+func TestSubscribedContractsQueryInvalidHookTypeFails(t *testing.T) {
+	k, ctx := keepertest.HarpoonKeeper(t, nil)
+	queryServer := keeper.NewQueryServerImpl(k)
+
+	response, err := queryServer.SubscribedContracts(ctx, &types.QuerySubscribedContractsRequest{HookType: -200})
+	require.Error(t, err)
+	require.Nil(t, response)
+}
