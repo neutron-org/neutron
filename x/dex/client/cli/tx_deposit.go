@@ -43,6 +43,11 @@ func CmdDeposit() *cobra.Command {
 			argAutoswapOptions := strings.Split(args[7], ",")
 			argFailTxOptions := strings.Split(args[8], ",")
 
+			swapOnDeposit, err := cmd.Flags().GetBool(FlagSwapOnDeposit)
+			if err != nil {
+				return err
+			}
+
 			var AmountsA []math.Int
 			var AmountsB []math.Int
 			var TicksIndexesInt []int64
@@ -98,6 +103,7 @@ func CmdDeposit() *cobra.Command {
 				DepositOptions = append(DepositOptions, &types.DepositOptions{
 					DisableAutoswap: disableAutoswap,
 					FailTxOnBel:     failTx,
+					SwapOnDeposit:   swapOnDeposit,
 				})
 			}
 
@@ -123,6 +129,7 @@ func CmdDeposit() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().AddFlagSet(FlagSetSwapOnDeposit())
 
 	return cmd
 }

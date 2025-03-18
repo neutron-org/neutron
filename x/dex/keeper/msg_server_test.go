@@ -485,6 +485,19 @@ func (s *DexTestSuite) limitSellsInt(
 	return msg.TrancheKey, nil
 }
 
+func (s *DexTestSuite) limitSellsIntSuccess(
+	account sdk.AccAddress,
+	tokenIn string,
+	tickIndexNormalized int,
+	amountIn sdkmath.Int,
+	orderTypeOpt ...types.LimitOrderType,
+) string {
+	trancheKey, err := s.limitSellsInt(account, tokenIn, tickIndexNormalized, amountIn, orderTypeOpt...)
+	s.NoError(err)
+
+	return trancheKey
+}
+
 func (s *DexTestSuite) limitSells(
 	account sdk.AccAddress,
 	tokenIn string,
@@ -1772,6 +1785,36 @@ func TestMsgDepositValidate(t *testing.T) {
 				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
 			},
 			types.ErrInvalidFee,
+		},
+		{
+			"SwapOnDeposit without autoswap",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: true, SwapOnDeposit: true}},
+			},
+			types.ErrSwapOnDepositWithoutAutoswap,
+		},
+		{
+			"invalid slop tolerance",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10001}},
+			},
+			types.ErrInvalidSlopTolerance,
 		},
 	}
 

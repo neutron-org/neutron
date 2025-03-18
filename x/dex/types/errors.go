@@ -227,6 +227,26 @@ var (
 	ErrZeroMinAverageSellPrice = sdkerrors.Register(
 		ModuleName,
 		1165,
-		"MinAverageSellPrice must be nil or > 0.",
+		"MinAverageSellPrice must be nil or > 0",
+	)
+	ErrDoubleSidedSwapOnDeposit = sdkerrors.Register(
+		ModuleName,
+		1166,
+		"Swap on deposit cannot be performed for Token0 and Token1",
+	)
+	ErrSwapOnDepositWithoutAutoswap = sdkerrors.Register(
+		ModuleName,
+		1167,
+		"Cannot disable autoswap when using swap_on_deposit",
+	)
+	ErrSwapOnDepositSlopToleranceNotSatisfied = sdkerrors.Register(
+		ModuleName,
+		1168,
+		"Swap on deposit true price is less than minimum allowed price",
+	)
+	ErrInvalidSlopTolerance = sdkerrors.Register(
+		ModuleName,
+		1169,
+		"Slop tolerance must be between 0 and 10000",
 	)
 )
