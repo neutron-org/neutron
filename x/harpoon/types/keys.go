@@ -23,6 +23,6 @@ func GetHookSubscriptionKeyPrefix() []byte {
 // GetHookSubscriptionKey returns the store key for a specific hook subscription.
 func GetHookSubscriptionKey(hookType HookType) []byte {
 	arr := make([]byte, 4)
-	binary.BigEndian.PutUint32(arr[0:4], uint32(hookType))
+	binary.BigEndian.PutUint32(arr[0:4], uint32(hookType)) //nolint:gosec
 	return append(GetHookSubscriptionKeyPrefix(), arr...)
 }

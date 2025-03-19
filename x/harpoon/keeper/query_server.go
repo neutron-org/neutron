@@ -29,8 +29,8 @@ func (s queryServer) SubscribedContracts(goCtx context.Context, req *types.Query
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	if req.HookType == types.HOOK_TYPE_UNSPECIFIED {
-		return nil, status.Error(codes.InvalidArgument, "unspecified hook type")
+	if err := types.ValidateHookType(req.HookType); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)

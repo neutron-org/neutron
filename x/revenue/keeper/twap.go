@@ -35,13 +35,17 @@ func (k *Keeper) UpdateRewardAssetPrice(ctx sdk.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get price for currency pair: %w", err)
 	}
+	// safecheck. Should never happen. Make sure the slinky price is valid
+	if priceInt.Price.LTE(math.ZeroInt()) {
+		return fmt.Errorf("price is invalid")
+	}
 
 	decimals, err := k.oracleKeeper.GetDecimalsForCurrencyPair(ctx, pair)
 	if err != nil {
 		return fmt.Errorf("failed to get decimals for currency pair: %w", err)
 	}
 
-	price := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals))
+	price := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals)) //nolint:gosec
 	err = k.CalcNewRewardAssetPrice(ctx, price, ctx.BlockTime().Unix())
 	if err != nil {
 		return fmt.Errorf("failed to save a new reward asset price: %w", err)
@@ -129,7 +133,7 @@ func (k *Keeper) GetLastRewardAssetPrice(ctx sdk.Context) (types.RewardAssetPric
 		if err = k.cdc.Unmarshal(iter.Value(), &cmlt); err != nil {
 			return cmlt, fmt.Errorf("failed to unmarshal a reward asset price: %w", err)
 		}
-		return cmlt, nil
+		return cmlt, nil //nolint:staticcheck
 	}
 	k.Logger(ctx).Warn("TWAP storage is empty")
 	return cmlt, nil
@@ -155,7 +159,7 @@ func (k *Keeper) GetFirstRewardAssetPriceAfter(ctx sdk.Context, startAt int64) (
 		if err = k.cdc.Unmarshal(iter.Value(), &cmlt); err != nil {
 			return cmlt, fmt.Errorf("failed to unmarshal a reward asset price: %w", err)
 		}
-		return cmlt, nil
+		return cmlt, nil //nolint:staticcheck
 	}
 	k.Logger(ctx).Warn("TWAP storage is empty")
 	return cmlt, nil
