@@ -14,6 +14,10 @@ var (
 	DefaultPaymentScheduleType = &PaymentScheduleType_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
 	// DefaultTWAPWindow represents default time span to calculate TWAP for. Measured in seconds.
 	DefaultTWAPWindow int64 = 24 * 3600
+
+	// MaxTWAPWindow represents the maximum window size allowed to set with params
+	// to reduce inordinate state growth
+	MaxTWAPWindow int64 = 30 * 24 * 3600
 )
 
 // NewParams creates a new Params instance.
@@ -53,6 +57,10 @@ func (p Params) Validate() error {
 	// shorthands
 	bpr := p.BlocksPerformanceRequirement
 	ovpr := p.OracleVotesPerformanceRequirement
+
+	if p.TwapWindow < 1 || p.TwapWindow > MaxTWAPWindow {
+		return fmt.Errorf("twap window must be between 1 and %d", MaxTWAPWindow)
+	}
 
 	if bpr.AllowedToMiss.LT(math.LegacyZeroDec()) || bpr.AllowedToMiss.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("blocks allowed to miss must be between 0.0 and 1.0")
