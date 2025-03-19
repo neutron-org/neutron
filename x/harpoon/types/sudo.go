@@ -88,8 +88,9 @@ type BeforeValidatorSlashedSudoMsg struct {
 }
 
 type BeforeValidatorSlashedMsg struct {
-	ValAddr  string         `json:"val_addr"`
-	Fraction math.LegacyDec `json:"fraction"`
+	ValAddr      string         `json:"val_addr"`
+	Fraction     math.LegacyDec `json:"fraction"`
+	TokensToBurn math.Int       `json:"tokens_to_burn"`
 }
 
 type AfterUnbondingInitiatedSudoMsg struct {

@@ -71,7 +71,7 @@ func (k Keeper) Logger() log.Logger {
 }
 
 // Hooks returns the implemented StakingHooks to be called by the staking module.
-func (k Keeper) Hooks() stakingtypes.StakingHooks {
+func (k Keeper) Hooks() stakingtypes.StakingHooksBeforeValidatorSlashedHasTokensToBurn {
 	return Hooks{&k}
 }
 
