@@ -19,7 +19,7 @@ func TestInitAndExportGenesis(t *testing.T) {
 	// create some non-default genesis state with all fields populated
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
-		ValOperAddress:              "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70",
+		ValOperAddress:              val1OperAddr,
 		CommitedBlocksInPeriod:      0,
 		CommitedOracleVotesInPeriod: 0,
 	})
@@ -71,7 +71,7 @@ func TestGenesisSerialization(t *testing.T) {
 func TestGenesisInvalidCommitedBlocksInPeriodForZeroHeight(t *testing.T) {
 	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 
-	valOperAddress := "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
+	valOperAddress := val1OperAddr
 
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
@@ -93,7 +93,7 @@ func TestGenesisInvalidCommitedBlocksInPeriodForZeroHeight(t *testing.T) {
 func TestGenesisInvalidCommitedOracleVotesInPeriodForZeroHeight(t *testing.T) {
 	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 
-	valOperAddress := "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
+	valOperAddress := val1OperAddr
 
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
@@ -116,7 +116,7 @@ func TestGenesisInvalidCurrentPeriodStartBlock(t *testing.T) {
 	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 	ctx = ctx.WithBlockHeight(2)
 
-	valOperAddress := "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
+	valOperAddress := val1OperAddr
 
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
@@ -139,7 +139,7 @@ func TestGenesisInvalidCommitedBlocksInPeriodForNonZeroHeight(t *testing.T) {
 	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 	ctx = ctx.WithBlockHeight(2)
 
-	valOperAddress := "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
+	valOperAddress := val1OperAddr
 
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
@@ -162,7 +162,7 @@ func TestGenesisInvalidCommitedOracleVotesInPeriodForNonZeroHeight(t *testing.T)
 	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
 	ctx = ctx.WithBlockHeight(2)
 
-	valOperAddress := "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
+	valOperAddress := val1OperAddr
 
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{

@@ -30,7 +30,7 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 		panic(err)
 	}
 
-	blockHeight := uint64(ctx.BlockHeight())
+	blockHeight := uint64(ctx.BlockHeight()) //nolint:gosec
 	blocksInPeriod := ps.TotalBlocksInPeriod(ctx)
 
 	var currentPeriodStartBlock uint64
