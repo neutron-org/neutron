@@ -51,8 +51,8 @@ message QueryPaymentInfoResponse {
   // The current payment schedule.
   PaymentSchedule payment_schedule = 1 [(gogoproto.nullable) = false];
 
-  // Revenue amount multiplier value that corresponds to the completeness of the payment period.
-  string period_completeness = 2 [
+  // Revenue amount multiplier value that corresponds to the effective payment period progress.
+  string effective_period_progress = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
@@ -116,8 +116,8 @@ message ValidatorStats {
   ];
 
   // Contains expected revenue for the validator based on their performance rating in the current
-  // payment period, current reward denom TWAP, completeness of the payment period, and duration
-  // of validator's presence in the active validator set.
+  // payment period, current reward denom TWAP, and duration of validator's presence in the active
+  // validator set. Does not take into account effective payment period progress.
   string expected_revenue = 4 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false

@@ -92,7 +92,6 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get payment schedule: %w", err)
 	}
-	periodCompleteness := ps.PeriodCompleteness(ctx)
 
 	var psRequiresUpdate bool
 	switch {
@@ -105,7 +104,7 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 		h.revenueKeeper.Logger(ctx).Debug("payment schedule type module parameter has changed",
 			"new_payment_schedule_type", fmt.Sprintf("%+v", params.PaymentScheduleType),
 			"old_payment_schedule_value", ps.String(),
-			"payment_period_completeness", periodCompleteness.String(),
+			"effective_period_progress", ps.EffectivePeriodProgress(ctx).String(),
 		)
 
 		if err := h.revenueKeeper.ProcessRevenue(ctx, params, ps); err != nil {
@@ -121,7 +120,7 @@ func (h *PreBlockHandler) PaymentScheduleCheck(ctx sdktypes.Context) error {
 		psRequiresUpdate = true
 
 	// if the period has ended, revenue needs to be processed and payment schedule set to the next period
-	case periodCompleteness == revenuetypes.PeriodCompletenessFull:
+	case ps.PeriodEnded(ctx):
 		h.revenueKeeper.Logger(ctx).Debug("payment period has ended, processing revenue")
 		if err := h.revenueKeeper.ProcessRevenue(ctx, params, ps); err != nil {
 			return fmt.Errorf("failed to process revenue: %w", err)

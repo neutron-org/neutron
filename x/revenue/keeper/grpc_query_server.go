@@ -67,11 +67,11 @@ func (s queryServer) PaymentInfo(goCtx context.Context, request *revenuetypes.Qu
 	}
 
 	return &revenuetypes.QueryPaymentInfoResponse{
-		PaymentSchedule:    *ps,
-		PeriodCompleteness: psi.PeriodCompleteness(ctx),
-		RewardDenom:        revenuetypes.RewardDenom,
-		RewardDenomTwap:    twap,
-		BaseRevenueAmount:  bra,
+		PaymentSchedule:         *ps,
+		EffectivePeriodProgress: psi.EffectivePeriodProgress(ctx),
+		RewardDenom:             revenuetypes.RewardDenom,
+		RewardDenomTwap:         twap,
+		BaseRevenueAmount:       bra,
 	}, nil
 }
 
@@ -109,12 +109,11 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	periodRevenueAmount := s.keeper.CalcPeriodRevenueAmount(baseRevenueAmount, ps.PeriodCompleteness(ctx))
 	totalBlocksInPeriod := ps.TotalBlocksInPeriod(ctx)
 
 	pr, valCompensation := evaluateValCommitment(
 		params,
-		periodRevenueAmount,
+		baseRevenueAmount,
 		valInfo,
 		totalBlocksInPeriod,
 	)
@@ -155,14 +154,13 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	periodRevenueAmount := s.keeper.CalcPeriodRevenueAmount(baseRevenueAmount, ps.PeriodCompleteness(ctx))
 	totalBlocksInPeriod := ps.TotalBlocksInPeriod(ctx)
 
 	valStats := make([]revenuetypes.ValidatorStats, 0, len(valsInfo))
 	for _, valInfo := range valsInfo {
 		pr, valCompensation := evaluateValCommitment(
 			params,
-			periodRevenueAmount,
+			baseRevenueAmount,
 			valInfo,
 			totalBlocksInPeriod,
 		)

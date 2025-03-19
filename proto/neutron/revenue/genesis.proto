@@ -61,6 +61,9 @@ message MonthlyPaymentSchedule {
 
   // The block height at which the current month started.
   uint64 current_month_start_block = 2;
+
+  // The timestamp of the block at which the current month started.
+  uint64 current_month_start_block_ts = 3;
 }
 
 // Represents a payment schedule where revenue payments are processed after a specified number

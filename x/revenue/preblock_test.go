@@ -86,7 +86,11 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		psi := (&revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonth:             1,
+			CurrentMonthStartBlock:   1,
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a fresh validator
@@ -130,7 +134,11 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		psi := (&revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonth:             1,
+			CurrentMonthStartBlock:   1,
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a validator with 100% performance (the next block will be the 6th one)
@@ -199,7 +207,11 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		psi := (&revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonth:             1,
+			CurrentMonthStartBlock:   1,
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a validator with 100% performance (the next block will be the 6th one)

@@ -22,9 +22,9 @@ const (
 	// EventAttributeCommittedOracleVotesInPeriod contains the number of blocks committed by the
 	// validator in the payment period.
 	EventAttributeCommittedOracleVotesInPeriod = "committed_oracle_votes_in_period"
-	// EventAttributePeriodCompleteness is the revenue amount multiplier value that corresponds
-	// to the completeness of the payment period.
-	EventAttributePeriodCompleteness = "period_completeness"
+	// EventAttributeEffectivePeriodProgress contains the revenue amount multiplier value that
+	// corresponds to the effective payment period progress.
+	EventAttributeEffectivePeriodProgress = "effective_period_progress"
 	// EventAttributeTotalBlockInPeriod contains the total number of blocks in the payment period.
 	EventAttributeTotalBlockInPeriod = "total_block_in_period"
 	// EventAttributePaymentFailure is added to the event when a payment fails and contains the

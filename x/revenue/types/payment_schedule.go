@@ -15,22 +15,21 @@ var (
 	_ PaymentScheduleI = (*EmptyPaymentSchedule)(nil)
 )
 
-var (
-	// PeriodCompletenessZero represents zero payment period completeness.
-	PeriodCompletenessZero math.LegacyDec = math.LegacyZeroDec()
-	// PeriodCompletenessFull represents full payment period completeness.
-	PeriodCompletenessFull math.LegacyDec = math.LegacyOneDec()
-)
-
 // The PaymentScheduleI interface defines the structure and behavior of different payment schedule
 // types for distributing validator compensation. It provides methods to manage and track payment
 // periods, ensuring rewards are distributed accurately based on the defined schedule type.
 type PaymentScheduleI interface {
 	proto.Message
 
-	// PeriodCompleteness returns the completeness of the current payment period as a decimal value
-	// in the range [0,1], where 0 indicates a just started period and 1 indicates a complete period.
-	PeriodCompleteness(ctx sdktypes.Context) math.LegacyDec
+	// PeriodEnded checks whether the end of the current payment period has come. The check is made
+	// against the passed context and the payment schedule's parameters and conditions.
+	PeriodEnded(ctx sdktypes.Context) bool
+	// EffectivePeriodProgress returns the proportion of the current payment period that has elapsed
+	// since the payment period start to the full duration of the period, as a decimal value in the
+	// range [0,1]. A value of 0 indicates the period has just started, while 1 indicates the period
+	// has fully elapsed from the very beginning to the very end. The check is made against the
+	// passed context and the payment schedule's parameters and conditions.
+	EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec
 	// TotalBlocksInPeriod returns the amount of blocks created within the current payment period.
 	// The check is made against the passed context.
 	TotalBlocksInPeriod(ctx sdktypes.Context) uint64
@@ -43,26 +42,37 @@ type PaymentScheduleI interface {
 	IntoPaymentSchedule() *PaymentSchedule
 }
 
-// PeriodCompleteness returns the completeness of the current payment period as a decimal value in
-// the range [0,1]. The current period ends when the month of the block creation is different from
-// the current month defined in the payment schedule. Otherwise the result completeness is equal to
-// the ratio of hours passed since the start of the current month to the total number of hours in
-// the month.
-func (s *MonthlyPaymentSchedule) PeriodCompleteness(ctx sdktypes.Context) math.LegacyDec {
-	if s.CurrentMonth != uint64(ctx.BlockTime().Month()) {
-		return PeriodCompletenessFull
-	}
+// PeriodEnded checks whether the end of the current payment period has come. The current period
+// ends when the month of the block creation is different from the current month of the payment
+// schedule.
+func (s *MonthlyPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
+	return s.CurrentMonth != uint64(ctx.BlockTime().Month())
+}
 
+// EffectivePeriodProgress returns the proportion of the current payment period that has elapsed
+// since the payment period start to the full duration of the period, as a decimal value in the
+// range [0,1]. A value of 0 indicates the period has just started, while 1 indicates the period
+// has fully elapsed from the very beginning to the very end. Otherwise the result equals to the
+// ratio of time passed since the start of the current period to the whole duration of the month.
+func (s *MonthlyPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec {
 	// source: https://www.brandur.org/fragments/go-days-in-month
 	daysInCurrentMonth := time.Date(
 		ctx.BlockTime().Year(),
-		ctx.BlockTime().Month()+1,
+		time.Month(s.CurrentMonth)+1,
 		0, 0, 0, 0, 0,
 		ctx.BlockTime().Location(),
 	).Day()
-	hoursInCurrentMonth := int64(daysInCurrentMonth * 24)
-	hoursPassed := int64((ctx.BlockTime().Day()-1)*24 + ctx.BlockTime().Hour())
-	return math.LegacyNewDec(hoursPassed).Quo(math.LegacyNewDec(hoursInCurrentMonth))
+	secondsInCurrentMonth := int64(daysInCurrentMonth * 24 * 60 * 60)
+	secondsPassed := ctx.BlockTime().Unix() - int64(s.CurrentMonthStartBlockTs)
+
+	switch {
+	case secondsPassed >= secondsInCurrentMonth:
+		return math.LegacyOneDec()
+	case secondsPassed <= 0:
+		return math.LegacyZeroDec()
+	default:
+		return math.LegacyNewDec(secondsPassed).Quo(math.LegacyNewDec(secondsInCurrentMonth))
+	}
 }
 
 // TotalBlocksInPeriod returns the amount of blocks created from the beginning of the current month.
@@ -74,6 +84,7 @@ func (s *MonthlyPaymentSchedule) TotalBlocksInPeriod(ctx sdktypes.Context) uint6
 func (s *MonthlyPaymentSchedule) StartNewPeriod(ctx sdktypes.Context) {
 	s.CurrentMonth = uint64(ctx.BlockTime().Month())
 	s.CurrentMonthStartBlock = uint64(ctx.BlockHeight())
+	s.CurrentMonthStartBlockTs = uint64(ctx.BlockTime().Unix())
 }
 
 // MatchesType checks whether the payment schedule matches a given payment schedule type.
@@ -87,16 +98,24 @@ func (s *MonthlyPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
 	return &PaymentSchedule{PaymentSchedule: &PaymentSchedule_MonthlyPaymentSchedule{MonthlyPaymentSchedule: s}}
 }
 
-// PeriodCompleteness returns the completeness of the current payment period as a decimal value in
-// the range [0,1]. The current period is complete when there has been at least BlocksPerPeriod since
-// CurrentPeriodStartBlock. Otherwise the result completeness is equal to the ratio of the blocks
-// created during the period to the number of blocks per period defined in the schedule.
-func (s *BlockBasedPaymentSchedule) PeriodCompleteness(ctx sdktypes.Context) math.LegacyDec {
+// PeriodEnded checks whether the end of the current payment period has come. The current period
+// ends when there has been at least BlocksPerPeriod since CurrentPeriodStartBlock.
+func (s *BlockBasedPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
+	return uint64(ctx.BlockHeight()) >= s.CurrentPeriodStartBlock+s.BlocksPerPeriod
+}
+
+// EffectivePeriodProgress returns the proportion of the current payment period that has elapsed
+// since the payment period start to the full duration of the period, as a decimal value in the
+// range [0,1]. A value of 0 indicates the period has just started, while 1 indicates the period
+// has fully elapsed from the very beginning to the very end. Otherwise the result equals to the
+// ratio of the blocks created during the period to the number of blocks per period defined in the
+// schedule.
+func (s *BlockBasedPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec {
 	switch {
 	case uint64(ctx.BlockHeight()) >= s.CurrentPeriodStartBlock+s.BlocksPerPeriod:
-		return PeriodCompletenessFull
+		return math.LegacyOneDec()
 	case uint64(ctx.BlockHeight()) <= s.CurrentPeriodStartBlock:
-		return PeriodCompletenessZero
+		return math.LegacyZeroDec()
 	default:
 		return math.LegacyNewDec(ctx.BlockHeight()).
 			Sub(math.LegacyNewDecFromInt(math.NewIntFromUint64(s.CurrentPeriodStartBlock))).
@@ -127,9 +146,14 @@ func (s *BlockBasedPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
 	return &PaymentSchedule{PaymentSchedule: &PaymentSchedule_BlockBasedPaymentSchedule{BlockBasedPaymentSchedule: s}}
 }
 
-// PeriodCompleteness always returns zero completeness for the EmptyPaymentSchedule.
-func (s *EmptyPaymentSchedule) PeriodCompleteness(ctx sdktypes.Context) math.LegacyDec {
-	return PeriodCompletenessZero
+// PeriodEnded always returns false for the EmptyPaymentSchedule.
+func (s *EmptyPaymentSchedule) PeriodEnded(_ sdktypes.Context) bool {
+	return false
+}
+
+// EffectivePeriodProgress always returns zero progress for the EmptyPaymentSchedule.
+func (s *EmptyPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec {
+	return math.LegacyZeroDec()
 }
 
 // TotalBlocksInPeriod always returns 0 for the EmptyPaymentSchedule.

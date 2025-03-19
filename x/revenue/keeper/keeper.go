@@ -202,9 +202,9 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 // of revenue from the module's treasury pool to the validator's account, and resets the validator's
 // performance stats in preparation for the next period.
 func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps revenuetypes.PaymentScheduleI) error {
-	periodCompleteness := ps.PeriodCompleteness(ctx)
-	if periodCompleteness.LT(revenuetypes.PeriodCompletenessZero) || periodCompleteness.GT(revenuetypes.PeriodCompletenessFull) {
-		return fmt.Errorf("invalid period completeness %s: expected to be between 0.0 and 1.0", periodCompleteness.String())
+	epp := ps.EffectivePeriodProgress(ctx)
+	if epp.LT(math.LegacyZeroDec()) || epp.GT(math.LegacyOneDec()) {
+		return fmt.Errorf("invalid effective period progress %s: expected to be between 0.0 and 1.0", epp.String())
 	}
 
 	infos, err := k.GetAllValidatorInfo(ctx)
@@ -215,11 +215,11 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps 
 	if err != nil {
 		return fmt.Errorf("failed to calculate base revenue amount: %w", err)
 	}
-	periodRevenueAmount := k.CalcPeriodRevenueAmount(baseRevenueAmount, periodCompleteness)
+	periodRevenueAmount := k.CalcPeriodRevenueAmount(baseRevenueAmount, epp)
 	if periodRevenueAmount.IsZero() {
 		ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistributionNone,
 			sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, periodRevenueAmount.String()),
-			sdk.NewAttribute(revenuetypes.EventAttributePeriodCompleteness, periodCompleteness.String()),
+			sdk.NewAttribute(revenuetypes.EventAttributeEffectivePeriodProgress, epp.String()),
 		))
 		return nil // nothing to distribute
 	}
@@ -239,7 +239,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps 
 		}
 
 		if !valCompensation.IsPositive() {
-			emitDistributeRevenueEvent(ctx, info, sdk.NewCoin(revenuetypes.RewardDenom, math.ZeroInt()), pr, blocksInPeriod, periodCompleteness)
+			emitDistributeRevenueEvent(ctx, info, sdk.NewCoin(revenuetypes.RewardDenom, math.ZeroInt()), pr, blocksInPeriod, epp)
 			continue
 		}
 
@@ -257,7 +257,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps 
 			))
 			k.Logger(ctx).Debug("failed to send revenue to validator", "validator", info.ValOperAddress, "err", err)
 		} else {
-			emitDistributeRevenueEvent(ctx, info, revenueAmt, pr, blocksInPeriod, periodCompleteness)
+			emitDistributeRevenueEvent(ctx, info, revenueAmt, pr, blocksInPeriod, epp)
 			k.Logger(ctx).Debug("revenue sent to validator", "validator", info.ValOperAddress, "revenue", revenueAmt.String())
 		}
 	}
@@ -299,12 +299,12 @@ func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64)
 }
 
 // CalcPeriodRevenueAmount calculates the compensation amount for validators based on the current
-// base revenue amount and payment period's completeness.
+// base revenue amount and effective payment period progress.
 func (k *Keeper) CalcPeriodRevenueAmount(
 	baseRevenueAmount math.Int,
-	periodCompleteness math.LegacyDec,
+	effectivePeriodProgress math.LegacyDec,
 ) math.Int {
-	return periodCompleteness.MulInt(baseRevenueAmount).TruncateInt()
+	return effectivePeriodProgress.MulInt(baseRevenueAmount).TruncateInt()
 }
 
 func (k *Keeper) getOrCreateValidatorInfo(
@@ -356,7 +356,7 @@ func emitDistributeRevenueEvent(
 	revenueAmt sdk.Coin,
 	rating math.LegacyDec,
 	blocksInPeriod uint64,
-	paymentPeriodCompleteness math.LegacyDec,
+	effectivePeriodProgress math.LegacyDec,
 ) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
 		sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
@@ -366,6 +366,6 @@ func emitDistributeRevenueEvent(
 		sdk.NewAttribute(revenuetypes.EventAttributeCommittedBlocksInPeriod, fmt.Sprintf("%d", info.CommitedBlocksInPeriod)),
 		sdk.NewAttribute(revenuetypes.EventAttributeCommittedOracleVotesInPeriod, fmt.Sprintf("%d", info.CommitedOracleVotesInPeriod)),
 		sdk.NewAttribute(revenuetypes.EventAttributeTotalBlockInPeriod, fmt.Sprintf("%d", blocksInPeriod)),
-		sdk.NewAttribute(revenuetypes.EventAttributePeriodCompleteness, paymentPeriodCompleteness.String()),
+		sdk.NewAttribute(revenuetypes.EventAttributeEffectivePeriodProgress, effectivePeriodProgress.String()),
 	))
 }
