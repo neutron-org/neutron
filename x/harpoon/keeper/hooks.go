@@ -12,7 +12,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ stakingtypes.StakingHooks = Hooks{}
+var (
+	_ stakingtypes.StakingHooks                                      = Hooks{}
+	_ stakingtypes.StakingHooksBeforeValidatorSlashedHasTokensToBurn = Hooks{}
+)
 
 // Hooks is a wrapper struct for hooks used by the harpoon keeper.
 // These hooks are invoked by the staking module.
@@ -117,12 +120,19 @@ func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddre
 	return h.k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED, message)
 }
 
-// BeforeValidatorSlashed calls the sudo method on the contracts subscribed to the BeforeValidatorSlashed hook
-func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction sdkmath.LegacyDec) error {
+// BeforeValidatorSlashed is not implemented because BeforeValidatorSlashedWithTokensToBurn will be called instead
+func (h Hooks) BeforeValidatorSlashed(_ context.Context, _ sdk.ValAddress, _ sdkmath.LegacyDec) error {
+	panic("BeforeValidatorSlashed shouldn't ever be called for neutron harpoon hooks since it has BeforeValidatorSlashedWithTokensToBurn hook")
+}
+
+// BeforeValidatorSlashedWithTokensToBurn calls the sudo method on the contracts subscribed to the BeforeValidatorSlashedWithTokensToBurn hook
+// It's same as BeforeValidatorSlashed but with tokensToBurn argument. Made this way for compatibility purposes.
+func (h Hooks) BeforeValidatorSlashedWithTokensToBurn(ctx context.Context, valAddr sdk.ValAddress, fraction sdkmath.LegacyDec, tokensToBurn sdkmath.Int) error {
 	message := types.BeforeValidatorSlashedSudoMsg{
 		BeforeValidatorSlashed: types.BeforeValidatorSlashedMsg{
-			ValAddr:  valAddr.String(),
-			Fraction: fraction,
+			ValAddr:      valAddr.String(),
+			Fraction:     fraction,
+			TokensToBurn: tokensToBurn,
 		},
 	}
 	return h.k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_BEFORE_VALIDATOR_SLASHED, message)
@@ -132,7 +142,7 @@ func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddres
 func (h Hooks) AfterUnbondingInitiated(ctx context.Context, id uint64) error {
 	message := types.AfterUnbondingInitiatedSudoMsg{
 		AfterUnbondingInitiated: types.AfterUnbondingInitiatedMsg{
-			Id: id,
+			ID: id,
 		},
 	}
 	return h.k.CallSudoForSubscriptionType(ctx, types.HOOK_TYPE_AFTER_UNBONDING_INITIATED, message)

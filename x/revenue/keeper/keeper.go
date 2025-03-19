@@ -254,6 +254,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps 
 			ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistributionError,
 				sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
 				sdk.NewAttribute(revenuetypes.EventAttributePaymentFailure, err.Error()),
+				sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, revenueAmt.String()),
 			))
 			k.Logger(ctx).Debug("failed to send revenue to validator", "validator", info.ValOperAddress, "err", err)
 		} else {

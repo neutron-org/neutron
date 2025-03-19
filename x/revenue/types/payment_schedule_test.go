@@ -24,7 +24,7 @@ func TestMonthlyPaymentSchedule(t *testing.T) {
 	s := &revenuetypes.MonthlyPaymentSchedule{
 		CurrentMonth:             1,
 		CurrentMonthStartBlock:   1,
-		CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 	}
 	// such schedule's period is expected to be ended when January ends
 	assert.NotEqual(t, math.LegacyOneDec(), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC))))

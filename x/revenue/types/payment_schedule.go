@@ -46,7 +46,7 @@ type PaymentScheduleI interface {
 // ends when the month of the block creation is different from the current month of the payment
 // schedule.
 func (s *MonthlyPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
-	return s.CurrentMonth != uint64(ctx.BlockTime().Month())
+	return s.CurrentMonth != uint64(ctx.BlockTime().Month()) //nolint:gosec
 }
 
 // EffectivePeriodProgress returns the proportion of the current payment period that has elapsed
@@ -58,12 +58,12 @@ func (s *MonthlyPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) m
 	// source: https://www.brandur.org/fragments/go-days-in-month
 	daysInCurrentMonth := time.Date(
 		ctx.BlockTime().Year(),
-		time.Month(s.CurrentMonth)+1,
+		time.Month(s.CurrentMonth)+1, //nolint:gosec
 		0, 0, 0, 0, 0,
 		ctx.BlockTime().Location(),
 	).Day()
 	secondsInCurrentMonth := int64(daysInCurrentMonth * 24 * 60 * 60)
-	secondsPassed := ctx.BlockTime().Unix() - int64(s.CurrentMonthStartBlockTs)
+	secondsPassed := ctx.BlockTime().Unix() - int64(s.CurrentMonthStartBlockTs) //nolint:gosec
 
 	switch {
 	case secondsPassed >= secondsInCurrentMonth:
@@ -77,14 +77,14 @@ func (s *MonthlyPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) m
 
 // TotalBlocksInPeriod returns the amount of blocks created from the beginning of the current month.
 func (s *MonthlyPaymentSchedule) TotalBlocksInPeriod(ctx sdktypes.Context) uint64 {
-	return uint64(ctx.BlockHeight()) - s.CurrentMonthStartBlock
+	return uint64(ctx.BlockHeight()) - s.CurrentMonthStartBlock //nolint:gosec
 }
 
 // StartNewPeriod sets the current payment period to new month and block height.
 func (s *MonthlyPaymentSchedule) StartNewPeriod(ctx sdktypes.Context) {
-	s.CurrentMonth = uint64(ctx.BlockTime().Month())
-	s.CurrentMonthStartBlock = uint64(ctx.BlockHeight())
-	s.CurrentMonthStartBlockTs = uint64(ctx.BlockTime().Unix())
+	s.CurrentMonth = uint64(ctx.BlockTime().Month())            //nolint:gosec
+	s.CurrentMonthStartBlock = uint64(ctx.BlockHeight())        //nolint:gosec
+	s.CurrentMonthStartBlockTs = uint64(ctx.BlockTime().Unix()) //nolint:gosec
 }
 
 // MatchesType checks whether the payment schedule matches a given payment schedule type.
@@ -101,7 +101,7 @@ func (s *MonthlyPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
 // PeriodEnded checks whether the end of the current payment period has come. The current period
 // ends when there has been at least BlocksPerPeriod since CurrentPeriodStartBlock.
 func (s *BlockBasedPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
-	return uint64(ctx.BlockHeight()) >= s.CurrentPeriodStartBlock+s.BlocksPerPeriod
+	return s.TotalBlocksInPeriod(ctx) >= s.BlocksPerPeriod //nolint:gosec
 }
 
 // EffectivePeriodProgress returns the proportion of the current payment period that has elapsed
@@ -112,9 +112,9 @@ func (s *BlockBasedPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
 // schedule.
 func (s *BlockBasedPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec {
 	switch {
-	case uint64(ctx.BlockHeight()) >= s.CurrentPeriodStartBlock+s.BlocksPerPeriod:
+	case uint64(ctx.BlockHeight()) >= s.CurrentPeriodStartBlock+s.BlocksPerPeriod: //nolint:gosec
 		return math.LegacyOneDec()
-	case uint64(ctx.BlockHeight()) <= s.CurrentPeriodStartBlock:
+	case uint64(ctx.BlockHeight()) <= s.CurrentPeriodStartBlock: //nolint:gosec
 		return math.LegacyZeroDec()
 	default:
 		return math.LegacyNewDec(ctx.BlockHeight()).
@@ -125,12 +125,12 @@ func (s *BlockBasedPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context
 
 // TotalBlocksInPeriod returns the amount of blocks created from the beginning of the current period.
 func (s *BlockBasedPaymentSchedule) TotalBlocksInPeriod(ctx sdktypes.Context) uint64 {
-	return uint64(ctx.BlockHeight()) - s.CurrentPeriodStartBlock
+	return uint64(ctx.BlockHeight()) - s.CurrentPeriodStartBlock //nolint:gosec
 }
 
 // StartNewPeriod sets the current payment period start block to the current block height.
 func (s *BlockBasedPaymentSchedule) StartNewPeriod(ctx sdktypes.Context) {
-	s.CurrentPeriodStartBlock = uint64(ctx.BlockHeight())
+	s.CurrentPeriodStartBlock = uint64(ctx.BlockHeight()) //nolint:gosec
 }
 
 // MatchesType checks whether the payment schedule matches a given payment schedule type.
@@ -152,7 +152,7 @@ func (s *EmptyPaymentSchedule) PeriodEnded(_ sdktypes.Context) bool {
 }
 
 // EffectivePeriodProgress always returns zero progress for the EmptyPaymentSchedule.
-func (s *EmptyPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec {
+func (s *EmptyPaymentSchedule) EffectivePeriodProgress(_ sdktypes.Context) math.LegacyDec {
 	return math.LegacyZeroDec()
 }
 

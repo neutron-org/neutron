@@ -17,7 +17,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/harpoon/keeper"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/harpoon/types"
 )
 
@@ -58,7 +57,7 @@ func TestManageHookSubscription(t *testing.T) {
 					Hooks:           []types.HookType{},
 				},
 			},
-			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+			func(_ context.Context, _ *mock_types.MockWasmKeeper) {
 			},
 			"authority is invalid: empty address string is not allowed",
 		},
@@ -71,7 +70,7 @@ func TestManageHookSubscription(t *testing.T) {
 					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED},
 				},
 			},
-			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+			func(_ context.Context, _ *mock_types.MockWasmKeeper) {
 			},
 			"subscription hooks are not unique",
 		},
@@ -84,7 +83,7 @@ func TestManageHookSubscription(t *testing.T) {
 					Hooks:           []types.HookType{types.HookType(100)},
 				},
 			},
-			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
+			func(_ context.Context, _ *mock_types.MockWasmKeeper) {
 			},
 			"non-existing hook type",
 		},
@@ -135,7 +134,7 @@ func TestManageHookSubscription(t *testing.T) {
 	for _, tt := range tests {
 		wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 
-		k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper)
+		k, ctx := keepertest.HarpoonKeeper(t, wasmKeeper)
 		msgServer := keeper.NewMsgServerImpl(k)
 		tt.malleate(ctx, wasmKeeper)
 

@@ -473,7 +473,7 @@ func val2Info() revenuetypes.ValidatorInfo {
 func mustGetFromBech32(
 	t *testing.T,
 	bech32str string,
-	prefix string,
+	prefix string, //nolint:unparam
 ) []byte {
 	b, err := sdktypes.GetFromBech32(bech32str, prefix)
 	require.Nil(t, err)

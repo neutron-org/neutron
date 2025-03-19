@@ -89,7 +89,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		psi := (&revenuetypes.MonthlyPaymentSchedule{
 			CurrentMonth:             1,
 			CurrentMonthStartBlock:   1,
-			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
@@ -137,7 +137,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		psi := (&revenuetypes.MonthlyPaymentSchedule{
 			CurrentMonth:             1,
 			CurrentMonthStartBlock:   1,
-			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
@@ -210,7 +210,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		psi := (&revenuetypes.MonthlyPaymentSchedule{
 			CurrentMonth:             1,
 			CurrentMonthStartBlock:   1,
-			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
@@ -468,8 +468,8 @@ func val1Info() revenuetypes.ValidatorInfo {
 
 func mustGetFromBech32(
 	t *testing.T,
-	bech32str string,
-	prefix string,
+	bech32str string, //nolint:unparam
+	prefix string, //nolint:unparam
 ) []byte {
 	b, err := sdktypes.GetFromBech32(bech32str, prefix)
 	require.Nil(t, err)
