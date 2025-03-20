@@ -7,13 +7,15 @@ import (
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
-	vetypes "github.com/skip-mev/slinky/abci/ve/types"
-	"github.com/stretchr/testify/require"
-
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	vetypes "github.com/skip-mev/slinky/abci/ve/types"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -264,6 +266,30 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	require.Equal(t, val2Info.ValOperAddress, storedVal2Info.ValOperAddress)
 	require.Equal(t, uint64(1), storedVal2Info.CommitedBlocksInPeriod)      // all but the last one are missed
 	require.Equal(t, uint64(1), storedVal2Info.CommitedOracleVotesInPeriod) // all but the last one are missed
+}
+
+func TestPrecisionConversion(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	oracleKeeper.EXPECT().GetPriceForCurrencyPair(gomock.Any(), slinkytypes.CurrencyPair{
+		Base:  "NTRN",
+		Quote: "USD",
+	}).Return(oracletypes.QuotePrice{Price: math.NewInt(20000000)}, nil)
+	oracleKeeper.EXPECT().GetDecimalsForCurrencyPair(gomock.Any(), slinkytypes.CurrencyPair{
+		Base:  "NTRN",
+		Quote: "USD",
+	}).Return(uint64(8), nil)
+
+	err := keeper.UpdateRewardAssetPrice(ctx)
+	assert.Nil(t, err)
+
+	twap, err := keeper.GetTWAP(ctx)
+	assert.Nil(t, err)
+	// expected_twap_in_untrn = price_in_ntrn / 10^8 (precision of currency pair) / 10^6 (precision of NTRN)
+	assert.Equal(t, math.LegacyNewDecWithPrec(20000000, 8+revenuetypes.RewardDenomDecimals), twap)
 }
 
 func val1Info() revenuetypes.ValidatorInfo {
