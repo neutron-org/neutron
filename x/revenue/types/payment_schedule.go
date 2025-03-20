@@ -46,7 +46,7 @@ type PaymentScheduleI interface {
 // ends when the month of the block creation is different from the current month of the payment
 // schedule.
 func (s *MonthlyPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
-	return s.CurrentMonth != uint64(ctx.BlockTime().Month()) //nolint:gosec
+	return s.currentMonth() != ctx.BlockTime().Month()
 }
 
 // EffectivePeriodProgress returns the proportion of the current payment period that has elapsed
@@ -58,7 +58,7 @@ func (s *MonthlyPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) m
 	// source: https://www.brandur.org/fragments/go-days-in-month
 	daysInCurrentMonth := time.Date(
 		ctx.BlockTime().Year(),
-		time.Month(s.CurrentMonth)+1, //nolint:gosec
+		s.currentMonth()+1,
 		0, 0, 0, 0, 0,
 		ctx.BlockTime().Location(),
 	).Day()
@@ -82,7 +82,6 @@ func (s *MonthlyPaymentSchedule) TotalBlocksInPeriod(ctx sdktypes.Context) uint6
 
 // StartNewPeriod sets the current payment period to new month and block height.
 func (s *MonthlyPaymentSchedule) StartNewPeriod(ctx sdktypes.Context) {
-	s.CurrentMonth = uint64(ctx.BlockTime().Month())            //nolint:gosec
 	s.CurrentMonthStartBlock = uint64(ctx.BlockHeight())        //nolint:gosec
 	s.CurrentMonthStartBlockTs = uint64(ctx.BlockTime().Unix()) //nolint:gosec
 }
@@ -96,6 +95,10 @@ func (s *MonthlyPaymentSchedule) MatchesType(t isPaymentScheduleType_PaymentSche
 // IntoPaymentSchedule creates a PaymentSchedule with a oneof value populated accordingly.
 func (s *MonthlyPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
 	return &PaymentSchedule{PaymentSchedule: &PaymentSchedule_MonthlyPaymentSchedule{MonthlyPaymentSchedule: s}}
+}
+
+func (s *MonthlyPaymentSchedule) currentMonth() time.Month {
+	return time.Unix(int64(s.CurrentMonthStartBlockTs), 0).Month() //nolint:gosec
 }
 
 // PeriodEnded checks whether the end of the current payment period has come. The current period

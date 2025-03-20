@@ -87,7 +87,6 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		psi := (&revenuetypes.MonthlyPaymentSchedule{
-			CurrentMonth:             1,
 			CurrentMonthStartBlock:   1,
 			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 		})
@@ -135,7 +134,6 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		psi := (&revenuetypes.MonthlyPaymentSchedule{
-			CurrentMonth:             1,
 			CurrentMonthStartBlock:   1,
 			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 		})
@@ -179,7 +177,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		newPsi, err := keeper.GetPaymentScheduleI(ctx)
 		require.Nil(t, err)
 		newPs := newPsi.(*revenuetypes.MonthlyPaymentSchedule)
-		require.Equal(t, uint64(2), newPs.CurrentMonth)
+		require.Equal(t, time.February, time.Unix(int64(newPs.CurrentMonthStartBlockTs), 0).Month()) //nolint:gosec
 		require.Equal(t, uint64(6), newPs.CurrentMonthStartBlock)
 
 		// make sure validators' info is reset
@@ -208,7 +206,6 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 		psi := (&revenuetypes.MonthlyPaymentSchedule{
-			CurrentMonth:             1,
 			CurrentMonthStartBlock:   1,
 			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 		})

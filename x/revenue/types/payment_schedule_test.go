@@ -22,7 +22,6 @@ func TestMonthlyPaymentSchedule(t *testing.T) {
 
 	// a monthly schedule for January with first block height = 1
 	s := &revenuetypes.MonthlyPaymentSchedule{
-		CurrentMonth:             1,
 		CurrentMonthStartBlock:   1,
 		CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
 	}
@@ -164,7 +163,7 @@ func TestPaymentScheduleTypeMatch(t *testing.T) {
 	assert.False(t, bbps.MatchesType(&revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{}))
 	assert.False(t, bbps.MatchesType(&revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{}))
 
-	mps := &revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1}
+	mps := &revenuetypes.MonthlyPaymentSchedule{}
 	assert.True(t, mps.MatchesType(&revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{}}))
 	assert.False(t, mps.MatchesType(&revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{}))
 	assert.False(t, mps.MatchesType(&revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{}))

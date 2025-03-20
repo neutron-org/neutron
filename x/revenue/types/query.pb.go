@@ -156,7 +156,7 @@ var xxx_messageInfo_QueryPaymentInfoRequest proto.InternalMessageInfo
 type QueryPaymentInfoResponse struct {
 	// The current payment schedule.
 	PaymentSchedule PaymentSchedule `protobuf:"bytes,1,opt,name=payment_schedule,json=paymentSchedule,proto3" json:"payment_schedule"`
-	// Revenue amount multiplier value that corresponds to the effective progress of the payment period.
+	// Revenue amount multiplier value that corresponds to the effective payment period progress.
 	EffectivePeriodProgress cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=effective_period_progress,json=effectivePeriodProgress,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"effective_period_progress"`
 	// The denom used in revenue payments.
 	RewardDenom string `protobuf:"bytes,3,opt,name=reward_denom,json=rewardDenom,proto3" json:"reward_denom,omitempty"`
@@ -401,7 +401,7 @@ type ValidatorStats struct {
 	PerformanceRating cosmossdk_io_math.LegacyDec `protobuf:"bytes,3,opt,name=performance_rating,json=performanceRating,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"performance_rating"`
 	// Contains expected revenue for the validator based on their performance rating in the current
 	// payment period, current reward denom TWAP, and duration of validator's presence in the active
-	// validator set. Does not take into account the payment period effective progress.
+	// validator set. Does not take into account effective payment period progress.
 	ExpectedRevenue cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=expected_revenue,json=expectedRevenue,proto3,customtype=cosmossdk.io/math.Int" json:"expected_revenue"`
 }
 
