@@ -11,11 +11,12 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+
 	appparams "github.com/neutron-org/neutron/v5/app/params"
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
-	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -48,12 +49,10 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("RunMigrations failed: %w", err)
 		}
 
-		// TODO: uncomment when https://github.com/neutron-org/neutron-private/pull/62 merged
-		//err = SetupRewards(ctx, keepers.BankKeeper, *keepers.RewardsKeeper)
-		//if err != nil {
-		//	return vm, fmt.Errorf("SetupRewards failed: %w", err)
-		//}
-		// ^^^^
+		err = SetupRewards(ctx, keepers.BankKeeper)
+		if err != nil {
+			return vm, fmt.Errorf("SetupRewards failed: %w", err)
+		}
 
 		// subscribe tracing contract for staking hooks to mirror staking power into the contract
 		err = SetupTracking(ctx, keepers.HarpoonKeeper, keepers.WasmKeeper)
@@ -155,29 +154,21 @@ func SetupTracking(ctx sdk.Context, harpoonKeeper *harpoonkeeper.Keeper, wasmKee
 	return nil
 }
 
-// TODO: uncomment when https://github.com/neutron-org/neutron-private/pull/62 merged
-//func SetupRewards(ctx context.Context, bk bankkeeper.Keeper, rk rewardskeeper.Keeper) error {
-//	rewardsAmount := math.NewInt(RewardContract)
-//
-//	err := bk.SendCoins(
-//		ctx,
-//		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-//		sdk.MustAccAddressFromBech32(StakingRewardsContractAddress),
-//		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, rewardsAmount)),
-//	)
-//	if err != nil {
-//		return err
-//	}
-//
-//	params := rewardstypes.Params{
-//		StakingRewardsAddress: StakingRewardsContractAddress,
-//	}
-//	err = rk.SetParams(sdk.UnwrapSDKContext(ctx), params)
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
+func SetupRewards(ctx context.Context, bk bankkeeper.Keeper) error {
+	rewardsAmount := math.NewInt(RewardContract)
+
+	err := bk.SendCoins(
+		ctx,
+		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
+		sdk.MustAccAddressFromBech32(StakingRewardsContractAddress),
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, rewardsAmount)),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Keeper) error {
 	params := revenuetypes.Params{
