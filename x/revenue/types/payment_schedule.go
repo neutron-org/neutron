@@ -115,7 +115,7 @@ func (s *BlockBasedPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
 // schedule.
 func (s *BlockBasedPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec {
 	switch {
-	case uint64(ctx.BlockHeight()) >= s.CurrentPeriodStartBlock+s.BlocksPerPeriod: //nolint:gosec
+	case s.PeriodEnded(ctx):
 		return math.LegacyOneDec()
 	case uint64(ctx.BlockHeight()) <= s.CurrentPeriodStartBlock: //nolint:gosec
 		return math.LegacyZeroDec()
