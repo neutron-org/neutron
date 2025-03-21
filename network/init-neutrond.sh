@@ -833,6 +833,7 @@ set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"       
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 1},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 3},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 4},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 5},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 8},
