@@ -30,6 +30,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -53,6 +54,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -76,6 +78,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -99,6 +102,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec().Sub(math.LegacyOneDec()),
@@ -122,6 +126,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -145,6 +150,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyOneDec(),
@@ -168,6 +174,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -191,6 +198,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -214,6 +222,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -235,6 +244,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -256,6 +266,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -277,6 +288,7 @@ func TestUpdateParams(t *testing.T) {
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
+					TwapWindow:       3600 * 24,
 					BaseCompensation: 1500,
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
@@ -294,6 +306,54 @@ func TestUpdateParams(t *testing.T) {
 				},
 			},
 			"block based payment schedule type has zero blocks per period",
+		},
+		{
+			"invalid TWAP window: too low",
+			&revenuetypes.MsgUpdateParams{
+				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Params: revenuetypes.Params{
+					TwapWindow:       0,
+					BaseCompensation: 1500,
+					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					OracleVotesPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+							BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+						},
+					},
+				},
+			},
+			"params are invalid: twap window must be between 1 and 2592000",
+		},
+		{
+			"invalid TWAP window: too high",
+			&revenuetypes.MsgUpdateParams{
+				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Params: revenuetypes.Params{
+					TwapWindow:       revenuetypes.MaxTWAPWindow + 1,
+					BaseCompensation: 1500,
+					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					OracleVotesPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+							BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+						},
+					},
+				},
+			},
+			"params are invalid: twap window must be between 1 and 2592000",
 		},
 	}
 

@@ -7,13 +7,15 @@ import (
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
-	vetypes "github.com/skip-mev/slinky/abci/ve/types"
-	"github.com/stretchr/testify/require"
-
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	vetypes "github.com/skip-mev/slinky/abci/ve/types"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -58,10 +60,12 @@ func TestValidatorInfo(t *testing.T) {
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1
 	val1Info.CommitedOracleVotesInPeriod = 2
+	val1Info.InActiveValsetForBlocksInPeriod = 3
 
 	val2Info := val2Info()
-	val1Info.CommitedBlocksInPeriod = 100
-	val1Info.CommitedOracleVotesInPeriod = 200
+	val2Info.CommitedBlocksInPeriod = 100
+	val2Info.CommitedOracleVotesInPeriod = 200
+	val2Info.InActiveValsetForBlocksInPeriod = 300
 
 	// set validator infos
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
@@ -89,6 +93,7 @@ func TestProcessRevenue(t *testing.T) {
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1000
 	val1Info.CommitedOracleVotesInPeriod = 1000
+	val1Info.InActiveValsetForBlocksInPeriod = 1000
 
 	// prepare keeper state
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
@@ -128,6 +133,7 @@ func TestProcessRevenueNoReward(t *testing.T) {
 
 	// set val1 info as if they haven't committed any blocks and prices
 	val1Info := val1Info()
+	val1Info.InActiveValsetForBlocksInPeriod = 1000
 
 	// prepare keeper state
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
@@ -140,6 +146,110 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), 1000)
+	require.Nil(t, err)
+}
+
+func TestProcessRevenueLateValsetJoin(t *testing.T) {
+	appconfig.GetDefaultConfig()
+
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	// set val1 info as if they have committed all blocks and prices they could but joined
+	// the valset 300 blocks after the start of the payment period
+	val1Info := val1Info()
+	val1Info.CommitedBlocksInPeriod = 700          // 700/1000
+	val1Info.CommitedOracleVotesInPeriod = 700     // 700/1000
+	val1Info.InActiveValsetForBlocksInPeriod = 700 // 700/1000
+
+	// prepare keeper state
+	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	require.Nil(t, err)
+
+	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	require.Nil(t, err)
+
+	params, err := keeper.GetParams(ctx)
+	require.Nil(t, err)
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	require.Nil(t, err)
+
+	// val is only eligible of 70% of rewards due to joining valset 30% of period late
+	expectedRevenueAmount := math.LegacyNewDecFromInt(baseRevenueAmount).
+		Mul(math.LegacyNewDecWithPrec(7, 1)).
+		TruncateInt()
+
+	// expect one successful SendCoinsFromModuleToAccount call
+	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
+		gomock.Any(),
+		revenuetypes.RevenueTreasuryPoolName,
+		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
+		sdktypes.NewCoins(sdktypes.NewCoin(
+			revenuetypes.RewardDenom,
+			expectedRevenueAmount)),
+	).Times(1).Return(nil)
+
+	err = keeper.ProcessRevenue(ctx, revenuetypes.DefaultParams(), 1000)
+	require.Nil(t, err)
+}
+
+func TestProcessRevenueLateValsetJoinImperfectPerformance(t *testing.T) {
+	appconfig.GetDefaultConfig()
+
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	// define test specific performance requirements
+	params := revenuetypes.DefaultParams()
+	params.BlocksPerformanceRequirement = &revenuetypes.PerformanceRequirement{
+		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
+		RequiredAtLeast: math.LegacyNewDecWithPrec(8, 1), // not more than 0.2 allowed to miss to get rewards
+	}
+	params.OracleVotesPerformanceRequirement = &revenuetypes.PerformanceRequirement{
+		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
+		RequiredAtLeast: math.LegacyNewDecWithPrec(8, 1), // not more than 0.2 allowed to miss to get rewards
+	}
+
+	// set val1 info as if they have committed 850/1000 blocks and prices and joined the valset
+	// 1000 blocks after the start of the payment period
+	val1Info := val1Info()
+	val1Info.CommitedBlocksInPeriod = 850
+	val1Info.CommitedOracleVotesInPeriod = 850
+	val1Info.InActiveValsetForBlocksInPeriod = 1000 // 1000/2000
+
+	// prepare keeper state
+	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	require.Nil(t, err)
+
+	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+	require.Nil(t, err)
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	require.Nil(t, err)
+
+	expectedRevenueAmount := math.LegacyNewDecFromInt(baseRevenueAmount).
+		Mul(math.LegacyNewDecWithPrec(5, 1)).  // been in valset for 1/2 of payment period
+		Mul(math.LegacyNewDecWithPrec(75, 2)). // missed 15% of blocks and oracle votes
+		TruncateInt()
+
+	// expect one successful SendCoinsFromModuleToAccount call
+	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
+		gomock.Any(),
+		revenuetypes.RevenueTreasuryPoolName,
+		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
+		sdktypes.NewCoins(sdktypes.NewCoin(
+			revenuetypes.RewardDenom,
+			expectedRevenueAmount)),
+	).Times(1).Return(nil)
+
+	err = keeper.ProcessRevenue(ctx, params, 2000)
 	require.Nil(t, err)
 }
 
@@ -167,10 +277,12 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 850
 	val1Info.CommitedOracleVotesInPeriod = 850
+	val1Info.InActiveValsetForBlocksInPeriod = 1000
 	// val2 haven't missed a thing
 	val2Info := val2Info()
 	val2Info.CommitedBlocksInPeriod = 1000
 	val2Info.CommitedOracleVotesInPeriod = 1000
+	val2Info.InActiveValsetForBlocksInPeriod = 1000
 
 	// prepare keeper state
 	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
@@ -222,6 +334,7 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	val1Info := val1Info()
 	val1Info.CommitedBlocksInPeriod = 1000
 	val1Info.CommitedOracleVotesInPeriod = 1000
+	val1Info.InActiveValsetForBlocksInPeriod = 1000
 	// new validator (doesn't exist in keeper state)
 	val2Info := val2Info()
 
@@ -256,14 +369,40 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	storedVal1Info, err := keeper.GetValidatorInfo(ctx, va1) // known val
 	require.Nil(t, err)
 	require.Equal(t, val1Info.ValOperAddress, storedVal1Info.ValOperAddress)
-	require.Equal(t, uint64(1000), storedVal1Info.CommitedBlocksInPeriod)      // never missed a block but the last one
-	require.Equal(t, uint64(1000), storedVal1Info.CommitedOracleVotesInPeriod) // never missed a block but the last one
+	require.Equal(t, uint64(1000), storedVal1Info.CommitedBlocksInPeriod)          // never missed a block but the last one
+	require.Equal(t, uint64(1000), storedVal1Info.CommitedOracleVotesInPeriod)     // never missed a block but the last one
+	require.Equal(t, uint64(1001), storedVal1Info.InActiveValsetForBlocksInPeriod) // been in valset for all blocks
 
 	storedVal2Info, err := keeper.GetValidatorInfo(ctx, va2) // new val
 	require.Nil(t, err)
 	require.Equal(t, val2Info.ValOperAddress, storedVal2Info.ValOperAddress)
-	require.Equal(t, uint64(1), storedVal2Info.CommitedBlocksInPeriod)      // all but the last one are missed
-	require.Equal(t, uint64(1), storedVal2Info.CommitedOracleVotesInPeriod) // all but the last one are missed
+	require.Equal(t, uint64(1), storedVal2Info.CommitedBlocksInPeriod)          // all but the last one are missed
+	require.Equal(t, uint64(1), storedVal2Info.CommitedOracleVotesInPeriod)     // all but the last one are missed
+	require.Equal(t, uint64(1), storedVal2Info.InActiveValsetForBlocksInPeriod) // just joined active valset
+}
+
+func TestPrecisionConversion(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+
+	oracleKeeper.EXPECT().GetPriceForCurrencyPair(gomock.Any(), slinkytypes.CurrencyPair{
+		Base:  "NTRN",
+		Quote: "USD",
+	}).Return(oracletypes.QuotePrice{Price: math.NewInt(20000000)}, nil)
+	oracleKeeper.EXPECT().GetDecimalsForCurrencyPair(gomock.Any(), slinkytypes.CurrencyPair{
+		Base:  "NTRN",
+		Quote: "USD",
+	}).Return(uint64(8), nil)
+
+	err := keeper.UpdateRewardAssetPrice(ctx)
+	assert.Nil(t, err)
+
+	twap, err := keeper.GetTWAP(ctx)
+	assert.Nil(t, err)
+	// expected_twap_in_untrn = price_in_ntrn / 10^8 (precision of currency pair) / 10^6 (precision of NTRN)
+	assert.Equal(t, math.LegacyNewDecWithPrec(20000000, 8+revenuetypes.RewardDenomDecimals), twap)
 }
 
 func val1Info() revenuetypes.ValidatorInfo {

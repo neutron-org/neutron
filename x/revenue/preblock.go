@@ -61,10 +61,6 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 			h.revenueKeeper.Logger(ctx).Error("failed to update reward asset price", "err", err)
 		}
 
-		if err := h.PaymentScheduleCheck(ctx); err != nil {
-			return response, fmt.Errorf("error checking payment schedule: %w", err)
-		}
-
 		if len(req.Txs) < slinkyabcitypes.NumInjectedTxs {
 			return response, fmt.Errorf("the number of transactions is less than the expected number of injected transactions: %d < %d", len(req.Txs), slinkyabcitypes.NumInjectedTxs)
 		}
@@ -74,6 +70,10 @@ func (h *PreBlockHandler) WrappedPreBlocker(oraclePreBlocker sdktypes.PreBlocker
 		}
 		if err := h.ProcessExtendedCommitInfo(ctx, extendedCommitInfo); err != nil {
 			return response, fmt.Errorf("error processing extended commit info: %w", err)
+		}
+
+		if err := h.PaymentScheduleCheck(ctx); err != nil {
+			return response, fmt.Errorf("error checking payment schedule: %w", err)
 		}
 
 		return response, nil

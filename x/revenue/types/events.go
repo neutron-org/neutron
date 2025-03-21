@@ -9,6 +9,9 @@ const (
 	EventAttributeRevenueAmount = "revenue_amount"
 	// EventAttributePerformanceRating contains the validator's performance rating.
 	EventAttributePerformanceRating = "performance_rating"
+	// EventAttributeInActiveValsetForBlocksInPeriod contains the number of blocks the validator has
+	// remained in the active validator set for in the current payment period.
+	EventAttributeInActiveValsetForBlocksInPeriod = "in_active_valset_for_blocks_in_period"
 	// EventAttributeCommittedBlocksInPeriod contains the number of blocks committed by the validator
 	// in the payment period.
 	EventAttributeCommittedBlocksInPeriod = "committed_blocks_in_period"
