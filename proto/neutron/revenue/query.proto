@@ -98,8 +98,11 @@ message ValidatorStats {
   // Contains the validator's information.
   ValidatorInfo validator_info = 1 [(gogoproto.nullable) = false];
 
+  // The total number of blocks produced by the chain in the current payment period.
+  uint64 total_produced_blocks_in_period = 2;
+
   // The validator's performance rating. Represented as a decimal value.
-  string performance_rating = 2 [
+  string performance_rating = 3 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
@@ -107,7 +110,7 @@ message ValidatorStats {
 
   // Contains expected revenue for the validator
   // based on performance rating of ongoing performance window and current TWAP.
-  string expected_revenue = 3 [
+  string expected_revenue = 4 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];

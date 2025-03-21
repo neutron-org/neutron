@@ -43,11 +43,15 @@ message ValidatorInfo {
   // The validator's node operator address.
   string val_oper_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
-  // The number of blocks commited by the validator in the current payment period.
+  // The number of blocks the validator has committed in the current payment period.
   uint64 commited_blocks_in_period = 2;
 
-  // The number of oracle votes commited by the validator in the current payment period.
+  // The number of oracle votes the validator has submitted in the current payment period.
   uint64 commited_oracle_votes_in_period = 3;
+
+  // The number of blocks the validator has remained in the active validator set for in the
+  // current payment period.
+  uint64 in_active_valset_for_blocks_in_period = 4;
 }
 
 // Represents a payment schedule where revenue payments are processed once a month.

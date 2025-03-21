@@ -6,7 +6,38 @@ import (
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
-// PerformanceRating evaluates the performance of a validator based on its participation in block
+// evaluateValCommitment calculates validator's performance rating and expected compensation amount.
+func evaluateValCommitment(
+	params revenuetypes.Params,
+	baseRevenueAmount math.Int,
+	valInfo revenuetypes.ValidatorInfo,
+	blocksInPeriod uint64,
+) (perfRating math.LegacyDec, valCompensation math.Int) {
+	// is calculated against the total number of blocks the val has been in the active valset for
+	// in the current period.
+	perfRating = performanceRating(
+		params.BlocksPerformanceRequirement,
+		params.OracleVotesPerformanceRequirement,
+		valInfo.InActiveValsetForBlocksInPeriod-valInfo.CommitedBlocksInPeriod,
+		valInfo.InActiveValsetForBlocksInPeriod-valInfo.CommitedOracleVotesInPeriod,
+		valInfo.InActiveValsetForBlocksInPeriod,
+	)
+
+	if blocksInPeriod == 0 {
+		valCompensation = math.ZeroInt()
+		return
+	}
+
+	valCompensation = perfRating.
+		MulInt(baseRevenueAmount).
+		MulInt(math.NewIntFromUint64(valInfo.InActiveValsetForBlocksInPeriod)).
+		QuoInt(math.NewIntFromUint64(blocksInPeriod)).
+		TruncateInt()
+
+	return
+}
+
+// performanceRating evaluates the performance of a validator based on its participation in block
 // signing and oracle price voting. The function returns a normalized performance score, expressed
 // as a decimal value between 0.0 and 1.0, where:
 //
@@ -19,27 +50,31 @@ import (
 // A value between 0.0 and 1.0: The validator's performance partially meets the defined requirements,
 // and the rating is calculated based on the extent to which the validator's performance deviates
 // from the optimal values.
-func PerformanceRating(
+func performanceRating(
 	blocksPR *revenuetypes.PerformanceRequirement,
 	oracleVotesPR *revenuetypes.PerformanceRequirement,
-	missedBlocks int64,
-	missedOracleVotes int64,
-	totalBlocks int64,
+	missedBlocks uint64,
+	missedOracleVotes uint64,
+	totalBlocks uint64,
 ) math.LegacyDec {
 	if totalBlocks == 0 {
 		return math.LegacyZeroDec()
 	}
 
+	missedBlocksInt := math.NewIntFromUint64(missedBlocks)
+	missedOracleVotesInt := math.NewIntFromUint64(missedOracleVotes)
+	totalBlocksInt := math.NewIntFromUint64(totalBlocks)
+
 	blocksPerfThreshold := math.LegacyOneDec().Sub(blocksPR.RequiredAtLeast)
 	oracleVotesPerfThreshold := math.LegacyOneDec().Sub(oracleVotesPR.RequiredAtLeast)
 
 	// if a validator has signed less blocks than required, the rating is zero
-	missedBlocksShare := math.LegacyNewDec(missedBlocks).QuoInt64(totalBlocks)
+	missedBlocksShare := math.LegacyNewDecFromInt(missedBlocksInt).QuoInt(totalBlocksInt)
 	if missedBlocksShare.GT(blocksPerfThreshold) {
 		return math.LegacyZeroDec()
 	}
 	// if a validator has provided less oracle prices than required, the rating is zero
-	missedOracleVotesShare := math.LegacyNewDec(missedOracleVotes).QuoInt64(totalBlocks)
+	missedOracleVotesShare := math.LegacyNewDecFromInt(missedOracleVotesInt).QuoInt(totalBlocksInt)
 	if missedOracleVotesShare.GT(oracleVotesPerfThreshold) {
 		return math.LegacyZeroDec()
 	}
