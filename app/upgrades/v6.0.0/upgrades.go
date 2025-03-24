@@ -280,12 +280,12 @@ func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
 }
 
 func FundDNTRNLiqProvider(ctx context.Context, bk bankkeeper.Keeper) error {
-	amount := math.NewInt(dntrnNtrnLiqamount)
+	amount := math.NewInt(dntrnNtrnLiqAmount)
 
 	err := bk.SendCoins(
 		ctx,
 		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(dntrnNtrnLiqprovider),
+		sdk.MustAccAddressFromBech32(dntrnNtrnLiqProvider),
 		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, amount)),
 	)
 	if err != nil {

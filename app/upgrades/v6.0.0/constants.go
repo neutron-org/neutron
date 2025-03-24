@@ -54,8 +54,8 @@ const (
 	UsdcLpReceiver = "neutron1l3pk6xsc8p74gwrduxj5qp7djqyx9j5uweufrw5kp8d37xc3hjqs53euye"
 	UsdcLpDenom    = "factory/neutron1czkddm6xqyfa6ukzxqmf65tl4tudry4kve0n8fs5yfc8g6zv52lqznmnnl/astroport/share" // TODO: populate when known
 
-	dntrnNtrnLiqamount   = int64(22_500_000_000_000)
-	dntrnNtrnLiqprovider = "neutron1dmhxfvggstv2k9xd4rg2nmvsdwesh9mj20dl70lmcala93zmfnfsmgls2c"
+	dntrnNtrnLiqAmount   = int64(22_500_000_000_000)
+	dntrnNtrnLiqProvider = "neutron1dmhxfvggstv2k9xd4rg2nmvsdwesh9mj20dl70lmcala93zmfnfsmgls2c"
 
 	RewardContract = 6_000_000_000_000
 	RevenueModule  = 1_000_000_000_000
