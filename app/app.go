@@ -18,7 +18,6 @@ import (
 
 	sovereignUpgrade "github.com/neutron-org/neutron/v5/app/upgrades/sovereign"
 
-	v513 "github.com/neutron-org/neutron/v5/app/upgrades/v5.1.3"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
@@ -242,7 +241,6 @@ const (
 
 var (
 	Upgrades = []upgrades.Upgrade{
-		v513.Upgrade,
 		sovereignUpgrade.Upgrade,
 	}
 
