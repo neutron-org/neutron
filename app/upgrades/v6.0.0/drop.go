@@ -12,6 +12,7 @@ import (
 	types2 "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	appparams "github.com/neutron-org/neutron/v6/app/params"
 )
 

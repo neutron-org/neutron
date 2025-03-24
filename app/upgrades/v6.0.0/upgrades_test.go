@@ -228,7 +228,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	// the tricky part is - we have valset of 4 initially, and we must to modify staking params to execute staking endblocker
 	p, err := app.StakingKeeper.GetParams(ctx)
 	require.NoError(t, err)
-	p.MaxValidators = p.MaxValidators + 4
+	p.MaxValidators += 4
 	err = app.StakingKeeper.SetParams(ctx, p)
 	require.NoError(t, err)
 

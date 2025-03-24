@@ -16,11 +16,12 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	harpoonkeeper "github.com/neutron-org/neutron/v6/x/harpoon/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+
+	harpoonkeeper "github.com/neutron-org/neutron/v6/x/harpoon/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
 
 	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v6/x/ibc-rate-limit/keeper"

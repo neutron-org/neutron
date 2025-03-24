@@ -189,6 +189,9 @@ func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Ke
 		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		Params:    params,
 	})
+	if err != nil {
+		return err
+	}
 
 	revenueAmount := math.NewInt(RevenueModule)
 
@@ -255,11 +258,10 @@ func FundValence(ctx context.Context, bk bankkeeper.Keeper) error {
 }
 
 func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
-
 	// query amount and transfer 100%
 	daoBalanceBefore, err := bk.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: MainDAOContractAddress,
-		Denom:   USDC_LP_Denom,
+		Denom:   UsdcLpDenom,
 	})
 	if err != nil {
 		return err
@@ -268,7 +270,7 @@ func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
 	err = bk.SendCoins(
 		ctx,
 		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(USDC_LP_Receiver),
+		sdk.MustAccAddressFromBech32(UsdcLpReceiver),
 		sdk.NewCoins(*daoBalanceBefore.Balance),
 	)
 	if err != nil {
@@ -278,12 +280,12 @@ func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
 }
 
 func FundDNTRNLiqProvider(ctx context.Context, bk bankkeeper.Keeper) error {
-	amount := math.NewInt(dNTRN_NTRN_LiqAmount)
+	amount := math.NewInt(dntrnNtrnLiqamount)
 
 	err := bk.SendCoins(
 		ctx,
 		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(dNTRN_NTRN_LiqProvider),
+		sdk.MustAccAddressFromBech32(dntrnNtrnLiqprovider),
 		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, amount)),
 	)
 	if err != nil {

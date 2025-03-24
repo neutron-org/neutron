@@ -81,7 +81,7 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 	return msgs, errWalk
 }
 
-func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKey, identity string, website string, securityContact string, details string) types.MsgCreateValidator {
+func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKey, identity, website, securityContact, details string) types.MsgCreateValidator {
 	pubkey, err := codectypes.NewAnyWithValue(&pk)
 	if err != nil {
 		panic(err)
@@ -227,7 +227,7 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
 		// otherwise panic during staking begin blocker happens
 		// It's allowed to change the value at the very next block
-		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)),
+		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)), //nolint:gosec
 		MaxEntries:        7,
 		HistoricalEntries: 10_000,
 		BondDenom:         params.DefaultDenom,

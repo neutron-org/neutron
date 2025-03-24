@@ -7,15 +7,16 @@ import (
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
-	appconfig "github.com/neutron-org/neutron/v6/app/config"
-	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/revenue/types"
-	testkeeper "github.com/neutron-org/neutron/v6/testutil/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 	vetypes "github.com/skip-mev/slinky/abci/ve/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	appconfig "github.com/neutron-org/neutron/v6/app/config"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/revenue/types"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 )
 
 const (
