@@ -56,6 +56,8 @@ const (
 	AttributeSharesOwned          = "SharesOwned"
 	AttributeSharesWithdrawn      = "SharesWithdrawn"
 	AttributeMinAvgSellPrice      = "MinAvgSellPrice"
+	AttributeMaxAmountOut         = "MaxAmountOut"
+	AttributeRequestAmountIn      = "RequestAmountIn"
 )
 
 // Event Keys
@@ -169,14 +171,20 @@ func CreatePlaceLimitOrderEvent(
 	makerDenom string,
 	tokenOut string,
 	amountIn math.Int,
+	requestAmountIn math.Int,
 	limitTick int64,
 	orderType string,
+	maxAmountOut *math.Int,
 	minAvgSellPrice math_utils.PrecDec,
 	shares math.Int,
 	trancheKey string,
 	swapAmountIn math.Int,
 	swapAmountOut math.Int,
 ) sdk.Event {
+	maxAmountOutStr := ""
+	if maxAmountOut != nil {
+		maxAmountOutStr = maxAmountOut.String()
+	}
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, PlaceLimitOrderEventKey),
@@ -194,6 +202,8 @@ func CreatePlaceLimitOrderEvent(
 		sdk.NewAttribute(AttributeSwapAmountIn, swapAmountIn.String()),
 		sdk.NewAttribute(AttributeSwapAmountOut, swapAmountOut.String()),
 		sdk.NewAttribute(AttributeMinAvgSellPrice, minAvgSellPrice.String()),
+		sdk.NewAttribute(AttributeMaxAmountOut, maxAmountOutStr),
+		sdk.NewAttribute(AttributeRequestAmountIn, requestAmountIn.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)

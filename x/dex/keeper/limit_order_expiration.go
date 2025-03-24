@@ -130,7 +130,7 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 		if inGoodTilSegment && gasConsumed >= gasCutoff {
 
 			// If we hit our gas cutoff stop deleting so as not to timeout the block.
-			// We can only do this if we are proccesing normal GTT limitOrders
+			// We can only do this if we are processing normal GTT limitOrders
 			// and not JIT limit orders, since there is not protection in place
 			// to prevent JIT order from being traded on the next block.
 			// This is ok since only GT limit orders pose a meaningful attack
