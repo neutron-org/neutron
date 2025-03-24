@@ -37,7 +37,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.5
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 	github.com/skip-mev/block-sdk/v2 v2.1.5
 	github.com/skip-mev/feemarket v1.1.1
 	github.com/skip-mev/slinky v1.2.0
