@@ -201,7 +201,12 @@ func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context, votes []revenuet
 // the current period. It determines each validator's compensation, transfers the appropriate amount
 // of revenue from the module's treasury pool to the validator's account, and resets the validator's
 // performance stats in preparation for the next period.
-func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blocksInPeriod uint64) error {
+func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps revenuetypes.PaymentScheduleI) error {
+	epp := ps.EffectivePeriodProgress(ctx)
+	if epp.LT(math.LegacyZeroDec()) || epp.GT(math.LegacyOneDec()) {
+		return fmt.Errorf("invalid effective period progress %s: expected to be between 0.0 and 1.0", epp.String())
+	}
+
 	infos, err := k.GetAllValidatorInfo(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
@@ -210,11 +215,20 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 	if err != nil {
 		return fmt.Errorf("failed to calculate base revenue amount: %w", err)
 	}
+	periodRevenueAmount := k.CalcPeriodRevenueAmount(baseRevenueAmount, epp)
+	if periodRevenueAmount.IsZero() {
+		ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistributionNone,
+			sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, periodRevenueAmount.String()),
+			sdk.NewAttribute(revenuetypes.EventAttributeEffectivePeriodProgress, epp.String()),
+		))
+		return nil // nothing to distribute
+	}
+	blocksInPeriod := ps.TotalBlocksInPeriod(ctx)
 
 	for _, info := range infos {
 		pr, valCompensation := evaluateValCommitment(
 			params,
-			baseRevenueAmount,
+			periodRevenueAmount,
 			info,
 			blocksInPeriod,
 		)
@@ -225,13 +239,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 		}
 
 		if !valCompensation.IsPositive() {
-			emitDistributeRevenueEvent(
-				ctx,
-				info,
-				sdk.NewCoin(revenuetypes.RewardDenom, math.ZeroInt()),
-				pr,
-				blocksInPeriod,
-			)
+			emitDistributeRevenueEvent(ctx, info, sdk.NewCoin(revenuetypes.RewardDenom, math.ZeroInt()), pr, blocksInPeriod, epp)
 			continue
 		}
 
@@ -243,20 +251,14 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, blo
 			sdk.NewCoins(revenueAmt),
 		)
 		if err != nil {
-			ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
+			ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistributionError,
 				sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
 				sdk.NewAttribute(revenuetypes.EventAttributePaymentFailure, err.Error()),
 				sdk.NewAttribute(revenuetypes.EventAttributeRevenueAmount, revenueAmt.String()),
 			))
 			k.Logger(ctx).Debug("failed to send revenue to validator", "validator", info.ValOperAddress, "err", err)
 		} else {
-			emitDistributeRevenueEvent(
-				ctx,
-				info,
-				revenueAmt,
-				pr,
-				blocksInPeriod,
-			)
+			emitDistributeRevenueEvent(ctx, info, revenueAmt, pr, blocksInPeriod, epp)
 			k.Logger(ctx).Debug("revenue sent to validator", "validator", info.ValOperAddress, "revenue", revenueAmt.String())
 		}
 	}
@@ -285,8 +287,7 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 }
 
 // CalcBaseRevenueAmount calculates the base compensation amount for validators based on the current
-// price of the reward denom. The final compensation amount for a validator is determined by
-// multiplying the base revenue amount by the validator's performance rating.
+// price of the reward denom.
 func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64) (math.Int, error) {
 	assetPrice, err := k.GetTWAP(ctx)
 	if err != nil {
@@ -296,6 +297,15 @@ func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64)
 		return math.ZeroInt(), fmt.Errorf("invalid TWAP: price must be greater than zero")
 	}
 	return math.LegacyNewDecFromInt(math.NewIntFromUint64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil
+}
+
+// CalcPeriodRevenueAmount calculates the compensation amount for validators based on the current
+// base revenue amount and effective payment period progress.
+func (k *Keeper) CalcPeriodRevenueAmount(
+	baseRevenueAmount math.Int,
+	effectivePeriodProgress math.LegacyDec,
+) math.Int {
+	return effectivePeriodProgress.MulInt(baseRevenueAmount).TruncateInt()
 }
 
 func (k *Keeper) getOrCreateValidatorInfo(
@@ -340,12 +350,14 @@ func (k *Keeper) getPaymentSchedule(ctx sdk.Context) (*revenuetypes.PaymentSched
 	return &ps, nil
 }
 
+// emitDistributeRevenueEvent emits an event that contains information about the revenue distribution.
 func emitDistributeRevenueEvent(
 	ctx sdk.Context,
 	info revenuetypes.ValidatorInfo,
 	revenueAmt sdk.Coin,
 	rating math.LegacyDec,
 	blocksInPeriod uint64,
+	effectivePeriodProgress math.LegacyDec,
 ) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(revenuetypes.EventTypeRevenueDistribution,
 		sdk.NewAttribute(revenuetypes.EventAttributeValidator, info.ValOperAddress),
@@ -355,5 +367,6 @@ func emitDistributeRevenueEvent(
 		sdk.NewAttribute(revenuetypes.EventAttributeCommittedBlocksInPeriod, fmt.Sprintf("%d", info.CommitedBlocksInPeriod)),
 		sdk.NewAttribute(revenuetypes.EventAttributeCommittedOracleVotesInPeriod, fmt.Sprintf("%d", info.CommitedOracleVotesInPeriod)),
 		sdk.NewAttribute(revenuetypes.EventAttributeTotalBlockInPeriod, fmt.Sprintf("%d", blocksInPeriod)),
+		sdk.NewAttribute(revenuetypes.EventAttributeEffectivePeriodProgress, effectivePeriodProgress.String()),
 	))
 }

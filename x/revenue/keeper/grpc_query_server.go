@@ -47,6 +47,10 @@ func (s queryServer) PaymentInfo(goCtx context.Context, request *revenuetypes.Qu
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
+	psi, err := ps.IntoPaymentScheduleI()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "invalid payment schedule: %s", err)
+	}
 
 	twap, err := s.keeper.GetTWAP(ctx)
 	if err != nil {
@@ -63,10 +67,11 @@ func (s queryServer) PaymentInfo(goCtx context.Context, request *revenuetypes.Qu
 	}
 
 	return &revenuetypes.QueryPaymentInfoResponse{
-		PaymentSchedule:   *ps,
-		RewardDenom:       revenuetypes.RewardDenom,
-		RewardDenomTwap:   twap,
-		BaseRevenueAmount: bra,
+		PaymentSchedule:         *ps,
+		EffectivePeriodProgress: psi.EffectivePeriodProgress(ctx),
+		RewardDenom:             revenuetypes.RewardDenom,
+		RewardDenomTwap:         twap,
+		BaseRevenueAmount:       bra,
 	}, nil
 }
 

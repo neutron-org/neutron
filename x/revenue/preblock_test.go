@@ -86,7 +86,10 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		psi := (&revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonthStartBlock:   1,
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
+		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a fresh validator
@@ -130,7 +133,10 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
-		psi := (&revenuetypes.MonthlyPaymentSchedule{CurrentMonth: 1, CurrentMonthStartBlock: 1})
+		psi := (&revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonthStartBlock:   1,
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
+		})
 		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
 
 		// init a validator with 100% performance (the next block will be the 6th one)
@@ -171,8 +177,87 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		newPsi, err := keeper.GetPaymentScheduleI(ctx)
 		require.Nil(t, err)
 		newPs := newPsi.(*revenuetypes.MonthlyPaymentSchedule)
-		require.Equal(t, uint64(2), newPs.CurrentMonth)
+		require.Equal(t, time.February, time.Unix(int64(newPs.CurrentMonthStartBlockTs), 0).Month()) //nolint:gosec
 		require.Equal(t, uint64(6), newPs.CurrentMonthStartBlock)
+
+		// make sure validators' info is reset
+		info, err := keeper.GetAllValidatorInfo(ctx)
+		require.Nil(t, err)
+		require.Equal(t, 0, len(info))
+	})
+
+	t.Run("EarlyPeriodEndOnPaymentScheduleTypeChange", func(t *testing.T) {
+		appconfig.GetDefaultConfig()
+
+		ctrl := gomock.NewController(t)
+		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
+		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+		oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
+
+		// set monthly payment schedule to the module's state and params
+		g := revenuetypes.DefaultGenesis()
+		g.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+			PaymentScheduleType: &revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{
+				MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
+			},
+		}
+		require.Nil(t, keeper.SetParams(ctx, g.Params))
+		psi := (&revenuetypes.MonthlyPaymentSchedule{
+			CurrentMonthStartBlock:   1,
+			CurrentMonthStartBlockTs: uint64(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
+		})
+		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
+
+		// init a validator with 100% performance (the next block will be the 6th one)
+		val1Info := val1Info()
+		val1Info.CommitedBlocksInPeriod = 5
+		val1Info.CommitedOracleVotesInPeriod = 5
+		val1Info.InActiveValsetForBlocksInPeriod = 5
+		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
+
+		// prepare keeper state by setting validator info
+		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
+		require.Nil(t, err)
+
+		err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		require.Nil(t, err)
+
+		params, err := keeper.GetParams(ctx)
+		require.Nil(t, err)
+
+		// update payment schedule type to the empty one in module params
+		g.Params.PaymentScheduleType.PaymentScheduleType = &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+			EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+		}
+		require.Nil(t, keeper.SetParams(ctx, g.Params))
+
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		require.Nil(t, err)
+		// 50% of revenue for 1/2 of the payment period (see ctx.WithBlockTime(...) below)
+		expectedRevenueAmount := baseRevenueAmount.Quo(math.NewInt(2))
+
+		// expect one successful SendCoinsFromModuleToAccount call for val1
+		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
+			gomock.Any(),
+			revenuetypes.RevenueTreasuryPoolName,
+			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
+			sdktypes.NewCoins(sdktypes.NewCoin(
+				revenuetypes.RewardDenom,
+				expectedRevenueAmount)),
+		).Times(1).Return(nil)
+
+		// next block is not in the next period but still revenue distribution is expected
+		// due to the change of the payment schedule type
+		err = preBlock.PaymentScheduleCheck(ctx.WithBlockHeight(6).WithBlockTime(time.Date(2000, 1, 16, 12, 0, 0, 0, time.UTC)))
+		require.Nil(t, err)
+
+		// make sure payment schedule is updated in accordance with module params
+		newPsi, err := keeper.GetPaymentScheduleI(ctx)
+		require.Nil(t, err)
+		require.IsType(t, &revenuetypes.EmptyPaymentSchedule{}, newPsi)
 
 		// make sure validators' info is reset
 		info, err := keeper.GetAllValidatorInfo(ctx)
@@ -181,7 +266,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 	})
 }
 
-func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
+func TestPaymentScheduleCheckBlockBasedPaymentSchedule(t *testing.T) {
 	t.Run("WithinTheSamePeriod", func(t *testing.T) {
 		appconfig.GetDefaultConfig()
 
@@ -294,6 +379,82 @@ func TestPaymentScheduleCheckBasedPaymentSchedule(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, 0, len(info))
 	})
+
+	t.Run("EarlyPeriodEndOnPaymentScheduleTypeChange", func(t *testing.T) {
+		appconfig.GetDefaultConfig()
+
+		ctrl := gomock.NewController(t)
+		stakingKeeper := mock_types.NewMockStakingKeeper(ctrl)
+		bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+		oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
+
+		keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+		preBlock := revenue.NewPreBlockHandler(keeper, stakingKeeper, veCodec, ecCodec)
+
+		// set block-based payment schedule to the module's state and params
+		g := revenuetypes.DefaultGenesis()
+		g.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+			PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+				BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+			},
+		}
+		require.Nil(t, keeper.SetParams(ctx, g.Params))
+		psi := (&revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 10, CurrentPeriodStartBlock: 1})
+		require.Nil(t, keeper.SetPaymentSchedule(ctx, psi.IntoPaymentSchedule()))
+
+		// init a validator with 100% performance (the next block will be the 6th one)
+		val1Info := val1Info()
+		val1Info.CommitedBlocksInPeriod = 5
+		val1Info.CommitedOracleVotesInPeriod = 5
+		val1Info.InActiveValsetForBlocksInPeriod = 5
+		va1 := mustValAddressFromBech32(t, val1Info.ValOperAddress)
+
+		// prepare keeper state by setting validator info
+		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
+		require.Nil(t, err)
+
+		err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
+		require.Nil(t, err)
+
+		params, err := keeper.GetParams(ctx)
+		require.Nil(t, err)
+
+		// update payment schedule type to the empty one in module params
+		g.Params.PaymentScheduleType.PaymentScheduleType = &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
+			EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
+		}
+		require.Nil(t, keeper.SetParams(ctx, g.Params))
+
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		require.Nil(t, err)
+		// 50% of revenue for 1/2 of the payment period (see ctx.WithBlockHeight(6) below)
+		expectedRevenueAmount := baseRevenueAmount.Quo(math.NewInt(2))
+
+		// expect one successful SendCoinsFromModuleToAccount call for val1
+		bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
+			gomock.Any(),
+			revenuetypes.RevenueTreasuryPoolName,
+			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
+			sdktypes.NewCoins(sdktypes.NewCoin(
+				revenuetypes.RewardDenom,
+				expectedRevenueAmount)),
+		).Times(1).Return(nil)
+
+		// next block is not in the next period but still revenue distribution is expected
+		// due to the change of the payment schedule type
+		err = preBlock.PaymentScheduleCheck(ctx.WithBlockHeight(6))
+		require.Nil(t, err)
+
+		// make sure payment schedule is updated in accordance with module params
+		newPsi, err := keeper.GetPaymentScheduleI(ctx)
+		require.Nil(t, err)
+		require.IsType(t, &revenuetypes.EmptyPaymentSchedule{}, newPsi)
+
+		// make sure validators' info is reset
+		info, err := keeper.GetAllValidatorInfo(ctx)
+		require.Nil(t, err)
+		require.Equal(t, 0, len(info))
+	})
 }
 
 func val1Info() revenuetypes.ValidatorInfo {
@@ -304,8 +465,8 @@ func val1Info() revenuetypes.ValidatorInfo {
 
 func mustGetFromBech32(
 	t *testing.T,
-	bech32str string,
-	prefix string,
+	bech32str string, //nolint:unparam
+	prefix string, //nolint:unparam
 ) []byte {
 	b, err := sdktypes.GetFromBech32(bech32str, prefix)
 	require.Nil(t, err)
