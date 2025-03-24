@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
+	"github.com/neutron-org/neutron/v6/x/revenue/types"
 )
 
 const (

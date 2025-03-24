@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

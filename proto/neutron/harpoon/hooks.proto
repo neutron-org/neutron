@@ -3,7 +3,7 @@ package neutron.harpoon;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
+option go_package = "github.com/neutron-org/neutron/v6/x/harpoon/types";
 
 // Specifies how subscribed contract_addresses are stored in the KV store for each hook type.
 message HookSubscriptions {

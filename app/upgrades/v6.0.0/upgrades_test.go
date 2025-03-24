@@ -22,12 +22,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	"github.com/neutron-org/neutron/v5/app/params"
-	v600 "github.com/neutron-org/neutron/v5/app/upgrades/sovereign"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v5/testutil"
+	"github.com/neutron-org/neutron/v6/app/params"
+	v600 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.0"
+
+	"github.com/neutron-org/neutron/v6/testutil"
 )
 
 //go:embed validators/staking
