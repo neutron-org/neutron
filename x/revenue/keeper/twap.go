@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	stdmath "math"
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -45,12 +46,16 @@ func (k *Keeper) UpdateRewardAssetPrice(ctx sdk.Context) error {
 		return fmt.Errorf("failed to get decimals for currency pair: %w", err)
 	}
 
-	price := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals)) //nolint:gosec
-	err = k.CalcNewRewardAssetPrice(ctx, price, ctx.BlockTime().Unix())
+	// the queried price is NTRN/USD, we need to convert it to untrn/USD
+	ntrnPrice := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals))
+	untrnPrice := ntrnPrice.QuoInt64(int64(stdmath.Pow(10, types.RewardDenomDecimals)))
+
+	err = k.CalcNewRewardAssetPrice(ctx, untrnPrice, ctx.BlockTime().Unix())
+
 	if err != nil {
 		return fmt.Errorf("failed to save a new reward asset price: %w", err)
 	}
-	k.Logger(ctx).Debug("TWAP refresh", "price", price.String())
+	k.Logger(ctx).Debug("TWAP refresh", "price", untrnPrice.String())
 
 	err = k.CleanOutdatedRewardAssetPrices(ctx, ctx.BlockTime().Unix()-params.TwapWindow)
 	if err != nil {

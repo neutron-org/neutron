@@ -7,4 +7,7 @@ const (
 
 	// RewardDenom is the denom used for rewards.
 	RewardDenom = neutronparams.DefaultDenom
+
+	// RewardDenomDecimals is the number of decimal places used in the reward denom.
+	RewardDenomDecimals = neutronparams.DefaultDenomDecimals
 )
