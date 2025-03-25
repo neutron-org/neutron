@@ -187,6 +187,20 @@ func (k Keeper) ExecuteDeposit(
 	return amounts0Deposited, amounts1Deposited, totalInAmount0, totalInAmount1, sharesIssued, events, failedDeposits, nil
 }
 
+func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.TradePairID, amountIn math.Int, limitPrice math_utils.PrecDec, slopToleranceBPs uint64) (inAmount, outAmount math.Int, orderFilled bool, err error) {
+	swapTokenIn, swapTokenOut, orderFilled, err := k.Swap(ctx, tradePairID, amountIn, nil, &limitPrice)
+	if err != nil {
+		return math.ZeroInt(), math.ZeroInt(), false, err
+	}
+
+	if err := CheckSwapOnDepositSlopTolerance(swapTokenIn.Amount, swapTokenOut.Amount, limitPrice, slopToleranceBPs); err != nil {
+		return math.ZeroInt(), math.ZeroInt(), false, err
+	}
+
+	return swapTokenIn.Amount, swapTokenOut.Amount, orderFilled, nil
+
+}
+
 func (k Keeper) SwapOnDeposit(
 	ctx sdk.Context,
 	pairID *types.PairID,
@@ -207,61 +221,51 @@ func (k Keeper) SwapOnDeposit(
 		limitPrice0 := types.MustCalcPrice(-depositTickToken0 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token0, pairID.Token1)
 
-		swapToken0In, swapToken1Out, orderFilled, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice0)
+		swapAmountIn0, swapAmountOut1, orderFilled, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount0, limitPrice0, slopToleranceBPs)
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
+
 		}
 
-		if err := CheckSwapOnDepositSlopTolerance(swapToken0In.Amount, swapToken1Out.Amount, limitPrice0, slopToleranceBPs); err != nil {
-			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
-		}
-
-		if swapToken0In.IsPositive() {
+		if swapAmountIn0.IsPositive() {
 			if orderFilled {
-				// due to monotonic rounding we may not be able to swap all of Token0.
+				// due to monotonic rounding we may not be able to swap all of TokenIn
 				// but we can't deposit the remainder because it's still behind enemy lines so we don't use it
-				inAmount0 = swapToken0In.Amount
-			} // else inAmount0 = amount0  we have swapped through all opposing BEL liquidity,
-			// so we can safely deposit the full amount
+				inAmount0 = swapAmountIn0
+			} // else inAmount = amountIn  we have swapped through all opposing BEL liquidity, so we can safely deposit the full amount
 
-			depositAmount0 = inAmount0.Sub(swapToken0In.Amount)
+			depositAmount0 = inAmount0.Sub(swapAmountIn0)
+			depositAmount1 = amount1.Add(swapAmountOut1)
 			inAmount1 = amount1
-			depositAmount1 = amount1.Add(swapToken1Out.Amount)
 			swappedToken0 = true
 		}
-
 	}
 
 	if amount1.IsPositive() {
-		// Use amount1 to swap any Token0 ticks < -depositTick1
+		// Use amount1 to swap any Token0 ticks < (-depositTick1 - 1)
 		depositTickToken1 := tickIndex + feeInt64
 		limitPrice1 := types.MustCalcPrice(-depositTickToken1 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token1, pairID.Token0)
 
-		swapToken1In, swapToken0Out, orderFilled, err := k.Swap(ctx, tradePairID, amount1, nil, &limitPrice1)
+		swapAmountIn1, swapAmountOut0, orderFilled, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount1, limitPrice1, slopToleranceBPs)
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
+
 		}
 
-		if err := CheckSwapOnDepositSlopTolerance(swapToken1In.Amount, swapToken0Out.Amount, limitPrice1, slopToleranceBPs); err != nil {
-			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
-		}
-
-		if swapToken1In.IsPositive() {
-
+		if swapAmountIn1.IsPositive() {
 			if swappedToken0 {
 				// This should be impossible, but leaving this as an extra precaution
 				return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), types.ErrDoubleSidedSwapOnDeposit
 			}
 
-			inAmount0 = amount0
-			depositAmount0 = amount0.Add(swapToken0Out.Amount)
-
-			// see note above on monotonic rounding logic
-			if orderFilled {
-				inAmount1 = swapToken1In.Amount
+			if orderFilled { // see note above on monotonic rounding logic
+				inAmount1 = swapAmountIn1
 			} // else inAmount1 = amount1
-			depositAmount1 = inAmount1.Sub(swapToken1In.Amount)
+			depositAmount0 = amount0.Add(swapAmountOut0)
+			depositAmount1 = inAmount1.Sub(swapAmountIn1)
+			inAmount0 = amount0
+
 		}
 
 	}
