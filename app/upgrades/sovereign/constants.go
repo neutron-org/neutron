@@ -46,7 +46,7 @@ const (
 const (
 	// Constants defining the parameters of the assets redistribution process held by DAO.
 	TotalToStakeAmount     = int64(250_000_000_000_000)                  // untrn
-	StakeWithValenceAmount = 10_000_000_000_000                          // 90% of TotalToStakeAmount
+	StakeWithValenceAmount = 240_000_000_000_000                         // 90% of TotalToStakeAmount
 	StakeWithDropAmount    = TotalToStakeAmount - StakeWithValenceAmount // 10% of TotalToStakeAmount
 
 	ValenceStaker = "neutron1yvxarc3r8agzzky6g4zdxhk5xc59j7rdw2pugjarwskt8jmpkgus9jqvwk"
