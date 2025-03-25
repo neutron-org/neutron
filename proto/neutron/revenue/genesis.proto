@@ -85,7 +85,7 @@ message RewardAssetPrice {
     (gogoproto.nullable) = false
   ];
 
-  // The price of the asset in USD that corresponds to the timestamp.
+  // The price of the reward asset in reward quote asset that corresponds to the timestamp.
   string absolute_price = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",

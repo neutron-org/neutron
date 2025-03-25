@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"cosmossdk.io/math"
+	stdmath "math"
 
 	coretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -211,7 +211,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps 
 	if err != nil {
 		return fmt.Errorf("failed to get all validator info: %w", err)
 	}
-	baseRevenueAmount, err := k.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := k.CalcBaseRevenueAmount(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to calculate base revenue amount: %w", err)
 	}
@@ -286,9 +286,14 @@ func (k *Keeper) ResetValidatorsInfo(ctx sdk.Context) error {
 	return nil
 }
 
-// CalcBaseRevenueAmount calculates the base compensation amount for validators based on the current
-// price of the reward denom.
-func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64) (math.Int, error) {
+// CalcBaseRevenueAmount calculates the base reward for validators measured in reward asset based
+// on the current reward asset TWAP and reward quote amount param.
+func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context) (math.Int, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return math.ZeroInt(), fmt.Errorf("failed to get module params: %w", err)
+	}
+
 	assetPrice, err := k.GetTWAP(ctx)
 	if err != nil {
 		return math.ZeroInt(), fmt.Errorf("failed to get TWAP: %w", err)
@@ -296,7 +301,16 @@ func (k *Keeper) CalcBaseRevenueAmount(ctx sdk.Context, baseCompensation uint64)
 	if assetPrice.Equal(math.LegacyZeroDec()) {
 		return math.ZeroInt(), fmt.Errorf("invalid TWAP: price must be greater than zero")
 	}
-	return math.LegacyNewDecFromInt(math.NewIntFromUint64(baseCompensation)).Quo(assetPrice).TruncateInt(), nil
+
+	exp, err := k.getRewardAssetExponent(ctx)
+	if err != nil {
+		return math.ZeroInt(), fmt.Errorf("failed to get reward asset exponent: %w", err)
+	}
+
+	return math.LegacyNewDecFromInt(math.NewIntFromUint64(params.RewardQuote.Amount)).
+		Quo(assetPrice).
+		MulInt64(int64(stdmath.Pow10(int(exp)))).
+		TruncateInt(), nil
 }
 
 // CalcPeriodRevenueAmount calculates the compensation amount for validators based on the current

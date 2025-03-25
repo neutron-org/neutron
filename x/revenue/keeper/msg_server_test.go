@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	appconfig "github.com/neutron-org/neutron/v6/app/config"
+	"github.com/neutron-org/neutron/v6/app/params"
 	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/revenue/types"
 	testutil_keeper "github.com/neutron-org/neutron/v6/testutil/revenue/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
@@ -26,12 +27,13 @@ func TestUpdateParams(t *testing.T) {
 		expectedErr     string
 	}{
 		{
-			"valid params",
+			"ValidParams",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -50,12 +52,13 @@ func TestUpdateParams(t *testing.T) {
 			"",
 		},
 		{
-			"empty authority",
+			"EmptyAuthority",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -74,12 +77,13 @@ func TestUpdateParams(t *testing.T) {
 			"authority is invalid: empty address string is not allowed",
 		},
 		{
-			"unauthorized",
+			"Unauthorized",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -98,12 +102,13 @@ func TestUpdateParams(t *testing.T) {
 			"invalid authority; expected neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a, got neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
 		},
 		{
-			"too low performance requirement",
+			"TooLowPerformanceRequirement",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec().Sub(math.LegacyOneDec()),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -122,12 +127,13 @@ func TestUpdateParams(t *testing.T) {
 			"blocks allowed to miss must be between 0.0 and 1.0",
 		},
 		{
-			"too big performance requirement",
+			"TooBigPerformanceRequirement",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -146,12 +152,13 @@ func TestUpdateParams(t *testing.T) {
 			"oracle votes required at least must be between 0.0 and 1.0",
 		},
 		{
-			"invalid sum of block performance requirement params",
+			"InvalidSumOfBlockPerformanceRequirementParams",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyOneDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -170,12 +177,13 @@ func TestUpdateParams(t *testing.T) {
 			"sum of blocks allowed to miss and required at least must not be greater than 1.0",
 		},
 		{
-			"invalid sum of oracle votes performance requirement params",
+			"InvalidSumOfOracleVotesPerformanceRequirementParams",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -194,12 +202,13 @@ func TestUpdateParams(t *testing.T) {
 			"sum of oracle votes allowed to miss and required at least must not be greater than 1.0",
 		},
 		{
-			"invalid sum of oracle votes performance requirement params",
+			"InvalidSumOfOracleVotesPerformanceRequirementParams",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -218,12 +227,13 @@ func TestUpdateParams(t *testing.T) {
 			"sum of oracle votes allowed to miss and required at least must not be greater than 1.0",
 		},
 		{
-			"unitilialized empty payment schedule type",
+			"UnitilializedEmptyPaymentScheduleType",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -240,12 +250,13 @@ func TestUpdateParams(t *testing.T) {
 			"inner empty payment schedule is nil",
 		},
 		{
-			"unitilialized monthly payment schedule type",
+			"UnitilializedMonthlyPaymentScheduleType",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -262,12 +273,13 @@ func TestUpdateParams(t *testing.T) {
 			"inner monthly payment schedule is nil",
 		},
 		{
-			"unitilialized block based payment schedule type: nil inner value",
+			"UnitilializedBlockBasedPaymentScheduleTypeNilInnerValue",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -284,12 +296,13 @@ func TestUpdateParams(t *testing.T) {
 			"inner block based payment schedule is nil",
 		},
 		{
-			"unitilialized block based payment schedule type : zero blocks per period",
+			"UnitilializedBlockBasedPaymentScheduleTypeZeroBlocksPerPeriod",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       3600 * 24,
-					BaseCompensation: 1500,
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -308,12 +321,13 @@ func TestUpdateParams(t *testing.T) {
 			"block based payment schedule type has zero blocks per period",
 		},
 		{
-			"invalid TWAP window: too low",
+			"InvalidTwapWindowTooLow",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       0,
-					BaseCompensation: 1500,
+					TwapWindow:  0,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -332,12 +346,13 @@ func TestUpdateParams(t *testing.T) {
 			"params are invalid: twap window must be between 1 and 2592000",
 		},
 		{
-			"invalid TWAP window: too high",
+			"InvalidTwapWindowTooHigh",
 			&revenuetypes.MsgUpdateParams{
 				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
 				Params: revenuetypes.Params{
-					TwapWindow:       revenuetypes.MaxTWAPWindow + 1,
-					BaseCompensation: 1500,
+					TwapWindow:  revenuetypes.MaxTWAPWindow + 1,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
 					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
 						AllowedToMiss:   math.LegacyZeroDec(),
 						RequiredAtLeast: math.LegacyOneDec(),
@@ -355,18 +370,45 @@ func TestUpdateParams(t *testing.T) {
 			},
 			"params are invalid: twap window must be between 1 and 2592000",
 		},
+		{
+			"ProhibitedRewardAssetChange",
+			&revenuetypes.MsgUpdateParams{
+				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Params: revenuetypes.Params{
+					TwapWindow:  3600 * 24,
+					RewardAsset: "uatom",
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "USD", Amount: 1500},
+					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					OracleVotesPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+							BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+						},
+					},
+				},
+			},
+			"reward asset change is prohibited",
+		},
 	}
 
 	for _, tt := range tests {
-		res, err := msgServer.UpdateParams(ctx, tt.updateParamsMsg)
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := msgServer.UpdateParams(ctx, tt.updateParamsMsg)
 
-		if tt.expectedErr == "" {
-			require.NoError(t, err, tt.expectedErr)
-			require.Equal(t, res, &revenuetypes.MsgUpdateParamsResponse{})
-		} else {
-			require.ErrorContains(t, err, tt.expectedErr)
-			require.Empty(t, res)
-		}
+			if tt.expectedErr == "" {
+				require.NoError(t, err, tt.expectedErr)
+				require.Equal(t, res, &revenuetypes.MsgUpdateParamsResponse{})
+			} else {
+				require.ErrorContains(t, err, tt.expectedErr)
+				require.Empty(t, res)
+			}
+		})
 	}
 }
 

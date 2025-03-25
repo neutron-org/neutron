@@ -11,24 +11,35 @@ option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
 
-  // The compensation amount measured in USD. USD is used as a quote in price queries to the slinky oracle
-  // module to determine the price of the reward denom. The base compensation amount is divided
-  // by the price of the reward denom to determine the final compensation amount.
-  uint64 base_compensation = 1;
+  // The asset used in revenue payments to validators.
+  string reward_asset = 1;
+
+  // Quotation of the reward asset.
+  RewardQuote reward_quote = 2;
 
   // Specifies performance requirements for validators in scope of blocks signing and creation. If
   // not met, the validator is not rewarded.
-  PerformanceRequirement blocks_performance_requirement = 2;
+  PerformanceRequirement blocks_performance_requirement = 3;
 
   // Specifies performance requirements for validators in scope of the oracle price votes. If not
   // met, the validator is not rewarded.
-  PerformanceRequirement oracle_votes_performance_requirement = 3;
+  PerformanceRequirement oracle_votes_performance_requirement = 4;
 
   // Indicates the currently active type of payment schedule.
-  PaymentScheduleType payment_schedule_type = 4;
+  PaymentScheduleType payment_schedule_type = 5;
 
   // The time window, in seconds, used to calculate the TWAP of the reward asset.
-  int64 twap_window = 5;
+  int64 twap_window = 6;
+}
+
+// Defines information about the reward quote.
+message RewardQuote {
+  // The compensation amount measured in the quote asset. The amount is divided by the price of
+  // the reward asset to determine the base revenue amount.
+  uint64 amount = 1;
+  // The name of the quote asset. It is used as a quote in price queries to the slinky oracle
+  // module to determine the price of the reward asset.
+  string asset = 2;
 }
 
 // A model that contains information specific to the currently active payment schedule type. The
