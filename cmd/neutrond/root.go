@@ -39,8 +39,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/neutron-org/neutron/v5/app"
-	"github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v6/app"
+	"github.com/neutron-org/neutron/v6/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the

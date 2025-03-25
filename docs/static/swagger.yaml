@@ -18331,6 +18331,15 @@ definitions:
         type: string
       paused:
         type: boolean
+      whitelisted_lps:
+        description: >-
+          Whitelisted_lps have special LP privileges;
+
+          currently, the only such privilege is depositing outside of the
+          allowed fee_tiers.
+        items:
+          type: string
+        type: array
     type: object
   neutron.dex.Pool:
     properties:
@@ -19463,6 +19472,15 @@ definitions:
             type: string
           paused:
             type: boolean
+          whitelisted_lps:
+            description: >-
+              Whitelisted_lps have special LP privileges;
+
+              currently, the only such privilege is depositing outside of the
+              allowed fee_tiers.
+            items:
+              type: string
+            type: array
         type: object
     type: object
   neutron.dex.QueryPoolResponse:
@@ -21879,12 +21897,12 @@ definitions:
       Represents a payment schedule where revenue payments are processed once a
       month.
     properties:
-      current_month:
-        description: A numeric representation of the current month.
-        format: uint64
-        type: string
       current_month_start_block:
         description: The block height at which the current month started.
+        format: uint64
+        type: string
+      current_month_start_block_ts:
+        description: The timestamp of the block at which the current month started.
         format: uint64
         type: string
     type: object
@@ -22032,12 +22050,12 @@ definitions:
           Represents a payment schedule where revenue payments are processed
           once a month.
         properties:
-          current_month:
-            description: A numeric representation of the current month.
-            format: uint64
-            type: string
           current_month_start_block:
             description: The block height at which the current month started.
+            format: uint64
+            type: string
+          current_month_start_block_ts:
+            description: The timestamp of the block at which the current month started.
             format: uint64
             type: string
         type: object
@@ -22215,6 +22233,11 @@ definitions:
 
           this amount will be multiplied by their performance rating.
         type: string
+      effective_period_progress:
+        description: >-
+          Revenue amount multiplier value that corresponds to the effective
+          payment period progress.
+        type: string
       payment_schedule:
         description: The current payment schedule.
         properties:
@@ -22242,12 +22265,12 @@ definitions:
               Represents a payment schedule where revenue payments are processed
               once a month.
             properties:
-              current_month:
-                description: A numeric representation of the current month.
-                format: uint64
-                type: string
               current_month_start_block:
                 description: The block height at which the current month started.
+                format: uint64
+                type: string
+              current_month_start_block_ts:
+                description: The timestamp of the block at which the current month started.
                 format: uint64
                 type: string
             type: object
@@ -22271,10 +22294,14 @@ definitions:
         properties:
           expected_revenue:
             description: >-
-              Contains expected revenue for the validator
+              Contains expected revenue for the validator based on their
+              performance rating in the current
 
-              based on performance rating of ongoing performance window and
-              current TWAP.
+              payment period, current reward denom TWAP, and duration of
+              validator's presence in the active
+
+              validator set. Does not take into account effective payment period
+              progress.
             type: string
           performance_rating:
             description: >-
@@ -22326,10 +22353,14 @@ definitions:
           properties:
             expected_revenue:
               description: >-
-                Contains expected revenue for the validator
+                Contains expected revenue for the validator based on their
+                performance rating in the current
 
-                based on performance rating of ongoing performance window and
-                current TWAP.
+                payment period, current reward denom TWAP, and duration of
+                validator's presence in the active
+
+                validator set. Does not take into account effective payment
+                period progress.
               type: string
             performance_rating:
               description: >-
@@ -22404,10 +22435,14 @@ definitions:
     properties:
       expected_revenue:
         description: >-
-          Contains expected revenue for the validator
+          Contains expected revenue for the validator based on their performance
+          rating in the current
 
-          based on performance rating of ongoing performance window and current
-          TWAP.
+          payment period, current reward denom TWAP, and duration of validator's
+          presence in the active
+
+          validator set. Does not take into account effective payment period
+          progress.
         type: string
       performance_rating:
         description: The validator's performance rating. Represented as a decimal value.
@@ -26815,7 +26850,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v5
+  version: v6
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -46954,6 +46989,15 @@ paths:
                     type: string
                   paused:
                     type: boolean
+                  whitelisted_lps:
+                    description: >-
+                      Whitelisted_lps have special LP privileges;
+
+                      currently, the only such privilege is depositing outside
+                      of the allowed fee_tiers.
+                    items:
+                      type: string
+                    type: array
                 type: object
             type: object
         default:
@@ -50462,6 +50506,11 @@ paths:
 
                   this amount will be multiplied by their performance rating.
                 type: string
+              effective_period_progress:
+                description: >-
+                  Revenue amount multiplier value that corresponds to the
+                  effective payment period progress.
+                type: string
               payment_schedule:
                 description: The current payment schedule.
                 properties:
@@ -50493,12 +50542,14 @@ paths:
                       Represents a payment schedule where revenue payments are
                       processed once a month.
                     properties:
-                      current_month:
-                        description: A numeric representation of the current month.
-                        format: uint64
-                        type: string
                       current_month_start_block:
                         description: The block height at which the current month started.
+                        format: uint64
+                        type: string
+                      current_month_start_block_ts:
+                        description: >-
+                          The timestamp of the block at which the current month
+                          started.
                         format: uint64
                         type: string
                     type: object
@@ -50561,10 +50612,14 @@ paths:
                 properties:
                   expected_revenue:
                     description: >-
-                      Contains expected revenue for the validator
+                      Contains expected revenue for the validator based on their
+                      performance rating in the current
 
-                      based on performance rating of ongoing performance window
-                      and current TWAP.
+                      payment period, current reward denom TWAP, and duration of
+                      validator's presence in the active
+
+                      validator set. Does not take into account effective
+                      payment period progress.
                     type: string
                   performance_rating:
                     description: >-
@@ -50647,10 +50702,14 @@ paths:
                   properties:
                     expected_revenue:
                       description: >-
-                        Contains expected revenue for the validator
+                        Contains expected revenue for the validator based on
+                        their performance rating in the current
 
-                        based on performance rating of ongoing performance
-                        window and current TWAP.
+                        payment period, current reward denom TWAP, and duration
+                        of validator's presence in the active
+
+                        validator set. Does not take into account effective
+                        payment period progress.
                       type: string
                     performance_rating:
                       description: >-

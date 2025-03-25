@@ -19,8 +19,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v5/app/params"
-	"github.com/neutron-org/neutron/v5/testutil"
+	appparams "github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v6/testutil"
 )
 
 var (

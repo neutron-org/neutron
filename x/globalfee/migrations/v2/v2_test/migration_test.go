@@ -19,8 +19,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	v2 "github.com/neutron-org/neutron/v5/x/globalfee/migrations/v2"
-	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
+	v2 "github.com/neutron-org/neutron/v6/x/globalfee/migrations/v2"
+	globalfeetypes "github.com/neutron-org/neutron/v6/x/globalfee/types"
 )
 
 func TestMigrateStore(t *testing.T) {

@@ -16,22 +16,23 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	harpoonkeeper "github.com/neutron-org/neutron/v5/x/harpoon/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
-	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
-	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
+	harpoonkeeper "github.com/neutron-org/neutron/v6/x/harpoon/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
 
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v6/x/ibc-rate-limit/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v5/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v6/x/dynamicfees/keeper"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v6/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v6/x/feeburner/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v6/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v6/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"

@@ -5,15 +5,15 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v5/app/config"
+	"github.com/neutron-org/neutron/v6/app/config"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v5/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/v5/x/feeburner"
-	"github.com/neutron-org/neutron/v5/x/feeburner/types"
+	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v6/testutil/feeburner/keeper"
+	"github.com/neutron-org/neutron/v6/x/feeburner"
+	"github.com/neutron-org/neutron/v6/x/feeburner/types"
 )
 
 func TestGenesis(t *testing.T) {

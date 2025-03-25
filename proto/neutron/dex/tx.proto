@@ -11,7 +11,7 @@ import "neutron/dex/params.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/neutron-org/neutron/v5/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v6/x/dex/types";
 
 // Msg defines the Msg service.
 service Msg {
@@ -161,7 +161,7 @@ message MsgPlaceLimitOrder {
   ];
   string limit_sell_price = 11 [
     (gogoproto.moretags) = "yaml:\"limit_sell_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v5/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v6/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "limit_sell_price"
   ];
@@ -170,7 +170,7 @@ message MsgPlaceLimitOrder {
   // If min_average_sell_price is omitted limit_sell_price will be used instead
   string min_average_sell_price = 12 [
     (gogoproto.moretags) = "yaml:\"min_average_sell_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v5/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v6/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "min_average_sell_price"
   ];
@@ -274,7 +274,7 @@ message MsgMultiHopSwap {
   ];
   string exit_limit_price = 5 [
     (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v5/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v6/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "exit_limit_price"
   ];

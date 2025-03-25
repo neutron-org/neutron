@@ -15,9 +15,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	"github.com/neutron-org/neutron/v5/x/harpoon/client/cli"
-	"github.com/neutron-org/neutron/v5/x/harpoon/keeper"
-	"github.com/neutron-org/neutron/v5/x/harpoon/types"
+	"github.com/neutron-org/neutron/v6/x/harpoon/client/cli"
+	"github.com/neutron-org/neutron/v6/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v6/x/harpoon/types"
 )
 
 var (

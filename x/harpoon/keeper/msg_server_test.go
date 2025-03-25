@@ -7,17 +7,17 @@ import (
 	types2 "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v5/testutil"
+	"github.com/neutron-org/neutron/v6/testutil"
 
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v5/testutil/harpoon/keeper"
-	"github.com/neutron-org/neutron/v5/x/harpoon/keeper"
-	"github.com/neutron-org/neutron/v5/x/harpoon/types"
+	keepertest "github.com/neutron-org/neutron/v6/testutil/harpoon/keeper"
+	"github.com/neutron-org/neutron/v6/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v6/x/harpoon/types"
 
 	"github.com/golang/mock/gomock"
 
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/harpoon/types"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/harpoon/types"
 )
 
 const (

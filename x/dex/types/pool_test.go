@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/assert"
 
-	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 func TestCalcGreatestMatchingRatioBothReservesNonZero(t *testing.T) {

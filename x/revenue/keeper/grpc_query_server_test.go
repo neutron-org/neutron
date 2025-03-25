@@ -6,10 +6,10 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	appconfig "github.com/neutron-org/neutron/v5/app/config"
-	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	appconfig "github.com/neutron-org/neutron/v6/app/config"
+	testutil_keeper "github.com/neutron-org/neutron/v6/testutil/revenue/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 )
 
 func TestQueryParams(t *testing.T) {

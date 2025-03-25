@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
 )
 
 const TypeMsgPlaceLimitOrder = "place_limit_order"

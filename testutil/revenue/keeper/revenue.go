@@ -11,8 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	"github.com/neutron-org/neutron/v6/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 )
 
 func RevenueKeeper(

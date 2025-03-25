@@ -12,8 +12,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
-	v1beta1types "github.com/neutron-org/neutron/v5/x/tokenfactory/types/v1beta1"
+	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	v1beta1types "github.com/neutron-org/neutron/v6/x/tokenfactory/types/v1beta1"
 )
 
 type TokenFactoryKeeper interface {
