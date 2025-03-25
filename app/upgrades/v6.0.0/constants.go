@@ -51,9 +51,9 @@ const (
 
 	ValenceStaker = "neutron1yvxarc3r8agzzky6g4zdxhk5xc59j7rdw2pugjarwskt8jmpkgus9jqvwk"
 
-	USDC_LP_Receiver = "neutron1l3pk6xsc8p74gwrduxj5qp7djqyx9j5uweufrw5kp8d37xc3hjqs53euye"
+	UsdcLpReceiver = "neutron1l3pk6xsc8p74gwrduxj5qp7djqyx9j5uweufrw5kp8d37xc3hjqs53euye"
 	// USDC-NTRN
-	USDC_LP_Denom = "factory/neutron145z3nj7yqft2vpugr5a5p7jsnagvms90tvtej45g4s0xkqalhy7sj20vgz/astroport/share" // TODO: populate when known
+	UsdcLpDenom = "factory/neutron145z3nj7yqft2vpugr5a5p7jsnagvms90tvtej45g4s0xkqalhy7sj20vgz/astroport/share" // TODO: populate when known
 
 	dntrnNtrnLiqAmount   = int64(25_000_000_000_000)
 	dntrnNtrnLiqProvider = "neutron1dmhxfvggstv2k9xd4rg2nmvsdwesh9mj20dl70lmcala93zmfnfsmgls2c"
