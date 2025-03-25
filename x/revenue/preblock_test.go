@@ -6,15 +6,15 @@ import (
 
 	"cosmossdk.io/math"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/golang/mock/gomock"
-	compression "github.com/skip-mev/slinky/abci/strategies/codec"
-	"github.com/stretchr/testify/require"
-
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	"github.com/neutron-org/neutron/v5/x/revenue"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	compression "github.com/skip-mev/slinky/abci/strategies/codec"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -153,10 +153,12 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 		require.Nil(t, err)
 
-		params, err := keeper.GetParams(ctx)
-		require.Nil(t, err)
+		bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+			DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+			Base:       "untrn", Symbol: "NTRN",
+		}, true).AnyTimes()
 
-		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 		require.Nil(t, err)
 
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
@@ -225,16 +227,18 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 		err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 		require.Nil(t, err)
 
-		params, err := keeper.GetParams(ctx)
-		require.Nil(t, err)
-
 		// update payment schedule type to the empty one in module params
 		g.Params.PaymentScheduleType.PaymentScheduleType = &revenuetypes.PaymentScheduleType_EmptyPaymentScheduleType{
 			EmptyPaymentScheduleType: &revenuetypes.EmptyPaymentScheduleType{},
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 
-		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+			DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+			Base:       "untrn", Symbol: "NTRN",
+		}, true).AnyTimes()
+
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 		require.Nil(t, err)
 		// 50% of revenue for 1/2 of the payment period (see ctx.WithBlockTime(...) below)
 		expectedRevenueAmount := baseRevenueAmount.Quo(math.NewInt(2))
@@ -347,10 +351,12 @@ func TestPaymentScheduleCheckBlockBasedPaymentSchedule(t *testing.T) {
 		err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 		require.Nil(t, err)
 
-		params, err := keeper.GetParams(ctx)
-		require.Nil(t, err)
+		bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+			DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+			Base:       "untrn", Symbol: "NTRN",
+		}, true).AnyTimes()
 
-		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 		require.Nil(t, err)
 
 		// expect one successful SendCoinsFromModuleToAccount call for val1 with full rewards
@@ -413,10 +419,12 @@ func TestPaymentScheduleCheckBlockBasedPaymentSchedule(t *testing.T) {
 		err := keeper.SetValidatorInfo(ctx, va1, val1Info)
 		require.Nil(t, err)
 
-		err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
-		require.Nil(t, err)
+		bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+			DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+			Base:       "untrn", Symbol: "NTRN",
+		}, true).AnyTimes()
 
-		params, err := keeper.GetParams(ctx)
+		err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 		require.Nil(t, err)
 
 		// update payment schedule type to the empty one in module params
@@ -425,7 +433,7 @@ func TestPaymentScheduleCheckBlockBasedPaymentSchedule(t *testing.T) {
 		}
 		require.Nil(t, keeper.SetParams(ctx, g.Params))
 
-		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+		baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 		require.Nil(t, err)
 		// 50% of revenue for 1/2 of the payment period (see ctx.WithBlockHeight(6) below)
 		expectedRevenueAmount := baseRevenueAmount.Quo(math.NewInt(2))

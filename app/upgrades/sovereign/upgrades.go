@@ -13,6 +13,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 
+	"github.com/neutron-org/neutron/v5/app/params"
 	appparams "github.com/neutron-org/neutron/v5/app/params"
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
@@ -48,6 +49,8 @@ func CreateUpgradeHandler(
 		if err != nil {
 			return vm, fmt.Errorf("RunMigrations failed: %w", err)
 		}
+
+		SetupDenomMetadata(ctx, keepers.BankKeeper)
 
 		err = SetupRewards(ctx, keepers.BankKeeper)
 		if err != nil {
@@ -170,9 +173,35 @@ func SetupRewards(ctx context.Context, bk bankkeeper.Keeper) error {
 	return nil
 }
 
+func SetupDenomMetadata(ctx context.Context, bk bankkeeper.Keeper) {
+	bk.SetDenomMetaData(ctx, banktypes.Metadata{
+		Description: "The native staking token of the Neutron network",
+		DenomUnits: []*banktypes.DenomUnit{
+			{
+				Denom:    params.DefaultDenom,
+				Exponent: 0,
+				Aliases:  []string{"microntrn"},
+			},
+			{
+				Denom:    "ntrn",
+				Exponent: params.DefaultDenomDecimals,
+				Aliases:  []string{"NTRN"},
+			},
+		},
+		Base:    params.DefaultDenom,
+		Display: "ntrn",
+		Name:    "Neutron",
+		Symbol:  "NTRN",
+	})
+}
+
 func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Keeper) error {
 	params := revenuetypes.Params{
-		BaseCompensation:                  2500,
+		RewardAsset: revenuetypes.DefaultRewardAsset,
+		RewardQuote: &revenuetypes.RewardQuote{
+			Asset:  revenuetypes.DefaultRewardQuoteAsset,
+			Amount: revenuetypes.DefaultRewardQuoteAmount,
+		},
 		BlocksPerformanceRequirement:      revenuetypes.DefaultBlocksPerformanceRequirement(),
 		OracleVotesPerformanceRequirement: revenuetypes.DefaultOracleVotesPerformanceRequirement(),
 		PaymentScheduleType: &revenuetypes.PaymentScheduleType{

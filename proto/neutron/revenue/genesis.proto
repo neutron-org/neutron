@@ -20,7 +20,7 @@ message GenesisState {
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
 
-  // Prices of the reward denom. Used to calculate the reward denom TWAP.
+  // Prices of the reward asset. Used to calculate the reward asset TWAP.
   repeated RewardAssetPrice prices = 4;
 }
 
@@ -88,7 +88,7 @@ message RewardAssetPrice {
     (gogoproto.nullable) = false
   ];
 
-  // The price of the asset in USD that corresponds to the timestamp.
+  // The price of the reward asset in reward quote asset that corresponds to the timestamp.
   string absolute_price = 2 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",

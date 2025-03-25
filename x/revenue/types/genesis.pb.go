@@ -35,7 +35,7 @@ type GenesisState struct {
 	PaymentSchedule *PaymentSchedule `protobuf:"bytes,2,opt,name=payment_schedule,json=paymentSchedule,proto3" json:"payment_schedule,omitempty"`
 	// Revenue module list of validators.
 	Validators []ValidatorInfo `protobuf:"bytes,3,rep,name=validators,proto3" json:"validators"`
-	// Prices of the reward denom. Used to calculate the reward denom TWAP.
+	// Prices of the reward asset. Used to calculate the reward asset TWAP.
 	Prices []*RewardAssetPrice `protobuf:"bytes,4,rep,name=prices,proto3" json:"prices,omitempty"`
 }
 
@@ -433,7 +433,7 @@ type RewardAssetPrice struct {
 	// The cumulative price of the reward asset within the TWAP window. It is calculated as:
 	// `cumulative_price_at_timestamp_t(n)` = `last_price_at_t(n-1)` * (t(n) - t(n-1)) + `cumulative_price_at_timestamp_t(n-1)`
 	CumulativePrice cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=cumulative_price,json=cumulativePrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"cumulative_price"`
-	// The price of the asset in USD that corresponds to the timestamp.
+	// The price of the reward asset in reward quote asset that corresponds to the timestamp.
 	AbsolutePrice cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=absolute_price,json=absolutePrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"absolute_price"`
 	// The timestamp of the last update of the absolute and cumulative price.
 	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`

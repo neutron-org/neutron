@@ -3,12 +3,11 @@ package types
 import (
 	"context"
 
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
-
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
-
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 // StakingKeeper defines the expected interface for getting validators by consensus address.
@@ -19,6 +18,9 @@ type StakingKeeper interface {
 
 // BankKeeper defines the expected interface needed to send coins from one account to another.
 type BankKeeper interface {
+	// GetDenomMetaData retrieves the denomination metadata. Returns the metadata and true if the
+	// denom exists, false otherwise.
+	GetDenomMetaData(ctx context.Context, denom string) (banktypes.Metadata, bool)
 	// SendCoinsFromModuleToAccount transfers coins from a ModuleAccount to an AccAddress.
 	// It will panic if the module account does not exist. An error is returned if
 	// the recipient address is black-listed or if sending the tokens fails.

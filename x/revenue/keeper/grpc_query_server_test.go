@@ -4,12 +4,14 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/stretchr/testify/require"
-
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/golang/mock/gomock"
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
+	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
 	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestQueryParams(t *testing.T) {
@@ -25,7 +27,7 @@ func TestQueryParams(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, params, paramsResp.Params)
 
-	params.BaseCompensation = 11111
+	params.RewardQuote.Amount = 11111
 	paramsResp, err = queryServer.Params(ctx, &revenuetypes.QueryParamsRequest{})
 	require.Nil(t, err)
 	require.NotEqual(t, params, paramsResp.Params) // not set yet
@@ -40,13 +42,20 @@ func TestQueryParams(t *testing.T) {
 func TestQueryPaymentInfo(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
-	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	k, ctx := testutil_keeper.RevenueKeeper(t, bankKeeper, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         10,
 		CurrentPeriodStartBlock: 1,
 	}
 	require.Nil(t, k.SetPaymentScheduleI(ctx, ps))
 	require.Nil(t, k.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
+
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
 
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
 
@@ -58,9 +67,10 @@ func TestQueryPaymentInfo(t *testing.T) {
 		BlockBasedPaymentSchedule,
 	)
 	require.Equal(t, math.LegacyNewDec(1), paymentInfo.EffectivePeriodProgress)
-	require.Equal(t, revenuetypes.RewardDenom, paymentInfo.RewardDenom)
-	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), paymentInfo.RewardDenomTwap)
-	require.Equal(t, math.NewInt(5000), paymentInfo.BaseRevenueAmount)
+	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), paymentInfo.RewardAssetTwap)
+	// RewardQuote.Amount / TWAP * exp = 2500 / 0.5 * 10^6 = 5 000 NTRN = 5 000 * 10^6 untrn
+	require.Equal(t, math.NewInt(5000000000), paymentInfo.BaseRevenueAmount.Amount)
+	require.Equal(t, "untrn", paymentInfo.BaseRevenueAmount.Denom)
 
 	// query payment info in the middle of a period
 	paymentInfo, err = queryServer.PaymentInfo(ctx.WithBlockHeight(6), &revenuetypes.QueryPaymentInfoRequest{})
@@ -71,7 +81,9 @@ func TestQueryPaymentInfo(t *testing.T) {
 func TestQueryValidatorStats(t *testing.T) {
 	appconfig.GetDefaultConfig()
 
-	k, ctx := testutil_keeper.RevenueKeeper(t, nil, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
+	ctrl := gomock.NewController(t)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	k, ctx := testutil_keeper.RevenueKeeper(t, bankKeeper, nil, "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a")
 	params := revenuetypes.DefaultParams()
 	require.Nil(t, k.SetParams(ctx, params))
 	queryServer := revenuekeeper.NewQueryServerImpl(k)
@@ -82,6 +94,11 @@ func TestQueryValidatorStats(t *testing.T) {
 	}
 	require.Nil(t, k.SetPaymentScheduleI(ctx, ps))
 	require.Nil(t, k.CalcNewRewardAssetPrice(ctx, math.LegacyMustNewDecFromStr("0.5"), ctx.BlockTime().Unix()))
+
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
 
 	t.Run("EndOfPeriod", func(t *testing.T) {
 		// val 1 with 100/100 performance (ctx.WithBlockHeight(101), CurrentPeriodStartBlock: 1)
@@ -106,10 +123,9 @@ func TestQueryValidatorStats(t *testing.T) {
 		require.Equal(t, uint64(100), val1Stats.Stats.ValidatorInfo.CommitedOracleVotesInPeriod)
 		require.Equal(t, uint64(100), val1Stats.Stats.ValidatorInfo.InActiveValsetForBlocksInPeriod)
 		require.Equal(t, math.LegacyOneDec(), val1Stats.Stats.PerformanceRating)
-		// only 1 price in TWAP storage, take it as TWAP
-		// TWAP = 0.5 USD/NTRN
-		// total NTRN = 2500/0.5
-		require.Equal(t, math.NewIntFromUint64(5000), val1Stats.Stats.ExpectedRevenue)
+		// RewardQuote.Amount / TWAP * exp = 2500 / 0.5 * 10^6 = 5 000 NTRN = 5 000 * 10^6 untrn
+		require.Equal(t, math.NewIntFromUint64(5000000000), val1Stats.Stats.ExpectedRevenue.Amount)
+		require.Equal(t, "untrn", val1Stats.Stats.ExpectedRevenue.Denom)
 
 		val2Stats, err := queryServer.ValidatorStats(ctx.WithBlockHeight(101), &revenuetypes.QueryValidatorStatsRequest{
 			ValOperAddress: val2.ValOperAddress,
@@ -120,7 +136,8 @@ func TestQueryValidatorStats(t *testing.T) {
 		require.Equal(t, uint64(50), val2Stats.Stats.ValidatorInfo.CommitedOracleVotesInPeriod)
 		require.Equal(t, uint64(100), val2Stats.Stats.ValidatorInfo.InActiveValsetForBlocksInPeriod)
 		require.Equal(t, math.LegacyZeroDec(), val2Stats.Stats.PerformanceRating)
-		require.Equal(t, math.ZeroInt(), val2Stats.Stats.ExpectedRevenue)
+		require.Equal(t, math.ZeroInt(), val2Stats.Stats.ExpectedRevenue.Amount)
+		require.Equal(t, "untrn", val2Stats.Stats.ExpectedRevenue.Denom)
 
 		valsStats, err := queryServer.ValidatorsStats(ctx.WithBlockHeight(101), &revenuetypes.QueryValidatorsStatsRequest{})
 		require.Nil(t, err)
@@ -157,10 +174,9 @@ func TestQueryValidatorStats(t *testing.T) {
 		require.Equal(t, uint64(80), val1Stats.Stats.ValidatorInfo.CommitedOracleVotesInPeriod)
 		require.Equal(t, uint64(80), val1Stats.Stats.ValidatorInfo.InActiveValsetForBlocksInPeriod)
 		require.Equal(t, math.LegacyOneDec(), val1Stats.Stats.PerformanceRating)
-		// only 1 price in TWAP storage, take it as TWAP
-		// TWAP = 0.5 USD/NTRN
-		// total NTRN = 2500/0.5 * 0.8 (due to 0.8 effective period progress)
-		require.Equal(t, math.NewIntFromUint64(5000), val1Stats.Stats.ExpectedRevenue)
+		// RewardQuote.Amount / TWAP * exp = 2500 / 0.5 * 10^6 = 5 000 NTRN = 5 000 * 10^6 untrn
+		require.Equal(t, math.NewIntFromUint64(5000000000), val1Stats.Stats.ExpectedRevenue.Amount)
+		require.Equal(t, "untrn", val1Stats.Stats.ExpectedRevenue.Denom)
 
 		val2Stats, err := queryServer.ValidatorStats(ctx.WithBlockHeight(81), &revenuetypes.QueryValidatorStatsRequest{
 			ValOperAddress: val2.ValOperAddress,
@@ -171,7 +187,8 @@ func TestQueryValidatorStats(t *testing.T) {
 		require.Equal(t, uint64(40), val2Stats.Stats.ValidatorInfo.CommitedOracleVotesInPeriod)
 		require.Equal(t, uint64(80), val2Stats.Stats.ValidatorInfo.InActiveValsetForBlocksInPeriod)
 		require.Equal(t, math.LegacyZeroDec(), val2Stats.Stats.PerformanceRating)
-		require.Equal(t, math.ZeroInt(), val2Stats.Stats.ExpectedRevenue)
+		require.Equal(t, math.ZeroInt(), val2Stats.Stats.ExpectedRevenue.Amount)
+		require.Equal(t, "untrn", val2Stats.Stats.ExpectedRevenue.Denom)
 
 		valsStats, err := queryServer.ValidatorsStats(ctx.WithBlockHeight(81), &revenuetypes.QueryValidatorsStatsRequest{})
 		require.Nil(t, err)
