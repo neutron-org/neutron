@@ -1,9 +1,9 @@
 package revenue_test
 
 import (
+	"fmt"
 	"testing"
 
-	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/stretchr/testify/require"
@@ -19,9 +19,9 @@ func TestInitAndExportGenesis(t *testing.T) {
 	// create some non-default genesis state with all fields populated
 	genesisState := revenuetypes.DefaultGenesis()
 	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
-		ValOperAddress:              "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70",
-		CommitedBlocksInPeriod:      1000,
-		CommitedOracleVotesInPeriod: 1000,
+		ValOperAddress:              val1OperAddr,
+		CommitedBlocksInPeriod:      0,
+		CommitedOracleVotesInPeriod: 0,
 	})
 	genesisState.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
 		PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
@@ -30,13 +30,6 @@ func TestInitAndExportGenesis(t *testing.T) {
 	}
 	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1}
 	genesisState.PaymentSchedule = ps.IntoPaymentSchedule()
-	genesisState.Prices = []*revenuetypes.RewardAssetPrice{
-		{
-			AbsolutePrice:   math.LegacyOneDec(),
-			CumulativePrice: math.LegacyOneDec(),
-			Timestamp:       1000,
-		},
-	}
 
 	// apply genesis state, export it, and compare
 	revenue.InitGenesis(ctx, k, *genesisState)
@@ -58,13 +51,6 @@ func TestGenesisSerialization(t *testing.T) {
 			CommitedOracleVotesInPeriod: 100,
 		},
 	}
-	genesisState.Prices = []*revenuetypes.RewardAssetPrice{
-		{
-			AbsolutePrice:   math.LegacyOneDec(),
-			CumulativePrice: math.LegacyOneDec(),
-			Timestamp:       1000,
-		},
-	}
 
 	data, err := cdc.MarshalJSON(genesisState)
 	require.NoError(t, err)
@@ -79,6 +65,118 @@ func TestGenesisSerialization(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, genesisState.Params, genesisState2.Params)
 	require.Equal(t, genesisState.Validators, genesisState2.Validators)
-	require.Equal(t, genesisState.Prices, genesisState2.Prices)
 	require.Equal(t, genesisState.PaymentSchedule, genesisState2.PaymentSchedule)
+}
+
+func TestGenesisInvalidCommitedBlocksInPeriodForZeroHeight(t *testing.T) {
+	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
+
+	valOperAddress := val1OperAddr
+
+	genesisState := revenuetypes.DefaultGenesis()
+	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
+		ValOperAddress:              valOperAddress,
+		CommitedBlocksInPeriod:      1000,
+		CommitedOracleVotesInPeriod: 0,
+	})
+	genesisState.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+		PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		},
+	}
+	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1}
+	genesisState.PaymentSchedule = ps.IntoPaymentSchedule()
+
+	require.PanicsWithValue(t, fmt.Sprintf("Non-zero CommitedBlocksInPeriod for validator %s", valOperAddress), func() { revenue.InitGenesis(ctx, k, *genesisState) })
+}
+
+func TestGenesisInvalidCommitedOracleVotesInPeriodForZeroHeight(t *testing.T) {
+	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
+
+	valOperAddress := val1OperAddr
+
+	genesisState := revenuetypes.DefaultGenesis()
+	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
+		ValOperAddress:              valOperAddress,
+		CommitedBlocksInPeriod:      0,
+		CommitedOracleVotesInPeriod: 1000,
+	})
+	genesisState.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+		PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		},
+	}
+	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1}
+	genesisState.PaymentSchedule = ps.IntoPaymentSchedule()
+
+	require.PanicsWithValue(t, fmt.Sprintf("Non-zero CommitedOracleVotesInPeriod for validator %s", valOperAddress), func() { revenue.InitGenesis(ctx, k, *genesisState) })
+}
+
+func TestGenesisInvalidCurrentPeriodStartBlock(t *testing.T) {
+	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
+	ctx = ctx.WithBlockHeight(2)
+
+	valOperAddress := val1OperAddr
+
+	genesisState := revenuetypes.DefaultGenesis()
+	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
+		ValOperAddress:              valOperAddress,
+		CommitedBlocksInPeriod:      1000,
+		CommitedOracleVotesInPeriod: 1000,
+	})
+	genesisState.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+		PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		},
+	}
+	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 3}
+	genesisState.PaymentSchedule = ps.IntoPaymentSchedule()
+
+	require.PanicsWithValue(t, "currentPeriodStartBlock exceeds current block height", func() { revenue.InitGenesis(ctx, k, *genesisState) })
+}
+
+func TestGenesisInvalidCommitedBlocksInPeriodForNonZeroHeight(t *testing.T) {
+	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
+	ctx = ctx.WithBlockHeight(2)
+
+	valOperAddress := val1OperAddr
+
+	genesisState := revenuetypes.DefaultGenesis()
+	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
+		ValOperAddress:              valOperAddress,
+		CommitedBlocksInPeriod:      1000,
+		CommitedOracleVotesInPeriod: 0,
+	})
+	genesisState.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+		PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		},
+	}
+	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1}
+	genesisState.PaymentSchedule = ps.IntoPaymentSchedule()
+
+	require.PanicsWithValue(t, fmt.Sprintf("CommitedBlocksInPeriod exceeds the initial payment schedule block period for validator %s", valOperAddress), func() { revenue.InitGenesis(ctx, k, *genesisState) })
+}
+
+func TestGenesisInvalidCommitedOracleVotesInPeriodForNonZeroHeight(t *testing.T) {
+	k, ctx := keeper.RevenueKeeper(t, nil, nil, "")
+	ctx = ctx.WithBlockHeight(2)
+
+	valOperAddress := val1OperAddr
+
+	genesisState := revenuetypes.DefaultGenesis()
+	genesisState.Validators = append(genesisState.Validators, revenuetypes.ValidatorInfo{
+		ValOperAddress:              valOperAddress,
+		CommitedBlocksInPeriod:      0,
+		CommitedOracleVotesInPeriod: 1000,
+	})
+	genesisState.Params.PaymentScheduleType = &revenuetypes.PaymentScheduleType{
+		PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+			BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 5},
+		},
+	}
+	ps := &revenuetypes.BlockBasedPaymentSchedule{BlocksPerPeriod: 5, CurrentPeriodStartBlock: 1}
+	genesisState.PaymentSchedule = ps.IntoPaymentSchedule()
+
+	require.PanicsWithValue(t, fmt.Sprintf("CommitedOracleVotesInPeriod exceeds the initial payment schedule block period for validator %s", valOperAddress), func() { revenue.InitGenesis(ctx, k, *genesisState) })
 }

@@ -212,7 +212,7 @@ func (k *Keeper) GetTWAPStartingFromTime(ctx sdk.Context, startAt int64) (math.L
 
 	firstPrice, err := k.GetFirstRewardAssetPriceAfter(ctx, startAt)
 	if err != nil {
-		return math.LegacyZeroDec(), fmt.Errorf("failed to get first first reward asset price: %w", err)
+		return math.LegacyZeroDec(), fmt.Errorf("failed to get first reward asset price: %w", err)
 	}
 	if lastPrice.Timestamp == firstPrice.Timestamp {
 		return lastPrice.AbsolutePrice, nil
