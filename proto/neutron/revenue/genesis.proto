@@ -19,9 +19,6 @@ message GenesisState {
 
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
-
-  // Prices of the reward denom. Used to calculate the reward denom TWAP.
-  repeated RewardAssetPrice prices = 4;
 }
 
 // A model that contains information specific to the currently active payment schedule. The oneof
