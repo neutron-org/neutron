@@ -198,7 +198,6 @@ func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.Tra
 	}
 
 	return swapTokenIn.Amount, swapTokenOut.Amount, orderFilled, nil
-
 }
 
 func (k Keeper) SwapOnDeposit(
@@ -224,7 +223,6 @@ func (k Keeper) SwapOnDeposit(
 		swapAmountIn0, swapAmountOut1, orderFilled, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount0, limitPrice0, slopToleranceBPs)
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
-
 		}
 
 		if swapAmountIn0.IsPositive() {
@@ -250,7 +248,6 @@ func (k Keeper) SwapOnDeposit(
 		swapAmountIn1, swapAmountOut0, orderFilled, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount1, limitPrice1, slopToleranceBPs)
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), err
-
 		}
 
 		if swapAmountIn1.IsPositive() {
