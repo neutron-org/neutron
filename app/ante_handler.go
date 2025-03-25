@@ -14,8 +14,8 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
-	globalfeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
-	globalfeekeeper "github.com/neutron-org/neutron/v5/x/globalfee/keeper"
+	globalfeeante "github.com/neutron-org/neutron/v6/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v6/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC

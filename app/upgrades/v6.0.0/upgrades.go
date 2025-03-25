@@ -13,10 +13,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 
-	appparams "github.com/neutron-org/neutron/v5/app/params"
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v5/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	appparams "github.com/neutron-org/neutron/v6/app/params"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v6/x/dynamicfees/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -24,9 +24,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v5/app/upgrades"
-	harpoonkeeper "github.com/neutron-org/neutron/v5/x/harpoon/keeper"
-	"github.com/neutron-org/neutron/v5/x/harpoon/types"
+	"github.com/neutron-org/neutron/v6/app/upgrades"
+	harpoonkeeper "github.com/neutron-org/neutron/v6/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v6/x/harpoon/types"
 )
 
 /*
@@ -189,6 +189,9 @@ func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Ke
 		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		Params:    params,
 	})
+	if err != nil {
+		return err
+	}
 
 	revenueAmount := math.NewInt(RevenueModule)
 
@@ -255,11 +258,10 @@ func FundValence(ctx context.Context, bk bankkeeper.Keeper) error {
 }
 
 func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
-
 	// query amount and transfer 100%
 	daoBalanceBefore, err := bk.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: MainDAOContractAddress,
-		Denom:   USDC_LP_Denom,
+		Denom:   UsdcLpDenom,
 	})
 	if err != nil {
 		return err
@@ -268,7 +270,7 @@ func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
 	err = bk.SendCoins(
 		ctx,
 		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(USDC_LP_Receiver),
+		sdk.MustAccAddressFromBech32(UsdcLpReceiver),
 		sdk.NewCoins(*daoBalanceBefore.Balance),
 	)
 	if err != nil {
@@ -278,12 +280,12 @@ func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
 }
 
 func FundDNTRNLiqProvider(ctx context.Context, bk bankkeeper.Keeper) error {
-	amount := math.NewInt(dNTRN_NTRN_LiqAmount)
+	amount := math.NewInt(dntrnNtrnLiqAmount)
 
 	err := bk.SendCoins(
 		ctx,
 		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(dNTRN_NTRN_LiqProvider),
+		sdk.MustAccAddressFromBech32(dntrnNtrnLiqProvider),
 		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, amount)),
 	)
 	if err != nil {

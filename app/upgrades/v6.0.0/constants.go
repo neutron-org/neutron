@@ -4,11 +4,11 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 
-	harpoontypes "github.com/neutron-org/neutron/v5/x/harpoon/types"
+	harpoontypes "github.com/neutron-org/neutron/v6/x/harpoon/types"
 
-	"github.com/neutron-org/neutron/v5/app/upgrades"
+	"github.com/neutron-org/neutron/v6/app/upgrades"
 )
 
 const (
@@ -55,8 +55,8 @@ const (
 	// USDC-NTRN
 	USDC_LP_Denom = "factory/neutron145z3nj7yqft2vpugr5a5p7jsnagvms90tvtej45g4s0xkqalhy7sj20vgz/astroport/share" // TODO: populate when known
 
-	dNTRN_NTRN_LiqAmount   = int64(25_000_000_000_000)
-	dNTRN_NTRN_LiqProvider = "neutron1dmhxfvggstv2k9xd4rg2nmvsdwesh9mj20dl70lmcala93zmfnfsmgls2c"
+	dntrnNtrnLiqAmount   = int64(25_000_000_000_000)
+	dntrnNtrnLiqProvider = "neutron1dmhxfvggstv2k9xd4rg2nmvsdwesh9mj20dl70lmcala93zmfnfsmgls2c"
 
 	RewardContract = 6_000_000_000_000
 	RevenueModule  = 6_000_000_000_000

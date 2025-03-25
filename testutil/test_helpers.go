@@ -20,9 +20,9 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 
-	"github.com/neutron-org/neutron/v5/utils"
+	"github.com/neutron-org/neutron/v6/utils"
 
-	"github.com/neutron-org/neutron/v5/app/config"
+	"github.com/neutron-org/neutron/v6/app/config"
 
 	"cosmossdk.io/log"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -37,12 +37,12 @@ import (
 	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v5/app/params"
-	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
+	appparams "github.com/neutron-org/neutron/v6/app/params"
+	tokenfactorytypes "github.com/neutron-org/neutron/v6/x/tokenfactory/types"
 
 	//nolint:staticcheck
-	"github.com/neutron-org/neutron/v5/app"
-	ictxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v6/app"
+	ictxstypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
 )
 
 var (

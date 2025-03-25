@@ -11,9 +11,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
-	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
+	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	icqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
 )
 
 func (suite *KeeperTestSuite) initBalanceTrackContract(denom string) (sdk.AccAddress, uint64, string) {
