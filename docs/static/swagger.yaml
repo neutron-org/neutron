@@ -16865,6 +16865,13 @@ definitions:
       min_learning_rate:
         description: MinLearningRate is the lower bound for the learning rate.
         type: string
+      send_tip_to_proposer:
+        description: >-
+          SendTipToProposer is a boolean that determines whether the tip is sent
+          to a
+
+          proposer or to a module account.
+        type: boolean
       window:
         description: >-
           Window defines the window size for calculating an adaptive learning
@@ -16958,6 +16965,13 @@ definitions:
           min_learning_rate:
             description: MinLearningRate is the lower bound for the learning rate.
             type: string
+          send_tip_to_proposer:
+            description: >-
+              SendTipToProposer is a boolean that determines whether the tip is
+              sent to a
+
+              proposer or to a module account.
+            type: boolean
           window:
             description: >-
               Window defines the window size for calculating an adaptive
@@ -20371,6 +20385,45 @@ definitions:
             type: object
         type: object
     type: object
+  neutron.harpoon.HookType:
+    default: HOOK_TYPE_UNSPECIFIED
+    description: |-
+      Hook types that can be subscribed to.
+
+       - HOOK_TYPE_AFTER_VALIDATOR_CREATED: Triggered after validator is created
+       - HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED: Triggered before validator is modified
+       - HOOK_TYPE_AFTER_VALIDATOR_REMOVED: Triggered after validator is removed
+       - HOOK_TYPE_AFTER_VALIDATOR_BONDED: Triggered after validator is bonded
+       - HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING: Triggered after validator begins unbonding
+       - HOOK_TYPE_BEFORE_DELEGATION_CREATED: Triggered before delegation is created
+       - HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED: Triggered before delegation's shares are modified
+       - HOOK_TYPE_BEFORE_DELEGATION_REMOVED: Triggered before delegation is removed
+       - HOOK_TYPE_AFTER_DELEGATION_MODIFIED: Triggered after delegation is modified
+       - HOOK_TYPE_BEFORE_VALIDATOR_SLASHED: Triggered before validator is slashed
+       - HOOK_TYPE_AFTER_UNBONDING_INITIATED: Triggered after unbonding is initiated
+    enum:
+      - HOOK_TYPE_UNSPECIFIED
+      - HOOK_TYPE_AFTER_VALIDATOR_CREATED
+      - HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED
+      - HOOK_TYPE_AFTER_VALIDATOR_REMOVED
+      - HOOK_TYPE_AFTER_VALIDATOR_BONDED
+      - HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING
+      - HOOK_TYPE_BEFORE_DELEGATION_CREATED
+      - HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED
+      - HOOK_TYPE_BEFORE_DELEGATION_REMOVED
+      - HOOK_TYPE_AFTER_DELEGATION_MODIFIED
+      - HOOK_TYPE_BEFORE_VALIDATOR_SLASHED
+      - HOOK_TYPE_AFTER_UNBONDING_INITIATED
+    type: string
+  neutron.harpoon.QuerySubscribedContractsResponse:
+    description: Response type for the Query/SubscribedContracts RPC method.
+    properties:
+      contract_addresses:
+        description: List of contract addresses subscribed to a specific hook.
+        items:
+          type: string
+        type: array
+    type: object
   neutron.ibcratelimit.v1beta1.Params:
     description: Params defines the parameters for the ibc-rate-limit module.
     properties:
@@ -21785,6 +21838,612 @@ definitions:
               type: object
             title: Defines a minimum fee required to register interchain account
             type: array
+        type: object
+    type: object
+  neutron.revenue.BlockBasedPaymentSchedule:
+    description: >-
+      Represents a payment schedule where revenue payments are processed after a
+      specified number
+
+      of blocks.
+    properties:
+      blocks_per_period:
+        description: The number of blocks in each payment period.
+        format: uint64
+        type: string
+      current_period_start_block:
+        description: The block height at which the current payment period started.
+        format: uint64
+        type: string
+    type: object
+  neutron.revenue.BlockBasedPaymentScheduleType:
+    description: >-
+      Periods defined by a specific number of blocks, with payments made when
+      the required block
+
+      count is reached.
+    properties:
+      blocks_per_period:
+        description: The number of blocks in a payment period.
+        format: uint64
+        type: string
+    type: object
+  neutron.revenue.EmptyPaymentSchedule:
+    description: Represents a payment schedule where revenue is never distributed.
+    type: object
+  neutron.revenue.EmptyPaymentScheduleType:
+    description: Endless periods with payments never made.
+    type: object
+  neutron.revenue.MonthlyPaymentSchedule:
+    description: >-
+      Represents a payment schedule where revenue payments are processed once a
+      month.
+    properties:
+      current_month:
+        description: A numeric representation of the current month.
+        format: uint64
+        type: string
+      current_month_start_block:
+        description: The block height at which the current month started.
+        format: uint64
+        type: string
+    type: object
+  neutron.revenue.MonthlyPaymentScheduleType:
+    description: Monthly periods with payments made at the end of each month.
+    type: object
+  neutron.revenue.Params:
+    description: Defines the parameters for the module.
+    properties:
+      base_compensation:
+        description: >-
+          The compensation amount measured in USD. USD is used as a quote in
+          price queries to the slinky oracle
+
+          module to determine the price of the reward denom. The base
+          compensation amount is divided
+
+          by the price of the reward denom to determine the final compensation
+          amount.
+        format: uint64
+        type: string
+      blocks_performance_requirement:
+        description: >-
+          Specifies performance requirements for validators in scope of blocks
+          signing and creation. If
+
+          not met, the validator is not rewarded.
+        properties:
+          allowed_to_miss:
+            description: >-
+              The fraction of the total performance a validator can miss without
+              affecting their reward.
+
+              Represented as a decimal value in the range [0.0, 1.0], where 1.0
+              corresponds to 100%.
+            type: string
+          required_at_least:
+            description: >-
+              The minimum fraction of the total performance a validator must
+              achieve to be eligible for
+
+              network rewards. Validators falling below this threshold will not
+              receive any rewards.
+
+              Represented as a decimal value in the range [0.0, 1.0], where 1.0
+              corresponds to 100%.
+            type: string
+        type: object
+      oracle_votes_performance_requirement:
+        description: >-
+          Specifies performance requirements for validators in scope of the
+          oracle price votes. If not
+
+          met, the validator is not rewarded.
+        properties:
+          allowed_to_miss:
+            description: >-
+              The fraction of the total performance a validator can miss without
+              affecting their reward.
+
+              Represented as a decimal value in the range [0.0, 1.0], where 1.0
+              corresponds to 100%.
+            type: string
+          required_at_least:
+            description: >-
+              The minimum fraction of the total performance a validator must
+              achieve to be eligible for
+
+              network rewards. Validators falling below this threshold will not
+              receive any rewards.
+
+              Represented as a decimal value in the range [0.0, 1.0], where 1.0
+              corresponds to 100%.
+            type: string
+        type: object
+      payment_schedule_type:
+        description: Indicates the currently active type of payment schedule.
+        properties:
+          block_based_payment_schedule_type:
+            description: >-
+              Periods defined by a specific number of blocks, with payments made
+              when the required block
+
+              count is reached.
+            properties:
+              blocks_per_period:
+                description: The number of blocks in a payment period.
+                format: uint64
+                type: string
+            type: object
+          empty_payment_schedule_type:
+            description: Endless periods with payments never made.
+            type: object
+          monthly_payment_schedule_type:
+            description: Monthly periods with payments made at the end of each month.
+            type: object
+        type: object
+      twap_window:
+        description: >-
+          The time window, in seconds, used to calculate the TWAP of the reward
+          asset.
+        format: int64
+        type: string
+    type: object
+  neutron.revenue.PaymentSchedule:
+    description: >-
+      A model that contains information specific to the currently active payment
+      schedule. The oneof
+
+      implementations define conditions for payment periods ending and track the
+      progress of the
+
+      current payment period. This is a module's state variable.
+
+      The inner oneof must correspond with the respective payment schedule type
+      defined in the module
+
+      params. In runtime, on a mismatch due to e.g. MsgUpdateParams execution,
+      the module will switch
+
+      to the payment schedule that corresponds to the payment schedule type
+      automatically.
+    properties:
+      block_based_payment_schedule:
+        description: >-
+          Represents a payment schedule where revenue payments are processed
+          after a specified number
+
+          of blocks.
+        properties:
+          blocks_per_period:
+            description: The number of blocks in each payment period.
+            format: uint64
+            type: string
+          current_period_start_block:
+            description: The block height at which the current payment period started.
+            format: uint64
+            type: string
+        type: object
+      empty_payment_schedule:
+        description: Represents a payment schedule where revenue is never distributed.
+        type: object
+      monthly_payment_schedule:
+        description: >-
+          Represents a payment schedule where revenue payments are processed
+          once a month.
+        properties:
+          current_month:
+            description: A numeric representation of the current month.
+            format: uint64
+            type: string
+          current_month_start_block:
+            description: The block height at which the current month started.
+            format: uint64
+            type: string
+        type: object
+    type: object
+  neutron.revenue.PaymentScheduleType:
+    description: >-
+      A model that contains information specific to the currently active payment
+      schedule type. The
+
+      oneof implementations define the payment schedule that must be used
+      currently.
+
+      This is a module's parameter. It's not updated automatically in runtime in
+      contrast to the
+
+      payment schedule which is a state variable, but is updated via
+      MsgUpdateParams.
+    properties:
+      block_based_payment_schedule_type:
+        description: >-
+          Periods defined by a specific number of blocks, with payments made
+          when the required block
+
+          count is reached.
+        properties:
+          blocks_per_period:
+            description: The number of blocks in a payment period.
+            format: uint64
+            type: string
+        type: object
+      empty_payment_schedule_type:
+        description: Endless periods with payments never made.
+        type: object
+      monthly_payment_schedule_type:
+        description: Monthly periods with payments made at the end of each month.
+        type: object
+    type: object
+  neutron.revenue.PerformanceRequirement:
+    description: >-
+      Specifies a performance criteria that validators must meet to qualify for
+      network rewards.
+    properties:
+      allowed_to_miss:
+        description: >-
+          The fraction of the total performance a validator can miss without
+          affecting their reward.
+
+          Represented as a decimal value in the range [0.0, 1.0], where 1.0
+          corresponds to 100%.
+        type: string
+      required_at_least:
+        description: >-
+          The minimum fraction of the total performance a validator must achieve
+          to be eligible for
+
+          network rewards. Validators falling below this threshold will not
+          receive any rewards.
+
+          Represented as a decimal value in the range [0.0, 1.0], where 1.0
+          corresponds to 100%.
+        type: string
+    type: object
+  neutron.revenue.QueryParamsResponse:
+    description: Response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: Contains all parameters of the module.
+        properties:
+          base_compensation:
+            description: >-
+              The compensation amount measured in USD. USD is used as a quote in
+              price queries to the slinky oracle
+
+              module to determine the price of the reward denom. The base
+              compensation amount is divided
+
+              by the price of the reward denom to determine the final
+              compensation amount.
+            format: uint64
+            type: string
+          blocks_performance_requirement:
+            description: >-
+              Specifies performance requirements for validators in scope of
+              blocks signing and creation. If
+
+              not met, the validator is not rewarded.
+            properties:
+              allowed_to_miss:
+                description: >-
+                  The fraction of the total performance a validator can miss
+                  without affecting their reward.
+
+                  Represented as a decimal value in the range [0.0, 1.0], where
+                  1.0 corresponds to 100%.
+                type: string
+              required_at_least:
+                description: >-
+                  The minimum fraction of the total performance a validator must
+                  achieve to be eligible for
+
+                  network rewards. Validators falling below this threshold will
+                  not receive any rewards.
+
+                  Represented as a decimal value in the range [0.0, 1.0], where
+                  1.0 corresponds to 100%.
+                type: string
+            type: object
+          oracle_votes_performance_requirement:
+            description: >-
+              Specifies performance requirements for validators in scope of the
+              oracle price votes. If not
+
+              met, the validator is not rewarded.
+            properties:
+              allowed_to_miss:
+                description: >-
+                  The fraction of the total performance a validator can miss
+                  without affecting their reward.
+
+                  Represented as a decimal value in the range [0.0, 1.0], where
+                  1.0 corresponds to 100%.
+                type: string
+              required_at_least:
+                description: >-
+                  The minimum fraction of the total performance a validator must
+                  achieve to be eligible for
+
+                  network rewards. Validators falling below this threshold will
+                  not receive any rewards.
+
+                  Represented as a decimal value in the range [0.0, 1.0], where
+                  1.0 corresponds to 100%.
+                type: string
+            type: object
+          payment_schedule_type:
+            description: Indicates the currently active type of payment schedule.
+            properties:
+              block_based_payment_schedule_type:
+                description: >-
+                  Periods defined by a specific number of blocks, with payments
+                  made when the required block
+
+                  count is reached.
+                properties:
+                  blocks_per_period:
+                    description: The number of blocks in a payment period.
+                    format: uint64
+                    type: string
+                type: object
+              empty_payment_schedule_type:
+                description: Endless periods with payments never made.
+                type: object
+              monthly_payment_schedule_type:
+                description: Monthly periods with payments made at the end of each month.
+                type: object
+            type: object
+          twap_window:
+            description: >-
+              The time window, in seconds, used to calculate the TWAP of the
+              reward asset.
+            format: int64
+            type: string
+        type: object
+    type: object
+  neutron.revenue.QueryPaymentInfoResponse:
+    description: Response type for the Query/PaymentInfo RPC method.
+    properties:
+      base_revenue_amount:
+        description: >-
+          The current evaluation of the base revenue amount. This whole amount
+          will be paid to the
+
+          validators with impeccable performance (at least as good as
+          allowed_to_miss). For the others
+
+          this amount will be multiplied by their performance rating.
+        type: string
+      payment_schedule:
+        description: The current payment schedule.
+        properties:
+          block_based_payment_schedule:
+            description: >-
+              Represents a payment schedule where revenue payments are processed
+              after a specified number
+
+              of blocks.
+            properties:
+              blocks_per_period:
+                description: The number of blocks in each payment period.
+                format: uint64
+                type: string
+              current_period_start_block:
+                description: The block height at which the current payment period started.
+                format: uint64
+                type: string
+            type: object
+          empty_payment_schedule:
+            description: Represents a payment schedule where revenue is never distributed.
+            type: object
+          monthly_payment_schedule:
+            description: >-
+              Represents a payment schedule where revenue payments are processed
+              once a month.
+            properties:
+              current_month:
+                description: A numeric representation of the current month.
+                format: uint64
+                type: string
+              current_month_start_block:
+                description: The block height at which the current month started.
+                format: uint64
+                type: string
+            type: object
+        type: object
+      reward_denom:
+        description: The denom used in revenue payments.
+        type: string
+      reward_denom_twap:
+        title: >-
+          The current TWAP of the reward denom in USD. Is calculated as:
+
+          twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) -
+          cumulative_price_at_t(m)) / (t(n) - t(m))
+        type: string
+    type: object
+  neutron.revenue.QueryValidatorStatsResponse:
+    description: Response type for the Query/ValidatorStats RPC method.
+    properties:
+      stats:
+        description: Contains the validator's information.
+        properties:
+          expected_revenue:
+            description: >-
+              Contains expected revenue for the validator
+
+              based on performance rating of ongoing performance window and
+              current TWAP.
+            type: string
+          performance_rating:
+            description: >-
+              The validator's performance rating. Represented as a decimal
+              value.
+            type: string
+          total_produced_blocks_in_period:
+            description: >-
+              The total number of blocks produced by the chain in the current
+              payment period.
+            format: uint64
+            type: string
+          validator_info:
+            description: Contains the validator's information.
+            properties:
+              commited_blocks_in_period:
+                description: >-
+                  The number of blocks the validator has committed in the
+                  current payment period.
+                format: uint64
+                type: string
+              commited_oracle_votes_in_period:
+                description: >-
+                  The number of oracle votes the validator has submitted in the
+                  current payment period.
+                format: uint64
+                type: string
+              in_active_valset_for_blocks_in_period:
+                description: >-
+                  The number of blocks the validator has remained in the active
+                  validator set for in the
+
+                  current payment period.
+                format: uint64
+                type: string
+              val_oper_address:
+                description: The validator's node operator address.
+                type: string
+            type: object
+        type: object
+    type: object
+  neutron.revenue.QueryValidatorsStatsResponse:
+    description: Response type for the Query/ValidatorsStats RPC method.
+    properties:
+      stats:
+        description: Contains the validators' information.
+        items:
+          description: Contains validator's info and their performance rating.
+          properties:
+            expected_revenue:
+              description: >-
+                Contains expected revenue for the validator
+
+                based on performance rating of ongoing performance window and
+                current TWAP.
+              type: string
+            performance_rating:
+              description: >-
+                The validator's performance rating. Represented as a decimal
+                value.
+              type: string
+            total_produced_blocks_in_period:
+              description: >-
+                The total number of blocks produced by the chain in the current
+                payment period.
+              format: uint64
+              type: string
+            validator_info:
+              description: Contains the validator's information.
+              properties:
+                commited_blocks_in_period:
+                  description: >-
+                    The number of blocks the validator has committed in the
+                    current payment period.
+                  format: uint64
+                  type: string
+                commited_oracle_votes_in_period:
+                  description: >-
+                    The number of oracle votes the validator has submitted in
+                    the current payment period.
+                  format: uint64
+                  type: string
+                in_active_valset_for_blocks_in_period:
+                  description: >-
+                    The number of blocks the validator has remained in the
+                    active validator set for in the
+
+                    current payment period.
+                  format: uint64
+                  type: string
+                val_oper_address:
+                  description: The validator's node operator address.
+                  type: string
+              type: object
+          type: object
+        type: array
+    type: object
+  neutron.revenue.ValidatorInfo:
+    description: Contains information about a validator.
+    properties:
+      commited_blocks_in_period:
+        description: >-
+          The number of blocks the validator has committed in the current
+          payment period.
+        format: uint64
+        type: string
+      commited_oracle_votes_in_period:
+        description: >-
+          The number of oracle votes the validator has submitted in the current
+          payment period.
+        format: uint64
+        type: string
+      in_active_valset_for_blocks_in_period:
+        description: >-
+          The number of blocks the validator has remained in the active
+          validator set for in the
+
+          current payment period.
+        format: uint64
+        type: string
+      val_oper_address:
+        description: The validator's node operator address.
+        type: string
+    type: object
+  neutron.revenue.ValidatorStats:
+    description: Contains validator's info and their performance rating.
+    properties:
+      expected_revenue:
+        description: >-
+          Contains expected revenue for the validator
+
+          based on performance rating of ongoing performance window and current
+          TWAP.
+        type: string
+      performance_rating:
+        description: The validator's performance rating. Represented as a decimal value.
+        type: string
+      total_produced_blocks_in_period:
+        description: >-
+          The total number of blocks produced by the chain in the current
+          payment period.
+        format: uint64
+        type: string
+      validator_info:
+        description: Contains the validator's information.
+        properties:
+          commited_blocks_in_period:
+            description: >-
+              The number of blocks the validator has committed in the current
+              payment period.
+            format: uint64
+            type: string
+          commited_oracle_votes_in_period:
+            description: >-
+              The number of oracle votes the validator has submitted in the
+              current payment period.
+            format: uint64
+            type: string
+          in_active_valset_for_blocks_in_period:
+            description: >-
+              The number of blocks the validator has remained in the active
+              validator set for in the
+
+              current payment period.
+            format: uint64
+            type: string
+          val_oper_address:
+            description: The validator's node operator address.
+            type: string
         type: object
     type: object
   osmosis.tokenfactory.Params:
@@ -43503,6 +44162,13 @@ paths:
                   min_learning_rate:
                     description: MinLearningRate is the lower bound for the learning rate.
                     type: string
+                  send_tip_to_proposer:
+                    description: >-
+                      SendTipToProposer is a boolean that determines whether the
+                      tip is sent to a
+
+                      proposer or to a module account.
+                    type: boolean
                   window:
                     description: >-
                       Window defines the window size for calculating an adaptive
@@ -48491,6 +49157,80 @@ paths:
       summary: TotalBurnedNeutronsAmount queries total amount of burned neutron fees.
       tags:
         - Query
+  /neutron/harpoon/subscribed_contracts:
+    get:
+      operationId: SubscribedContracts
+      parameters:
+        - default: HOOK_TYPE_UNSPECIFIED
+          description: >-
+            The response will include only contract addresses for this hook
+            type.
+
+             - HOOK_TYPE_AFTER_VALIDATOR_CREATED: Triggered after validator is created
+             - HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED: Triggered before validator is modified
+             - HOOK_TYPE_AFTER_VALIDATOR_REMOVED: Triggered after validator is removed
+             - HOOK_TYPE_AFTER_VALIDATOR_BONDED: Triggered after validator is bonded
+             - HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING: Triggered after validator begins unbonding
+             - HOOK_TYPE_BEFORE_DELEGATION_CREATED: Triggered before delegation is created
+             - HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED: Triggered before delegation's shares are modified
+             - HOOK_TYPE_BEFORE_DELEGATION_REMOVED: Triggered before delegation is removed
+             - HOOK_TYPE_AFTER_DELEGATION_MODIFIED: Triggered after delegation is modified
+             - HOOK_TYPE_BEFORE_VALIDATOR_SLASHED: Triggered before validator is slashed
+             - HOOK_TYPE_AFTER_UNBONDING_INITIATED: Triggered after unbonding is initiated
+          enum:
+            - HOOK_TYPE_UNSPECIFIED
+            - HOOK_TYPE_AFTER_VALIDATOR_CREATED
+            - HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED
+            - HOOK_TYPE_AFTER_VALIDATOR_REMOVED
+            - HOOK_TYPE_AFTER_VALIDATOR_BONDED
+            - HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING
+            - HOOK_TYPE_BEFORE_DELEGATION_CREATED
+            - HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED
+            - HOOK_TYPE_BEFORE_DELEGATION_REMOVED
+            - HOOK_TYPE_AFTER_DELEGATION_MODIFIED
+            - HOOK_TYPE_BEFORE_VALIDATOR_SLASHED
+            - HOOK_TYPE_AFTER_UNBONDING_INITIATED
+          in: query
+          name: hook_type
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: Response type for the Query/SubscribedContracts RPC method.
+            properties:
+              contract_addresses:
+                description: List of contract addresses subscribed to a specific hook.
+                items:
+                  type: string
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Retrieves contracts subscribed to a specific hook type.
+      tags:
+        - Query
   /neutron/ibc-rate-limit/v1beta1/params:
     get:
       operationId: Params
@@ -49566,6 +50306,416 @@ paths:
               message:
                 type: string
             type: object
+      tags:
+        - Query
+  /neutron/revenue/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: Response type for the Query/Params RPC method.
+            properties:
+              params:
+                description: Contains all parameters of the module.
+                properties:
+                  base_compensation:
+                    description: >-
+                      The compensation amount measured in USD. USD is used as a
+                      quote in price queries to the slinky oracle
+
+                      module to determine the price of the reward denom. The
+                      base compensation amount is divided
+
+                      by the price of the reward denom to determine the final
+                      compensation amount.
+                    format: uint64
+                    type: string
+                  blocks_performance_requirement:
+                    description: >-
+                      Specifies performance requirements for validators in scope
+                      of blocks signing and creation. If
+
+                      not met, the validator is not rewarded.
+                    properties:
+                      allowed_to_miss:
+                        description: >-
+                          The fraction of the total performance a validator can
+                          miss without affecting their reward.
+
+                          Represented as a decimal value in the range [0.0,
+                          1.0], where 1.0 corresponds to 100%.
+                        type: string
+                      required_at_least:
+                        description: >-
+                          The minimum fraction of the total performance a
+                          validator must achieve to be eligible for
+
+                          network rewards. Validators falling below this
+                          threshold will not receive any rewards.
+
+                          Represented as a decimal value in the range [0.0,
+                          1.0], where 1.0 corresponds to 100%.
+                        type: string
+                    type: object
+                  oracle_votes_performance_requirement:
+                    description: >-
+                      Specifies performance requirements for validators in scope
+                      of the oracle price votes. If not
+
+                      met, the validator is not rewarded.
+                    properties:
+                      allowed_to_miss:
+                        description: >-
+                          The fraction of the total performance a validator can
+                          miss without affecting their reward.
+
+                          Represented as a decimal value in the range [0.0,
+                          1.0], where 1.0 corresponds to 100%.
+                        type: string
+                      required_at_least:
+                        description: >-
+                          The minimum fraction of the total performance a
+                          validator must achieve to be eligible for
+
+                          network rewards. Validators falling below this
+                          threshold will not receive any rewards.
+
+                          Represented as a decimal value in the range [0.0,
+                          1.0], where 1.0 corresponds to 100%.
+                        type: string
+                    type: object
+                  payment_schedule_type:
+                    description: Indicates the currently active type of payment schedule.
+                    properties:
+                      block_based_payment_schedule_type:
+                        description: >-
+                          Periods defined by a specific number of blocks, with
+                          payments made when the required block
+
+                          count is reached.
+                        properties:
+                          blocks_per_period:
+                            description: The number of blocks in a payment period.
+                            format: uint64
+                            type: string
+                        type: object
+                      empty_payment_schedule_type:
+                        description: Endless periods with payments never made.
+                        type: object
+                      monthly_payment_schedule_type:
+                        description: >-
+                          Monthly periods with payments made at the end of each
+                          month.
+                        type: object
+                    type: object
+                  twap_window:
+                    description: >-
+                      The time window, in seconds, used to calculate the TWAP of
+                      the reward asset.
+                    format: int64
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Fetches the current parameters of the revenue module.
+      tags:
+        - Query
+  /neutron/revenue/payment_info:
+    get:
+      operationId: PaymentInfo
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: Response type for the Query/PaymentInfo RPC method.
+            properties:
+              base_revenue_amount:
+                description: >-
+                  The current evaluation of the base revenue amount. This whole
+                  amount will be paid to the
+
+                  validators with impeccable performance (at least as good as
+                  allowed_to_miss). For the others
+
+                  this amount will be multiplied by their performance rating.
+                type: string
+              payment_schedule:
+                description: The current payment schedule.
+                properties:
+                  block_based_payment_schedule:
+                    description: >-
+                      Represents a payment schedule where revenue payments are
+                      processed after a specified number
+
+                      of blocks.
+                    properties:
+                      blocks_per_period:
+                        description: The number of blocks in each payment period.
+                        format: uint64
+                        type: string
+                      current_period_start_block:
+                        description: >-
+                          The block height at which the current payment period
+                          started.
+                        format: uint64
+                        type: string
+                    type: object
+                  empty_payment_schedule:
+                    description: >-
+                      Represents a payment schedule where revenue is never
+                      distributed.
+                    type: object
+                  monthly_payment_schedule:
+                    description: >-
+                      Represents a payment schedule where revenue payments are
+                      processed once a month.
+                    properties:
+                      current_month:
+                        description: A numeric representation of the current month.
+                        format: uint64
+                        type: string
+                      current_month_start_block:
+                        description: The block height at which the current month started.
+                        format: uint64
+                        type: string
+                    type: object
+                type: object
+              reward_denom:
+                description: The denom used in revenue payments.
+                type: string
+              reward_denom_twap:
+                title: >-
+                  The current TWAP of the reward denom in USD. Is calculated as:
+
+                  twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) -
+                  cumulative_price_at_t(m)) / (t(n) - t(m))
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Fetches the current payment info of the module such as payment schedule
+        and revenue details.
+      tags:
+        - Query
+  /neutron/revenue/validator_stats:
+    get:
+      operationId: ValidatorStats
+      parameters:
+        - description: The validator's node operator address.
+          in: query
+          name: val_oper_address
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: Response type for the Query/ValidatorStats RPC method.
+            properties:
+              stats:
+                description: Contains the validator's information.
+                properties:
+                  expected_revenue:
+                    description: >-
+                      Contains expected revenue for the validator
+
+                      based on performance rating of ongoing performance window
+                      and current TWAP.
+                    type: string
+                  performance_rating:
+                    description: >-
+                      The validator's performance rating. Represented as a
+                      decimal value.
+                    type: string
+                  total_produced_blocks_in_period:
+                    description: >-
+                      The total number of blocks produced by the chain in the
+                      current payment period.
+                    format: uint64
+                    type: string
+                  validator_info:
+                    description: Contains the validator's information.
+                    properties:
+                      commited_blocks_in_period:
+                        description: >-
+                          The number of blocks the validator has committed in
+                          the current payment period.
+                        format: uint64
+                        type: string
+                      commited_oracle_votes_in_period:
+                        description: >-
+                          The number of oracle votes the validator has submitted
+                          in the current payment period.
+                        format: uint64
+                        type: string
+                      in_active_valset_for_blocks_in_period:
+                        description: >-
+                          The number of blocks the validator has remained in the
+                          active validator set for in the
+
+                          current payment period.
+                        format: uint64
+                        type: string
+                      val_oper_address:
+                        description: The validator's node operator address.
+                        type: string
+                    type: object
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Fetches a given validator's stats from the revenue module's state.
+      tags:
+        - Query
+  /neutron/revenue/validators_stats:
+    get:
+      operationId: ValidatorsStats
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: Response type for the Query/ValidatorsStats RPC method.
+            properties:
+              stats:
+                description: Contains the validators' information.
+                items:
+                  description: Contains validator's info and their performance rating.
+                  properties:
+                    expected_revenue:
+                      description: >-
+                        Contains expected revenue for the validator
+
+                        based on performance rating of ongoing performance
+                        window and current TWAP.
+                      type: string
+                    performance_rating:
+                      description: >-
+                        The validator's performance rating. Represented as a
+                        decimal value.
+                      type: string
+                    total_produced_blocks_in_period:
+                      description: >-
+                        The total number of blocks produced by the chain in the
+                        current payment period.
+                      format: uint64
+                      type: string
+                    validator_info:
+                      description: Contains the validator's information.
+                      properties:
+                        commited_blocks_in_period:
+                          description: >-
+                            The number of blocks the validator has committed in
+                            the current payment period.
+                          format: uint64
+                          type: string
+                        commited_oracle_votes_in_period:
+                          description: >-
+                            The number of oracle votes the validator has
+                            submitted in the current payment period.
+                          format: uint64
+                          type: string
+                        in_active_valset_for_blocks_in_period:
+                          description: >-
+                            The number of blocks the validator has remained in
+                            the active validator set for in the
+
+                            current payment period.
+                          format: uint64
+                          type: string
+                        val_oper_address:
+                          description: The validator's node operator address.
+                          type: string
+                      type: object
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Fetches all validators' stats from the revenue module's state.
       tags:
         - Query
   /osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata:

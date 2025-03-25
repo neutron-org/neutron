@@ -10,7 +10,6 @@ mkdir -p tmp_deps
 declare -a deps=("github.com/cosmos/cosmos-sdk"
                 "github.com/CosmWasm/wasmd"
                 "github.com/cosmos/admin-module/v2"
-                "github.com/cosmos/interchain-security/v5"
                 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8"
                 "github.com/skip-mev/feemarket"
                 "github.com/skip-mev/slinky"

@@ -53,11 +53,11 @@ message ValidatorInfo {
 
 // Represents a payment schedule where revenue payments are processed once a month.
 message MonthlyPaymentSchedule {
-  // A numeric representation of the current month.
-  uint64 current_month = 1;
-
   // The block height at which the current month started.
-  uint64 current_month_start_block = 2;
+  uint64 current_month_start_block = 1;
+
+  // The timestamp of the block at which the current month started.
+  uint64 current_month_start_block_ts = 2;
 }
 
 // Represents a payment schedule where revenue payments are processed after a specified number

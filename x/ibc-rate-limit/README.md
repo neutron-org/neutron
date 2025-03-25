@@ -153,7 +153,7 @@ Something to keep in mind with all of the code, is that we have to reason separa
 
 TODO: Spend more time on sudo messages in the following description. We need to better describe how we map the quota concepts onto the code.
 Need to describe how we get the quota beginning balance, and that its different for sends and receives.
-Explain intracacies of tracking that a timeout and/or ErrorAck must appear from the same quota, else we ignore its update to the quotas.
+Explain intricacies of tracking that a timeout and/or ErrorAck must appear from the same quota, else we ignore its update to the quotas.
 
 
 The tracking contract uses the following concepts
@@ -277,7 +277,7 @@ For more comprehensive tests we can also:
 * Add a third chain C and make sure everything works properly for C tokens that have been transferred to A and to B
 * Test that the contracts gov address can reset rate limits if the quota has been hit
 * Test the queries for getting information about the state of the quotas 
-* Test that rate limit symmetries hold (i.e.: sending the a token through a rate-limited channel and then sending back 
+* Test that rate limit symmetries hold (i.e.: sending a token through a rate-limited channel and then sending back 
   reduces the rate limits by the same amount that it was increased during the first send)
 * Ensure that the channels between the test chains have different names (A->B="channel-0", B->A="channel-1", for example)
 

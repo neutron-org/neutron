@@ -40,7 +40,7 @@ Neutron uses the following disclosure process:
 - Patches are prepared for eligible releases in private repositories.
 - We notify the community that a security release is coming, to give users time to prepare their systems for the update. Notifications can include Discord messages, tweets, and emails to partners and validators.
 - 24 hours following this notification, the fixes are applied publicly and new releases are issued.
-- Once releases are available for Neutron, we notify the community, again, through the same channels as above. We also publish a Security Advisory on Github and publish the CVE, as long as neither the Security Advisory nor the CVE include any information on how to exploit these vulnerabilities beyond what information is already available in the patch itself.
+- Once releases are available for Neutron, we notify the community, again, through the same channels as above. We also publish a Security Advisory on Github and publish the CVE, as long as neither the Security Advisory nor the CVE includes any information on how to exploit these vulnerabilities beyond what information is already available in the patch itself.
 - Once the community is notified, we will pay out any relevant bug bounties to submitters.
 - One week after the releases go out, we will publish a post with further details on the vulnerability as well as our response to it.
 

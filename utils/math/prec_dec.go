@@ -489,7 +489,7 @@ func (d PrecDec) ApproxRoot(root uint64) (guess PrecDec, err error) {
 	return guess, nil
 }
 
-// Power returns a the result of raising to a positive integer power
+// Power returns the result of raising to a positive integer power
 func (d PrecDec) Power(power uint64) PrecDec {
 	res := PrecDec{new(big.Int).Set(d.i)}
 	return res.PowerMut(power)
@@ -718,7 +718,7 @@ func (d PrecDec) TruncatePrecDec() PrecDec {
 	return NewPrecDecFromBigInt(chopPrecisionAndTruncateNonMutative(d.i))
 }
 
-// Ceil returns the smallest interger value (as a decimal) that is greater than
+// Ceil returns the smallest integer value (as a decimal) that is greater than
 // or equal to the given decimal.
 func (d PrecDec) Ceil() PrecDec {
 	tmp := new(big.Int).Set(d.i)
