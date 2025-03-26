@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"path/filepath"
 	"time"
 
 	"cosmossdk.io/math"
@@ -48,6 +47,7 @@ var Vals embed.FS
 
 type StakingValidator struct {
 	Valoper         string         `json:"valoper"`
+	Moniker         string         `json:"moniker,omitempty"`
 	PK              ed25519.PubKey `json:"pk"`
 	Identity        string         `json:"identity,omitempty"`
 	Website         string         `json:"website,omitempty"`
@@ -74,7 +74,7 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 		if err != nil {
 			return err
 		}
-		msg := StakingValMsg(filepath.Base(path), SovereignSelfStake, skval.Valoper, skval.PK, skval.Identity, skval.Website, skval.SecurityContact, skval.Details)
+		msg := StakingValMsg(skval.Moniker, SovereignSelfStake, skval.Valoper, skval.PK, skval.Identity, skval.Website, skval.SecurityContact, skval.Details)
 		msgs = append(msgs, msg)
 
 		return nil
