@@ -49,14 +49,11 @@ const (
 	StakeWithValenceAmount = 240_000_000_000_000                         // 90% of TotalToStakeAmount
 	StakeWithDropAmount    = TotalToStakeAmount - StakeWithValenceAmount // 10% of TotalToStakeAmount
 
-	ValenceStaker = "neutron1yvxarc3r8agzzky6g4zdxhk5xc59j7rdw2pugjarwskt8jmpkgus9jqvwk"
+	ValenceStaker = "neutron1u3fsk7ycfmp8dpxdtxyrc8lgpqjk0w5xc82vqn9hdxnrru8jt3ssj7majv"
 
-	UsdcLpReceiver = "neutron1l3pk6xsc8p74gwrduxj5qp7djqyx9j5uweufrw5kp8d37xc3hjqs53euye"
+	UsdcLpReceiver = "neutron12eawpnrularsa84fr5yz6jj4w9tq2jj23fck7ye7m0vxkl9elu4qy7rshm"
 	// USDC-NTRN
 	UsdcLpDenom = "factory/neutron145z3nj7yqft2vpugr5a5p7jsnagvms90tvtej45g4s0xkqalhy7sj20vgz/astroport/share" // TODO: populate when known
-
-	dntrnNtrnLiqAmount   = int64(25_000_000_000_000)
-	dntrnNtrnLiqProvider = "neutron1dmhxfvggstv2k9xd4rg2nmvsdwesh9mj20dl70lmcala93zmfnfsmgls2c"
 
 	RewardContract = 6_000_000_000_000
 	RevenueModule  = 6_000_000_000_000

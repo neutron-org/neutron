@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"io/fs"
 	"path/filepath"
 	"time"
@@ -15,7 +16,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -122,22 +122,24 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 
 	// Add all ICS validators to staking module
 	for i, v := range consumerValidators {
+		valoperAddr := Valopers[i]
+		if err != nil {
+			return err
+		}
+		_, addr, err := bech32.DecodeAndConvert(valoperAddr)
+		if err != nil {
+			return err
+		}
+
 		// funding ICS valopers from DAO to stake a coin
-		err := bk.SendCoins(ctx, DAOaddr, v.GetAddress(), sdk.NewCoins(sdk.Coin{
+		err = bk.SendCoins(ctx, DAOaddr, addr, sdk.NewCoins(sdk.Coin{
 			Denom:  params.DefaultDenom,
 			Amount: math.NewInt(ICSSelfStake),
 		}))
 		if err != nil {
 			return err
 		}
-		key := ed25519.GenPrivKey()
-		pub := key.PubKey()
-		addr := sdk.AccAddress(pub.Address())
 
-		valoperAddr, err := bech32.ConvertAndEncode("neutronvaloper", addr)
-		if err != nil {
-			return err
-		}
 		_, err = srv.CreateValidator(ctx, &types.MsgCreateValidator{
 			Description: types.Description{
 				Moniker:         fmt.Sprintf("ics %d", i),
@@ -164,12 +166,12 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 			return err
 		}
 
-		err = sk.SetLastValidatorPower(ctx, v.GetAddress(), 1)
+		err = sk.SetLastValidatorPower(ctx, addr, 1)
 		if err != nil {
 			return err
 		}
 
-		savedVal, err := sk.GetValidator(ctx, v.GetAddress())
+		savedVal, err := sk.GetValidator(ctx, addr)
 		if err != nil {
 			return err
 		}

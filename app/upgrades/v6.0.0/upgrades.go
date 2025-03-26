@@ -29,6 +29,14 @@ import (
 	"github.com/neutron-org/neutron/v6/x/harpoon/types"
 )
 
+var Valopers = []string{
+	"neutronvaloper1pcca7p0n4ghzgyyy8ccg4zax35wzqhdje3f2fx",
+	"neutronvaloper1rc357mf6kmdh9ecdngnkckhw4usgrtnwqnwz0e",
+	"neutronvaloper15xm63t0tjzd5synhf7jlxajkzvk6qsk9tjp0sa",
+	"neutronvaloper15fv4jxqgfctgsgcd4w3j5plzpd7glepr3y84e5",
+	"neutronvaloper1vual9khy5djv9aktha9kxxlthqcvzlx92agpv4",
+}
+
 /*
 Test setup instructions - https://www.notion.so/hadron/deICS-testnet-setup-19885d6b9b10802fa08bd2b5effa06ae#19885d6b9b1080d79f3beefba2231c75
 */
@@ -98,11 +106,6 @@ func CreateUpgradeHandler(
 		err = FundLiqUSDCLPProvider(ctx, keepers.BankKeeper)
 		if err != nil {
 			return vm, fmt.Errorf("FundLiqUSDCLPProvider failed: %w", err)
-		}
-
-		err = FundDNTRNLiqProvider(ctx, keepers.BankKeeper)
-		if err != nil {
-			return vm, fmt.Errorf("FundDNTRNLiqProvider failed: %w", err)
 		}
 
 		err = PinNewCodes(ctx, keepers.WasmKeeper)
@@ -206,11 +209,11 @@ func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Ke
 		PaymentScheduleType: &revenuetypes.PaymentScheduleType{
 			PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
 				BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{
-					BlocksPerPeriod: 600,
+					BlocksPerPeriod: 200,
 				},
 			},
 		},
-		TwapWindow: 900,
+		TwapWindow: 200,
 	}
 	srv := revenuekeeper.NewMsgServerImpl(&rk)
 	_, err := srv.UpdateParams(ctx, &revenuetypes.MsgUpdateParams{
@@ -300,21 +303,6 @@ func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
 		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
 		sdk.MustAccAddressFromBech32(UsdcLpReceiver),
 		sdk.NewCoins(*daoBalanceBefore.Balance),
-	)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func FundDNTRNLiqProvider(ctx context.Context, bk bankkeeper.Keeper) error {
-	amount := math.NewInt(dntrnNtrnLiqAmount)
-
-	err := bk.SendCoins(
-		ctx,
-		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(dntrnNtrnLiqProvider),
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, amount)),
 	)
 	if err != nil {
 		return err

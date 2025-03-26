@@ -121,15 +121,12 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	// CCV SET
 	// create a few ccv validators in the keeper
-	const ccvNumber = 10
+	const ccvNumber = 5
 	ccvVals := map[string]types3.PubKey{}
 	updates := []abci.ValidatorUpdate{}
 	for i := 0; i < ccvNumber; i++ {
 		ccvAddr := keeper.RandomAccountAddress(t)
-		addr, err := bech32.ConvertAndEncode("neutronvaloper", ccvAddr)
-		require.NoError(t, err)
 		pk := ed25519.GenPrivKey().PubKey()
-		ccvVals[addr] = pk
 		anyPK, err := types2.NewAnyWithValue(pk)
 		require.NoError(t, err)
 		app.ConsumerKeeper.SetCCValidator(ctx, consumertypes.CrossChainValidator{
@@ -145,6 +142,12 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 			Power:  100,
 		}
 		updates = append(updates, valSetUpdate)
+	}
+	ccvvals := app.ConsumerKeeper.GetAllCCValidator(ctx)
+	for i, ccvval := range ccvvals {
+		cpk, err := ccvval.ConsPubKey()
+		require.NoError(t, err)
+		ccvVals[v600.Valopers[i]] = cpk
 	}
 
 	res, err := suite.ChainA.App.FinalizeBlock(&abci.RequestFinalizeBlock{
@@ -183,7 +186,9 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	require.Equal(t, len(newVals), len(vals)+len(expectedVals)+ccvNumber)
 	countStaking := 0
 	countCCV := 0
+	//fmt.Println(ccvVals)
 	for _, newVal := range newVals {
+		//fmt.Println(newVal.OperatorAddress)
 		if _, ok := expectedVals[newVal.OperatorAddress]; ok {
 			countStaking++
 			require.Equal(t, newVal.Status, types.Unbonded)
@@ -222,7 +227,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	resp, err := app.RevenueKeeper.GetParams(ctx)
 	require.NoError(t, err)
-	require.Equal(t, resp.TwapWindow, int64(900))
+	require.Equal(t, resp.TwapWindow, int64(200))
 
 	// TEST STAKING ENDBLOCKER and valset update
 	// the tricky part is - we have valset of 4 initially, and we must to modify staking params to execute staking endblocker
