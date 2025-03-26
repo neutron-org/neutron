@@ -145,11 +145,6 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 			commonAddress = expVals[mapKeys(expVals)[0]]
 			pk = &commonAddress
 		}
-		if i == 1 {
-			addr = "neutronvaloper15x2ml0qepktnd6egk4l0rtl0z8fpfxktmzww59" // first valoper map key
-			_, ccvAddr, err = bech32.DecodeAndConvert(addr)
-			require.NoError(t, err)
-		}
 		ccvVals[addr] = pk
 		anyPK, err := types2.NewAnyWithValue(pk)
 		require.NoError(t, err)
@@ -213,7 +208,8 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 			countStaking++
 			require.Equal(t, newVal.Status, types.Unbonded)
 			require.Equal(t, newVal.Tokens, math.NewInt(v600.SovereignSelfStake))
-		} else if _, ok := ccvVals[newVal.OperatorAddress]; ok {
+		}
+		if _, ok := ccvVals[newVal.OperatorAddress]; ok {
 			countCCV++
 			require.Equal(t, newVal.Status, types.Bonded)
 			require.Equal(t, newVal.Tokens, math.NewInt(v600.ICSSelfStake))
@@ -223,8 +219,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	require.Equal(t, countStaking, len(expectedVals))
 
 	// all ccv vals in the set, except the one we created as common
-	// -1 because of shared valoper
-	require.Equal(t, countCCV, len(ccvVals)-commonValidators-1)
+	require.Equal(t, countCCV, len(ccvVals)-commonValidators)
 
 	bondedBalanceAfter, err := app.BankKeeper.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: authtypes.NewModuleAddress(types.BondedPoolName).String(),
