@@ -108,6 +108,14 @@ func ExpectedVals() (map[string]ed25519.PubKey, error) {
 	return vals, err
 }
 
+func mapKeys(m map[string]ed25519.PubKey) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // Basic test to catch obvious errors
 // A more comprehensive and complex test is implemented as TS scripts.
 func (suite *UpgradeTestSuite) TestUpgrade() {
@@ -122,6 +130,8 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	// CCV SET
 	// create a few ccv validators in the keeper
 	const ccvNumber = 10
+	const commonValidators = 1
+	commonAddress := ed25519.PubKey{}
 	ccvVals := map[string]types3.PubKey{}
 	updates := []abci.ValidatorUpdate{}
 	for i := 0; i < ccvNumber; i++ {
@@ -129,6 +139,12 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 		addr, err := bech32.ConvertAndEncode("neutronvaloper", ccvAddr)
 		require.NoError(t, err)
 		pk := ed25519.GenPrivKey().PubKey()
+		if i == 0 {
+			// one validator uses the same for Sovereign
+			expVals, _ := ExpectedVals()
+			commonAddress = expVals[mapKeys(expVals)[0]]
+			pk = &commonAddress
+		}
 		ccvVals[addr] = pk
 		anyPK, err := types2.NewAnyWithValue(pk)
 		require.NoError(t, err)
@@ -180,7 +196,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	newVals, err := app.StakingKeeper.GetAllValidators(ctx)
 	require.NoError(t, err)
-	require.Equal(t, len(newVals), len(vals)+len(expectedVals)+ccvNumber)
+	require.Equal(t, len(newVals), len(vals)+len(expectedVals)+ccvNumber-commonValidators)
 	countStaking := 0
 	countCCV := 0
 	for _, newVal := range newVals {
@@ -198,8 +214,8 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	// all expected new vals in the set
 	require.Equal(t, countStaking, len(expectedVals))
 
-	// all ccv vals in the set
-	require.Equal(t, countCCV, len(ccvVals))
+	// all ccv vals in the set, except the one we created as common
+	require.Equal(t, countCCV, len(ccvVals)-commonValidators)
 
 	bondedBalanceAfter, err := app.BankKeeper.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: authtypes.NewModuleAddress(types.BondedPoolName).String(),
@@ -207,7 +223,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	})
 	require.NoError(t, err)
 	// ICS set adds stake to bonded pool
-	require.Equal(t, bondedBalanceAfter.Balance.Amount.Sub(initialBonded.Balance.Amount), math.NewInt(v600.ICSSelfStake).MulRaw(int64(ccvNumber)))
+	require.Equal(t, bondedBalanceAfter.Balance.Amount.Sub(initialBonded.Balance.Amount), math.NewInt(v600.ICSSelfStake).MulRaw(int64(ccvNumber-commonValidators)))
 
 	nonbondedBalanceAfter, err := app.BankKeeper.Balance(ctx, &banktypes.QueryBalanceRequest{
 		Address: authtypes.NewModuleAddress(types.NotBondedPoolName).String(),
@@ -248,7 +264,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	})
 	require.NoError(t, err)
 	// ICS self stake moves to bonded pool
-	require.Equal(t, nonbondedBalanceAfter.Balance.Amount, math.NewInt(v600.ICSSelfStake).MulRaw(int64(ccvNumber)))
+	require.Equal(t, nonbondedBalanceAfter.Balance.Amount, math.NewInt(v600.ICSSelfStake).MulRaw(int64(ccvNumber-commonValidators)))
 
 	// check valset at height =
 	// `upgrade + 1` (ChainA.Vals) only contains initial staking + ccv
@@ -263,12 +279,22 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 		require.True(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
 	}
 	for _, pk := range expectedVals {
-		require.False(t, suite.ChainA.Vals.HasAddress(pk.Address()))
-		require.True(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
+		if pk.Equals(&commonAddress) {
+			require.True(t, suite.ChainA.Vals.HasAddress(pk.Address()))
+			require.True(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
+		} else {
+			require.False(t, suite.ChainA.Vals.HasAddress(pk.Address()))
+			require.True(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
+		}
 	}
 	for _, pk := range ccvVals {
-		require.True(t, suite.ChainA.Vals.HasAddress(pk.Address()))
-		require.False(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
+		if pk.Equals(&commonAddress) {
+			require.True(t, suite.ChainA.Vals.HasAddress(pk.Address()))
+			require.True(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
+		} else {
+			require.True(t, suite.ChainA.Vals.HasAddress(pk.Address()))
+			require.False(t, suite.ChainA.NextVals.HasAddress(pk.Address()))
+		}
 	}
 
 	// dynamicfees
