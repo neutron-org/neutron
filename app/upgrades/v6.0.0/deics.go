@@ -148,12 +148,15 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 		}
 
 		_, err = sk.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(consPubKey))
-		if !errors.Is(err, types.ErrNoValidatorFound) {
+		if err == nil {
 			// The validator is already created during the configuring of the sovereign/staking validator group.
 			// This is possible if an ICS validator moves to a sovereign group and decides to use the same pubkey after the transition.
 			skippedValidators++
 			continue
+		} else if !errors.Is(err, types.ErrNoValidatorFound) {
+			return err
 		}
+
 		_, err = srv.CreateValidator(ctx, &types.MsgCreateValidator{
 			Description: types.Description{
 				Moniker:         fmt.Sprintf("ics %d", i),
