@@ -3,8 +3,9 @@ package v600
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/crypto/codec"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"io/fs"
 	"path/filepath"
 	"time"
@@ -13,7 +14,6 @@ import (
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -46,15 +46,17 @@ const (
 var Vals embed.FS
 
 type StakingValidator struct {
-	Valoper         string         `json:"valoper"`
-	PK              ed25519.PubKey `json:"pk"`
-	Identity        string         `json:"identity,omitempty"`
-	Website         string         `json:"website,omitempty"`
-	SecurityContact string         `json:"security_contact,omitempty"`
-	Details         string         `json:"details,omitempty"`
+	Valoper         string             `json:"valoper"`
+	PK              cryptotypes.PubKey `json:"pk"`
+	Identity        string             `json:"identity,omitempty"`
+	Website         string             `json:"website,omitempty"`
+	SecurityContact string             `json:"security_contact,omitempty"`
+	Details         string             `json:"details,omitempty"`
 }
 
 func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
+	enc := params.MakeEncodingConfig()
+	codec.RegisterCrypto(enc.Amino)
 	msgs := make([]types.MsgCreateValidator, 0)
 	errWalk := fs.WalkDir(Vals, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -69,7 +71,7 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 			return err
 		}
 		skval := StakingValidator{}
-		err = json.Unmarshal(data, &skval)
+		err = enc.Amino.UnmarshalJSON(data, &skval)
 		if err != nil {
 			return err
 		}
@@ -81,8 +83,8 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 	return msgs, errWalk
 }
 
-func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKey, identity, website, securityContact, details string) types.MsgCreateValidator {
-	pubkey, err := codectypes.NewAnyWithValue(&pk)
+func StakingValMsg(moniker string, stake int64, valoper string, pk cryptotypes.PubKey, identity, website, securityContact, details string) types.MsgCreateValidator {
+	pubkey, err := codectypes.NewAnyWithValue(pk)
 	if err != nil {
 		panic(err)
 	}

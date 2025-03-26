@@ -2,8 +2,8 @@ package v600_test
 
 import (
 	"embed"
-	"encoding/json"
 	"fmt"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"io/fs"
 	"testing"
 
@@ -83,8 +83,10 @@ func (suite *UpgradeTestSuite) TopUpWallet(ctx sdk.Context, sender, contractAddr
 	suite.Require().NoError(err)
 }
 
-func ExpectedVals() (map[string]ed25519.PubKey, error) {
-	vals := make(map[string]ed25519.PubKey)
+func ExpectedVals() (map[string]cryptotypes.PubKey, error) {
+	enc := params.MakeEncodingConfig()
+	codec.RegisterCrypto(enc.Amino)
+	vals := make(map[string]cryptotypes.PubKey)
 	err := fs.WalkDir(Vals, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
@@ -98,7 +100,7 @@ func ExpectedVals() (map[string]ed25519.PubKey, error) {
 			return err
 		}
 		skval := v600.StakingValidator{}
-		err = json.Unmarshal(data, &skval)
+		err = enc.Amino.UnmarshalJSON(data, &skval)
 		if err != nil {
 			return err
 		}
