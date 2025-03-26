@@ -130,8 +130,11 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 		if err != nil {
 			return err
 		}
+		key := ed25519.GenPrivKey()
+		pub := key.PubKey()
+		addr := sdk.AccAddress(pub.Address())
 
-		valoperAddr, err := bech32.ConvertAndEncode("neutronvaloper", v.GetAddress())
+		valoperAddr, err := bech32.ConvertAndEncode("neutronvaloper", addr)
 		if err != nil {
 			return err
 		}
