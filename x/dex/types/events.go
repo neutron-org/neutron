@@ -20,6 +20,8 @@ const (
 	AttributeTokenIn              = "TokenIn"
 	AttributeTokenOut             = "TokenOut"
 	AttributeAmountIn             = "AmountIn"
+	AttributeAmountIn0            = "AmountInTokenZero"
+	AttributeAmountIn1            = "AmountInTokenOne"
 	AttributeAmountOut            = "AmountOut"
 	AttributeSwapAmountIn         = "SwapAmountIn"
 	AttributeSwapAmountOut        = "SwapAmountOut"
@@ -86,6 +88,8 @@ func CreateDepositEvent(
 	fee uint64,
 	depositAmountReserve0 math.Int,
 	depositAmountReserve1 math.Int,
+	amountIn0 math.Int,
+	amountIn1 math.Int,
 	sharesMinted math.Int,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -100,6 +104,8 @@ func CreateDepositEvent(
 		sdk.NewAttribute(AttributeReserves0Deposited, depositAmountReserve0.String()),
 		sdk.NewAttribute(AttributeReserves1Deposited, depositAmountReserve1.String()),
 		sdk.NewAttribute(AttributeSharesMinted, sharesMinted.String()),
+		sdk.NewAttribute(AttributeAmountIn0, amountIn0.String()),
+		sdk.NewAttribute(AttributeAmountIn1, amountIn1.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
