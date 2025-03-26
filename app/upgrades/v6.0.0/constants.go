@@ -45,18 +45,17 @@ const (
 
 const (
 	// Constants defining the parameters of the assets redistribution process held by DAO.
-	TotalToStakeAmount     = int64(250_000_000_000_000)                  // untrn
-	StakeWithValenceAmount = 240_000_000_000_000                         // 90% of TotalToStakeAmount
-	StakeWithDropAmount    = TotalToStakeAmount - StakeWithValenceAmount // 10% of TotalToStakeAmount
+	StakeWithValenceAmount = 202_500_000_000_000
+	StakeWithDropAmount    = 47_500_000_000_000
 
 	ValenceStaker = "neutron1u3fsk7ycfmp8dpxdtxyrc8lgpqjk0w5xc82vqn9hdxnrru8jt3ssj7majv"
 
 	UsdcLpReceiver = "neutron12eawpnrularsa84fr5yz6jj4w9tq2jj23fck7ye7m0vxkl9elu4qy7rshm"
 	// USDC-NTRN
-	UsdcLpDenom = "factory/neutron145z3nj7yqft2vpugr5a5p7jsnagvms90tvtej45g4s0xkqalhy7sj20vgz/astroport/share" // TODO: populate when known
+	UsdcLpDenom = "factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share" // TODO: populate when known
 
 	RewardContract = 6_000_000_000_000
-	RevenueModule  = 6_000_000_000_000
+	RevenueModule  = 700_000_000_000
 )
 
 var Upgrade = upgrades.Upgrade{
