@@ -35,6 +35,10 @@ var Valopers = []string{
 	"neutronvaloper15xm63t0tjzd5synhf7jlxajkzvk6qsk9tjp0sa",
 	"neutronvaloper15fv4jxqgfctgsgcd4w3j5plzpd7glepr3y84e5",
 	"neutronvaloper1vual9khy5djv9aktha9kxxlthqcvzlx92agpv4",
+	"neutronvaloper123pgsme75kwwxy0r8qr40kshr9vgy4048gma9c",
+	"neutronvaloper1sqmy5d7gexn570v90rjrz0kt4d4z6wte0x055t",
+	"neutronvaloper1q2ppatmd9yt060qxpn598srel2pg6a5036s48a",
+	"neutronvaloper1vk6kq00r6tdg0eyvlgwgn3v5z59q2ndxpcmpq2",
 }
 
 /*
