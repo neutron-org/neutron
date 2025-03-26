@@ -1,6 +1,11 @@
 {
-  "valoper": "neutronvaloper1xdlvhs2l2wq0cc3eskyxphstns3348el5l4qan",
+  "valoper": "neutronvaloper1hur2pfadtnxlgeuh75s5xjj2urs0eu692zzpvx",
+  "moniker": "Allnodes",
   "pk": {
-    "key": "64sO7+BN+7LBRe70jQTwLpfddLBUWocht/YBJxrvECo="
-  }
+    "key": "IYs+7gtgm5nWImGnyvnXrf2UXVbHZkDviIqZ78MQuCw="
+  },
+  "identity": "3999DA33020A4DBC",
+  "website": "https://www.allnodes.com",
+  "security_contact": "",
+  "details": "Reliable non-custodial Validator run by the industry leader - Allnodes"
 }

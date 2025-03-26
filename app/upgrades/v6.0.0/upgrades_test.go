@@ -163,6 +163,10 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 		updates = append(updates, valSetUpdate)
 	}
 
+	cp := app.ConsumerKeeper.GetConsumerParams(ctx)
+	cp.UnbondingPeriod = 10
+	app.ConsumerKeeper.SetParams(ctx, cp)
+
 	res, err := suite.ChainA.App.FinalizeBlock(&abci.RequestFinalizeBlock{
 		Height:             suite.ChainA.CurrentHeader.Height,
 		Time:               suite.ChainA.CurrentHeader.GetTime(),
@@ -238,7 +242,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	resp, err := app.RevenueKeeper.GetParams(ctx)
 	require.NoError(t, err)
-	require.Equal(t, resp.TwapWindow, int64(900))
+	require.Equal(t, resp.TwapWindow, int64(604800))
 
 	// TEST STAKING ENDBLOCKER and valset update
 	// the tricky part is - we have valset of 4 initially, and we must to modify staking params to execute staking endblocker
@@ -303,4 +307,12 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	dfkParams := app.DynamicFeesKeeper.GetParams(ctx)
 	require.Equal(t, dfkParams.NtrnPrices, sdk.DecCoins{sdk.DecCoin{Denom: v600.DropNtrnDenom, Amount: math.LegacyOneDec()}})
+
+	err = v600.SetupSlashing(ctx, &app.SlashingKeeper)
+	require.NoError(t, err)
+
+	slParams, err := app.SlashingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+	require.True(t, slParams.SlashFractionDoubleSign.Equal(math.LegacyZeroDec()))
+	require.True(t, slParams.SlashFractionDoubleSign.Equal(math.LegacyZeroDec()))
 }
