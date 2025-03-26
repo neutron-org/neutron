@@ -152,7 +152,7 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 		} else if !errors.Is(err, types.ErrNoValidatorFound) {
 			return err
 		}
-		
+
 		_, err = srv.CreateValidator(ctx, &types.MsgCreateValidator{
 			Description: types.Description{
 				Moniker:         fmt.Sprintf("ics %d", i),

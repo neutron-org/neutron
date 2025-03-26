@@ -7,8 +7,9 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/neutron-org/neutron/v6/x/revenue/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+
+	"github.com/neutron-org/neutron/v6/x/revenue/types"
 )
 
 // UpdateRewardAssetPrice stores fresh cumulative and absolute price of the reward asset and cleans

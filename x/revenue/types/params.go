@@ -4,8 +4,9 @@ import (
 	fmt "fmt"
 
 	"cosmossdk.io/math"
-	"github.com/neutron-org/neutron/v6/app/params"
 	"gopkg.in/yaml.v2"
+
+	"github.com/neutron-org/neutron/v6/app/params"
 )
 
 var (
