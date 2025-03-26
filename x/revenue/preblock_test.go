@@ -168,7 +168,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			revenuetypes.RevenueTreasuryPoolName,
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
-				revenuetypes.RewardDenom,
+				g.Params.RewardAsset,
 				baseRevenueAmount)),
 		).Times(1).Return(nil)
 
@@ -250,7 +250,7 @@ func TestPaymentScheduleCheckMonthlyPaymentSchedule(t *testing.T) {
 			revenuetypes.RevenueTreasuryPoolName,
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
-				revenuetypes.RewardDenom,
+				g.Params.RewardAsset,
 				expectedRevenueAmount)),
 		).Times(1).Return(nil)
 
@@ -366,7 +366,7 @@ func TestPaymentScheduleCheckBlockBasedPaymentSchedule(t *testing.T) {
 			revenuetypes.RevenueTreasuryPoolName,
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
-				revenuetypes.RewardDenom,
+				g.Params.RewardAsset,
 				baseRevenueAmount)),
 		).Times(1).Return(nil)
 
@@ -445,7 +445,7 @@ func TestPaymentScheduleCheckBlockBasedPaymentSchedule(t *testing.T) {
 			revenuetypes.RevenueTreasuryPoolName,
 			sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 			sdktypes.NewCoins(sdktypes.NewCoin(
-				revenuetypes.RewardDenom,
+				g.Params.RewardAsset,
 				expectedRevenueAmount)),
 		).Times(1).Return(nil)
 

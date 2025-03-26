@@ -239,11 +239,11 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context, params revenuetypes.Params, ps 
 		}
 
 		if !valCompensation.IsPositive() {
-			emitDistributeRevenueEvent(ctx, info, sdk.NewCoin(revenuetypes.RewardDenom, math.ZeroInt()), pr, blocksInPeriod, epp)
+			emitDistributeRevenueEvent(ctx, info, sdk.NewCoin(params.RewardAsset, math.ZeroInt()), pr, blocksInPeriod, epp)
 			continue
 		}
 
-		revenueAmt := sdk.NewCoin(revenuetypes.RewardDenom, valCompensation)
+		revenueAmt := sdk.NewCoin(params.RewardAsset, valCompensation)
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(
 			ctx,
 			revenuetypes.RevenueTreasuryPoolName,

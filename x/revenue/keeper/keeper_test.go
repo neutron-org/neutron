@@ -92,6 +92,8 @@ func TestProcessRevenue(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+	params, err := keeper.GetParams(ctx)
+	require.NoError(t, err)
 
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         1000,
@@ -105,7 +107,7 @@ func TestProcessRevenue(t *testing.T) {
 	val1Info.InActiveValsetForBlocksInPeriod = 1000
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
@@ -125,7 +127,7 @@ func TestProcessRevenue(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -179,6 +181,8 @@ func TestProcessRevenuePaymentScheduleTypeChange(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+	params, err := keeper.GetParams(ctx)
+	require.NoError(t, err)
 
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         1000,
@@ -192,7 +196,7 @@ func TestProcessRevenuePaymentScheduleTypeChange(t *testing.T) {
 	val1Info.InActiveValsetForBlocksInPeriod = 500
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
@@ -213,7 +217,7 @@ func TestProcessRevenuePaymentScheduleTypeChange(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -229,6 +233,8 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+	params, err := keeper.GetParams(ctx)
+	require.NoError(t, err)
 
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         1000,
@@ -244,7 +250,7 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 	val1Info.InActiveValsetForBlocksInPeriod = 700 // 700/1000
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
@@ -269,7 +275,7 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -338,7 +344,7 @@ func TestProcessRevenueReducedByAllFactors(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -407,7 +413,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			math.LegacyNewDecWithPrec(75, 2).MulInt(baseRevenueAmount).RoundInt(),
 		)),
 	).Times(1).Return(nil)
@@ -418,7 +424,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val2OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 

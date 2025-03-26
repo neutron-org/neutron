@@ -46,7 +46,13 @@ func (s msgServer) UpdateParams(goCtx context.Context, msg *revenuetypes.MsgUpda
 }
 
 func (s msgServer) FundTreasury(goCtx context.Context, msg *revenuetypes.MsgFundTreasury) (*revenuetypes.MsgFundTreasuryResponse, error) {
-	if err := msg.Validate(); err != nil {
+	ctx := sdktypes.UnwrapSDKContext(goCtx)
+	params, err := s.keeper.GetParams(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get module params")
+	}
+
+	if err := msg.Validate(params); err != nil {
 		return nil, errors.Wrap(err, "invalid MsgFundTreasury")
 	}
 
@@ -55,7 +61,6 @@ func (s msgServer) FundTreasury(goCtx context.Context, msg *revenuetypes.MsgFund
 		return nil, errors.Wrapf(err, "failed to create acc address from bech32 %s: %s", msg.Sender, err)
 	}
 
-	ctx := sdktypes.UnwrapSDKContext(goCtx)
 	if err := s.keeper.bankKeeper.SendCoinsFromAccountToModule(
 		ctx,
 		sender,

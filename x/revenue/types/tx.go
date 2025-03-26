@@ -4,7 +4,6 @@ import (
 	"cosmossdk.io/errors"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	appparams "github.com/neutron-org/neutron/v6/app/params"
 )
 
 func (msg *MsgUpdateParams) Validate(params Params) error {
@@ -14,7 +13,7 @@ func (msg *MsgUpdateParams) Validate(params Params) error {
 	if err := msg.Params.Validate(); err != nil {
 		return errors.Wrap(err, "params are invalid")
 	}
-	if msg.Params.RewardAsset != appparams.DefaultDenom {
+	if msg.Params.RewardAsset != params.RewardAsset {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "reward asset change is prohibited")
 	}
 	if msg.Params.RewardQuote.Asset != params.RewardQuote.Asset {
@@ -23,12 +22,12 @@ func (msg *MsgUpdateParams) Validate(params Params) error {
 	return nil
 }
 
-func (msg *MsgFundTreasury) Validate() error {
+func (msg *MsgFundTreasury) Validate(params Params) error {
 	if len(msg.Amount) != 1 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "exactly one coin must be provided")
 	}
-	if msg.Amount[0].Denom != RewardDenom {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "provided denom doesn't match the reward denom %s", RewardDenom)
+	if msg.Amount[0].Denom != params.RewardAsset {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "provided denom doesn't match the reward denom %s", params.RewardAsset)
 	}
 	if err := msg.Amount.Validate(); err != nil {
 		return errors.Wrap(err, "invalid coins")
