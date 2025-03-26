@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v6/x/contractmanager/types"
 )
 
 type (

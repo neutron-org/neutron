@@ -1,0 +1,122 @@
+syntax = "proto3";
+package neutron.revenue;
+
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "neutron/revenue/genesis.proto";
+import "neutron/revenue/params.proto";
+import "neutron/revenue/tx.proto";
+
+option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
+
+// Defines the Query interface of the module.
+service Query {
+  // Fetches the current parameters of the revenue module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/neutron/revenue/params";
+  }
+
+  // Fetches the current payment info of the module such as payment schedule and revenue details.
+  rpc PaymentInfo(QueryPaymentInfoRequest) returns (QueryPaymentInfoResponse) {
+    option (google.api.http).get = "/neutron/revenue/payment_info";
+  }
+
+  // Fetches a given validator's stats from the revenue module's state.
+  rpc ValidatorStats(QueryValidatorStatsRequest) returns (QueryValidatorStatsResponse) {
+    option (google.api.http).get = "/neutron/revenue/validator_stats";
+  }
+
+  // Fetches all validators' stats from the revenue module's state.
+  rpc ValidatorsStats(QueryValidatorsStatsRequest) returns (QueryValidatorsStatsResponse) {
+    option (google.api.http).get = "/neutron/revenue/validators_stats";
+  }
+}
+
+// Request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// Response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // Contains all parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// Request type for the Query/PaymentInfo RPC method.
+message QueryPaymentInfoRequest {}
+
+// Response type for the Query/PaymentInfo RPC method.
+message QueryPaymentInfoResponse {
+  // The current payment schedule.
+  PaymentSchedule payment_schedule = 1 [(gogoproto.nullable) = false];
+
+  // Revenue amount multiplier value that corresponds to the effective payment period progress.
+  string effective_period_progress = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // The current TWAP of the reward asset in quote asset. Is calculated as:
+  // twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) - cumulative_price_at_t(m)) / (t(n) - t(m))
+  string reward_asset_twap = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // The current evaluation of the base revenue amount. This is the maximum amount a validator can
+  // receive in the current price condition if not affected with reducing factors (e.g. imperfect
+  // performance, incomplete payment period, partial validator set presence).
+  cosmos.base.v1beta1.Coin base_revenue_amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+// Request type for the Query/ValidatorStats RPC method.
+message QueryValidatorStatsRequest {
+  // The validator's node operator address.
+  string val_oper_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// Response type for the Query/ValidatorStats RPC method.
+message QueryValidatorStatsResponse {
+  // Contains the validator's information.
+  ValidatorStats stats = 1 [(gogoproto.nullable) = false];
+}
+
+// Request type for the Query/ValidatorsStats RPC method.
+message QueryValidatorsStatsRequest {}
+
+// Response type for the Query/ValidatorsStats RPC method.
+message QueryValidatorsStatsResponse {
+  // Contains the validators' information.
+  repeated ValidatorStats stats = 1 [(gogoproto.nullable) = false];
+}
+
+// Contains validator's info and their performance rating.
+message ValidatorStats {
+  // Contains the validator's information.
+  ValidatorInfo validator_info = 1 [(gogoproto.nullable) = false];
+
+  // The total number of blocks produced by the chain in the current payment period.
+  uint64 total_produced_blocks_in_period = 2;
+
+  // The validator's performance rating. Represented as a decimal value.
+  string performance_rating = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // Contains expected revenue for the validator based on their performance rating in the current
+  // payment period, current reward asset TWAP, and duration of validator's presence in the active
+  // validator set. Does not take into account effective payment period progress.
+  cosmos.base.v1beta1.Coin expected_revenue = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}

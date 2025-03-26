@@ -8,7 +8,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
 )
 
 // Return the base value for price, 1.0001

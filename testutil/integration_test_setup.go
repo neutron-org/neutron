@@ -23,7 +23,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/v5/testutil/consumer"
+	"github.com/neutron-org/neutron/v6/testutil/consumer"
 
 	"github.com/stretchr/testify/require"
 )
@@ -52,7 +52,7 @@ func Setup(t *testing.T) ibctesting.TestingApp {
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100000000000000))),
 	}
 
-	ibctesting.DefaultTestingAppInit = SetupTestingApp(tmtypes.TM2PB.ValidatorUpdates(valSet))
+	ibctesting.DefaultTestingAppInit = SetupTestingApp()
 
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, "neutron-1", balance)
 

@@ -5,6 +5,10 @@ import (
 	"strconv"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	appparams "github.com/neutron-org/neutron/v6/app/params"
+
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
@@ -12,13 +16,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v5/testutil/cron/network"
-	"github.com/neutron-org/neutron/v5/x/cron/client/cli"
-	"github.com/neutron-org/neutron/v5/x/cron/types"
+	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v6/testutil/cron/network"
+	"github.com/neutron-org/neutron/v6/x/cron/client/cli"
+	"github.com/neutron-org/neutron/v6/x/cron/types"
 )
 
 func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.Schedule) {
+	sdk.DefaultBondDenom = appparams.DefaultDenom
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}

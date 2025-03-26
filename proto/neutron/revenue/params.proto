@@ -1,0 +1,91 @@
+syntax = "proto3";
+package neutron.revenue;
+
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
+
+// Defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+
+  // The asset used in revenue payments to validators. Expected to be a native token of the chain
+  // with its denom metadata registered in the bank module. The denom metadata must have a defined
+  // symbol field and contain a denom unit with an alias equal to the symbol and a specified
+  // exponent.
+  string reward_asset = 1;
+
+  // Quotation of the reward asset.
+  RewardQuote reward_quote = 2;
+
+  // Specifies performance requirements for validators in scope of blocks signing and creation. If
+  // not met, the validator is not rewarded.
+  PerformanceRequirement blocks_performance_requirement = 3;
+
+  // Specifies performance requirements for validators in scope of the oracle price votes. If not
+  // met, the validator is not rewarded.
+  PerformanceRequirement oracle_votes_performance_requirement = 4;
+
+  // Indicates the currently active type of payment schedule.
+  PaymentScheduleType payment_schedule_type = 5;
+
+  // The time window, in seconds, used to calculate the TWAP of the reward asset.
+  int64 twap_window = 6;
+}
+
+// Defines information about the reward quote.
+message RewardQuote {
+  // The compensation amount measured in the quote asset. The amount is divided by the price of
+  // the reward asset to determine the base revenue amount.
+  uint64 amount = 1;
+  // The name of the quote asset. It is used as a quote in price queries to the slinky oracle
+  // module to determine the price of the reward asset.
+  string asset = 2;
+}
+
+// A model that contains information specific to the currently active payment schedule type. The
+// oneof implementations define the payment schedule that must be used currently.
+// This is a module's parameter. It's not updated automatically in runtime in contrast to the
+// payment schedule which is a state variable, but is updated via MsgUpdateParams.
+message PaymentScheduleType {
+  oneof payment_schedule_type {
+    MonthlyPaymentScheduleType monthly_payment_schedule_type = 4 [(amino.oneof_name) = "revenue/Params/MonthlyPaymentScheduleType"];
+    BlockBasedPaymentScheduleType block_based_payment_schedule_type = 5 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentScheduleType"];
+    EmptyPaymentScheduleType empty_payment_schedule_type = 6 [(amino.oneof_name) = "revenue/Params/EmptyPaymentScheduleType"];
+  }
+}
+
+// Monthly periods with payments made at the end of each month.
+message MonthlyPaymentScheduleType {}
+
+// Periods defined by a specific number of blocks, with payments made when the required block
+// count is reached.
+message BlockBasedPaymentScheduleType {
+  // The number of blocks in a payment period.
+  uint64 blocks_per_period = 1;
+}
+
+// Endless periods with payments never made.
+message EmptyPaymentScheduleType {}
+
+// Specifies a performance criteria that validators must meet to qualify for network rewards.
+message PerformanceRequirement {
+  // The fraction of the total performance a validator can miss without affecting their reward.
+  // Represented as a decimal value in the range [0.0, 1.0], where 1.0 corresponds to 100%.
+  string allowed_to_miss = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // The minimum fraction of the total performance a validator must achieve to be eligible for
+  // network rewards. Validators falling below this threshold will not receive any rewards.
+  // Represented as a decimal value in the range [0.0, 1.0], where 1.0 corresponds to 100%.
+  string required_at_least = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}

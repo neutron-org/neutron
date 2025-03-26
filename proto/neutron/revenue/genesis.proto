@@ -1,0 +1,97 @@
+syntax = "proto3";
+package neutron.revenue;
+
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "neutron/revenue/params.proto";
+
+option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
+
+// Defines the revenue module's genesis state.
+message GenesisState {
+  // Revenue module parameters.
+  Params params = 1 [(gogoproto.nullable) = false];
+
+  // The current payment schedule. If nil, the module will use the respective payment schedule for
+  // the payment schedule type specified in the params.
+  PaymentSchedule payment_schedule = 2;
+
+  // Revenue module list of validators.
+  repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
+}
+
+// A model that contains information specific to the currently active payment schedule. The oneof
+// implementations define conditions for payment periods ending and track the progress of the
+// current payment period. This is a module's state variable.
+// The inner oneof must correspond with the respective payment schedule type defined in the module
+// params. In runtime, on a mismatch due to e.g. MsgUpdateParams execution, the module will switch
+// to the payment schedule that corresponds to the payment schedule type automatically.
+message PaymentSchedule {
+  oneof payment_schedule {
+    MonthlyPaymentSchedule monthly_payment_schedule = 1 [(amino.oneof_name) = "revenue/Params/MonthlyPaymentSchedule"];
+    BlockBasedPaymentSchedule block_based_payment_schedule = 2 [(amino.oneof_name) = "revenue/Params/BlockBasedPaymentSchedule"];
+    EmptyPaymentSchedule empty_payment_schedule = 3 [(amino.oneof_name) = "revenue/Params/EmptyPaymentSchedule"];
+  }
+}
+
+// Contains information about a validator.
+message ValidatorInfo {
+  // The validator's node operator address.
+  string val_oper_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // The number of blocks the validator has committed in the current payment period.
+  uint64 commited_blocks_in_period = 2;
+
+  // The number of oracle votes the validator has submitted in the current payment period.
+  uint64 commited_oracle_votes_in_period = 3;
+
+  // The number of blocks the validator has remained in the active validator set for in the
+  // current payment period.
+  uint64 in_active_valset_for_blocks_in_period = 4;
+}
+
+// Represents a payment schedule where revenue payments are processed once a month.
+message MonthlyPaymentSchedule {
+  // The block height at which the current month started.
+  uint64 current_month_start_block = 1;
+
+  // The timestamp of the block at which the current month started.
+  uint64 current_month_start_block_ts = 2;
+}
+
+// Represents a payment schedule where revenue payments are processed after a specified number
+// of blocks.
+message BlockBasedPaymentSchedule {
+  // The number of blocks in each payment period.
+  uint64 blocks_per_period = 1;
+
+  // The block height at which the current payment period started.
+  uint64 current_period_start_block = 2;
+}
+
+// Represents a payment schedule where revenue is never distributed.
+message EmptyPaymentSchedule {}
+
+// Represents a data structure that tracks the cumulative price of an asset over the entire
+// observation period, along with the last absolute asset price and the timestamp when this
+// price was last recorded.
+message RewardAssetPrice {
+  // The cumulative price of the reward asset within the TWAP window. It is calculated as:
+  // `cumulative_price_at_timestamp_t(n)` = `last_price_at_t(n-1)` * (t(n) - t(n-1)) + `cumulative_price_at_timestamp_t(n-1)`
+  string cumulative_price = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // The price of the reward asset in reward quote asset that corresponds to the timestamp.
+  string absolute_price = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // The timestamp of the last update of the absolute and cumulative price.
+  int64 timestamp = 3;
+}

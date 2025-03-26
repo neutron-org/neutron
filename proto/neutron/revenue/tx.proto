@@ -1,0 +1,61 @@
+syntax = "proto3";
+package neutron.revenue;
+
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "neutron/revenue/genesis.proto";
+import "neutron/revenue/params.proto";
+
+option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
+
+// Defines the Msg interface of the module.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // Updates the parameters of the revenue module. This action can only be performed by the
+  // module's authority.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // FundTreasury funds the revenue treasury module account with the specified amount.
+  rpc FundTreasury(MsgFundTreasury) returns (MsgFundTreasuryResponse);
+}
+
+// Request type for the Msg/UpdateParams RPC method.
+message MsgUpdateParams {
+  option (amino.name) = "revenue/MsgUpdateParams";
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // The address of the authority of the module.
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // The new parameters of the module. All parameters must be supplied.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// Response type for the Msg/UpdateParams RPC method.
+message MsgUpdateParamsResponse {}
+
+// Request type for the Msg/FundTreasury RPC method.
+message MsgFundTreasury {
+  option (amino.name) = "revenue/MsgFundTreasury";
+  option (cosmos.msg.v1.signer) = "sender";
+
+  // The signer of the message.
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // The amount of coins to fund the revenue treasury pool with. Must match the reward asset denom.
+  repeated cosmos.base.v1beta1.Coin amount = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// Response type for the Msg/FundTreasury RPC method.
+message MsgFundTreasuryResponse {}
