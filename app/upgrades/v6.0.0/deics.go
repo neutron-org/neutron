@@ -37,6 +37,10 @@ const (
 //go:embed validators/staking
 var Vals embed.FS
 
+var ValoperReplacements = map[string]string{
+	"neutronvaloper15x2ml0qepktnd6egk4l0rtl0z8fpfxktmzww59": "neutronvaloper1sgr7u20etqn453k3qcfqldrj5fnahl4q8vngzu",
+}
+
 type StakingValidator struct {
 	Valoper         string         `json:"valoper"`
 	Moniker         string         `json:"moniker,omitempty"`
@@ -116,16 +120,25 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 
 	// Add all ICS validators to staking module
 	for i, v := range consumerValidators {
-		// funding ICS valopers from DAO to stake a coin
-		err := bk.SendCoins(ctx, DAOaddr, v.GetAddress(), sdk.NewCoins(sdk.Coin{
-			Denom:  params.DefaultDenom,
-			Amount: math.NewInt(ICSSelfStake),
-		}))
+		va := v.GetAddress()
+		valoperAddr, err := bech32.ConvertAndEncode("neutronvaloper", va)
 		if err != nil {
 			return err
 		}
 
-		valoperAddr, err := bech32.ConvertAndEncode("neutronvaloper", v.GetAddress())
+		if replacement, ok := ValoperReplacements[valoperAddr]; ok {
+			valoperAddr = replacement
+			_, va, err = bech32.DecodeAndConvert(valoperAddr)
+			if err != nil {
+				return err
+			}
+		}
+
+		// funding ICS valopers from DAO to stake a coin
+		err = bk.SendCoins(ctx, DAOaddr, va, sdk.NewCoins(sdk.Coin{
+			Denom:  params.DefaultDenom,
+			Amount: math.NewInt(ICSSelfStake),
+		}))
 		if err != nil {
 			return err
 		}
@@ -171,12 +184,12 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 			return err
 		}
 
-		err = sk.SetLastValidatorPower(ctx, v.GetAddress(), 1)
+		err = sk.SetLastValidatorPower(ctx, va, 1)
 		if err != nil {
 			return err
 		}
 
-		savedVal, err := sk.GetValidator(ctx, v.GetAddress())
+		savedVal, err := sk.GetValidator(ctx, va)
 		if err != nil {
 			return err
 		}
