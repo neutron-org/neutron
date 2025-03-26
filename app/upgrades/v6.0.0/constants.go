@@ -13,7 +13,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v6.0.0"
+	UpgradeName = "v6.0.0-rc0"
 
 	// DropNtrnDenom is the denom of the Drop's NTRN token.
 	DropNtrnDenom = "factory/neutron1ytalpjvxz7njekfep97sss2s83ezw6q8lt9spsvnd2d43ygys9gssy7ept/udntrn"

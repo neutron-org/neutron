@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 
 	"cosmossdk.io/math"
