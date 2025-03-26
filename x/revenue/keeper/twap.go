@@ -5,11 +5,10 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
-
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/neutron-org/neutron/v6/x/revenue/types"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 )
 
 // UpdateRewardAssetPrice stores fresh cumulative and absolute price of the reward asset and cleans
@@ -214,13 +213,9 @@ func (k *Keeper) GetTWAPStartingFromTime(ctx sdk.Context, startAt int64) (math.L
 
 // getRewardAssetSymbol retrieves the reward asset symbol from its denom metadata.
 func (k *Keeper) getRewardAssetSymbol(ctx sdk.Context) (string, error) {
-	params, err := k.GetParams(ctx)
+	rewardAssetMd, err := k.getRewardAssetMetadata(ctx)
 	if err != nil {
-		return "", fmt.Errorf("failed to get module params: %w", err)
-	}
-	rewardAssetMd, ex := k.bankKeeper.GetDenomMetaData(ctx, params.RewardAsset)
-	if !ex {
-		return "", fmt.Errorf("reward asset %s metadata doesn't exist", params.RewardAsset)
+		return "", fmt.Errorf("failed to get reward asset metadata: %w", err)
 	}
 	return rewardAssetMd.Symbol, nil
 }
@@ -228,13 +223,9 @@ func (k *Keeper) getRewardAssetSymbol(ctx sdk.Context) (string, error) {
 // getRewardAssetSymbol retrieves the exponent of the reward asset's alias that corresponds to
 // reward asset's symbol.
 func (k *Keeper) getRewardAssetExponent(ctx sdk.Context) (uint32, error) {
-	params, err := k.GetParams(ctx)
+	rewardAssetMd, err := k.getRewardAssetMetadata(ctx)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get module params: %w", err)
-	}
-	rewardAssetMd, ex := k.bankKeeper.GetDenomMetaData(ctx, params.RewardAsset)
-	if !ex {
-		return 0, fmt.Errorf("reward asset %s metadata doesn't exist", params.RewardAsset)
+		return 0, fmt.Errorf("failed to get reward asset metadata: %w", err)
 	}
 
 	for _, unit := range rewardAssetMd.DenomUnits {
@@ -245,4 +236,17 @@ func (k *Keeper) getRewardAssetExponent(ctx sdk.Context) (uint32, error) {
 		}
 	}
 	return 0, fmt.Errorf("couldn't find exponent for reward asset alias %s in reward denom metadata", rewardAssetMd.Symbol)
+}
+
+// getRewardAssetMetadata retrieves the reward asset metadata from the bank module.
+func (k *Keeper) getRewardAssetMetadata(ctx sdk.Context) (*banktypes.Metadata, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get module params: %w", err)
+	}
+	rewardAssetMd, ex := k.bankKeeper.GetDenomMetaData(ctx, params.RewardAsset)
+	if !ex {
+		return nil, fmt.Errorf("reward asset %s metadata doesn't exist", params.RewardAsset)
+	}
+	return &rewardAssetMd, nil
 }
