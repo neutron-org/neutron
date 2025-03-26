@@ -4,18 +4,21 @@ import (
 	"cosmossdk.io/errors"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/neutron-org/neutron/v6/app/params"
+	appparams "github.com/neutron-org/neutron/v6/app/params"
 )
 
-func (msg *MsgUpdateParams) Validate() error {
+func (msg *MsgUpdateParams) Validate(params Params) error {
 	if _, err := sdktypes.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}
 	if err := msg.Params.Validate(); err != nil {
 		return errors.Wrap(err, "params are invalid")
 	}
-	if msg.Params.RewardAsset != params.DefaultDenom {
+	if msg.Params.RewardAsset != appparams.DefaultDenom {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "reward asset change is prohibited")
+	}
+	if msg.Params.RewardQuote.Asset != params.RewardQuote.Asset {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "quote asset change is prohibited")
 	}
 	return nil
 }

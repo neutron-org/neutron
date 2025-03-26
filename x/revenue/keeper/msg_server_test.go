@@ -395,6 +395,31 @@ func TestUpdateParams(t *testing.T) {
 			},
 			"reward asset change is prohibited",
 		},
+		{
+			"ProhibitedQuoteAssetChange",
+			&revenuetypes.MsgUpdateParams{
+				Authority: "neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a",
+				Params: revenuetypes.Params{
+					TwapWindow:  3600 * 24,
+					RewardAsset: params.DefaultDenom,
+					RewardQuote: &revenuetypes.RewardQuote{Asset: "BTC", Amount: 1500},
+					BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					OracleVotesPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+						AllowedToMiss:   math.LegacyZeroDec(),
+						RequiredAtLeast: math.LegacyOneDec(),
+					},
+					PaymentScheduleType: &revenuetypes.PaymentScheduleType{
+						PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
+							BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{BlocksPerPeriod: 10},
+						},
+					},
+				},
+			},
+			"quote asset change is prohibited",
+		},
 	}
 
 	for _, tt := range tests {

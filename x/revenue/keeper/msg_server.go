@@ -23,7 +23,13 @@ func NewMsgServerImpl(keeper *Keeper) revenuetypes.MsgServer {
 var _ revenuetypes.MsgServer = msgServer{}
 
 func (s msgServer) UpdateParams(goCtx context.Context, msg *revenuetypes.MsgUpdateParams) (*revenuetypes.MsgUpdateParamsResponse, error) {
-	if err := msg.Validate(); err != nil {
+	ctx := sdktypes.UnwrapSDKContext(goCtx)
+	params, err := s.keeper.GetParams(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get module params")
+	}
+
+	if err := msg.Validate(params); err != nil {
 		return nil, errors.Wrap(err, "invalid MsgUpdateParams")
 	}
 
@@ -32,7 +38,6 @@ func (s msgServer) UpdateParams(goCtx context.Context, msg *revenuetypes.MsgUpda
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, msg.Authority)
 	}
 
-	ctx := sdktypes.UnwrapSDKContext(goCtx)
 	if err := s.keeper.SetParams(ctx, msg.Params); err != nil {
 		return nil, err
 	}
