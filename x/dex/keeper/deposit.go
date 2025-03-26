@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/utils"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/utils"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 // DepositCore handles core logic for MsgDeposit including bank operations and event emissions

@@ -1,6 +1,6 @@
 package types
 
-import neutronparams "github.com/neutron-org/neutron/v5/app/params"
+import neutronparams "github.com/neutron-org/neutron/v6/app/params"
 
 const (
 	ConsensusVersion = 1

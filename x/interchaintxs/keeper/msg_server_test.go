@@ -9,14 +9,14 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v6/app/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v6/x/interchaintxs/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -25,10 +25,10 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v6/testutil"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v6/x/interchaintxs/types"
 )
 
 const TestFeeCollectorAddr = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"

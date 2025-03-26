@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
+	"github.com/neutron-org/neutron/v6/x/revenue/types"
 )
 
 const (
@@ -47,11 +47,10 @@ func (k *Keeper) UpdateRewardAssetPrice(ctx sdk.Context) error {
 	}
 
 	// the queried price is NTRN/USD, we need to convert it to untrn/USD
-	ntrnPrice := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals))
+	ntrnPrice := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals)) //nolint:gosec
 	untrnPrice := ntrnPrice.QuoInt64(int64(stdmath.Pow(10, types.RewardDenomDecimals)))
 
 	err = k.CalcNewRewardAssetPrice(ctx, untrnPrice, ctx.BlockTime().Unix())
-
 	if err != nil {
 		return fmt.Errorf("failed to save a new reward asset price: %w", err)
 	}
@@ -212,7 +211,7 @@ func (k *Keeper) GetTWAPStartingFromTime(ctx sdk.Context, startAt int64) (math.L
 
 	firstPrice, err := k.GetFirstRewardAssetPriceAfter(ctx, startAt)
 	if err != nil {
-		return math.LegacyZeroDec(), fmt.Errorf("failed to get first first reward asset price: %w", err)
+		return math.LegacyZeroDec(), fmt.Errorf("failed to get first reward asset price: %w", err)
 	}
 	if lastPrice.Timestamp == firstPrice.Timestamp {
 		return lastPrice.AbsolutePrice, nil

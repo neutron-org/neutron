@@ -2,11 +2,15 @@ package v600
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
+	"path/filepath"
+	"time"
+
+	"cosmossdk.io/math"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -19,10 +23,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	types2 "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	"github.com/neutron-org/neutron/v5/app/params"
-	"io/fs"
-	"path/filepath"
-	"time"
+
+	"github.com/neutron-org/neutron/v6/app/params"
 )
 
 const (
@@ -45,8 +47,12 @@ const (
 var Vals embed.FS
 
 type StakingValidator struct {
-	Valoper string         `json:"valoper"`
-	PK      ed25519.PubKey `json:"pk"`
+	Valoper         string         `json:"valoper"`
+	PK              ed25519.PubKey `json:"pk"`
+	Identity        string         `json:"identity,omitempty"`
+	Website         string         `json:"website,omitempty"`
+	SecurityContact string         `json:"security_contact,omitempty"`
+	Details         string         `json:"details,omitempty"`
 }
 
 func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
@@ -68,7 +74,7 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 		if err != nil {
 			return err
 		}
-		msg := StakingValMsg(filepath.Base(path), SovereignSelfStake, skval.Valoper, skval.PK)
+		msg := StakingValMsg(filepath.Base(path), SovereignSelfStake, skval.Valoper, skval.PK, skval.Identity, skval.Website, skval.SecurityContact, skval.Details)
 		msgs = append(msgs, msg)
 
 		return nil
@@ -76,7 +82,7 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 	return msgs, errWalk
 }
 
-func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKey) types.MsgCreateValidator {
+func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKey, identity, website, securityContact, details string) types.MsgCreateValidator {
 	pubkey, err := codectypes.NewAnyWithValue(&pk)
 	if err != nil {
 		panic(err)
@@ -84,10 +90,10 @@ func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKe
 	return types.MsgCreateValidator{
 		Description: types.Description{
 			Moniker:         moniker,
-			Identity:        "",
-			Website:         "",
-			SecurityContact: "",
-			Details:         "",
+			Identity:        identity,
+			Website:         website,
+			SecurityContact: securityContact,
+			Details:         details,
 		},
 		Commission: types.CommissionRates{
 			Rate:          math.LegacyMustNewDecFromStr("0.1"),
@@ -236,7 +242,7 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
 		// otherwise panic during staking begin blocker happens
 		// It's allowed to change the value at the very next block
-		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)),
+		MaxValidators:     uint32(len(consumerValidators) + len(newValMsgs)), //nolint:gosec
 		MaxEntries:        7,
 		HistoricalEntries: 10_000,
 		BondDenom:         params.DefaultDenom,

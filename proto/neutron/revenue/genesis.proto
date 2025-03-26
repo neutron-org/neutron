@@ -6,7 +6,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "neutron/revenue/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v5/x/revenue/types";
+option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
 
 // Defines the revenue module's genesis state.
 message GenesisState {
@@ -19,9 +19,6 @@ message GenesisState {
 
   // Revenue module list of validators.
   repeated ValidatorInfo validators = 3 [(gogoproto.nullable) = false];
-
-  // Prices of the reward denom. Used to calculate the reward denom TWAP.
-  repeated RewardAssetPrice prices = 4;
 }
 
 // A model that contains information specific to the currently active payment schedule. The oneof

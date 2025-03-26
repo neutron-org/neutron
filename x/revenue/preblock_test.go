@@ -10,11 +10,11 @@ import (
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/stretchr/testify/require"
 
-	appconfig "github.com/neutron-org/neutron/v5/app/config"
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/revenue/types"
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/revenue/keeper"
-	"github.com/neutron-org/neutron/v5/x/revenue"
-	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
+	appconfig "github.com/neutron-org/neutron/v6/app/config"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/revenue/types"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/revenue/keeper"
+	"github.com/neutron-org/neutron/v6/x/revenue"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 )
 
 const (
