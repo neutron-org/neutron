@@ -1,6 +1,7 @@
 {
   "valoper": "neutronvaloper1xdlvhs2l2wq0cc3eskyxphstns3348el5l4qan",
   "pk": {
-    "key": "64sO7+BN+7LBRe70jQTwLpfddLBUWocht/YBJxrvECo="
+    "type": "tendermint/PubKeySecp256k1",
+    "value": "A272rtWgrD64zumRnKNVWrd+ZaNPbkNHbaKULjyacRsG"
   }
 }
