@@ -11,7 +11,10 @@ option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
 
-  // The asset used in revenue payments to validators.
+  // The asset used in revenue payments to validators. Expected to be a native token of the chain
+  // with its denom metadata registered in the bank module. The denom metadata must have a defined
+  // symbol field and contain a denom unit with an alias equal to the symbol and a specified
+  // exponent.
   string reward_asset = 1;
 
   // Quotation of the reward asset.

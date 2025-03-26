@@ -28,7 +28,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Defines the parameters for the module.
 type Params struct {
-	// The asset used in revenue payments to validators.
+	// The asset used in revenue payments to validators. Expected to be a native token of the chain
+	// with its denom metadata registered in the bank module. The denom metadata must have a defined
+	// symbol field and contain a denom unit with an alias equal to the symbol and a specified
+	// exponent.
 	RewardAsset string `protobuf:"bytes,1,opt,name=reward_asset,json=rewardAsset,proto3" json:"reward_asset,omitempty"`
 	// Quotation of the reward asset.
 	RewardQuote *RewardQuote `protobuf:"bytes,2,opt,name=reward_quote,json=rewardQuote,proto3" json:"reward_quote,omitempty"`
