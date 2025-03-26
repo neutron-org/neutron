@@ -13,7 +13,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 
-	"github.com/neutron-org/neutron/v6/app/params"
 	appparams "github.com/neutron-org/neutron/v6/app/params"
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v6/x/dynamicfees/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
@@ -178,17 +177,17 @@ func SetupDenomMetadata(ctx context.Context, bk bankkeeper.Keeper) {
 		Description: "The native staking token of the Neutron network",
 		DenomUnits: []*banktypes.DenomUnit{
 			{
-				Denom:    params.DefaultDenom,
+				Denom:    appparams.DefaultDenom,
 				Exponent: 0,
 				Aliases:  []string{"microntrn"},
 			},
 			{
 				Denom:    "ntrn",
-				Exponent: params.DefaultDenomDecimals,
+				Exponent: appparams.DefaultDenomDecimals,
 				Aliases:  []string{"NTRN"},
 			},
 		},
-		Base:    params.DefaultDenom,
+		Base:    appparams.DefaultDenom,
 		Display: "ntrn",
 		Name:    "Neutron",
 		Symbol:  "NTRN",
