@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"io/fs"
@@ -114,6 +115,7 @@ func StakingValMsg(moniker string, stake int64, valoper string, pk ed25519.PubKe
 // MoveICSToStaking crates CCV validators in staking module, forces to change status to bonded
 // to generate valsetupdate with 0 vp the same block
 func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keeper, consumerValidators []types2.CrossChainValidator) error {
+	skippedValidators := 0
 	srv := stakingkeeper.NewMsgServerImpl(&sk)
 	DAOaddr, err := sdk.AccAddressFromBech32(MainDAOContractAddress)
 	if err != nil {
@@ -140,6 +142,18 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 			return err
 		}
 
+		consPubKey, err := v.ConsPubKey()
+		if err != nil {
+			return err
+		}
+
+		_, err = sk.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(consPubKey))
+		if !errors.Is(err, types.ErrNoValidatorFound) {
+			// The validator is already created during the configuring of the sovereign/staking validator group.
+			// This is possible if an ICS validator moves to a sovereign group and decides to use the same pubkey after the transition.
+			skippedValidators++
+			continue
+		}
 		_, err = srv.CreateValidator(ctx, &types.MsgCreateValidator{
 			Description: types.Description{
 				Moniker:         fmt.Sprintf("ics %d", i),
@@ -184,7 +198,7 @@ func MoveICSToStaking(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Ke
 		}
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(len(consumerValidators)*ICSSelfStake))))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64((len(consumerValidators)-skippedValidators)*ICSSelfStake))))
 	// since we forced to set bond status for ics validators during the upgrade, we have to move ICS staked funds from NotBondedPoolName to BondedPoolName
 	return bk.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, coins)
 }
@@ -252,11 +266,6 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
-	err = MoveICSToStaking(ctx, sk, bk, consumerValidators)
-	if err != nil {
-		return err
-	}
-
 	DAOaddr, err := sdk.AccAddressFromBech32(MainDAOContractAddress)
 	if err != nil {
 		return err
@@ -281,6 +290,11 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		if err != nil {
 			return err
 		}
+	}
+
+	err = MoveICSToStaking(ctx, sk, bk, consumerValidators)
+	if err != nil {
+		return err
 	}
 
 	return nil
