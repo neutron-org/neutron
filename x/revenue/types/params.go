@@ -4,14 +4,17 @@ import (
 	fmt "fmt"
 
 	"cosmossdk.io/math"
+	"github.com/neutron-org/neutron/v6/app/params"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	// DefaultBaseCompensation represents the default compensation amount in USD.
-	DefaultBaseCompensation uint64 = 2500
-	// DefaultPaymentScheduleType represents the default payment schedule type.
-	DefaultPaymentScheduleType = &PaymentScheduleType_EmptyPaymentScheduleType{EmptyPaymentScheduleType: &EmptyPaymentScheduleType{}}
+	// DefaultRewardAsset represents the default reward asset.
+	DefaultRewardAsset = params.DefaultDenom
+	// DefaultRewardQuoteAmount represents the default reward amount measured in quote asset.
+	DefaultRewardQuoteAmount uint64 = 2500
+	// DefaultRewardQuoteAsset represents the default reward quote asset.
+	DefaultRewardQuoteAsset = "USD"
 	// DefaultTWAPWindow represents default time span to calculate TWAP for. Measured in seconds.
 	DefaultTWAPWindow int64 = 24 * 3600
 
@@ -22,13 +25,15 @@ var (
 
 // NewParams creates a new Params instance.
 func NewParams(
-	baseCompensation uint64,
+	rewardAsset string,
+	rewardQuote *RewardQuote,
 	blocksPerformanceRequirement *PerformanceRequirement,
 	oraclePricesPerformanceRequirement *PerformanceRequirement,
 	paymentScheduleType isPaymentScheduleType_PaymentScheduleType,
 ) Params {
 	return Params{
-		BaseCompensation:                  baseCompensation,
+		RewardAsset:                       rewardAsset,
+		RewardQuote:                       rewardQuote,
 		BlocksPerformanceRequirement:      blocksPerformanceRequirement,
 		OracleVotesPerformanceRequirement: oraclePricesPerformanceRequirement,
 		PaymentScheduleType:               &PaymentScheduleType{PaymentScheduleType: paymentScheduleType},
@@ -39,10 +44,11 @@ func NewParams(
 // DefaultParams returns the default set of parameters.
 func DefaultParams() Params {
 	return NewParams(
-		DefaultBaseCompensation,
+		DefaultRewardAsset,
+		DefaultRewardQuote(),
 		DefaultBlocksPerformanceRequirement(),
 		DefaultOracleVotesPerformanceRequirement(),
-		DefaultPaymentScheduleType,
+		DefaultPaymentScheduleType(),
 	)
 }
 
@@ -103,5 +109,20 @@ func DefaultOracleVotesPerformanceRequirement() *PerformanceRequirement {
 	return &PerformanceRequirement{
 		AllowedToMiss:   math.LegacyNewDecWithPrec(5, 3), // 0.005
 		RequiredAtLeast: math.LegacyNewDecWithPrec(9, 1), // 0.9
+	}
+}
+
+// DefaultPaymentScheduleType returns the default payment schedule type.
+func DefaultPaymentScheduleType() isPaymentScheduleType_PaymentScheduleType {
+	return &PaymentScheduleType_EmptyPaymentScheduleType{
+		EmptyPaymentScheduleType: &EmptyPaymentScheduleType{},
+	}
+}
+
+// DefaultRewardQuote returns the default reward quote.
+func DefaultRewardQuote() *RewardQuote {
+	return &RewardQuote{
+		Asset:  DefaultRewardQuoteAsset,
+		Amount: DefaultRewardQuoteAmount,
 	}
 }

@@ -9,10 +9,11 @@ import (
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/cosmos-sdk/x/staking/types"
+	types0 "github.com/cosmos/cosmos-sdk/x/bank/types"
+	types1 "github.com/cosmos/cosmos-sdk/x/staking/types"
 	gomock "github.com/golang/mock/gomock"
-	types1 "github.com/skip-mev/slinky/pkg/types"
-	types2 "github.com/skip-mev/slinky/x/oracle/types"
+	types2 "github.com/skip-mev/slinky/pkg/types"
+	types3 "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 // MockStakingKeeper is a mock of StakingKeeper interface.
@@ -39,10 +40,10 @@ func (m *MockStakingKeeper) EXPECT() *MockStakingKeeperMockRecorder {
 }
 
 // GetValidatorByConsAddr mocks base method.
-func (m *MockStakingKeeper) GetValidatorByConsAddr(ctx context.Context, consAddr types.ConsAddress) (types0.Validator, error) {
+func (m *MockStakingKeeper) GetValidatorByConsAddr(ctx context.Context, consAddr types.ConsAddress) (types1.Validator, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetValidatorByConsAddr", ctx, consAddr)
-	ret0, _ := ret[0].(types0.Validator)
+	ret0, _ := ret[0].(types1.Validator)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -74,6 +75,21 @@ func NewMockBankKeeper(ctrl *gomock.Controller) *MockBankKeeper {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 	return m.recorder
+}
+
+// GetDenomMetaData mocks base method.
+func (m *MockBankKeeper) GetDenomMetaData(ctx context.Context, denom string) (types0.Metadata, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDenomMetaData", ctx, denom)
+	ret0, _ := ret[0].(types0.Metadata)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// GetDenomMetaData indicates an expected call of GetDenomMetaData.
+func (mr *MockBankKeeperMockRecorder) GetDenomMetaData(ctx, denom interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenomMetaData", reflect.TypeOf((*MockBankKeeper)(nil).GetDenomMetaData), ctx, denom)
 }
 
 // SendCoinsFromAccountToModule mocks base method.
@@ -128,7 +144,7 @@ func (m *MockOracleKeeper) EXPECT() *MockOracleKeeperMockRecorder {
 }
 
 // GetDecimalsForCurrencyPair mocks base method.
-func (m *MockOracleKeeper) GetDecimalsForCurrencyPair(ctx types.Context, cp types1.CurrencyPair) (uint64, error) {
+func (m *MockOracleKeeper) GetDecimalsForCurrencyPair(ctx types.Context, cp types2.CurrencyPair) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDecimalsForCurrencyPair", ctx, cp)
 	ret0, _ := ret[0].(uint64)
@@ -143,10 +159,10 @@ func (mr *MockOracleKeeperMockRecorder) GetDecimalsForCurrencyPair(ctx, cp inter
 }
 
 // GetPriceForCurrencyPair mocks base method.
-func (m *MockOracleKeeper) GetPriceForCurrencyPair(ctx types.Context, cp types1.CurrencyPair) (types2.QuotePrice, error) {
+func (m *MockOracleKeeper) GetPriceForCurrencyPair(ctx types.Context, cp types2.CurrencyPair) (types3.QuotePrice, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPriceForCurrencyPair", ctx, cp)
-	ret0, _ := ret[0].(types2.QuotePrice)
+	ret0, _ := ret[0].(types3.QuotePrice)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
