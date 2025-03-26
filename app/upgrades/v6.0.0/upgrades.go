@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 
 	"cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -90,6 +91,11 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("SetupDynamicfees failed: %w", err)
 		}
 
+		err = SetupSlashing(ctx, &keepers.SlashingKeeper)
+		if err != nil {
+			return vm, fmt.Errorf("SetupDynamicfees failed: %w", err)
+		}
+
 		err = FundValence(ctx, keepers.BankKeeper)
 		if err != nil {
 			return vm, fmt.Errorf("FundValence failed: %w", err)
@@ -100,11 +106,6 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("FundLiqUSDCLPProvider failed: %w", err)
 		}
 
-		err = FundDNTRNLiqProvider(ctx, keepers.BankKeeper)
-		if err != nil {
-			return vm, fmt.Errorf("FundDNTRNLiqProvider failed: %w", err)
-		}
-
 		err = PinNewCodes(ctx, keepers.WasmKeeper)
 		if err != nil {
 			return vm, fmt.Errorf("PinNewCodes failed: %w", err)
@@ -113,6 +114,17 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
+}
+
+func SetupSlashing(ctx context.Context, slashingkeeper *slashingkeeper.Keeper) error {
+	params, err := slashingkeeper.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	params.SlashFractionDowntime = math.LegacyZeroDec()
+	params.SlashFractionDoubleSign = math.LegacyZeroDec()
+	err = slashingkeeper.SetParams(ctx, params)
+	return err
 }
 
 type VotingRegistryExecuteMsg struct {
@@ -128,6 +140,7 @@ func SetupTracking(ctx sdk.Context, harpoonKeeper *harpoonkeeper.Keeper, wasmKee
 		ContractAddress: StakingTrackerContractAddress,
 		Hooks: []types.HookType{
 			types.HOOK_TYPE_AFTER_VALIDATOR_CREATED,
+			types.HOOK_TYPE_AFTER_VALIDATOR_REMOVED,
 			types.HOOK_TYPE_AFTER_VALIDATOR_BONDED,
 			types.HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING,
 			types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED,
@@ -201,16 +214,20 @@ func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Ke
 			Asset:  revenuetypes.DefaultRewardQuoteAsset,
 			Amount: revenuetypes.DefaultRewardQuoteAmount,
 		},
-		BlocksPerformanceRequirement:      revenuetypes.DefaultBlocksPerformanceRequirement(),
-		OracleVotesPerformanceRequirement: revenuetypes.DefaultOracleVotesPerformanceRequirement(),
+		BlocksPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+			AllowedToMiss:   math.LegacyNewDecWithPrec(5, 3),  // 0.005
+			RequiredAtLeast: math.LegacyNewDecWithPrec(95, 2), // 0.95
+		},
+		OracleVotesPerformanceRequirement: &revenuetypes.PerformanceRequirement{
+			AllowedToMiss:   math.LegacyNewDecWithPrec(2, 2),  // 0.02
+			RequiredAtLeast: math.LegacyNewDecWithPrec(95, 2), // 0.95
+		},
 		PaymentScheduleType: &revenuetypes.PaymentScheduleType{
-			PaymentScheduleType: &revenuetypes.PaymentScheduleType_BlockBasedPaymentScheduleType{
-				BlockBasedPaymentScheduleType: &revenuetypes.BlockBasedPaymentScheduleType{
-					BlocksPerPeriod: 600,
-				},
+			PaymentScheduleType: &revenuetypes.PaymentScheduleType_MonthlyPaymentScheduleType{
+				MonthlyPaymentScheduleType: &revenuetypes.MonthlyPaymentScheduleType{},
 			},
 		},
-		TwapWindow: 900,
+		TwapWindow: 7 * 24 * 3600,
 	}
 	srv := revenuekeeper.NewMsgServerImpl(&rk)
 	_, err := srv.UpdateParams(ctx, &revenuetypes.MsgUpdateParams{
@@ -300,21 +317,6 @@ func FundLiqUSDCLPProvider(ctx context.Context, bk bankkeeper.Keeper) error {
 		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
 		sdk.MustAccAddressFromBech32(UsdcLpReceiver),
 		sdk.NewCoins(*daoBalanceBefore.Balance),
-	)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func FundDNTRNLiqProvider(ctx context.Context, bk bankkeeper.Keeper) error {
-	amount := math.NewInt(dntrnNtrnLiqAmount)
-
-	err := bk.SendCoins(
-		ctx,
-		sdk.MustAccAddressFromBech32(MainDAOContractAddress),
-		sdk.MustAccAddressFromBech32(dntrnNtrnLiqProvider),
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, amount)),
 	)
 	if err != nil {
 		return err

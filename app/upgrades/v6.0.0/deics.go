@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"time"
 
 	"cosmossdk.io/math"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
@@ -33,13 +32,6 @@ const (
 	SovereignSelfStake         = 1_000_000
 	ICSMinSelfDelegation       = 1
 	ICSSelfStake               = 1
-)
-
-// TODO: remove before release
-// TEST ONLY CONSTS
-const (
-	Devnet                = true
-	OverrideUnbondingTime = 5 * time.Minute
 )
 
 //go:embed validators/staking
@@ -234,13 +226,10 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
-	cp, err := consumerKeeper.GetParams(ctx)
-	if err != nil {
-		return err
-	}
+	cp := consumerKeeper.GetConsumerParams(ctx)
 
 	p := types.Params{
-		UnbondingTime: cp.UnbondingTime,
+		UnbondingTime: cp.UnbondingPeriod,
 		// During migration MaxValidators MUST be >= all the validators number, old and new ones.
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
 		// otherwise panic during staking begin blocker happens
@@ -250,11 +239,6 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		HistoricalEntries: 10_000,
 		BondDenom:         params.DefaultDenom,
 		MinCommissionRate: math.LegacyMustNewDecFromStr("0.0"),
-	}
-
-	// TODO: Remove before release
-	if Devnet {
-		p.UnbondingTime = OverrideUnbondingTime
 	}
 
 	_, err = srv.UpdateParams(ctx, &types.MsgUpdateParams{
