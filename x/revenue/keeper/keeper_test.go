@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/math"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/golang/mock/gomock"
 	vetypes "github.com/skip-mev/slinky/abci/ve/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
@@ -44,7 +45,8 @@ func TestParams(t *testing.T) {
 	params, err = keeper.GetParams(ctx)
 	require.Nil(t, err)
 	require.Equal(t, revenuetypes.DefaultTWAPWindow+10, params.TwapWindow)
-	require.Equal(t, revenuetypes.DefaultParams().BaseCompensation, params.BaseCompensation)
+	require.Equal(t, revenuetypes.DefaultParams().RewardQuote.Amount, params.RewardQuote.Amount)
+	require.Equal(t, revenuetypes.DefaultParams().RewardQuote.Asset, params.RewardQuote.Asset)
 	require.Equal(t, revenuetypes.DefaultParams().BlocksPerformanceRequirement, params.BlocksPerformanceRequirement)
 	require.Equal(t, revenuetypes.DefaultParams().OracleVotesPerformanceRequirement, params.OracleVotesPerformanceRequirement)
 }
@@ -90,6 +92,8 @@ func TestProcessRevenue(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+	params, err := keeper.GetParams(ctx)
+	require.NoError(t, err)
 
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         1000,
@@ -103,16 +107,18 @@ func TestProcessRevenue(t *testing.T) {
 	val1Info.InActiveValsetForBlocksInPeriod = 1000
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
-	params, err := keeper.GetParams(ctx)
-	require.Nil(t, err)
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
 
-	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 	require.Nil(t, err)
 
 	// expect one successful SendCoinsFromModuleToAccount call
@@ -121,7 +127,7 @@ func TestProcessRevenue(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -155,6 +161,11 @@ func TestProcessRevenueNoReward(t *testing.T) {
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
+
 	// no SendCoinsFromModuleToAccount calls expected
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
@@ -170,6 +181,8 @@ func TestProcessRevenuePaymentScheduleTypeChange(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+	params, err := keeper.GetParams(ctx)
+	require.NoError(t, err)
 
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         1000,
@@ -183,16 +196,18 @@ func TestProcessRevenuePaymentScheduleTypeChange(t *testing.T) {
 	val1Info.InActiveValsetForBlocksInPeriod = 500
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
-	params, err := keeper.GetParams(ctx)
-	require.Nil(t, err)
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
 
-	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 	require.Nil(t, err)
 	expectedRevenueAmount := baseRevenueAmount.Quo(math.NewInt(2)) // for 1/2 of the payment period
 
@@ -202,7 +217,7 @@ func TestProcessRevenuePaymentScheduleTypeChange(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -218,6 +233,8 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
+	params, err := keeper.GetParams(ctx)
+	require.NoError(t, err)
 
 	ps := &revenuetypes.BlockBasedPaymentSchedule{
 		BlocksPerPeriod:         1000,
@@ -233,16 +250,18 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 	val1Info.InActiveValsetForBlocksInPeriod = 700 // 700/1000
 
 	// prepare keeper state
-	err := keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
+	err = keeper.SetValidatorInfo(ctx, mustValAddressFromBech32(t, val1Info.ValOperAddress), val1Info)
 	require.Nil(t, err)
 
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
-	params, err := keeper.GetParams(ctx)
-	require.Nil(t, err)
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
 
-	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 	require.Nil(t, err)
 
 	// val is only eligible of 70% of rewards due to joining valset 30% of period late
@@ -256,7 +275,7 @@ func TestProcessRevenueLateValsetJoin(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -279,7 +298,7 @@ func TestProcessRevenueReducedByAllFactors(t *testing.T) {
 	}
 	ctx = ctx.WithBlockHeight(1501) // 1500/2000 = 3/4 of the payment period
 
-	// define test specific performance requirements
+	// set test specific performance requirements
 	params := revenuetypes.DefaultParams()
 	params.BlocksPerformanceRequirement = &revenuetypes.PerformanceRequirement{
 		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
@@ -289,6 +308,7 @@ func TestProcessRevenueReducedByAllFactors(t *testing.T) {
 		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
 		RequiredAtLeast: math.LegacyNewDecWithPrec(8, 1), // not more than 0.2 allowed to miss to get rewards
 	}
+	require.Nil(t, keeper.SetParams(ctx, params))
 
 	// set val1 info as if they have committed 850/1000 blocks and prices and joined the valset
 	// 1000 blocks after the start of the payment period
@@ -304,13 +324,18 @@ func TestProcessRevenueReducedByAllFactors(t *testing.T) {
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
-	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 	require.Nil(t, err)
 
 	expectedRevenueAmount := math.LegacyNewDecFromInt(baseRevenueAmount).
-		Mul(math.LegacyNewDecWithPrec(66666, 5)). // 0.66666, been in valset for 2/3 of payment period
-		Mul(math.LegacyNewDecWithPrec(75, 2)).    // 0.75, missed 15% of blocks and oracle votes
-		Mul(math.LegacyNewDecWithPrec(75, 2)).    // 0.75, for 3/4 of the payment period
+		Mul(math.LegacyNewDecWithPrec(666666667, 9)). // 0.666666667, been in valset for 2/3 of payment period
+		Mul(math.LegacyNewDecWithPrec(75, 2)).        // 0.75, missed 15% of blocks and oracle votes
+		Mul(math.LegacyNewDecWithPrec(75, 2)).        // 0.75, for 3/4 of the payment period
 		TruncateInt()
 
 	// expect one successful SendCoinsFromModuleToAccount call
@@ -319,7 +344,7 @@ func TestProcessRevenueReducedByAllFactors(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			expectedRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -342,7 +367,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	}
 	ctx = ctx.WithBlockHeight(1001)
 
-	// define test specific performance requirements
+	// set test specific performance requirements
 	params := revenuetypes.DefaultParams()
 	params.BlocksPerformanceRequirement = &revenuetypes.PerformanceRequirement{
 		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
@@ -352,6 +377,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
 		RequiredAtLeast: math.LegacyNewDecWithPrec(8, 1), // not more than 0.2 allowed to miss to get rewards
 	}
+	require.Nil(t, keeper.SetParams(ctx, params))
 
 	// set val1 info as if they have missed 0.15 blocks and prices
 	val1Info := val1Info()
@@ -373,7 +399,12 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	err = keeper.CalcNewRewardAssetPrice(ctx, math.LegacyOneDec(), ctx.BlockTime().Unix())
 	require.Nil(t, err)
 
-	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: 6, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
+
+	baseRevenueAmount, err := keeper.CalcBaseRevenueAmount(ctx)
 	require.Nil(t, err)
 
 	// expect one successful SendCoinsFromModuleToAccount call for val1 75% of rewards
@@ -382,7 +413,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			math.LegacyNewDecWithPrec(75, 2).MulInt(baseRevenueAmount).RoundInt(),
 		)),
 	).Times(1).Return(nil)
@@ -393,7 +424,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		revenuetypes.RevenueTreasuryPoolName,
 		sdktypes.AccAddress(mustGetFromBech32(t, val2OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
-			revenuetypes.RewardDenom,
+			params.RewardAsset,
 			baseRevenueAmount)),
 	).Times(1).Return(nil)
 
@@ -467,22 +498,37 @@ func TestPrecisionConversion(t *testing.T) {
 	oracleKeeper := mock_types.NewMockOracleKeeper(ctrl)
 	keeper, ctx := testkeeper.RevenueKeeper(t, bankKeeper, oracleKeeper, "")
 
+	exp := uint32(6)
+	// real NTRN<>USD price from slinky at height 21466053
+	slinkyPrice := int64(15357076)
+	pairDecimals := uint64(8)
+
 	oracleKeeper.EXPECT().GetPriceForCurrencyPair(gomock.Any(), slinkytypes.CurrencyPair{
 		Base:  "NTRN",
 		Quote: "USD",
-	}).Return(oracletypes.QuotePrice{Price: math.NewInt(20000000)}, nil)
+	}).Return(oracletypes.QuotePrice{Price: math.NewInt(slinkyPrice)}, nil)
 	oracleKeeper.EXPECT().GetDecimalsForCurrencyPair(gomock.Any(), slinkytypes.CurrencyPair{
 		Base:  "NTRN",
 		Quote: "USD",
-	}).Return(uint64(8), nil)
+	}).Return(pairDecimals, nil)
+	bankKeeper.EXPECT().GetDenomMetaData(gomock.Any(), "untrn").Return(banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{{Denom: "ntrn", Exponent: exp, Aliases: []string{"NTRN"}}},
+		Base:       "untrn", Symbol: "NTRN",
+	}, true).AnyTimes()
 
 	err := keeper.UpdateRewardAssetPrice(ctx)
 	assert.Nil(t, err)
 
 	twap, err := keeper.GetTWAP(ctx)
 	assert.Nil(t, err)
-	// expected_twap_in_untrn = price_in_ntrn / 10^8 (precision of currency pair) / 10^6 (precision of NTRN)
-	assert.Equal(t, math.LegacyNewDecWithPrec(20000000, 8+revenuetypes.RewardDenomDecimals), twap)
+	// expected_twap = slinky_price / 10^pair_decimals = 15357076 / 10^8 = 0.15357076
+	assert.Equal(t, 0.15357076, twap.MustFloat64())
+
+	// expected_base_revenue = reward_quote_amount / twap * 10^exp = 2500 / 0.15357076 * 10^6 ≈ 16279140638untrn
+	expectedBaseRevenue := math.NewInt(16279140638)
+	baseRevenue, err := keeper.CalcBaseRevenueAmount(ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedBaseRevenue, baseRevenue)
 }
 
 func val1Info() revenuetypes.ValidatorInfo {

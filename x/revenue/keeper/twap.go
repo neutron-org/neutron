@@ -2,22 +2,13 @@ package keeper
 
 import (
 	"fmt"
-	stdmath "math"
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
-
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/neutron-org/neutron/v6/x/revenue/types"
-)
-
-const (
-	// ntrnSlinkyDenom is the Slinky identifier of the reward denom.
-	ntrnSlinkyDenom = "NTRN"
-	// usdSlinkyDenom is the Slinky identifier of USD.
-	usdSlinkyDenom = "USD"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 )
 
 // UpdateRewardAssetPrice stores fresh cumulative and absolute price of the reward asset and cleans
@@ -27,34 +18,35 @@ func (k *Keeper) UpdateRewardAssetPrice(ctx sdk.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get module params: %w", err)
 	}
+	rewardAssetSymbol, err := k.getRewardAssetSymbol(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get reward asset symbol: %w", err)
+	}
 
 	pair := slinkytypes.CurrencyPair{
-		Base:  ntrnSlinkyDenom,
-		Quote: usdSlinkyDenom,
+		Base:  rewardAssetSymbol,
+		Quote: params.RewardQuote.Asset,
 	}
 	priceInt, err := k.oracleKeeper.GetPriceForCurrencyPair(ctx, pair)
 	if err != nil {
-		return fmt.Errorf("failed to get price for currency pair: %w", err)
+		return fmt.Errorf("failed to get price for reward currency pair %s<>%s: %w", pair.Base, pair.Quote, err)
 	}
 	// safecheck. Should never happen. Make sure the slinky price is valid
 	if priceInt.Price.LTE(math.ZeroInt()) {
-		return fmt.Errorf("price is invalid")
+		return fmt.Errorf("reward asset price %s is invalid", priceInt.Price.String())
 	}
 
 	decimals, err := k.oracleKeeper.GetDecimalsForCurrencyPair(ctx, pair)
 	if err != nil {
-		return fmt.Errorf("failed to get decimals for currency pair: %w", err)
+		return fmt.Errorf("failed to get decimals for reward currency pair %s<>%s: %w", pair.Base, pair.Quote, err)
 	}
 
-	// the queried price is NTRN/USD, we need to convert it to untrn/USD
-	ntrnPrice := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals)) //nolint:gosec
-	untrnPrice := ntrnPrice.QuoInt64(int64(stdmath.Pow(10, types.RewardDenomDecimals)))
-
-	err = k.CalcNewRewardAssetPrice(ctx, untrnPrice, ctx.BlockTime().Unix())
+	priceNormalised := math.LegacyNewDecFromIntWithPrec(priceInt.Price, int64(decimals)) //nolint:gosec
+	err = k.CalcNewRewardAssetPrice(ctx, priceNormalised, ctx.BlockTime().Unix())
 	if err != nil {
 		return fmt.Errorf("failed to save a new reward asset price: %w", err)
 	}
-	k.Logger(ctx).Debug("TWAP refresh", "price", untrnPrice.String())
+	k.Logger(ctx).Debug("TWAP refresh", "price", priceNormalised.String())
 
 	err = k.CleanOutdatedRewardAssetPrices(ctx, ctx.BlockTime().Unix()-params.TwapWindow)
 	if err != nil {
@@ -217,4 +209,44 @@ func (k *Keeper) GetTWAPStartingFromTime(ctx sdk.Context, startAt int64) (math.L
 		return lastPrice.AbsolutePrice, nil
 	}
 	return lastPrice.CumulativePrice.Sub(firstPrice.CumulativePrice).QuoInt64(lastPrice.Timestamp - firstPrice.Timestamp), nil
+}
+
+// getRewardAssetSymbol retrieves the reward asset symbol from its denom metadata.
+func (k *Keeper) getRewardAssetSymbol(ctx sdk.Context) (string, error) {
+	rewardAssetMd, err := k.getRewardAssetMetadata(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to get reward asset metadata: %w", err)
+	}
+	return rewardAssetMd.Symbol, nil
+}
+
+// getRewardAssetSymbol retrieves the exponent of the reward asset's alias that corresponds to
+// reward asset's symbol.
+func (k *Keeper) getRewardAssetExponent(ctx sdk.Context) (uint32, error) {
+	rewardAssetMd, err := k.getRewardAssetMetadata(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get reward asset metadata: %w", err)
+	}
+
+	for _, unit := range rewardAssetMd.DenomUnits {
+		for _, alias := range unit.Aliases {
+			if alias == rewardAssetMd.Symbol {
+				return unit.Exponent, nil
+			}
+		}
+	}
+	return 0, fmt.Errorf("couldn't find exponent for reward asset alias %s in reward denom metadata", rewardAssetMd.Symbol)
+}
+
+// getRewardAssetMetadata retrieves the reward asset metadata from the bank module.
+func (k *Keeper) getRewardAssetMetadata(ctx sdk.Context) (*banktypes.Metadata, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get module params: %w", err)
+	}
+	rewardAssetMd, ex := k.bankKeeper.GetDenomMetaData(ctx, params.RewardAsset)
+	if !ex {
+		return nil, fmt.Errorf("reward asset %s metadata doesn't exist", params.RewardAsset)
+	}
+	return &rewardAssetMd, nil
 }

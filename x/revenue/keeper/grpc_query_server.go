@@ -62,7 +62,7 @@ func (s queryServer) PaymentInfo(goCtx context.Context, request *revenuetypes.Qu
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get module params: %s", err)
 	}
-	bra, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := s.keeper.CalcBaseRevenueAmount(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to calc base revenue amount: %s", err)
 	}
@@ -70,9 +70,8 @@ func (s queryServer) PaymentInfo(goCtx context.Context, request *revenuetypes.Qu
 	return &revenuetypes.QueryPaymentInfoResponse{
 		PaymentSchedule:         *ps,
 		EffectivePeriodProgress: psi.EffectivePeriodProgress(ctx),
-		RewardDenom:             revenuetypes.RewardDenom,
-		RewardDenomTwap:         twap,
-		BaseRevenueAmount:       bra,
+		RewardAssetTwap:         twap,
+		BaseRevenueAmount:       sdktypes.NewCoin(params.RewardAsset, baseRevenueAmount),
 	}, nil
 }
 
@@ -106,7 +105,7 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
-	baseRevenueAmount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := s.keeper.CalcBaseRevenueAmount(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -124,7 +123,7 @@ func (s queryServer) ValidatorStats(goCtx context.Context, request *revenuetypes
 			ValidatorInfo:               valInfo,
 			TotalProducedBlocksInPeriod: totalBlocksInPeriod,
 			PerformanceRating:           pr,
-			ExpectedRevenue:             valCompensation,
+			ExpectedRevenue:             sdktypes.NewCoin(params.RewardAsset, valCompensation),
 		},
 	}, nil
 }
@@ -151,7 +150,7 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 		return nil, status.Errorf(codes.Internal, "failed to get payment schedule: %s", err)
 	}
 
-	baseRevenueAmount, err := s.keeper.CalcBaseRevenueAmount(ctx, params.BaseCompensation)
+	baseRevenueAmount, err := s.keeper.CalcBaseRevenueAmount(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -170,7 +169,7 @@ func (s queryServer) ValidatorsStats(goCtx context.Context, request *revenuetype
 			ValidatorInfo:               valInfo,
 			TotalProducedBlocksInPeriod: totalBlocksInPeriod,
 			PerformanceRating:           pr,
-			ExpectedRevenue:             valCompensation,
+			ExpectedRevenue:             sdktypes.NewCoin(params.RewardAsset, valCompensation),
 		})
 	}
 

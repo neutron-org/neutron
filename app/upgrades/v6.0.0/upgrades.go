@@ -49,6 +49,8 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("RunMigrations failed: %w", err)
 		}
 
+		SetupDenomMetadata(ctx, keepers.BankKeeper)
+
 		err = SetupRewards(ctx, keepers.BankKeeper)
 		if err != nil {
 			return vm, fmt.Errorf("SetupRewards failed: %w", err)
@@ -170,9 +172,35 @@ func SetupRewards(ctx context.Context, bk bankkeeper.Keeper) error {
 	return nil
 }
 
+func SetupDenomMetadata(ctx context.Context, bk bankkeeper.Keeper) {
+	bk.SetDenomMetaData(ctx, banktypes.Metadata{
+		Description: "The native staking token of the Neutron network",
+		DenomUnits: []*banktypes.DenomUnit{
+			{
+				Denom:    appparams.DefaultDenom,
+				Exponent: 0,
+				Aliases:  []string{"microntrn"},
+			},
+			{
+				Denom:    "ntrn",
+				Exponent: appparams.DefaultDenomDecimals,
+				Aliases:  []string{"NTRN"},
+			},
+		},
+		Base:    appparams.DefaultDenom,
+		Display: "ntrn",
+		Name:    "Neutron",
+		Symbol:  "NTRN",
+	})
+}
+
 func SetupRevenue(ctx context.Context, rk revenuekeeper.Keeper, bk bankkeeper.Keeper) error {
 	params := revenuetypes.Params{
-		BaseCompensation:                  2500,
+		RewardAsset: revenuetypes.DefaultRewardAsset,
+		RewardQuote: &revenuetypes.RewardQuote{
+			Asset:  revenuetypes.DefaultRewardQuoteAsset,
+			Amount: revenuetypes.DefaultRewardQuoteAmount,
+		},
 		BlocksPerformanceRequirement:      revenuetypes.DefaultBlocksPerformanceRequirement(),
 		OracleVotesPerformanceRequirement: revenuetypes.DefaultOracleVotesPerformanceRequirement(),
 		PaymentScheduleType: &revenuetypes.PaymentScheduleType{
