@@ -28,18 +28,21 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 	// delegate half, and check, if success, then delegate reminder
 	// if drop delegation fails, then delegate with native staking module
 	halfDelegation := math.NewInt(StakeWithDropAmount).QuoRaw(2)
-	err = DropDelegate(ctx, wk, halfDelegation)
+	cacheCtx, write := ctx.CacheContext()
+	err = DropDelegate(cacheCtx, wk, halfDelegation)
 	if err != nil {
 		// ignore the error, because we have fallback logic
 		ctx.Logger().Error("Drop delegation failed", "error", err)
+	} else {
+		write()
 	}
 
-	dropAddress, err := sdk.AccAddressFromBech32(DropCoreContractAddress)
+	puppeteerAddress, err := sdk.AccAddressFromBech32(DropPuppeteerContractAddress)
 	if err != nil {
-		return fmt.Errorf("failed to parse DropDelegateContract contract address: %w", err)
+		return fmt.Errorf("failed to parse DropPuppeteerContractAddress contract address: %w", err)
 	}
 	// check delegations, they are really exist and assets do not stuck on the drop contract
-	delegations, err := sk.GetAllDelegatorDelegations(ctx, dropAddress)
+	delegations, err := sk.GetAllDelegatorDelegations(ctx, puppeteerAddress)
 	if err != nil {
 		return err
 	}
@@ -58,9 +61,13 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 	if delegatedByDropShares.GTE(math.LegacyNewDecFromInt(halfDelegation)) {
 		// drop delegation finished, delegate remainder
 		ctx.Logger().Info("delegating reminder with drop", "amount", toDelegateReminder)
+		cacheCtx, write = ctx.CacheContext()
 		err = DropDelegate(ctx, wk, toDelegateReminder)
 		if err != nil {
-			return err
+			// ignore the error, because we have delegated half with drop already
+			ctx.Logger().Error("Drop delegation reminder failed", "error", err)
+		} else {
+			write()
 		}
 	} else {
 		daoBalanceAfter, err := bk.Balance(ctx, &types2.QueryBalanceRequest{

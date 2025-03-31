@@ -27,6 +27,8 @@ const (
 // need to update an address, make sure to update the code ID as well (and vice versa).
 
 const (
+	DropPuppeteerContractAddress = "..." // TODO: populate when known or query from DropCoreContractAddress?
+
 	DropCoreContractAddress = "neutron18ecx6f2ywwnfxsql2l98jscw97lezczx8ax0g5wp8uj9rm95m0ls798cdq"
 	DropCoreContractCodeID  = 25 // TODO: populate when known
 
