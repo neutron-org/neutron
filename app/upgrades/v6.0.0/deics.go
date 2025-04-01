@@ -227,9 +227,6 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 	}
 
 	cp := consumerKeeper.GetConsumerParams(ctx)
-	if err != nil {
-		return err
-	}
 
 	p := types.Params{
 		UnbondingTime: cp.UnbondingPeriod,
@@ -243,7 +240,7 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		BondDenom:         params.DefaultDenom,
 		MinCommissionRate: math.LegacyMustNewDecFromStr("0.0"),
 	}
-	
+
 	_, err = srv.UpdateParams(ctx, &types.MsgUpdateParams{
 		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		Params:    p,
