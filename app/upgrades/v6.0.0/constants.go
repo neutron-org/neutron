@@ -27,22 +27,21 @@ const (
 // need to update an address, make sure to update the code ID as well (and vice versa).
 
 const (
-	DropPuppeteerContractAddress = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3" // TODO: populate when known or query from DropCoreContractAddress?
-
-	DropCoreContractAddress = "neutron1lsxvdyvmexak084wdty2yvsq5gj3wt7wm4jaw34yseat7r4qjffqlxlcua"
-	DropCoreContractCodeID  = 3332 // TODO: populate when known
+	DropPuppeteerContractAddress = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3"
+	DropCoreContractAddress      = "neutron1lsxvdyvmexak084wdty2yvsq5gj3wt7wm4jaw34yseat7r4qjffqlxlcua"
+	DropCoreContractCodeID       = 3332
 
 	StakingTrackerContractAddress = "neutron1kf9yq7vuyj9rshwpr52xru779y832g7jpgyysprvpm9xzu2m6mlsm6r64n"
-	StakingTrackerContractCodeID  = 3345 // TODO: populate when known
+	StakingTrackerContractCodeID  = 3345
 
 	StakingVaultContractAddress = "neutron19j2m9enzvq4kpd72tr3cz46z2kq6rnedc2q4pj6w5wq6v86va58qkled36"
-	StakingVaultContractCodeID  = 3346 // TODO: populate when known
+	StakingVaultContractCodeID  = 3346
 
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
-	StakingRewardsContractCodeID  = 3347 // TODO: populate when known
+	StakingRewardsContractCodeID  = 3347
 
 	StakingInfoProxyContractAddress = "neutron187ufx8wf0neqduppvkn0rknpg8j2s59qdhua80vgfhl7yclk8rrsnjukgq"
-	StakingInfoProxyContractCodeID  = 3348 // TODO: populate when known
+	StakingInfoProxyContractCodeID  = 3348
 )
 
 const (
@@ -53,7 +52,7 @@ const (
 	ValenceStaker = "neutron1d846g3px2u0dhs6r7k46e49nhgwcxzzw9973rau07lp9cpsj0v3q05ahf4"
 
 	UsdcLpReceiver = "neutron1d58c25fw3hwpjvg9dzgr2m235qpgtsc7stjt7u08kqg8jd583fgsyr5ytg"
-	UsdcLpDenom    = "factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share" // TODO: populate when known
+	UsdcLpDenom    = "factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share"
 
 	RewardContract = 6_000_000_000_000
 	RevenueModule  = 700_000_000_000
