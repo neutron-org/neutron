@@ -61,8 +61,8 @@ func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keepe
 	if delegatedByDropShares.GTE(math.LegacyNewDecFromInt(halfDelegation)) {
 		// drop delegation finished, delegate remainder
 		ctx.Logger().Info("delegating reminder with drop", "amount", toDelegateReminder)
-		cacheCtx, write = ctx.CacheContext()
-		err = DropDelegate(ctx, wk, toDelegateReminder)
+		cacheCtx, write := ctx.CacheContext()
+		err = DropDelegate(cacheCtx, wk, toDelegateReminder)
 		if err != nil {
 			// ignore the error, because we have delegated half with drop already
 			ctx.Logger().Error("Drop delegation reminder failed", "error", err)
