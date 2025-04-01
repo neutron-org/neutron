@@ -97,6 +97,72 @@ func TestMonthlyPaymentSchedule(t *testing.T) {
 		assert.NotEqual(t, math.LegacyOneDec(), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.Month(startMonth), daysInCurrentMonth, 23, 59, 59, 0, time.UTC))))
 		assert.Equal(t, math.LegacyOneDec(), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.Month(startMonth)+1, 1, 0, 0, 0, 0, time.UTC))))
 	}
+
+	for _, loc := range []*time.Location{
+		time.FixedZone("BakerIsland", -12*3600),
+		time.FixedZone("AzoresIslands", -1*3600),
+		time.UTC,
+		time.FixedZone("Berlin", 1*3600),
+		time.FixedZone("LineIslands", 14*3600),
+	} {
+		t.Run("TimezoneOperations"+loc.String(), func(t *testing.T) {
+			time.Local = loc // set the timezone for the test
+
+			t.Run("BeginningOfMonth", func(t *testing.T) {
+				// timestamp is in the beginning of the month: 2000-01-01 00:00:01
+				s = &revenuetypes.MonthlyPaymentSchedule{
+					CurrentMonthStartBlockTs: uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()), //nolint:gosec
+				}
+
+				// check that the current month is January regardless of the timezone
+				assert.Equal(t, time.January, s.CurrentMonth())
+
+				// make sure period end edge cases result in the same regardless of the timezone
+				assert.Equal(t, false, s.PeriodEnded(ctx.WithBlockTime(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC))))
+				assert.Equal(t, false, s.PeriodEnded(ctx.WithBlockTime(time.Date(2000, time.January, 31, 23, 59, 59, 0, time.UTC))))
+				assert.Equal(t, true, s.PeriodEnded(ctx.WithBlockTime(time.Date(2000, time.February, 1, 0, 0, 1, 0, time.UTC))))
+
+				// make sure effective period progress edge cases result in the same regardless of the timezone
+				assert.Equal(t, math.LegacyZeroDec(), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC))))
+				assert.Equal(t, math.LegacyNewDecWithPrec(5, 1), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.January, 16, 12, 0, 0, 0, time.UTC))))
+				assert.Equal(t, math.LegacyNewDecWithPrec(1344086021505376, 18), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.January, 1, 1, 0, 0, 0, time.UTC))))
+				assert.Equal(t, math.LegacyNewDecWithPrec(999977598566308244, 18), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.January, 31, 23, 59, 0, 0, time.UTC))))
+				assert.Equal(t, math.LegacyOneDec(), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.February, 1, 0, 0, 0, 0, time.UTC))))
+
+				// make sure the next period start timestamp and month are the same regardless of the timezone
+				nextPeriodStartDate := time.Date(2000, time.February, 1, 0, 0, 0, 0, time.UTC)
+				s.StartNewPeriod(ctx.WithBlockTime(nextPeriodStartDate))
+				assert.Equal(t, time.February, s.CurrentMonth())
+				assert.Equal(t, uint64(nextPeriodStartDate.Unix()), s.CurrentMonthStartBlockTs) //nolint:gosec
+			})
+
+			t.Run("EndOfMonth", func(t *testing.T) {
+				// timestamp is in the end of the month: 2000-01-31 23:59:00
+				s = &revenuetypes.MonthlyPaymentSchedule{
+					CurrentMonthStartBlockTs: uint64(time.Date(2000, time.January, 31, 23, 59, 0, 0, time.UTC).Unix()), //nolint:gosec
+				}
+
+				// check that the current month is January regardless of the timezone
+				assert.Equal(t, time.January, s.CurrentMonth())
+
+				// make sure period end edge cases result in the same regardless of the timezone
+				assert.Equal(t, false, s.PeriodEnded(ctx.WithBlockTime(time.Date(2000, time.January, 31, 23, 59, 0, 0, time.UTC))))
+				assert.Equal(t, false, s.PeriodEnded(ctx.WithBlockTime(time.Date(2000, time.January, 31, 23, 59, 59, 0, time.UTC))))
+				assert.Equal(t, true, s.PeriodEnded(ctx.WithBlockTime(time.Date(2000, time.February, 1, 0, 0, 1, 0, time.UTC))))
+
+				// make sure effective period progress edge cases result in the same regardless of the timezone
+				assert.Equal(t, math.LegacyZeroDec(), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.January, 31, 23, 59, 0, 0, time.UTC))))
+				assert.Equal(t, math.LegacyNewDecWithPrec(22028076463560, 18), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.January, 31, 23, 59, 59, 0, time.UTC))))
+				assert.Equal(t, math.LegacyNewDecWithPrec(22401433691756, 18), s.EffectivePeriodProgress(ctx.WithBlockTime(time.Date(2000, time.February, 1, 0, 0, 0, 0, time.UTC))))
+
+				// make sure the next period start timestamp and month are the same regardless of the timezone
+				nextPeriodStartDate := time.Date(2000, time.February, 1, 0, 0, 0, 0, time.UTC)
+				s.StartNewPeriod(ctx.WithBlockTime(nextPeriodStartDate))
+				assert.Equal(t, time.February, s.CurrentMonth())
+				assert.Equal(t, uint64(nextPeriodStartDate.Unix()), s.CurrentMonthStartBlockTs) //nolint:gosec
+			})
+		})
+	}
 }
 
 func TestBlockBasedPaymentSchedule(t *testing.T) {
