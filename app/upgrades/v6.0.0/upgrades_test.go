@@ -187,6 +187,10 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	})
 	require.NoError(t, err)
 
+	cp := app.ConsumerKeeper.GetConsumerParams(ctx)
+	cp.UnbondingPeriod = 10
+	app.ConsumerKeeper.SetParams(ctx, cp)
+
 	// DEICS
 	err = v600.DeICS(ctx, *app.StakingKeeper, app.ConsumerKeeper, app.BankKeeper)
 	require.NoError(t, err)
@@ -238,7 +242,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 
 	resp, err := app.RevenueKeeper.GetParams(ctx)
 	require.NoError(t, err)
-	require.Equal(t, resp.TwapWindow, int64(900))
+	require.Equal(t, resp.TwapWindow, int64(604800))
 
 	// TEST STAKING ENDBLOCKER and valset update
 	// the tricky part is - we have valset of 4 initially, and we must to modify staking params to execute staking endblocker
