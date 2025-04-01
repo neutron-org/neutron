@@ -93,7 +93,7 @@ func CreateUpgradeHandler(
 
 		err = SetupSlashing(ctx, &keepers.SlashingKeeper)
 		if err != nil {
-			return vm, fmt.Errorf("SetupDynamicfees failed: %w", err)
+			return vm, fmt.Errorf("SetupSlashing failed: %w", err)
 		}
 
 		err = FundValence(ctx, keepers.BankKeeper)
