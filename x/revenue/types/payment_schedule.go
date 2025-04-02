@@ -46,7 +46,7 @@ type PaymentScheduleI interface {
 // ends when the month of the block creation is different from the current month of the payment
 // schedule.
 func (s *MonthlyPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
-	return s.currentMonth() != ctx.BlockTime().Month()
+	return s.CurrentMonth() != ctx.BlockTime().Month()
 }
 
 // EffectivePeriodProgress returns the proportion of the current payment period that has elapsed
@@ -55,12 +55,13 @@ func (s *MonthlyPaymentSchedule) PeriodEnded(ctx sdktypes.Context) bool {
 // has fully elapsed from the very beginning to the very end. Otherwise the result equals to the
 // ratio of time passed since the start of the current period to the whole duration of the month.
 func (s *MonthlyPaymentSchedule) EffectivePeriodProgress(ctx sdktypes.Context) math.LegacyDec {
+	t := s.currentMonthStartBlockTime()
 	// source: https://www.brandur.org/fragments/go-days-in-month
 	daysInCurrentMonth := time.Date(
-		ctx.BlockTime().Year(),
-		s.currentMonth()+1,
+		t.Year(),
+		t.Month()+1,
 		0, 0, 0, 0, 0,
-		ctx.BlockTime().Location(),
+		t.Location(),
 	).Day()
 	secondsInCurrentMonth := int64(daysInCurrentMonth * 24 * 60 * 60)
 	secondsPassed := ctx.BlockTime().Unix() - int64(s.CurrentMonthStartBlockTs) //nolint:gosec
@@ -97,8 +98,14 @@ func (s *MonthlyPaymentSchedule) IntoPaymentSchedule() *PaymentSchedule {
 	return &PaymentSchedule{PaymentSchedule: &PaymentSchedule_MonthlyPaymentSchedule{MonthlyPaymentSchedule: s}}
 }
 
-func (s *MonthlyPaymentSchedule) currentMonth() time.Month {
-	return time.Unix(int64(s.CurrentMonthStartBlockTs), 0).Month() //nolint:gosec
+// CurrentMonth returns the time.Month of the current payment period.
+func (s *MonthlyPaymentSchedule) CurrentMonth() time.Month {
+	return s.currentMonthStartBlockTime().Month()
+}
+
+// currentMonthStartBlockTime returns the UTC time.Time of the current month start block.
+func (s *MonthlyPaymentSchedule) currentMonthStartBlockTime() time.Time {
+	return time.Unix(int64(s.CurrentMonthStartBlockTs), 0).UTC() //nolint:gosec
 }
 
 // PeriodEnded checks whether the end of the current payment period has come. The current period
