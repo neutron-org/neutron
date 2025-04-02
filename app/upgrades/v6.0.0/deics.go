@@ -7,8 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"path/filepath"
-	"time"
 
 	"cosmossdk.io/math"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
@@ -36,17 +34,11 @@ const (
 	ICSSelfStake               = 1
 )
 
-// TODO: remove before release
-// TEST ONLY CONSTS
-const (
-	Devnet                = true
-	OverrideUnbondingTime = 5 * time.Minute
-)
-
 //go:embed validators/staking
 var Vals embed.FS
 
 type StakingValidator struct {
+	Moniker         string         `json:"moniker"`
 	Valoper         string         `json:"valoper"`
 	PK              ed25519.PubKey `json:"pk"`
 	Identity        string         `json:"identity,omitempty"`
@@ -74,7 +66,7 @@ func GatherStakingMsgs() ([]types.MsgCreateValidator, error) {
 		if err != nil {
 			return err
 		}
-		msg := StakingValMsg(filepath.Base(path), SovereignSelfStake, skval.Valoper, skval.PK, skval.Identity, skval.Website, skval.SecurityContact, skval.Details)
+		msg := StakingValMsg(skval.Moniker, SovereignSelfStake, skval.Valoper, skval.PK, skval.Identity, skval.Website, skval.SecurityContact, skval.Details)
 		msgs = append(msgs, msg)
 
 		return nil
@@ -234,13 +226,10 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		return err
 	}
 
-	cp, err := consumerKeeper.GetParams(ctx)
-	if err != nil {
-		return err
-	}
+	cp := consumerKeeper.GetConsumerParams(ctx)
 
 	p := types.Params{
-		UnbondingTime: cp.UnbondingTime,
+		UnbondingTime: cp.UnbondingPeriod,
 		// During migration MaxValidators MUST be >= all the validators number, old and new ones.
 		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
 		// otherwise panic during staking begin blocker happens
@@ -250,11 +239,6 @@ func DeICS(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerk
 		HistoricalEntries: 10_000,
 		BondDenom:         params.DefaultDenom,
 		MinCommissionRate: math.LegacyMustNewDecFromStr("0.0"),
-	}
-
-	// TODO: Remove before release
-	if Devnet {
-		p.UnbondingTime = OverrideUnbondingTime
 	}
 
 	_, err = srv.UpdateParams(ctx, &types.MsgUpdateParams{
