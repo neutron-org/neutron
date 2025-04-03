@@ -76,7 +76,7 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.Exe
 		err := k.executeSchedule(ctx, schedule)
 		recordExecutedSchedule(err, schedule)
 	}
-	telemetry.ModuleMeasureSince(types.ModuleName, startTime, LabelExecuteReadySchedules)
+	defer telemetry.ModuleMeasureSince(types.ModuleName, startTime, LabelExecuteReadySchedules)
 }
 
 // AddSchedule adds a new schedule to be executed every certain number of blocks, specified in the `period`.
@@ -210,9 +210,9 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 			)
 			return err
 		}
-		telemetry.ModuleMeasureSince(types.ModuleName, startTimeContract, LabelExecuteCronContract, schedule.Name, msg.Contract)
+		defer telemetry.ModuleMeasureSince(types.ModuleName, startTimeContract, LabelExecuteCronContract, schedule.Name, msg.Contract)
 	}
-	telemetry.ModuleMeasureSince(types.ModuleName, startTimeSchedule, LabelExecuteCronSchedule, schedule.Name)
+	defer telemetry.ModuleMeasureSince(types.ModuleName, startTimeSchedule, LabelExecuteCronSchedule, schedule.Name)
 	// only save state if all the messages in a schedule were executed successfully
 	writeFn()
 	return nil
