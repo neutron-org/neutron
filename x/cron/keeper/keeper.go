@@ -185,30 +185,32 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 	schedule.LastExecuteHeight = uint64(ctx.BlockHeight()) //nolint:gosec
 	k.storeSchedule(ctx, schedule)
 
-	cacheCtx, writeFn := ctx.CacheContext()
+	for i := 0; i < 50; i++ {
+		cacheCtx, writeFn := ctx.CacheContext()
 
-	for idx, msg := range schedule.Msgs {
-		executeMsg := wasmtypes.MsgExecuteContract{
-			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
-			Contract: msg.Contract,
-			Msg:      []byte(msg.Msg),
-			Funds:    sdk.NewCoins(),
+		for idx, msg := range schedule.Msgs {
+			executeMsg := wasmtypes.MsgExecuteContract{
+				Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
+				Contract: msg.Contract,
+				Msg:      []byte(msg.Msg),
+				Funds:    sdk.NewCoins(),
+			}
+			_, err := k.WasmMsgServer.ExecuteContract(cacheCtx, &executeMsg)
+			if err != nil {
+				ctx.Logger().Info("executeSchedule: failed to execute contract msg",
+					"schedule_name", schedule.Name,
+					"msg_idx", idx,
+					"msg_contract", msg.Contract,
+					"msg", msg.Msg,
+					"error", err,
+				)
+				return err
+			}
 		}
-		_, err := k.WasmMsgServer.ExecuteContract(cacheCtx, &executeMsg)
-		if err != nil {
-			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
-				"schedule_name", schedule.Name,
-				"msg_idx", idx,
-				"msg_contract", msg.Contract,
-				"msg", msg.Msg,
-				"error", err,
-			)
-			return err
-		}
+
+		// only save state if all the messages in a schedule were executed successfully
+		writeFn()
 	}
-
-	// only save state if all the messages in a schedule were executed successfully
-	writeFn()
 	return nil
 }
 

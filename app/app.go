@@ -805,7 +805,7 @@ func New(
 		keys[crontypes.StoreKey],
 		keys[crontypes.MemStoreKey],
 		app.AccountKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		"neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
 	)
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(
 		&app.InterchainTxsKeeper,
