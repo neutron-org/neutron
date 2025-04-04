@@ -12,12 +12,10 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
-	globalfeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
-	globalfeekeeper "github.com/neutron-org/neutron/v5/x/globalfee/keeper"
+	globalfeeante "github.com/neutron-org/neutron/v6/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v6/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -28,14 +26,13 @@ type HandlerOptions struct {
 	BankKeeper            bankkeeper.Keeper
 	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
-	ConsumerKeeper        ibcconsumerkeeper.Keeper
 	GlobalFeeKeeper       globalfeekeeper.Keeper
 	WasmConfig            *wasmTypes.WasmConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 	FeeMarketKeeper       feemarketante.FeeMarketKeeper
 }
 
-func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
+func NewAnteHandler(options HandlerOptions, _ log.Logger) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
 	}
@@ -66,7 +63,6 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
-		consumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
@@ -85,14 +81,6 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
-	}
-
-	// Don't delete it even if IDE tells you so.
-	// This constant depends on build tag.
-	if !SkipCcvMsgFilter {
-		anteDecorators = append(anteDecorators, consumerante.NewMsgFilterDecorator(options.ConsumerKeeper))
-	} else {
-		logger.Error("WARNING: BUILT WITH skip_ccv_msg_filter. THIS IS NOT A PRODUCTION BUILD")
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil

@@ -10,10 +10,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	v2 "github.com/neutron-org/neutron/v5/x/tokenfactory/migrations/v2"
-	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
-	"github.com/neutron-org/neutron/v5/x/tokenfactory/types/v1beta1"
+	"github.com/neutron-org/neutron/v6/testutil"
+	v2 "github.com/neutron-org/neutron/v6/x/tokenfactory/migrations/v2"
+	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v6/x/tokenfactory/types/v1beta1"
 )
 
 type V3DexMigrationTestSuite struct {

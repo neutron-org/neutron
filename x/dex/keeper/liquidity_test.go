@@ -6,7 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 // TODO: In an ideal world, there should be enough lower level testing that the swap tests
@@ -547,6 +547,29 @@ func (s *DexTestSuite) TestSwapExhaustsLOAndLP() {
 	// There should be total of 6 tick updates
 	// (limitOrder, 2x deposit,  2x swap LP, swap LO)
 	s.AssertNEventValuesEmitted(types.TickUpdateEventKey, 6)
+
+	tickUpdates := s.GetAllMatchingEvents(types.TickUpdateEventKey)
+
+	// LimitOrder TickUpdate has correct SwapMetadatrra
+	loTickUpdate := tickUpdates[3]
+	loSwapIn, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountIn)
+	loSwapOut, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountOut)
+	s.Equal("10000000", loSwapIn.Value)
+	s.Equal("10000000", loSwapOut.Value)
+
+	// LP TickUpdate has correct SwapMetadata
+	lpTickUpdate := tickUpdates[5]
+	lpSwapIn, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountIn)
+	lpSwapOut, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountOut)
+	s.Equal("9000000", lpSwapIn.Value)
+	s.Equal("8999100", lpSwapOut.Value)
+
+	// opposite LP TickUpdate has no SwapMetadata
+	lpTickUpdateOppositeTick := tickUpdates[4]
+	_, found := lpTickUpdateOppositeTick.GetAttribute(types.AttributeSwapAmountIn)
+	s.False(found)
+	_, found = lpTickUpdateOppositeTick.GetAttribute(types.AttributeSwapAmountOut)
+	s.False(found)
 }
 
 // Test helpers ///////////////////////////////////////////////////////////////

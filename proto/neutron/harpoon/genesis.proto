@@ -1,0 +1,14 @@
+syntax = "proto3";
+package neutron.harpoon;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "neutron/harpoon/hooks.proto";
+
+option go_package = "github.com/neutron-org/neutron/v6/x/harpoon/types";
+
+// Harpoon module genesis state.
+message GenesisState {
+  // List of hooks
+  repeated HookSubscriptions hook_subscriptions = 1 [(gogoproto.nullable) = false];
+}

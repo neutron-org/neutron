@@ -5,7 +5,7 @@ import (
 
 	ethcryptocodec "github.com/neutron-org/neutron/v5/x/crypto/codec"
 
-	"github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v6/app/params"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing

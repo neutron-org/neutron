@@ -8,15 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/feeburner/types"
-	"github.com/neutron-org/neutron/v5/x/feeburner/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 
-	feekeeperutil "github.com/neutron-org/neutron/v5/testutil/feeburner/keeper"
-	feetypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/feeburner/types"
+	"github.com/neutron-org/neutron/v6/x/feeburner/keeper"
+
+	feekeeperutil "github.com/neutron-org/neutron/v6/testutil/feeburner/keeper"
+	feetypes "github.com/neutron-org/neutron/v6/x/feeburner/types"
 )
 
 func TestKeeper_RecordBurnedFees(t *testing.T) {
@@ -112,7 +113,7 @@ func TestKeeper_BurnAndDistribute_Ntrn(t *testing.T) {
 	defer ctrl.Finish()
 	feeKeeper, ctx, mockBankKeeper, _ := setupBurnAndDistribute(t, ctrl, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, math.NewInt(100))})
 
-	mockBankKeeper.EXPECT().BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, math.NewInt(100))})
+	mockBankKeeper.EXPECT().BurnCoins(ctx, revenuetypes.RevenueFeeRedistributePoolName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, math.NewInt(100))})
 
 	feeKeeper.BurnAndDistribute(ctx)
 
@@ -154,7 +155,7 @@ func TestKeeper_BurnAndDistribute_NtrnAndNonNtrn(t *testing.T) {
 	coins := sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, math.NewInt(70)), sdk.NewCoin("nonntrn", math.NewInt(20))}
 	feeKeeper, ctx, mockBankKeeper, redistrAddr := setupBurnAndDistribute(t, ctrl, coins)
 
-	mockBankKeeper.EXPECT().BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, math.NewInt(70))})
+	mockBankKeeper.EXPECT().BurnCoins(ctx, revenuetypes.RevenueFeeRedistributePoolName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, math.NewInt(70))})
 	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", math.NewInt(20))})
 
 	feeKeeper.BurnAndDistribute(ctx)
@@ -168,7 +169,7 @@ func setupBurnAndDistribute(t *testing.T, ctrl *gomock.Controller, coins sdk.Coi
 	mockBankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	feeKeeper, ctx := feekeeperutil.FeeburnerKeeperWithDeps(t, mockAccountKeeper, mockBankKeeper)
 
-	mockAccountKeeper.EXPECT().GetModuleAddress(consumertypes.ConsumerRedistributeName).Return(redistrAddr)
+	mockAccountKeeper.EXPECT().GetModuleAddress(revenuetypes.RevenueFeeRedistributePoolName).Return(redistrAddr)
 	mockBankKeeper.EXPECT().GetAllBalances(ctx, redistrAddr).Return(coins)
 
 	return feeKeeper, ctx, mockBankKeeper, redistrAddr
