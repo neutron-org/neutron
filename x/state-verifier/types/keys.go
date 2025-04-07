@@ -19,5 +19,5 @@ const (
 var ConsensusStateKey = []byte{prefixConsensusStateKey}
 
 func GetConsensusStateKey(height int64) []byte {
-	return append(ConsensusStateKey, types.Uint64ToBigEndian(uint64(height))...)
+	return append(ConsensusStateKey, types.Uint64ToBigEndian(uint64(height))...) //nolint:gosec
 }

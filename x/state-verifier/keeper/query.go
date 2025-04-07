@@ -10,7 +10,7 @@ import (
 
 // VerifyStateValues implements `VerifyStateValues` gRPC query to verify storage values
 func (k *Keeper) VerifyStateValues(ctx context.Context, request *types.QueryVerifyStateValuesRequest) (*types.QueryVerifyStateValuesResponse, error) {
-	if err := k.Verify(sdk.UnwrapSDKContext(ctx), int64(request.Height), request.StorageValues); err != nil {
+	if err := k.Verify(sdk.UnwrapSDKContext(ctx), int64(request.Height), request.StorageValues); err != nil { //nolint:gosec
 		return nil, err
 	}
 

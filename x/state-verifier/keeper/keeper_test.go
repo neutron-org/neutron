@@ -32,7 +32,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 	}{
 		{
 			name: "valid KV storage proof",
-			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+			malleate: func(_ string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
@@ -53,7 +53,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 		},
 		{
 			name: "empty KV storage proof",
-			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+			malleate: func(_ string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
@@ -74,7 +74,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 		},
 		{
 			name: "invalid KV storage proof",
-			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+			malleate: func(_ string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
@@ -95,7 +95,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 		},
 		{
 			name: "invalid height for proof",
-			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+			malleate: func(_ string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
@@ -116,7 +116,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 		},
 		{
 			name: "invalid storage prefix",
-			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+			malleate: func(_ string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{

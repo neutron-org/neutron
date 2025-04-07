@@ -76,7 +76,7 @@ func (k *Keeper) WriteConsensusState(ctx sdk.Context, height int64, cs tendermin
 
 	csBz, err := k.cdc.Marshal(&cs)
 	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrJSONMarshal, err.Error())
+		return errors.Wrapf(sdkerrors.ErrJSONMarshal, "failed to marshal consensus state: %v", err)
 	}
 
 	store.Set(key, csBz)
@@ -120,7 +120,7 @@ func (k *Keeper) GetAllConsensusStates(ctx sdk.Context) ([]*types.ConsensusState
 	for ; iterator.Valid(); iterator.Next() {
 		cs := tendermint.ConsensusState{}
 		k.cdc.MustUnmarshal(iterator.Value(), &cs)
-		height := int64(sdk.BigEndianToUint64(iterator.Key()))
+		height := int64(sdk.BigEndianToUint64(iterator.Key())) //nolint:gosec
 		states = append(states, &types.ConsensusState{
 			Height: height,
 			Cs:     &cs,
