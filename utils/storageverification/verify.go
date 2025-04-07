@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ics23 "github.com/cosmos/ics23/go"
 
-	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
 type VerifyCallback func(index int) error

@@ -6,8 +6,8 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 // CancelLimitOrderCore handles the logic for MsgCancelLimitOrder including bank operations and event emissions.
@@ -59,7 +59,7 @@ func (k Keeper) ExecuteCancelLimitOrder(
 	ctx sdk.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (makerCoinOut, takerCoinOut sdk.Coin, error error) {
+) (makerCoinOut, takerCoinOut sdk.Coin, err error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(ctx, callerAddr.String(), trancheKey)
 	if !found {
 		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)

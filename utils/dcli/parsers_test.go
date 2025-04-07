@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/utils/dcli"
+	"github.com/neutron-org/neutron/v6/utils/dcli"
 )
 
 type testingStruct struct {
@@ -150,7 +150,6 @@ func TestParseFieldFromArg(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			val := reflect.ValueOf(&tc.testingStruct).Elem()
 			typ := reflect.TypeOf(&tc.testingStruct).Elem()

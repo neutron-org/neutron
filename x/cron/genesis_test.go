@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v5/testutil/cron/keeper"
-	"github.com/neutron-org/neutron/v5/x/cron"
-	"github.com/neutron-org/neutron/v5/x/cron/types"
+	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v6/testutil/cron/keeper"
+	"github.com/neutron-org/neutron/v6/x/cron"
+	"github.com/neutron-org/neutron/v6/x/cron/types"
 )
 
 func TestGenesis(t *testing.T) {
@@ -21,7 +21,7 @@ func TestGenesis(t *testing.T) {
 				Name:              "a",
 				Period:            5,
 				Msgs:              nil,
-				LastExecuteHeight: uint64(ctx.BlockHeight()),
+				LastExecuteHeight: uint64(ctx.BlockHeight()), //nolint:gosec
 			},
 		},
 	}

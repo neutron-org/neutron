@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 func (s *DexTestSuite) TestDepositDoubleSidedInSpreadCurrTickAdjusted() {
@@ -204,4 +204,111 @@ func (s *DexTestSuite) TestDepositValueAccural() {
 	// AND carol get's back only what she put in
 	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484150), 0, 10))
 	s.assertCarolBalances(100, 1)
+}
+
+func (s *DexTestSuite) TestDepositToken0BELWithSwapPartial() {
+	s.fundAliceBalances(50, 10)
+	s.fundBobBalances(0, 30)
+
+	// GIVEN TokenB liquidity at tick 2002-2004
+	s.bobDeposits(NewDeposit(0, 10, 2001, 1),
+		NewDeposit(0, 10, 2002, 1),
+		NewDeposit(0, 10, 2003, 1),
+	)
+	// WHEN alice deposits TokenA at tick -2005 (BEL)
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(50, 10, 2006, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+	)
+
+	// THEN some of alice's TokenA is swapped and she deposits ~13TokenA & 40TokenB
+	// A = 50 - 30 * 1.0001^~2002 = 13.3
+	// B = 30(from swap) + 10 (initial deposit) = 40
+	// SharesIssued = 13.3 + 40 * 1.0001^2006 = 62
+
+	s.Equal(math.NewInt(13347289), resp.Reserve0Deposited[0])
+	s.Equal(math.NewInt(40000000), resp.Reserve1Deposited[0])
+	s.Equal(math.NewInt(62232231), resp.SharesIssued[0].Amount)
+	s.assertAliceBalances(0, 0)
+
+	s.assertLiquidityAtTickInt(math.NewInt(13347289), math.NewInt(40000000), 2006, 1)
+}
+
+func (s *DexTestSuite) TestDepositToken0BELWithSwapAll() {
+	s.fundAliceBalances(20, 10)
+	s.fundBobBalances(0, 30)
+
+	// GIVEN TokenB liquidity at tick 10,001
+	s.bobDeposits(NewDeposit(0, 10, 10000, 1))
+	// WHEN alice deposits TokenA at tick -10,002 (BEL)
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(20, 10, 10003, 1,
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+		),
+	)
+
+	// THEN all of alice's token0 is swapped with 2 coins not swapped due to rounding
+	// and she deposits 0TokenA & ~17.3TokenB
+	// B = 10 + 20 / 1.0001^100001 = 17.3
+	// SharesIssued = 17.3 * 1.0001^10003 = 47
+
+	s.True(resp.Reserve0Deposited[0].IsZero())
+	s.Equal(math.NewInt(17357220), resp.Reserve1Deposited[0])
+	s.Equal(math.NewInt(47193612), resp.SharesIssued[0].Amount)
+	s.assertAliceBalancesInt(math.NewInt(2), math.ZeroInt())
+
+	s.assertLiquidityAtTickInt(math.ZeroInt(), math.NewInt(17357220), 10003, 1)
+}
+
+func (s *DexTestSuite) TestDepositToken1BELWithSwapPartial() {
+	s.fundAliceBalances(10, 50)
+	s.fundBobBalances(30, 30)
+
+	// GIVEN TokenA liquidity at tick -2000 to -2002
+	s.bobDeposits(NewDeposit(10, 0, 2001, 1),
+		NewDeposit(10, 0, 2002, 1),
+		NewDeposit(10, 0, 2003, 1),
+	)
+	// WHEN alice deposits TokenB at tick 1998 (BEL)
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(10, 50, 1998, 1, types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
+	)
+
+	// THEN some of alice's tokenB is swapped and she deposits 40TokenA & ~25.4TokenB
+	//
+	// A = 30(from swap) + 10 (initial deposit) = 40
+	// B = 50 - 30 * 1.0001^~-2001 = 25.4
+	// SharesIssued = 40 + 25.4 * 1.0001^1998 = ~71
+
+	s.Equal(math.NewInt(40000000), resp.Reserve0Deposited[0])
+	s.Equal(math.NewInt(25440286), resp.Reserve1Deposited[0])
+	s.Equal(math.NewInt(71066311), resp.SharesIssued[0].Amount)
+	s.assertAliceBalances(0, 0)
+
+	s.assertLiquidityAtTickInt(math.NewInt(40000000), math.NewInt(25440286), 1998, 1)
+}
+
+func (s *DexTestSuite) TestDepositToken1BELWithSwapAll() {
+	s.fundAliceBalances(10, 20)
+	s.fundBobBalances(30, 0)
+
+	// GIVEN TokenA liquidity at tick 10,002
+	s.bobDeposits(NewDeposit(10, 0, -10001, 1))
+	// WHEN alice deposits TokenB at tick -10,003 (BEL)
+	resp := s.aliceDeposits(
+		NewDepositWithOptions(10, 20, -10004, 1,
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+		),
+	)
+
+	// THEN all of alice's tokenB is swapped
+	// and she deposits ~17.3TokenA and 0TokenB
+	// A = 10 + 20 / 1.0001^10002 = 17.3
+	// SharesIssued = 17.3
+
+	s.Equal(math.NewInt(17356485), resp.Reserve0Deposited[0])
+	s.True(resp.Reserve1Deposited[0].IsZero())
+	s.Equal(math.NewInt(17356485), resp.SharesIssued[0].Amount)
+	s.assertAliceBalancesInt(math.NewInt(0), math.ZeroInt())
+
+	s.assertLiquidityAtTickInt(math.NewInt(17356485), math.ZeroInt(), -10004, 1)
 }

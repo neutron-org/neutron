@@ -15,10 +15,10 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v5/app/params"
-	"github.com/neutron-org/neutron/v5/testutil"
-	"github.com/neutron-org/neutron/v5/x/ibc-hooks/testutils"
-	"github.com/neutron-org/neutron/v5/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v6/x/ibc-hooks/testutils"
+	"github.com/neutron-org/neutron/v6/x/ibc-hooks/utils"
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
@@ -57,7 +57,6 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		suite.Run(tc.msg, func() {
 			suite.SetupTest() // reset
 

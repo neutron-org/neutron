@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/cron/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
-	"github.com/neutron-org/neutron/v5/x/cron/types"
+	"github.com/neutron-org/neutron/v6/testutil"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v6/x/cron/keeper"
+	"github.com/neutron-org/neutron/v6/x/cron/types"
 )
 
 func TestMsgAddScheduleValidate(t *testing.T) {
@@ -114,7 +114,6 @@ func TestMsgAddScheduleValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.AddSchedule(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
@@ -159,7 +158,6 @@ func TestMsgRemoveScheduleValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.RemoveSchedule(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
@@ -214,7 +212,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)

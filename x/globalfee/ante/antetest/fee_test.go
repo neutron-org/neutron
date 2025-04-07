@@ -16,8 +16,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	gaiafeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
-	globfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
+	gaiafeeante "github.com/neutron-org/neutron/v6/x/globalfee/ante"
+	globfeetypes "github.com/neutron-org/neutron/v6/x/globalfee/types"
 )
 
 var testGasLimit uint64 = 200_000
@@ -690,7 +690,7 @@ func (s *IntegrationTestSuite) TestGetMinGasPrice() {
 		s.Run(tc.name, func() {
 			s.SetupTestGlobalFeeStoreAndMinGasPrice(tc.minGasPrice, &globfeetypes.Params{})
 
-			fees := gaiafeeante.GetMinGasPrice(s.ctx, int64(tc.feeTxGasLimit))
+			fees := gaiafeeante.GetMinGasPrice(s.ctx, int64(tc.feeTxGasLimit)) //nolint:gosec
 			s.Require().True(tc.expCoins.Sort().Equal(fees))
 		})
 	}

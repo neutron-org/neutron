@@ -1,0 +1,30 @@
+syntax = "proto3";
+package neutron.harpoon;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "neutron/harpoon/hooks.proto";
+
+option go_package = "github.com/neutron-org/neutron/v6/x/harpoon/types";
+
+// Defines the Query interface of the module.
+service Query {
+  // Retrieves contracts subscribed to a specific hook type.
+  rpc SubscribedContracts(QuerySubscribedContractsRequest) returns (QuerySubscribedContractsResponse) {
+    option (google.api.http).get = "/neutron/harpoon/subscribed_contracts";
+  }
+}
+
+// Request type for the Query/SubscribedContracts RPC method.
+message QuerySubscribedContractsRequest {
+  // The response will include only contract addresses for this hook type.
+  HookType hook_type = 1;
+}
+
+// Response type for the Query/SubscribedContracts RPC method.
+message QuerySubscribedContractsResponse {
+  // List of contract addresses subscribed to a specific hook.
+  repeated string contract_addresses = 1;
+}

@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 )
 
 type WasmKeeper interface {
@@ -31,4 +31,9 @@ type ChannelKeeper interface {
 type AccountKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress
 	GetModuleAccount(ctx context.Context, name string) sdk.ModuleAccountI
+}
+
+// TokenfactoryKeeper defines the tokenfactory keeper.
+type TokenfactoryKeeper interface {
+	StoreEscrowAddress(ctx sdk.Context, address sdk.AccAddress)
 }

@@ -1,14 +1,14 @@
 run:
   tests: true
   # timeout for analysis, e.g. 30s, 5m, default is 1m
-  timeout: 5m
+  timeout: 10m
 
 linters:
   disable-all: true
   enable:
     - dogsled
     - errcheck
-    - exportloopref
+    - copyloopvar
     - goconst
     - gocritic
     - gofumpt
@@ -38,6 +38,5 @@ linters-settings:
     extra-rules: true
   nolintlint:
     allow-unused: true
-    allow-leading-space: true
     require-explanation: false
     require-specific: false

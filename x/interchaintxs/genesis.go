@@ -3,8 +3,8 @@ package interchaintxs
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v6/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v6/x/interchaintxs/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

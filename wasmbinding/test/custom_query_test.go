@@ -8,9 +8,9 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v5/app/params"
-	feerefundertypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v6/app/params"
+	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v6/x/tokenfactory/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
@@ -19,11 +19,11 @@ import (
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v5/app"
-	"github.com/neutron-org/neutron/v5/testutil"
-	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
-	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
-	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v6/app"
+	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v6/wasmbinding/bindings"
+	icqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	ictxtypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
 )
 
 type CustomQuerierTestSuite struct {
@@ -76,7 +76,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 		}},
 		// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 		Block:    nil,
-		Height:   uint64(chainBResp.Height),
+		Height:   uint64(chainBResp.Height), //nolint:gosec
 		Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 	}
 	err = neutron.InterchainQueriesKeeper.SaveKVQueryResult(ctx, lastID, expectedQueryResult)
@@ -92,7 +92,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
-	suite.Require().Equal(uint64(chainBResp.Height), resp.Result.Height)
+	suite.Require().Equal(uint64(chainBResp.Height), resp.Result.Height) //nolint:gosec
 	suite.Require().Equal(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
 	suite.Require().Empty(resp.Result.Block)
 	suite.Require().NotEmpty(resp.Result.KvResults)

@@ -6,16 +6,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v5/x/dex/keeper"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v6/x/dex/keeper"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 func createNPoolMetadata(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.PoolMetadata {
 	items := make([]types.PoolMetadata, n)
 	for i := range items {
-		items[i].Id = uint64(i)
+		items[i].Id = uint64(i) //nolint:gosec
 		keeper.SetPoolMetadata(ctx, items[i])
 	}
 

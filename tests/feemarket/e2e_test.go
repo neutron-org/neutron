@@ -121,7 +121,6 @@ var (
 			TrustingPeriod: "48h",
 			NoHostMount:    noHostMount,
 			ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisKV),
-			SkipGenTx:      true,
 		},
 	}
 
@@ -137,8 +136,6 @@ func TestE2ETestSuite(t *testing.T) {
 		spec,
 		oracleImage,
 		txCfg,
-		e2e.WithInterchainConstructor(e2e.CCVInterchainConstructor),
-		e2e.WithChainConstructor(e2e.CCVChainConstructor),
 		e2e.WithDenom(denom),
 		e2e.WithGasPrices(strings.Join([]string{"0.0uatom"}, ",")),
 	)

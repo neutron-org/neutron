@@ -6,7 +6,7 @@ import (
 
 	types2 "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -14,12 +14,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/transfer/types"
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/transfer/keeper"
-	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
-	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
-	"github.com/neutron-org/neutron/v5/x/transfer"
+	"github.com/neutron-org/neutron/v6/testutil"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/transfer/types"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/transfer/keeper"
+	feetypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	ictxtypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v6/x/transfer"
 )
 
 const TestCosmosAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
@@ -31,10 +31,12 @@ func TestHandleAcknowledgement(t *testing.T) {
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	chanKeeper := mock_types.NewMockChannelKeeper(ctrl)
 	authKeeper := mock_types.NewMockAccountKeeper(ctrl)
+	tokenfactoryKeeper := mock_types.NewMockTokenfactoryKeeper(ctrl)
+
 	// required to initialize keeper
 	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx, _ := testkeeper.TransferKeeper(t, wmKeeper, feeKeeper, chanKeeper, authKeeper)
-	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper)
+	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper, tokenfactoryKeeper)
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 
 	resACK := channeltypes.Acknowledgement{
@@ -114,10 +116,11 @@ func TestHandleTimeout(t *testing.T) {
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	chanKeeper := mock_types.NewMockChannelKeeper(ctrl)
 	authKeeper := mock_types.NewMockAccountKeeper(ctrl)
+	tokenfactoryKeeper := mock_types.NewMockTokenfactoryKeeper(ctrl)
 	// required to initialize keeper
 	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx, _ := testkeeper.TransferKeeper(t, wmKeeper, feeKeeper, chanKeeper, authKeeper)
-	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper)
+	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper, tokenfactoryKeeper)
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"

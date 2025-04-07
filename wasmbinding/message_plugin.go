@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
@@ -15,16 +15,16 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v5/x/dex/utils"
+	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v6/x/dex/utils"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v6/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v6/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
@@ -37,21 +37,21 @@ import (
 	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v6/x/contractmanager/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v5/x/transfer/types"
+	"github.com/neutron-org/neutron/v6/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v6/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v6/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v6/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v6/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v6/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v6/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(
@@ -253,7 +253,7 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		msg.OrderType = dextypes.LimitOrderType(orderTypeInt)
 
 		if dex.PlaceLimitOrder.ExpirationTime != nil {
-			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
+			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0) //nolint:gosec
 			msg.ExpirationTime = &t
 		}
 

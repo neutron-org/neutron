@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 func TestGetParams(t *testing.T) {
@@ -24,6 +24,7 @@ func TestSetParams(t *testing.T) {
 		FeeTiers:              []uint64{0, 1},
 		MaxJitsPerBlock:       0,
 		GoodTilPurgeAllowance: 0,
+		WhitelistedLps:        []string{"neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf"},
 	}
 	err := k.SetParams(ctx, newParams)
 	require.NoError(t, err)
@@ -31,12 +32,37 @@ func TestSetParams(t *testing.T) {
 	require.EqualValues(t, newParams, k.GetParams(ctx))
 }
 
-func TestValidateParams(t *testing.T) {
+func TestValidateFees(t *testing.T) {
 	goodFees := []uint64{1, 2, 3, 4, 5, 200}
 	require.NoError(t, types.Params{FeeTiers: goodFees}.Validate())
 
 	badFees := []uint64{1, 2, 3, 3}
 	require.Error(t, types.Params{FeeTiers: badFees}.Validate())
+}
+
+func TestValidateWhitelistedLPs(t *testing.T) {
+	// No whitelists
+	require.NoError(t, types.Params{WhitelistedLps: []string{}}.Validate())
+
+	// With account address
+	require.NoError(t, types.Params{WhitelistedLps: []string{"neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf"}}.Validate())
+
+	// With contract address
+	require.NoError(t, types.Params{WhitelistedLps: []string{"neutron10a3k4hvk37cc4hnxctw4p95fhscd2z6h2rmx0aukc6rm8u9qqx9s0methe"}}.
+		Validate())
+
+	// With contract address
+	require.NoError(t, types.Params{WhitelistedLps: []string{
+		"neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
+		"neutron10a3k4hvk37cc4hnxctw4p95fhscd2z6h2rmx0aukc6rm8u9qqx9s0methe",
+		"neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf",
+	}}.Validate())
+
+	// With invalid address
+	require.Error(t, types.Params{WhitelistedLps: []string{
+		"neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
+		"BADADDR",
+	}}.Validate())
 }
 
 func (s *DexTestSuite) TestPauseDex() {

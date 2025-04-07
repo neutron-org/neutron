@@ -4,6 +4,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
@@ -13,14 +14,19 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
-	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
-	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
-	stateverifiertypes "github.com/neutron-org/neutron/v5/x/state-verifier/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v6/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v6/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	stateverifiertypes "github.com/neutron-org/neutron/v6/x/state-verifier/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+
+	harpoontypes "github.com/neutron-org/neutron/v6/x/harpoon/types"
+
+	globalfeetypes "github.com/neutron-org/neutron/v6/x/globalfee/types"
+
+	dynamicfeestypes "github.com/neutron-org/neutron/v6/x/dynamicfees/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
@@ -105,19 +111,32 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
 
 		// marketmap
-		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
+		"/slinky.marketmap.v1.Query/Markets":     &marketmaptypes.MarketsResponse{},
 		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
 		"/slinky.marketmap.v1.Query/Market":      &marketmaptypes.MarketResponse{},
 
 		// feemarket
-		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
-		"feemarket.feemarket.v1.Query/State":     &feemarkettypes.StateResponse{},
-		"feemarket.feemarket.v1.Query/GasPrice":  &feemarkettypes.GasPriceResponse{},
-		"feemarket.feemarket.v1.Query/GasPrices": &feemarkettypes.GasPricesResponse{},
+		"/feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
+		"/feemarket.feemarket.v1.Query/State":     &feemarkettypes.StateResponse{},
+		"/feemarket.feemarket.v1.Query/GasPrice":  &feemarkettypes.GasPriceResponse{},
+		"/feemarket.feemarket.v1.Query/GasPrices": &feemarkettypes.GasPricesResponse{},
 
 		// dynamicfees
-		"neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
+		"/neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
+
+		// globalfee
+		"/gaia.globalfee.v1beta1.Query/Params": &globalfeetypes.QueryParamsResponse{},
+
+		// staking
+		"/cosmos.staking.v1beta1.Query/Delegation":                    &stakingtypes.QueryDelegationResponse{},
+		"/cosmos.staking.v1beta1.Query/UnbondingDelegation":           &stakingtypes.QueryUnbondingDelegationResponse{},
+		"/cosmos.staking.v1beta1.Query/Validator":                     &stakingtypes.QueryValidatorResponse{},
+		"/cosmos.staking.v1beta1.Query/DelegatorDelegations":          &stakingtypes.QueryDelegatorDelegationsResponse{},
+		"/cosmos.staking.v1beta1.Query/DelegatorUnbondingDelegations": &stakingtypes.QueryDelegatorUnbondingDelegationsResponse{},
+
+		// harpoon
+		"/neutron.harpoon.Query/SubscribedContracts": &harpoontypes.QuerySubscribedContractsResponse{},
 
 		// state verifier
 		"/neutron.state_verifier.v1.Query/VerifyStateValues": &stateverifiertypes.QueryVerifyStateValuesResponse{},

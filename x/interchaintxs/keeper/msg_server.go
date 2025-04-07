@@ -16,8 +16,8 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
-	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	feetypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	ictxtypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
 )
 
 type msgServer struct {
@@ -163,7 +163,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		Owner:           icaOwner,
 		ConnectionId:    msg.ConnectionId,
 		PacketData:      packetData,
-		RelativeTimeout: uint64(time.Duration(msg.Timeout) * time.Second),
+		RelativeTimeout: uint64(time.Duration(msg.Timeout) * time.Second), //nolint:gosec
 	})
 	if err != nil {
 		// usually we use DEBUG level for such errors, but in this case we have checked full input before running SendTX, so error here may be critical

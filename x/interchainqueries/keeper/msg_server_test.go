@@ -8,10 +8,10 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v6/testutil"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v6/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
 func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
@@ -170,7 +170,6 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.RegisterInterchainQuery(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -289,7 +288,6 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.SubmitQueryResult(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -334,7 +332,6 @@ func TestMsgRemoveInterchainQueryRequestValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.RemoveInterchainQuery(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -469,7 +466,6 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.UpdateInterchainQuery(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -503,7 +499,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := k.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)

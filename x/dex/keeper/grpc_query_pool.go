@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 // Returns the pool that was requested by PairId, TickIndex and Fee (or errors)

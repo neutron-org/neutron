@@ -1,0 +1,43 @@
+syntax = "proto3";
+package neutron.harpoon;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/v6/x/harpoon/types";
+
+// Specifies how subscribed contract_addresses are stored in the KV store for each hook type.
+message HookSubscriptions {
+  // The hook type being subscribed to.
+  HookType hook_type = 1;
+  // Contract addresses subscribed to this hook type.
+  repeated string contract_addresses = 2;
+}
+
+// Hook types that can be subscribed to.
+enum HookType {
+  option (gogoproto.goproto_enum_prefix) = false;
+
+  HOOK_TYPE_UNSPECIFIED = 0;
+  // Triggered after validator is created
+  HOOK_TYPE_AFTER_VALIDATOR_CREATED = 1;
+  // Triggered before validator is modified
+  HOOK_TYPE_BEFORE_VALIDATOR_MODIFIED = 2;
+  // Triggered after validator is removed
+  HOOK_TYPE_AFTER_VALIDATOR_REMOVED = 3;
+  // Triggered after validator is bonded
+  HOOK_TYPE_AFTER_VALIDATOR_BONDED = 4;
+  // Triggered after validator begins unbonding
+  HOOK_TYPE_AFTER_VALIDATOR_BEGIN_UNBONDING = 5;
+  // Triggered before delegation is created
+  HOOK_TYPE_BEFORE_DELEGATION_CREATED = 6;
+  // Triggered before delegation's shares are modified
+  HOOK_TYPE_BEFORE_DELEGATION_SHARES_MODIFIED = 7;
+  // Triggered before delegation is removed
+  HOOK_TYPE_BEFORE_DELEGATION_REMOVED = 8;
+  // Triggered after delegation is modified
+  HOOK_TYPE_AFTER_DELEGATION_MODIFIED = 9;
+  // Triggered before validator is slashed
+  HOOK_TYPE_BEFORE_VALIDATOR_SLASHED = 10;
+  // Triggered after unbonding is initiated
+  HOOK_TYPE_AFTER_UNBONDING_INITIATED = 11;
+}

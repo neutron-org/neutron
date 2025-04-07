@@ -17,9 +17,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v5/app"
-	"github.com/neutron-org/neutron/v5/testutil"
-	dexmoduletypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/app"
+	"github.com/neutron-org/neutron/v6/testutil"
+	dexmoduletypes "github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 type KeeperTestHelper struct {
@@ -49,7 +49,7 @@ func (s *KeeperTestHelper) Setup() {
 	}
 }
 
-// setupAddr takes a balance, prefix, and address number. Then returns the respective account address byte array.
+// SetupAddr takes a balance, prefix, and address number. Then returns the respective account address byte array.
 // If prefix is left blank, it will be replaced with a random prefix.
 func SetupAddr(index int) sdk.AccAddress {
 	prefixBz := make([]byte, 8)

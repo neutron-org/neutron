@@ -6,9 +6,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neutron-org/neutron/v5/app/config"
+	appparams "github.com/neutron-org/neutron/v6/app/params"
 
-	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v6/app/config"
+
+	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -20,12 +22,14 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/testutil/contractmanager/network"
-	"github.com/neutron-org/neutron/v5/x/contractmanager/client/cli"
-	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v6/testutil/contractmanager/network"
+	"github.com/neutron-org/neutron/v6/x/contractmanager/client/cli"
+	"github.com/neutron-org/neutron/v6/x/contractmanager/types"
 )
 
 func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.Failure) {
+	sdktypes.DefaultBondDenom = appparams.DefaultDenom
+
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}
@@ -83,7 +87,6 @@ func TestAddressFailures(t *testing.T) {
 			err:  status.Error(codes.NotFound, "not found"),
 		},
 	} {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
 				tc.idIndex,
@@ -130,7 +133,7 @@ func TestListFailure(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(objs); i += step {
-			args := request(nil, uint64(i), uint64(step), false)
+			args := request(nil, uint64(i), uint64(step), false) //nolint:gosec
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdFailures(), args)
 			require.NoError(t, err)
 			var resp types.QueryFailuresResponse
@@ -146,7 +149,7 @@ func TestListFailure(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(objs); i += step {
-			args := request(next, 0, uint64(step), false)
+			args := request(next, 0, uint64(step), false) //nolint:gosec
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdFailures(), args)
 			require.NoError(t, err)
 			var resp types.QueryFailuresResponse
@@ -166,7 +169,7 @@ func TestListFailure(t *testing.T) {
 		var resp types.QueryFailuresResponse
 		require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 		require.NoError(t, err)
-		require.Equal(t, len(objs), int(resp.Pagination.Total))
+		require.Equal(t, uint64(len(objs)), resp.Pagination.Total)
 		require.ElementsMatch(t,
 			nullify.Fill(objs),
 			nullify.Fill(resp.Failures),

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v6/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v6/x/contractmanager/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {
@@ -34,7 +34,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := k.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)

@@ -14,13 +14,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v5/testutil/apptesting"
-	"github.com/neutron-org/neutron/v5/testutil/common/sample"
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v5/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/testutil/apptesting"
+	"github.com/neutron-org/neutron/v6/testutil/common/sample"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v6/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 // Test suite
@@ -483,7 +483,20 @@ func (s *DexTestSuite) limitSellsInt(
 		return "", err
 	}
 
-	return msg.TrancheKey, err
+	return msg.TrancheKey, nil
+}
+
+func (s *DexTestSuite) limitSellsIntSuccess(
+	account sdk.AccAddress,
+	tokenIn string,
+	tickIndexNormalized int,
+	amountIn sdkmath.Int,
+	orderTypeOpt ...types.LimitOrderType,
+) string {
+	trancheKey, err := s.limitSellsInt(account, tokenIn, tickIndexNormalized, amountIn, orderTypeOpt...)
+	s.NoError(err)
+
+	return trancheKey
 }
 
 func (s *DexTestSuite) limitSells(
@@ -534,7 +547,7 @@ func NewDepositInt(amountA, amountB sdkmath.Int, tickIndex, fee int) *Deposit {
 		AmountA:   amountA,
 		AmountB:   amountB,
 		TickIndex: int64(tickIndex),
-		Fee:       uint64(fee),
+		Fee:       uint64(fee), //nolint:gosec
 	}
 }
 
@@ -550,7 +563,7 @@ func NewDepositWithOptions(
 		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
 		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
 		TickIndex: int64(tickIndex),
-		Fee:       uint64(fee),
+		Fee:       uint64(fee), //nolint:gosec
 		Options:   &options,
 	}
 }
@@ -1779,10 +1792,39 @@ func TestMsgDepositValidate(t *testing.T) {
 			},
 			types.ErrInvalidFee,
 		},
+		{
+			"SwapOnDeposit without autoswap",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: true, SwapOnDeposit: true}},
+			},
+			types.ErrSwapOnDepositWithoutAutoswap,
+		},
+		{
+			"invalid slop tolerance",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10001}},
+			},
+			types.ErrInvalidSlopTolerance,
+		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.Deposit(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -1959,7 +2001,6 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.Withdrawal(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2162,7 +2203,6 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.PlaceLimitOrder(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2191,7 +2231,6 @@ func TestMsgWithdrawFilledLimitOrderValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.WithdrawFilledLimitOrder(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2220,7 +2259,6 @@ func TestMsgCancelLimitOrderValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.CancelLimitOrder(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2363,7 +2401,6 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.MultiHopSwap(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -2398,7 +2435,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)

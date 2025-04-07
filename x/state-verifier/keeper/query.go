@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/state-verifier/types"
+	"github.com/neutron-org/neutron/v6/x/state-verifier/types"
 )
 
 // VerifyStateValues implements `VerifyStateValues` gRPC query to verify storage values

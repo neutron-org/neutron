@@ -16,8 +16,8 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
-	"github.com/neutron-org/neutron/v5/utils/storageverification"
-	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v6/utils/storageverification"
+	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
 var _ types.MsgServer = msgServer{}
@@ -71,7 +71,7 @@ func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		ConnectionId:       msg.ConnectionId,
 		Deposit:            params.QueryDeposit,
 		SubmitTimeout:      params.QuerySubmitTimeout,
-		RegisteredAtHeight: uint64(ctx.BlockHeader().Height),
+		RegisteredAtHeight: uint64(ctx.BlockHeader().Height), //nolint:gosec
 	}
 
 	m.SetLastRegisteredQueryKey(ctx, lastID)
@@ -277,7 +277,7 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, errors.Wrapf(err, "failed to ProcessBlock: %v", err)
 		}
 
-		if err = m.UpdateLastLocalHeight(ctx, query.Id, uint64(ctx.BlockHeight())); err != nil {
+		if err = m.UpdateLastLocalHeight(ctx, query.Id, uint64(ctx.BlockHeight())); err != nil { //nolint:gosec
 			return nil, errors.Wrapf(err,
 				"failed to update last local height for a result with id %d: %v", query.Id, err)
 		}

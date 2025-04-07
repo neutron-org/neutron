@@ -14,18 +14,18 @@ permissions:
 jobs:
   golangci:
     name: lint
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     steps:
       - uses: actions/setup-go@v4
         with:
-          go-version: '~1.22'
+          go-version: '~1.23'
           cache: false
       - uses: actions/checkout@v3
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: 'v1.55.2'
+          version: 'v1.63.4'
           # Optional: working directory, useful for monorepos
           # working-directory: somedir
 

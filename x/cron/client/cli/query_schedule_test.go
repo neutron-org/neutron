@@ -5,6 +5,10 @@ import (
 	"strconv"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	appparams "github.com/neutron-org/neutron/v6/app/params"
+
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
@@ -12,13 +16,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v5/testutil/cron/network"
-	"github.com/neutron-org/neutron/v5/x/cron/client/cli"
-	"github.com/neutron-org/neutron/v5/x/cron/types"
+	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v6/testutil/cron/network"
+	"github.com/neutron-org/neutron/v6/x/cron/client/cli"
+	"github.com/neutron-org/neutron/v6/x/cron/types"
 )
 
 func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.Schedule) {
+	sdk.DefaultBondDenom = appparams.DefaultDenom
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}
@@ -71,7 +76,6 @@ func TestShowSchedule(t *testing.T) {
 			err:  status.Error(codes.NotFound, "not found"),
 		},
 	} {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
 				tc.name,
@@ -118,7 +122,7 @@ func TestListSchedule(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(objs); i += step {
-			args := request(nil, uint64(i), uint64(step), false)
+			args := request(nil, uint64(i), uint64(step), false) //nolint:gosec
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListSchedule(), args)
 			require.NoError(t, err)
 			var resp types.QuerySchedulesResponse
@@ -134,7 +138,7 @@ func TestListSchedule(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(objs); i += step {
-			args := request(next, 0, uint64(step), false)
+			args := request(next, 0, uint64(step), false) //nolint:gosec
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListSchedule(), args)
 			require.NoError(t, err)
 			var resp types.QuerySchedulesResponse
@@ -154,7 +158,7 @@ func TestListSchedule(t *testing.T) {
 		var resp types.QuerySchedulesResponse
 		require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 		require.NoError(t, err)
-		require.Equal(t, len(objs), int(resp.Pagination.Total))
+		require.Equal(t, len(objs), int(resp.Pagination.Total)) //nolint:gosec
 		require.ElementsMatch(t,
 			nullify.Fill(objs),
 			nullify.Fill(resp.Schedules),

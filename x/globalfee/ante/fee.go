@@ -3,14 +3,14 @@ package ante
 import (
 	"fmt"
 
-	gaiaerrors "github.com/neutron-org/neutron/v5/x/globalfee/types"
+	gaiaerrors "github.com/neutron-org/neutron/v6/x/globalfee/types"
 
 	"cosmossdk.io/math"
 
 	tmstrings "github.com/cometbft/cometbft/libs/strings"
 
-	"github.com/neutron-org/neutron/v5/app/params"
-	globalfeekeeper "github.com/neutron-org/neutron/v5/x/globalfee/keeper"
+	"github.com/neutron-org/neutron/v6/app/params"
+	globalfeekeeper "github.com/neutron-org/neutron/v6/x/globalfee/keeper"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -156,7 +156,7 @@ func (mfd FeeDecorator) GetTxFeeRequired(ctx sdk.Context, tx sdk.FeeTx) (sdk.Coi
 	// to form the tx fee requirements
 
 	// Get local minimum-gas-prices
-	localFees := GetMinGasPrice(ctx, int64(tx.GetGas()))
+	localFees := GetMinGasPrice(ctx, int64(tx.GetGas())) //nolint:gosec
 	c, err := CombinedFeeRequirement(globalFees, localFees)
 
 	// Return combined fee requirements
@@ -180,7 +180,7 @@ func (mfd FeeDecorator) GetGlobalFee(ctx sdk.Context, feeTx sdk.FeeTx) sdk.Coins
 	requiredGlobalFees := make(sdk.Coins, len(globalMinGasPrices))
 	// Determine the required fees by multiplying each required minimum gas
 	// price by the gas limit, where fee = ceil(minGasPrice * gasLimit).
-	glDec := math.LegacyNewDec(int64(feeTx.GetGas()))
+	glDec := math.LegacyNewDec(int64(feeTx.GetGas())) //nolint:gosec
 	for i, gp := range globalMinGasPrices {
 		fee := gp.Amount.Mul(glDec)
 		requiredGlobalFees[i] = sdk.NewCoin(gp.Denom, fee.Ceil().RoundInt())

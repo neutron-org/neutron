@@ -7,15 +7,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v5/x/dex/keeper"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v6/x/dex/keeper"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {
 	items := make([]*types.Pool, n)
 	for i := range items {
-		pool, err := k.InitPool(ctx, types.MustNewPairID("TokenA", "TokenB"), int64(i), uint64(i))
+		pool, err := k.InitPool(ctx, types.MustNewPairID("TokenA", "TokenB"), int64(i), uint64(i)) //nolint:gosec
 		if err != nil {
 			panic("failed to create pool")
 		}

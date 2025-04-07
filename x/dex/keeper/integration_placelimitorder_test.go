@@ -7,8 +7,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 // Core tests w/ GTC limitOrders //////////////////////////////////////////////
@@ -763,7 +763,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITTooManyFails() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN Alice places JITS up to the MaxJITPerBlock limit
-	for i := 0; i < int(types.DefaultMaxJITsPerBlock); i++ {
+	for i := 0; i < int(types.DefaultMaxJITsPerBlock); i++ { //nolint:gosec
 		s.aliceLimitSells("TokenA", i, 1, types.LimitOrderType_JUST_IN_TIME)
 	}
 	// WHEN Alive places another JIT order it fails

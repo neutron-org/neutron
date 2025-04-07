@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	"github.com/neutron-org/neutron/v5/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/v5/x/feeburner/types"
+	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v6/testutil/feeburner/keeper"
+	"github.com/neutron-org/neutron/v6/x/feeburner/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {
@@ -55,7 +55,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := k.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
