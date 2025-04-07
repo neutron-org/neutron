@@ -11,10 +11,6 @@ import (
 	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
 )
 
-type TokenFactoryKeeper interface {
-	AssertIsHookWhitelisted(ctx sdk.Context, denom string, contractAddress sdk.AccAddress) error
-}
-
 // MigrateStore performs in-place store migrations.
 // The migration sets the new tokenfactory params TrackBeforeSendGasLimit to default value
 func MigrateStore(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
