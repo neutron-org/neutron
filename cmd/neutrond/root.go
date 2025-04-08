@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/neutron-org/neutron/v5/x/crypto/keyring"
+	"github.com/neutron-org/neutron/v6/x/crypto/keyring"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
