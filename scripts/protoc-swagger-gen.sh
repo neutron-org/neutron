@@ -10,7 +10,6 @@ mkdir -p tmp_deps
 declare -a deps=("github.com/cosmos/cosmos-sdk"
                 "github.com/CosmWasm/wasmd"
                 "github.com/cosmos/admin-module/v2"
-                "github.com/cosmos/interchain-security/v5"
                 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8"
                 "github.com/skip-mev/feemarket"
                 "github.com/skip-mev/slinky"
@@ -40,12 +39,12 @@ rm -rf ./tmp-swagger-gen/cosmos/tx/v1beta1/service.swagger.json
 rm -rf ./tmp-swagger-gen/cosmos/autocli/v1/query.swagger.json
 
 # remove unnecessary modules and their proto files
-rm -rf tmp-swagger-gen/cosmos/staking
 rm -rf tmp-swagger-gen/cosmos/distribution
 rm -rf tmp-swagger-gen/cosmos/gov
 rm -rf tmp-swagger-gen/cosmos/mint
 rm -rf tmp-swagger-gen/cosmos/group
 rm -rf tmp-swagger-gen/interchain_security/ccv/provider
+rm -rf tmp-swagger-gen/interchain_security/ccv/consumer
 
 # Convert all *.swagger.json files into a single folder _all
 files=$(find ./tmp-swagger-gen -name '*.swagger.json' -print0 | xargs -0)

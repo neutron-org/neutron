@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v6/x/ibc-rate-limit/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

@@ -12,10 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/cron/keeper"
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/cron/types"
-	"github.com/neutron-org/neutron/v5/x/cron/types"
+	"github.com/neutron-org/neutron/v6/testutil"
+	testutil_keeper "github.com/neutron-org/neutron/v6/testutil/cron/keeper"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/cron/types"
+	"github.com/neutron-org/neutron/v6/x/cron/types"
 )
 
 // ExecuteReadySchedules:
@@ -203,6 +203,93 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	require.Equal(t, uint64(4), unready2.LastExecuteHeight)
 	require.Equal(t, uint64(6), ready3.LastExecuteHeight)
 	require.Equal(t, uint64(7), ready4.LastExecuteHeight)
+
+	// reset context to 0 block
+	ctx = ctx.WithBlockHeight(0)
+	everyTimeSchedule := types.Schedule{
+		Name:   "every_block",
+		Period: 1,
+		Msgs: []types.MsgExecuteContract{
+			{
+				Contract: "every_block",
+				Msg:      "every_block",
+			},
+		},
+		LastExecuteHeight: 0,
+		ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+	}
+	err = k.AddSchedule(ctx, everyTimeSchedule.Name, everyTimeSchedule.Period, everyTimeSchedule.Msgs, everyTimeSchedule.ExecutionStage)
+
+	s, _ := k.GetSchedule(ctx, "every_block")
+	require.Equal(t, s.LastExecuteHeight, uint64(0))
+	require.NoError(t, err)
+
+	// expect it to not executed right away
+
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	// LastExecuteHeight should still be at 0
+	s, _ = k.GetSchedule(ctx, "every_block")
+	require.Equal(t, s.LastExecuteHeight, uint64(0))
+
+	ctx = ctx.WithBlockHeight(1)
+	// expect it to be executed again
+	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
+		Sender:   testutil.TestOwnerAddress,
+		Contract: "every_block",
+		Msg:      []byte("every_block"),
+		Funds:    sdk.NewCoins(),
+	}).Return(&wasmtypes.MsgExecuteContractResponse{}, nil)
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	// last execute height changed to 1
+	s, _ = k.GetSchedule(ctx, "every_block")
+	require.Equal(t, s.LastExecuteHeight, uint64(1))
+
+	k.RemoveSchedule(ctx, "every_block")
+
+	// test schedule with period 2
+	ctx = ctx.WithBlockHeight(0)
+	onceTwoBlocksSchedule := types.Schedule{
+		Name:   "once_in_two",
+		Period: 2,
+		Msgs: []types.MsgExecuteContract{
+			{
+				Contract: "once_in_two",
+				Msg:      "once_in_two",
+			},
+		},
+		LastExecuteHeight: 0,
+		ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+	}
+	err = k.AddSchedule(ctx, onceTwoBlocksSchedule.Name, onceTwoBlocksSchedule.Period, onceTwoBlocksSchedule.Msgs, onceTwoBlocksSchedule.ExecutionStage)
+
+	s, _ = k.GetSchedule(ctx, "once_in_two")
+	require.Equal(t, s.LastExecuteHeight, uint64(0))
+	require.NoError(t, err)
+
+	// expect it to not executed on 0 and 1 blocks
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	// LastExecuteHeight should still be at 0
+	s, _ = k.GetSchedule(ctx, "once_in_two")
+	require.Equal(t, s.LastExecuteHeight, uint64(0))
+
+	ctx = ctx.WithBlockHeight(1)
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	s, _ = k.GetSchedule(ctx, "once_in_two")
+	require.Equal(t, s.LastExecuteHeight, uint64(0))
+
+	// expect it to be executed on 2 block
+	ctx = ctx.WithBlockHeight(2)
+	// expect it to be executed again
+	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
+		Sender:   testutil.TestOwnerAddress,
+		Contract: "once_in_two",
+		Msg:      []byte("once_in_two"),
+		Funds:    sdk.NewCoins(),
+	}).Return(&wasmtypes.MsgExecuteContractResponse{}, nil)
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	// last execute height changed to 2
+	s, _ = k.GetSchedule(ctx, "once_in_two")
+	require.Equal(t, s.LastExecuteHeight, uint64(2))
 }
 
 func TestAddSchedule(t *testing.T) {

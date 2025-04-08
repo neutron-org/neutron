@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/dex/types"
-	"github.com/neutron-org/neutron/v5/x/dex/utils"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v6/x/dex/utils"
 )
 
 func (k Keeper) GetOrInitPool(
@@ -137,9 +137,21 @@ func (k Keeper) GetPoolIDByParams(
 
 // UpdatePool handles the logic for all updates to Pools in the KV Store.
 // It provides a convenient way to save both sides of the pool reserves.
-func (k Keeper) UpdatePool(ctx sdk.Context, pool *types.Pool) {
-	k.UpdatePoolReserves(ctx, pool.LowerTick0)
-	k.UpdatePoolReserves(ctx, pool.UpperTick1)
+func (k Keeper) UpdatePool(ctx sdk.Context, pool *types.Pool, swapMetadata ...types.SwapMetadata) {
+	if len(swapMetadata) == 1 {
+		// Only pass the swapMetadata to the poolReserves that is being swapped against
+		if swapMetadata[0].TokenIn == pool.LowerTick0.Key.TradePairId.TakerDenom {
+			k.UpdatePoolReserves(ctx, pool.LowerTick0, swapMetadata...)
+			k.UpdatePoolReserves(ctx, pool.UpperTick1)
+		} else {
+			k.UpdatePoolReserves(ctx, pool.LowerTick0)
+			k.UpdatePoolReserves(ctx, pool.UpperTick1, swapMetadata...)
+		}
+	} else {
+		k.UpdatePoolReserves(ctx, pool.LowerTick0)
+		k.UpdatePoolReserves(ctx, pool.UpperTick1)
+
+	}
 }
 
 // GetPoolCount get the total number of pools

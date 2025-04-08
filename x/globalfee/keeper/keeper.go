@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/globalfee/types"
+	"github.com/neutron-org/neutron/v6/x/globalfee/types"
 )
 
 // Keeper of the globalfee store
@@ -13,8 +13,7 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 	storeKey storetypes.StoreKey
 
-	// the address capable of executing a MsgUpdateParams message. Typically, this
-	// should be the x/gov module account.
+	// the address capable of executing a MsgUpdateParams message
 	authority string
 }
 

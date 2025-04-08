@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"google.golang.org/grpc"
 
-	feerefundertypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -28,7 +28,7 @@ func (msg *MsgTransfer) GetSigners() []sdk.AccAddress {
 }
 
 // MsgOrigTransferHandler - 1) helps to bind `/neutron.transfer.Msg/Transfer` as a handler for `ibc.applications.transfer.v1.MsgTransfer`
-// 2) converts `ibc.applications.transfer.v1.MsgTransfer` into neutron.transfer.MsgTransfer` before processing.
+// 2) converts `ibc.applications.transfer.v1.MsgTransfer` into `neutron.transfer.MsgTransfer` before processing.
 //
 //nolint:revive // we cant rearrange arguments since we need to meet the type requirement
 func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {

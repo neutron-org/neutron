@@ -5,29 +5,29 @@ import (
 	"fmt"
 	"testing"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
-	types2 "github.com/neutron-org/neutron/v5/x/cron/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v6/x/contractmanager/types"
+	types2 "github.com/neutron-org/neutron/v6/x/cron/types"
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	feeburnertypes "github.com/neutron-org/neutron/v6/x/feeburner/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
-	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	ictxtypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
-	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v6/x/cron/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
 
-	"github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v6/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/v2/types"
@@ -36,16 +36,16 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/app"
-	"github.com/neutron-org/neutron/v5/testutil"
-	"github.com/neutron-org/neutron/v5/wasmbinding"
-	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
-	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
-	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v6/app"
+	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v6/wasmbinding"
+	"github.com/neutron-org/neutron/v6/wasmbinding/bindings"
+	feetypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	icqkeeper "github.com/neutron-org/neutron/v6/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v6/x/interchaintxs/keeper"
 
-	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v6/x/tokenfactory/types"
 )
 
 const FeeCollectorAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
@@ -61,6 +61,7 @@ type CustomMessengerTestSuite struct {
 }
 
 func (suite *CustomMessengerTestSuite) SetupTest() {
+	sdk.DefaultBondDenom = params.DefaultDenom
 	suite.IBCConnectionTestSuite.SetupTest()
 	suite.neutron = suite.GetNeutronZoneApp(suite.ChainA)
 	suite.ctx = suite.ChainA.GetContext()
@@ -554,7 +555,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	err = response.Unmarshal(data)
 	suite.NoError(err)
 	suite.Equal(uint64(1), response.SequenceId)
-	suite.Equal("channel-2", response.Channel)
+	suite.Equal("channel-0", response.Channel)
 }
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {

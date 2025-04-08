@@ -489,7 +489,7 @@ func (d PrecDec) ApproxRoot(root uint64) (guess PrecDec, err error) {
 	return guess, nil
 }
 
-// Power returns a the result of raising to a positive integer power
+// Power returns the result of raising to a positive integer power
 func (d PrecDec) Power(power uint64) PrecDec {
 	res := PrecDec{new(big.Int).Set(d.i)}
 	return res.PowerMut(power)

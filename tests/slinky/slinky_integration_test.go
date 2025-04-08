@@ -93,7 +93,6 @@ var (
 			TrustingPeriod: "48h",
 			NoHostMount:    noHostMount,
 			ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisKV),
-			SkipGenTx:      true,
 		},
 	}
 )
@@ -114,8 +113,6 @@ func TestSlinkyCCVIntegration(t *testing.T) {
 	s := integration.NewSlinkyCCVIntegrationSuite(
 		spec,
 		oracleImage,
-		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
-		integration.WithChainConstructor(integration.CCVChainConstructor),
 		integration.WithDenom(denom),
 	)
 

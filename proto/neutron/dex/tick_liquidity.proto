@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "neutron/dex/limit_order_tranche.proto";
 import "neutron/dex/pool_reserves.proto";
 
-option go_package = "github.com/neutron-org/neutron/v5/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v6/x/dex/types";
 
 message TickLiquidity {
   oneof liquidity {

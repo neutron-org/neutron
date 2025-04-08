@@ -9,8 +9,8 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	"github.com/neutron-org/neutron/v5/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	"github.com/neutron-org/neutron/v6/x/dex/utils"
 )
 
 const (
