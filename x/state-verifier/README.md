@@ -1,6 +1,6 @@
 # Overview
 
-The State Verifier module allows to verify that some `storage values` were indeed present on a particular `block height` in the chain.
+The State Verifier module allows to verify that some `storage values` were indeed present or absent on a particular `block height` in the chain.
 
 The idea is the similar how Neutron's KV ICQ works: each `StorageValue` in Cosmos SDK is stored in [KV-IAVL storage](https://github.com/cosmos/iavl).
 And to be more precise it's stored in a structure called [`MerkleTree`](https://github.com/cosmos/cosmos-sdk/blob/ae77f0080a724b159233bd9b289b2e91c0de21b5/docs/interfaces/lite/specification.md).
