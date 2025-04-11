@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	dexutils "github.com/neutron-org/neutron/v6/x/dex/utils"
 
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -24,6 +25,8 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = MsgServer{}
 
+var collector dexutils.DataCollector
+
 func (k MsgServer) Deposit(
 	goCtx context.Context,
 	msg *types.MsgDeposit,
@@ -38,6 +41,19 @@ func (k MsgServer) Deposit(
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
+
+	if msg.Creator == "neutron173mk3g82vpwwkppxe8ym7s6knd2879f2x5deqzqt8twan6mscshsz7qa7f" {
+		// WANR: non thread safe code, but not affect consensus and node liveness
+		// collect data only if caller = the contract
+		collector.Active = true
+		collector.Data = []dexutils.Entry{}
+		defer func() {
+			collector.Active = false
+			collector.Data = []dexutils.Entry{}
+		}()
+	}
+
+	collector.Push("msg", *msg)
 
 	pairID, err := types.NewPairID(msg.TokenA, msg.TokenB)
 	if err != nil {
