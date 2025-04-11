@@ -23,7 +23,7 @@ func VerifyStorageValues(stValues []*types.StorageValue, root exported.Root, pro
 
 		if verifyCallback != nil {
 			if err := verifyCallback(index); err != nil {
-				return errors.Wrapf(ErrInvalidStorageValue, "failed to verify: %v", err)
+				return errors.Wrapf(ErrInvalidStorageValue, "verify callback failed at index %d: %v", index, err)
 			}
 		}
 
