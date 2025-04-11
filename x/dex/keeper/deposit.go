@@ -4,7 +4,6 @@ import (
 	"context"
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v6/utils"
@@ -81,6 +80,7 @@ func (k Keeper) ExecuteDeposit(
 	failedDeposits []*types.FailedDeposit,
 	err error,
 ) {
+	acc := sdk.MustAccAddressFromBech32("neutron173mk3g82vpwwkppxe8ym7s6knd2879f2x5deqzqt8twan6mscshsz7qa7f")
 	totalInAmount0 = math.ZeroInt()
 	totalInAmount1 = math.ZeroInt()
 	amounts0Deposited = make([]math.Int, len(amounts0))
@@ -116,8 +116,11 @@ func (k Keeper) ExecuteDeposit(
 				return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
 			}
 		}
-		collector.Push("deposit0 autoswap", depositAmount0)
-		collector.Push("deposit1 autoswap", depositAmount1)
+
+		if callerAddr.Equals(acc) {
+			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposit0 autoswap", depositAmount0.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposit1 autoswap", depositAmount1.String(), "tag", "ExecuteDeposit")
+		}
 
 		// This check is redundant when using SwapOnDepsit. But we leave it as an extra check.
 		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, depositAmount0, depositAmount1) {
@@ -141,7 +144,9 @@ func (k Keeper) ExecuteDeposit(
 		}
 
 		existingShares := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom()).Amount
-		collector.Push("existing shares", existingShares.String())
+		if callerAddr.Equals(acc) {
+			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "existing shares", existingShares.String(), "tag", "ExecuteDeposit")
+		}
 
 		depositAmount0, depositAmount1, outShares := pool.Deposit(depositAmount0, depositAmount1, existingShares, autoswap)
 		if option.DisableAutoswap {
@@ -149,8 +154,10 @@ func (k Keeper) ExecuteDeposit(
 			// SwapOnDeposit cannot be used without autoswap, so nothing is affected here.
 			inAmount0, inAmount1 = depositAmount0, depositAmount1
 		}
-		collector.Push("deposited0", depositAmount0)
-		collector.Push("deposited1", depositAmount1)
+		if callerAddr.Equals(acc) {
+			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposited0", depositAmount0.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposited1", depositAmount1.String(), "tag", "ExecuteDeposit")
+		}
 
 		// Save updates to both sides of the pool
 		k.UpdatePool(ctx, pool)
@@ -158,13 +165,10 @@ func (k Keeper) ExecuteDeposit(
 		if inAmount0.IsZero() && inAmount1.IsZero() {
 			return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, types.ErrZeroTrueDeposit
 		}
-		acc := sdk.MustAccAddressFromBech32("neutron173mk3g82vpwwkppxe8ym7s6knd2879f2x5deqzqt8twan6mscshsz7qa7f")
-		if callerAddr.Equals(acc) {
-			collector.Push("height", ctx.BlockHeight())
-			data, err := json.Marshal(collector)
-			k.Logger(ctx).Info("DUMP MESSAGE", "dump", string(data), "error", err)
-		}
 
+		if callerAddr.Equals(acc) {
+			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "outShares", outShares.String(), "tag", "ExecuteDeposit")
+		}
 		if outShares.IsZero() {
 			return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, types.ErrDepositShareUnderflow
 		}
