@@ -39,7 +39,7 @@ func (k MsgServer) Deposit(
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
 	if msg.Creator == "neutron173mk3g82vpwwkppxe8ym7s6knd2879f2x5deqzqt8twan6mscshsz7qa7f" {
-		k.Logger(sdk.UnwrapSDKContext(goCtx)).Info("oracle_debug", "height", sdk.UnwrapSDKContext(goCtx).BlockHeight(), "msg", *msg, "tag", "deposit msg")
+		k.Logger(sdk.UnwrapSDKContext(goCtx)).Info("vault_debug", "height", sdk.UnwrapSDKContext(goCtx).BlockHeight(), "msg", *msg, "tag", "deposit msg")
 	}
 
 	pairID, err := types.NewPairID(msg.TokenA, msg.TokenB)

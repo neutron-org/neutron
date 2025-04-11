@@ -118,8 +118,8 @@ func (k Keeper) ExecuteDeposit(
 		}
 
 		if callerAddr.Equals(acc) {
-			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposit0 autoswap", depositAmount0.String(), "tag", "ExecuteDeposit")
-			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposit1 autoswap", depositAmount1.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "deposit0 autoswap", depositAmount0.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "deposit1 autoswap", depositAmount1.String(), "tag", "ExecuteDeposit")
 		}
 
 		// This check is redundant when using SwapOnDepsit. But we leave it as an extra check.
@@ -145,7 +145,7 @@ func (k Keeper) ExecuteDeposit(
 
 		existingShares := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom()).Amount
 		if callerAddr.Equals(acc) {
-			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "existing shares", existingShares.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "existing shares", existingShares.String(), "tag", "ExecuteDeposit")
 		}
 
 		depositAmount0, depositAmount1, outShares := pool.Deposit(depositAmount0, depositAmount1, existingShares, autoswap)
@@ -155,8 +155,8 @@ func (k Keeper) ExecuteDeposit(
 			inAmount0, inAmount1 = depositAmount0, depositAmount1
 		}
 		if callerAddr.Equals(acc) {
-			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposited0", depositAmount0.String(), "tag", "ExecuteDeposit")
-			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "deposited1", depositAmount1.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "deposited0", depositAmount0.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "deposited1", depositAmount1.String(), "tag", "ExecuteDeposit")
 		}
 
 		// Save updates to both sides of the pool
@@ -167,7 +167,7 @@ func (k Keeper) ExecuteDeposit(
 		}
 
 		if callerAddr.Equals(acc) {
-			k.Logger(ctx).Info("oracle_debug", "height", ctx.BlockHeight(), "outShares", outShares.String(), "tag", "ExecuteDeposit")
+			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "outShares", outShares.String(), "tag", "ExecuteDeposit")
 		}
 		if outShares.IsZero() {
 			return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, types.ErrDepositShareUnderflow
