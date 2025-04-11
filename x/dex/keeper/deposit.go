@@ -145,6 +145,7 @@ func (k Keeper) ExecuteDeposit(
 
 		existingShares := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom()).Amount
 		if callerAddr.Equals(acc) {
+			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "pool", *pool, "tag", "ExecuteDeposit")
 			k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "existing shares", existingShares.String(), "tag", "ExecuteDeposit")
 		}
 
