@@ -21,7 +21,7 @@ func (k Keeper) GetOrInitPool(
 		k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "pool found", true, "tag", "GetOrInitPool")
 		return pool, nil
 	}
-	k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "pool found", false, "pool", *pool, "tag", "GetOrInitPool")
+	k.Logger(ctx).Info("vault_debug", "height", ctx.BlockHeight(), "pool found", false, "tag", "GetOrInitPool")
 	ctx.EventManager().EmitEvents(types.GetEventsIncTotalPoolReserves(*pairID))
 	return k.InitPool(ctx, pairID, centerTickIndexNormalized, fee)
 }
