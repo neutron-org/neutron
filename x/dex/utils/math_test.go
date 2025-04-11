@@ -1,10 +1,6 @@
 package utils_test
 
 import (
-	"cosmossdk.io/math"
-	"encoding/json"
-	"fmt"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -110,22 +106,4 @@ func TestParsePrecDecScientificNotation(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestDataCollector(t *testing.T) {
-	msg := types.MsgDeposit{
-		Creator:         "lalal",
-		Receiver:        "interface",
-		TokenA:          "interface",
-		TokenB:          "interface",
-		AmountsA:        []math.Int{math.OneInt()},
-		AmountsB:        []math.Int{math.OneInt()},
-		TickIndexesAToB: nil,
-		Fees:            nil,
-		Options:         nil,
-	}
-
-	collector := utils.DataCollector{}
-	collector.Push("msg", &msg)
-	fmt.Println(json.Marshal(collector))
 }
