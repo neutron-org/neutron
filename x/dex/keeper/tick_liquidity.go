@@ -23,3 +23,8 @@ func (k Keeper) GetAllTickLiquidity(ctx sdk.Context) (list []*types.TickLiquidit
 
 	return
 }
+
+func (k Keeper) GetTickLiquidityIterator(ctx sdk.Context) storetypes.Iterator {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.TickLiquidityKeyPrefix))
+	return storetypes.KVStorePrefixIterator(store, []byte{})
+}

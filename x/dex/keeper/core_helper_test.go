@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -250,4 +251,31 @@ func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken1Valid() {
 
 	// THEN pool is BEL
 	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestExpiredLimitOrderNotCountedForBEL() {
+	// Given a GTT tranche that has not expired
+	expTime := time.Now().Add(time.Hour * 24)
+	tranche := &types.LimitOrderTranche{
+		Key: &types.LimitOrderTrancheKey{
+			TradePairId:           defaultTradePairID1To0,
+			TrancheKey:            "1",
+			TickIndexTakerToMaker: 0,
+		},
+		ExpirationTime:     &expTime,
+		ReservesMakerDenom: math.NewInt(1000000),
+	}
+
+	s.app.DexKeeper.SetLimitOrderTranche(s.ctx, tranche)
+	// Pool is behind enemy lines
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
+	s.True(isBEL)
+
+	// When tranche is  expired
+	expTime = time.Now().Add(-time.Hour * 24)
+	tranche.ExpirationTime = &expTime
+	s.app.DexKeeper.UpdateTranche(s.ctx, tranche)
+	isBEL = s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
+	s.False(isBEL)
+
 }
