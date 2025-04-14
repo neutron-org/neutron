@@ -14,7 +14,7 @@ import (
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	gomock "github.com/golang/mock/gomock"
 
-	types1 "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	types1 "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
 // MockHeaderVerifier is a mock of HeaderVerifier interface.
@@ -41,18 +41,18 @@ func (m *MockHeaderVerifier) EXPECT() *MockHeaderVerifierMockRecorder {
 }
 
 // UnpackHeader mocks base method.
-func (m *MockHeaderVerifier) UnpackHeader(any *types.Any) (exported.ClientMessage, error) {
+func (m *MockHeaderVerifier) UnpackHeader(anyHeader *types.Any) (exported.ClientMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnpackHeader", any)
+	ret := m.ctrl.Call(m, "UnpackHeader", anyHeader)
 	ret0, _ := ret[0].(exported.ClientMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UnpackHeader indicates an expected call of UnpackHeader.
-func (mr *MockHeaderVerifierMockRecorder) UnpackHeader(any interface{}) *gomock.Call {
+func (mr *MockHeaderVerifierMockRecorder) UnpackHeader(anyHeader interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpackHeader", reflect.TypeOf((*MockHeaderVerifier)(nil).UnpackHeader), any)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpackHeader", reflect.TypeOf((*MockHeaderVerifier)(nil).UnpackHeader), anyHeader)
 }
 
 // VerifyHeaders mocks base method.

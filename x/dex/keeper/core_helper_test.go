@@ -9,10 +9,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	neutronapp "github.com/neutron-org/neutron/v5/app"
-	"github.com/neutron-org/neutron/v5/testutil"
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v6/app"
+	"github.com/neutron-org/neutron/v6/testutil"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 // Test Suite ///////////////////////////////////////////////////////////////

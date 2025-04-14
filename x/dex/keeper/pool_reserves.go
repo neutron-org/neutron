@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 func (k Keeper) SetPoolReserves(ctx sdk.Context, poolReserves *types.PoolReserves) {

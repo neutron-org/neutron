@@ -12,10 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/cron/keeper"
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/cron/types"
-	"github.com/neutron-org/neutron/v5/x/cron/types"
+	"github.com/neutron-org/neutron/v6/testutil"
+	testutil_keeper "github.com/neutron-org/neutron/v6/testutil/cron/keeper"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/cron/types"
+	"github.com/neutron-org/neutron/v6/x/cron/types"
 )
 
 // ExecuteReadySchedules:

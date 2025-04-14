@@ -4,9 +4,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
-	appparams "github.com/neutron-org/neutron/v5/app/params"
+	appparams "github.com/neutron-org/neutron/v6/app/params"
 
-	"github.com/neutron-org/neutron/v5/x/dynamicfees/types"
+	"github.com/neutron-org/neutron/v6/x/dynamicfees/types"
 )
 
 var _ feemarkettypes.DenomResolver = Keeper{}

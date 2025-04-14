@@ -6,7 +6,7 @@ import (
 
 	types2 "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -14,12 +14,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v5/testutil"
-	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/transfer/types"
-	testkeeper "github.com/neutron-org/neutron/v5/testutil/transfer/keeper"
-	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
-	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
-	"github.com/neutron-org/neutron/v5/x/transfer"
+	"github.com/neutron-org/neutron/v6/testutil"
+	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/transfer/types"
+	testkeeper "github.com/neutron-org/neutron/v6/testutil/transfer/keeper"
+	feetypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	ictxtypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v6/x/transfer"
 )
 
 const TestCosmosAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"

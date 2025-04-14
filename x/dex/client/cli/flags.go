@@ -7,6 +7,7 @@ const (
 	FlagIncludePoolData = "include-pool-data"
 	FlagCalcWithdraw    = "calc-withdraw"
 	FlagPrice           = "price"
+	FlagSwapOnDeposit   = "swap-on-deposit"
 )
 
 func FlagSetMaxAmountOut() *flag.FlagSet {
@@ -30,5 +31,11 @@ func FlagSetIncludePoolData() *flag.FlagSet {
 func FlagSetCalcWithdrawableAmount() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 	fs.Bool(FlagCalcWithdraw, false, "Calculate withdrawable amount")
+	return fs
+}
+
+func FlagSetSwapOnDeposit() *flag.FlagSet {
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fs.Bool(FlagSwapOnDeposit, false, "Before BEL swap for deposits")
 	return fs
 }

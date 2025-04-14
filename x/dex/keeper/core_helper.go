@@ -6,9 +6,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/exp/slices"
 
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
-	"github.com/neutron-org/neutron/v5/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v6/x/dex/utils"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,6 +74,15 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 	}
 
 	return nil
+}
+
+func (k Keeper) GetWhitelistedLPs(ctx sdk.Context) []string {
+	return k.GetParams(ctx).WhitelistedLps
+}
+
+func (k Keeper) IsWhitelistedLP(ctx sdk.Context, addr sdk.AccAddress) bool {
+	whitelistedLPs := k.GetWhitelistedLPs(ctx)
+	return slices.Contains(whitelistedLPs, addr.String())
 }
 
 func (k Keeper) GetMaxJITsPerBlock(ctx sdk.Context) uint64 {

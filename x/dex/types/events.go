@@ -8,7 +8,7 @@ import (
 	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	math_utils "github.com/neutron-org/neutron/v6/utils/math"
 )
 
 // Shared Attributes
@@ -20,6 +20,8 @@ const (
 	AttributeTokenIn              = "TokenIn"
 	AttributeTokenOut             = "TokenOut"
 	AttributeAmountIn             = "AmountIn"
+	AttributeAmountIn0            = "AmountInTokenZero"
+	AttributeAmountIn1            = "AmountInTokenOne"
 	AttributeAmountOut            = "AmountOut"
 	AttributeSwapAmountIn         = "SwapAmountIn"
 	AttributeSwapAmountOut        = "SwapAmountOut"
@@ -56,6 +58,8 @@ const (
 	AttributeSharesOwned          = "SharesOwned"
 	AttributeSharesWithdrawn      = "SharesWithdrawn"
 	AttributeMinAvgSellPrice      = "MinAvgSellPrice"
+	AttributeMaxAmountOut         = "MaxAmountOut"
+	AttributeRequestAmountIn      = "RequestAmountIn"
 )
 
 // Event Keys
@@ -84,6 +88,8 @@ func CreateDepositEvent(
 	fee uint64,
 	depositAmountReserve0 math.Int,
 	depositAmountReserve1 math.Int,
+	amountIn0 math.Int,
+	amountIn1 math.Int,
 	sharesMinted math.Int,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -98,6 +104,8 @@ func CreateDepositEvent(
 		sdk.NewAttribute(AttributeReserves0Deposited, depositAmountReserve0.String()),
 		sdk.NewAttribute(AttributeReserves1Deposited, depositAmountReserve1.String()),
 		sdk.NewAttribute(AttributeSharesMinted, sharesMinted.String()),
+		sdk.NewAttribute(AttributeAmountIn0, amountIn0.String()),
+		sdk.NewAttribute(AttributeAmountIn1, amountIn1.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
@@ -169,14 +177,20 @@ func CreatePlaceLimitOrderEvent(
 	makerDenom string,
 	tokenOut string,
 	amountIn math.Int,
+	requestAmountIn math.Int,
 	limitTick int64,
 	orderType string,
+	maxAmountOut *math.Int,
 	minAvgSellPrice math_utils.PrecDec,
 	shares math.Int,
 	trancheKey string,
 	swapAmountIn math.Int,
 	swapAmountOut math.Int,
 ) sdk.Event {
+	maxAmountOutStr := ""
+	if maxAmountOut != nil {
+		maxAmountOutStr = maxAmountOut.String()
+	}
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, PlaceLimitOrderEventKey),
@@ -194,6 +208,8 @@ func CreatePlaceLimitOrderEvent(
 		sdk.NewAttribute(AttributeSwapAmountIn, swapAmountIn.String()),
 		sdk.NewAttribute(AttributeSwapAmountOut, swapAmountOut.String()),
 		sdk.NewAttribute(AttributeMinAvgSellPrice, minAvgSellPrice.String()),
+		sdk.NewAttribute(AttributeMaxAmountOut, maxAmountOutStr),
+		sdk.NewAttribute(AttributeRequestAmountIn, requestAmountIn.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)

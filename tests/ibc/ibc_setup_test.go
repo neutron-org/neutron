@@ -3,6 +3,9 @@ package ibc_test
 import (
 	"testing"
 
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -13,12 +16,11 @@ import (
 
 	icstestingutils "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	icstestutil "github.com/cosmos/interchain-security/v5/testutil/integration"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v5/app/params"
-	"github.com/neutron-org/neutron/v5/testutil"
+	appparams "github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v6/testutil"
 )
 
 var (

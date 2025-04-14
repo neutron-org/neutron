@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v6/x/dex/types"
 )
 
 func CmdDeposit() *cobra.Command {
@@ -42,6 +42,11 @@ func CmdDeposit() *cobra.Command {
 			argFees := strings.Split(args[6], ",")
 			argAutoswapOptions := strings.Split(args[7], ",")
 			argFailTxOptions := strings.Split(args[8], ",")
+
+			swapOnDeposit, err := cmd.Flags().GetBool(FlagSwapOnDeposit)
+			if err != nil {
+				return err
+			}
 
 			var AmountsA []math.Int
 			var AmountsB []math.Int
@@ -98,6 +103,7 @@ func CmdDeposit() *cobra.Command {
 				DepositOptions = append(DepositOptions, &types.DepositOptions{
 					DisableAutoswap: disableAutoswap,
 					FailTxOnBel:     failTx,
+					SwapOnDeposit:   swapOnDeposit,
 				})
 			}
 
@@ -123,6 +129,7 @@ func CmdDeposit() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().AddFlagSet(FlagSetSwapOnDeposit())
 
 	return cmd
 }
