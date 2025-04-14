@@ -112,9 +112,8 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		k.UpdateTranche(ctx, tranche)
 	}
 
-	if trancheUser.OrderType.HasExpiration() {
-		k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())
-	}
+	// NOTE: If the tranche still has remaining dust after the cancel we leave it in on the orderbook
+	// It will still be purged according to the expiration logic
 
 	makerCoinOut = sdk.NewCoin(tradePairID.MakerDenom, makerAmountToReturn)
 	takerCoinOut = sdk.NewCoin(tradePairID.TakerDenom, takerAmountOut)

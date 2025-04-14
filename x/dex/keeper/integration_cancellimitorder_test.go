@@ -536,3 +536,26 @@ func (s *DexTestSuite) TestWithdrawThenCancelLowTick() {
 	s.bobCancelsLimitSell(trancheKey)
 	s.assertBobBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
 }
+
+func (s *DexTestSuite) TestCancelExpiringLimitOrderWithDust() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(0, 50)
+
+	//GIVEN alice places a GTC limit order
+	trancheKey := s.aliceLimitSellsGoodTil("TokenA", -66671, 1, time.Now().Add(time.Second))
+
+	//AND bob trades through alice's order
+	s.bobLimitSells("TokenB", -66672, 50, types.LimitOrderType_FILL_OR_KILL)
+
+	//WHEN alice cancels her limit order
+	s.aliceCancelsLimitSell(trancheKey)
+
+	// THEN A small amount of tokenA remains in the tranche
+	s.assertLimitLiquidityAtTickInt("TokenA", -66671, sdkmath.NewInt(1))
+
+	//The tranche is purged after the expiration time
+	s.App.DexKeeper.PurgeExpiredLimitOrders(s.Ctx, time.Now().Add(time.Second*3))
+
+	//THEN the tranche is deleted
+	s.assertLimitLiquidityAtTick("TokenA", -66671, 0)
+}

@@ -1357,7 +1357,7 @@ func (s *DexTestSuite) assertLimitLiquidityAtTick(
 	selling string,
 	tickIndexNormalized, amount int64,
 ) {
-	s.assertLimitLiquidityAtTickInt(selling, tickIndexNormalized, sdkmath.NewInt(amount))
+	s.assertLimitLiquidityAtTickInt(selling, tickIndexNormalized, sdkmath.NewInt(amount).Mul(denomMultiple))
 }
 
 func (s *DexTestSuite) assertLimitLiquidityAtTickInt(
@@ -1365,7 +1365,6 @@ func (s *DexTestSuite) assertLimitLiquidityAtTickInt(
 	tickIndexNormalized int64,
 	amount sdkmath.Int,
 ) {
-	amount = amount.Mul(denomMultiple)
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
 	tranches := s.App.DexKeeper.GetAllLimitOrderTrancheAtIndex(
