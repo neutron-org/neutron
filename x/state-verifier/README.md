@@ -30,4 +30,5 @@ For verification only `.Root` (`header.AppHash`) is used, but it's good to save 
 
 ### VerifyStateValues query
 The main query of the module that accepts slice of `[]StorageValue` structures and `blockHeight` against which those `StorageValues` are verified.
-The module verifies the values and returns an error if values cannot be verified `{valid: true}` structure if values are valid.
+The module verifies the values and returns an error if values cannot be verified. The query returns `{valid: true}` structure if values are valid.
+

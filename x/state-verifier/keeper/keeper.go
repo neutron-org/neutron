@@ -15,7 +15,7 @@ import (
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v6/utils/storageverification"
+	"github.com/neutron-org/neutron/v6/utils/stateverification"
 	icqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 	"github.com/neutron-org/neutron/v6/x/state-verifier/types"
 )
@@ -99,7 +99,7 @@ func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*icqtypes.S
 		return errors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	if err := storageverification.VerifyStorageValues(values, cs.Root, ibccommitmenttypes.GetSDKSpecs(), nil); err != nil {
+	if err := stateverification.VerifyStorageValues(values, cs.Root, ibccommitmenttypes.GetSDKSpecs(), nil); err != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 

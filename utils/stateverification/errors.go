@@ -1,4 +1,4 @@
-package storageverification
+package stateverification
 
 import "cosmossdk.io/errors"
 

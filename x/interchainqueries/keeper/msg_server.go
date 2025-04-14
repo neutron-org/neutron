@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ics23 "github.com/cosmos/ics23/go"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,7 +18,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
-	"github.com/neutron-org/neutron/v6/utils/storageverification"
+	"github.com/neutron-org/neutron/v6/utils/stateverification"
 	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
@@ -234,13 +236,24 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, err
 		}
 
-		if err := storageverification.VerifyStorageValues(msg.Result.KvResults, consensusState.GetRoot(), clientState.ProofSpecs, func(index int) error {
+		if err := stateverification.VerifyStorageValues(msg.Result.KvResults, consensusState.GetRoot(), clientState.ProofSpecs, func(index int) error {
 			if !bytes.Equal(msg.Result.KvResults[index].Key, query.Keys[index].Key) {
 				return errors.Wrapf(types.ErrInvalidSubmittedResult, "KV key from result is not equal to registered query key: %v != %v", msg.Result.KvResults[index].Key, query.Keys[index].Key)
 			}
 
 			if msg.Result.KvResults[index].StoragePrefix != query.Keys[index].Path {
 				return errors.Wrapf(types.ErrInvalidSubmittedResult, "KV path from result is not equal to registered query storage prefix: %v != %v", msg.Result.KvResults[index].StoragePrefix, query.Keys[index].Path)
+			}
+
+			proof, err := ibccommitmenttypes.ConvertProofs(msg.Result.KvResults[index].Proof)
+			if err != nil {
+				return errors.Wrapf(stateverification.ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
+			}
+
+			// if proof for a value has NonExist type, we need to nullify the value field itself
+			// Otherwise, a malicious relayer can submit NonExist proof with non-null value which is not right (there can't be any value if key doesn't exist)
+			if _, ok := proof.GetProofs()[0].GetProof().(*ics23.CommitmentProof_Nonexist); ok {
+				msg.Result.KvResults[index].Value = nil
 			}
 
 			return nil

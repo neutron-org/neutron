@@ -1,4 +1,4 @@
-package storageverification
+package stateverification
 
 import (
 	"cosmossdk.io/errors"
@@ -9,21 +9,22 @@ import (
 	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
-type VerifyCallback func(index int) error
+// ExtraVerifier is a type
+type ExtraVerifier func(index int) error
 
 // VerifyStorageValues verifies stValues slice against proof using proofSpecs
-// A caller can provide verifyCallback method that will be called for each storage value from the slice with an index of the value in the slice
+// A caller can provide extraVerification method that will be called for each storage value from the slice with an index of the value in the slice
 // to do any additional user-defined checks of storage values
-func VerifyStorageValues(stValues []*types.StorageValue, root exported.Root, proofSpecs []*ics23.ProofSpec, verifyCallback VerifyCallback) error {
+func VerifyStorageValues(stValues []*types.StorageValue, root exported.Root, proofSpecs []*ics23.ProofSpec, extraVerification ExtraVerifier) error {
 	for index, value := range stValues {
 		proof, err := ibccommitmenttypes.ConvertProofs(value.Proof)
 		if err != nil {
 			return errors.Wrapf(ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
 		}
 
-		if verifyCallback != nil {
-			if err := verifyCallback(index); err != nil {
-				return errors.Wrapf(ErrInvalidStorageValue, "verify callback failed at index %d: %v", index, err)
+		if extraVerification != nil {
+			if err := extraVerification(index); err != nil {
+				return errors.Wrapf(ErrInvalidStorageValue, "extra verification failed at index %d: %v", index, err)
 			}
 		}
 
@@ -36,7 +37,6 @@ func VerifyStorageValues(stValues []*types.StorageValue, root exported.Root, pro
 			if err := proof.VerifyNonMembership(proofSpecs, root, path); err != nil {
 				return errors.Wrapf(ErrInvalidProof, "failed to verify proof: %v", err)
 			}
-			value.Value = nil
 		case *ics23.CommitmentProof_Exist:
 			if err := proof.VerifyMembership(proofSpecs, root, path, value.Value); err != nil {
 				return errors.Wrapf(ErrInvalidProof, "failed to verify proof: %v", err)
