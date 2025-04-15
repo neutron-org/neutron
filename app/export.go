@@ -85,14 +85,21 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, _ []string) error {
 
 // GetValidatorSet returns a slice of bonded validators.
 func (app *App) GetValidatorSet(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
-	cVals := app.ConsumerKeeper.GetAllCCValidator(ctx)
+	cVals, err := app.StakingKeeper.GetAllValidators(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if len(cVals) == 0 {
 		return nil, fmt.Errorf("empty validator set")
 	}
 
 	vals := []tmtypes.GenesisValidator{}
 	for _, v := range cVals {
-		vals = append(vals, tmtypes.GenesisValidator{Address: v.Address, Power: v.Power})
+		pk, err := v.ConsPubKey()
+		if err != nil {
+			return nil, err
+		}
+		vals = append(vals, tmtypes.GenesisValidator{Address: pk.Address(), Power: v.GetConsensusPower(app.StakingKeeper.PowerReduction(ctx))})
 	}
 	return vals, nil
 }
