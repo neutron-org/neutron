@@ -22,8 +22,6 @@ import (
 
 var (
 	LabelExecuteReadySchedules   = "execute_ready_schedules"
-	LabelExecuteCronSchedule     = "execute_cron_schedule"
-	LabelExecuteCronContract     = "execute_cron_contract"
 	LabelScheduleCount           = "schedule_count"
 	LabelScheduleExecutionsCount = "schedule_executions_count"
 
@@ -69,14 +67,13 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 // ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equal to Params.Limit)
 // and executes messages in each one
 func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.ExecutionStage) {
-	startTime := time.Now()
+	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelExecuteReadySchedules)
 	schedules := k.getSchedulesReadyForExecution(ctx, executionStage)
 
 	for _, schedule := range schedules {
 		err := k.executeSchedule(ctx, schedule)
 		recordExecutedSchedule(err, schedule)
 	}
-	telemetry.ModuleMeasureSince(types.ModuleName, startTime, LabelExecuteReadySchedules)
 }
 
 // AddSchedule adds a new schedule to be executed every certain number of blocks, specified in the `period`.
@@ -185,14 +182,12 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context, executionStage t
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error {
 	// Even if contract execution returned an error, we still increase the height
 	// and execute it after this interval
-	startTimeSchedule := time.Now()
 	schedule.LastExecuteHeight = uint64(ctx.BlockHeight()) //nolint:gosec
 	k.storeSchedule(ctx, schedule)
 
 	cacheCtx, writeFn := ctx.CacheContext()
 
 	for idx, msg := range schedule.Msgs {
-		startTimeContract := time.Now()
 		executeMsg := wasmtypes.MsgExecuteContract{
 			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
 			Contract: msg.Contract,
@@ -210,9 +205,8 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 			)
 			return err
 		}
-		telemetry.ModuleMeasureSince(types.ModuleName, startTimeContract, LabelExecuteCronContract, schedule.Name, msg.Contract)
 	}
-	telemetry.ModuleMeasureSince(types.ModuleName, startTimeSchedule, LabelExecuteCronSchedule, schedule.Name)
+
 	// only save state if all the messages in a schedule were executed successfully
 	writeFn()
 	return nil
