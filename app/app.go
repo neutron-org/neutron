@@ -853,7 +853,7 @@ func New(
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 		app.AccountKeeper,
 		&app.BankKeeper,
-		nil,
+		app.StakingKeeper,
 		nil,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
