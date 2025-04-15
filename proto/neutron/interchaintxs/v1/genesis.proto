@@ -4,7 +4,7 @@ package neutron.interchaintxs.v1;
 import "gogoproto/gogo.proto";
 import "neutron/interchaintxs/v1/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v5/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/neutron/v6/x/interchaintxs/types";
 
 // GenesisState defines the interchaintxs module's genesis state.
 message GenesisState {

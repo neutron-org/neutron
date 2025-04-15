@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
 
-	"github.com/neutron-org/neutron/v5/testutil"
+	"github.com/neutron-org/neutron/v6/testutil"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -24,14 +24,12 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v6/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
-
-const channelTest = "channel-2"
 
 // Setup
 func TestMiddlewareTestSuite(t *testing.T) {
@@ -281,7 +279,7 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	// Get the denom and amount to send
 	denom := sdk.DefaultBondDenom
 	if !native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", channelTest, denom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, denom))
 		denom = denomTrace.IBCDenom()
 	}
 
@@ -297,7 +295,7 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
-	quotas := suite.BuildChannelQuota("weekly", channelTest, denom, 604800, 5, 5)
+	quotas := suite.BuildChannelQuota("weekly", suite.TransferPath.EndpointA.ChannelID, denom, 604800, 5, 5)
 	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
 
@@ -384,7 +382,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
-	quotas := suite.BuildChannelQuotaWith2Quotas("weekly", channelTest, denom, 604800, "daily", 4, 4, 86400, 2, 2)
+	quotas := suite.BuildChannelQuotaWith2Quotas("weekly", suite.TransferPath.EndpointA.ChannelID, denom, 604800, "daily", 4, 4, 86400, 2, 2)
 	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
 
@@ -465,10 +463,10 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	sendDenom := sdk.DefaultBondDenom
 	localDenom := sdk.DefaultBondDenom
 	if native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", channelTest, localDenom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, localDenom))
 		localDenom = denomTrace.IBCDenom()
 	} else {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", channelTest, sendDenom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, sendDenom))
 		sendDenom = denomTrace.IBCDenom()
 	}
 
@@ -484,7 +482,7 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	suite.GetNeutronZoneApp(suite.ChainA)
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
-	quotas := suite.BuildChannelQuota("weekly", channelTest, localDenom, 604800, 4, 4)
+	quotas := suite.BuildChannelQuota("weekly", suite.TransferPath.EndpointA.ChannelID, localDenom, 604800, 4, 4)
 	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
 
@@ -539,7 +537,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
-	quotas := suite.BuildChannelQuota("weekly", channelTest, sdk.DefaultBondDenom, 604800, 1, 1)
+	quotas := suite.BuildChannelQuota("weekly", suite.TransferPath.EndpointA.ChannelID, sdk.DefaultBondDenom, 604800, 1, 1)
 	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
 
@@ -723,7 +721,7 @@ func (suite *MiddlewareTestSuite) InstantiateRLContract2Quotas(quotas1 string) s
 func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
 	addrStr, _ := sdk.Bech32ifyAddressBytes("neutron", addr)
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	_ = app.RateLimitingICS4Wrapper.SetParams(suite.ChainA.GetContext(), types.Params{ContractAddress: addrStr})
+	suite.Require().NoError(app.RateLimitingICS4Wrapper.SetParams(suite.ChainA.GetContext(), types.Params{ContractAddress: addrStr}))
 	require.True(suite.ChainA.TB, true)
 }
 

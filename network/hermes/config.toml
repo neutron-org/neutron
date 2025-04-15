@@ -107,7 +107,7 @@ max_tx_size = 2097152
 clock_drift = '5s'
 max_block_time = '10s'
 trusting_period = '10days'
-ccv_consumer_chain = true
+#ccv_consumer_chain = true
 trust_threshold = { numerator = '1', denominator = '3' }
 address_type = { derivation = 'cosmos' }
 
@@ -123,7 +123,7 @@ store_prefix = 'ibc'
 default_gas = 100000
 max_gas = 3000000
 gas_price = { price = 0.0025, denom = 'uatom' }
-gas_multiplier = 1.5
+#gas_multiplier = 1.5
 max_msg_num = 30
 max_tx_size = 2097152
 clock_drift = '5s'
