@@ -43,13 +43,11 @@ func CreateUpgradeHandler(
 }
 
 func upgradeRemoveOrphanedLimitOrders(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper) error {
-
 	allLimitOrderExpirations := k.GetAllLimitOrderExpiration(ctx)
 
 	expirationTrancheKeys := make(map[string]bool)
 	for _, limitOrderExpiration := range allLimitOrderExpirations {
 		expirationTrancheKeys[string(limitOrderExpiration.TrancheRef)] = true
-
 	}
 
 	tickLiquidityIterator := k.GetTickLiquidityIterator(ctx)

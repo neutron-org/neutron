@@ -278,5 +278,4 @@ func (s *CoreHelpersTestSuite) TestExpiredLimitOrderNotCountedForBEL() {
 	s.app.DexKeeper.UpdateTranche(s.ctx, tranche)
 	isBEL = s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
 	s.False(isBEL)
-
 }

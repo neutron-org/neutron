@@ -77,7 +77,6 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.Exe
 		recordExecutedSchedule(err, schedule)
 	}
 	telemetry.ModuleMeasureSince(types.ModuleName, startTime, LabelExecuteReadySchedules)
-
 }
 
 // AddSchedule adds a new schedule to be executed every certain number of blocks, specified in the `period`.

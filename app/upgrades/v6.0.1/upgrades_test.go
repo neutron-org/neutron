@@ -60,7 +60,7 @@ func (suite *UpgradeTestSuite) TestUpgradeRemoveOrphanedLimitOrders() {
 	},
 	)
 
-	//Create an GTT tranche with an ExpirationRecord
+	// Create an GTT tranche with an ExpirationRecord
 	tranche := &dextypes.LimitOrderTranche{
 		Key: &dextypes.LimitOrderTrancheKey{
 			TradePairId:           pairID,
