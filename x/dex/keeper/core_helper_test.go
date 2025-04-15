@@ -254,8 +254,9 @@ func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken1Valid() {
 }
 
 func (s *CoreHelpersTestSuite) TestExpiredLimitOrderNotCountedForBEL() {
+	s.ctx = s.ctx.WithBlockTime(time.Now())
 	// Given a GTT tranche that has not expired
-	expTime := time.Now().Add(time.Hour * 24)
+	expTime := s.ctx.BlockTime().Add(time.Hour * 24)
 	tranche := &types.LimitOrderTranche{
 		Key: &types.LimitOrderTrancheKey{
 			TradePairId:           defaultTradePairID1To0,
@@ -272,7 +273,7 @@ func (s *CoreHelpersTestSuite) TestExpiredLimitOrderNotCountedForBEL() {
 	s.True(isBEL)
 
 	// When tranche is  expired
-	expTime = time.Now().Add(-time.Hour * 24)
+	expTime = s.ctx.BlockTime().Add(-time.Hour * 24)
 	tranche.ExpirationTime = &expTime
 	s.app.DexKeeper.UpdateTranche(s.ctx, tranche)
 	isBEL = s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
