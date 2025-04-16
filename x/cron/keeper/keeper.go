@@ -76,7 +76,6 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.Exe
 		err := k.executeSchedule(ctx, schedule)
 		recordExecutedSchedule(err, schedule)
 	}
-
 }
 
 // AddSchedule adds a new schedule to be executed every certain number of blocks, specified in the `period`.
