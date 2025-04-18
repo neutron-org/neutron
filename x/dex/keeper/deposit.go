@@ -176,6 +176,7 @@ func (k Keeper) ExecuteDeposit(
 			depositAmount1,
 			inAmount0,
 			inAmount1,
+			pool.Id,
 			outShares.Amount,
 		)
 		events = append(events, depositEvent)
