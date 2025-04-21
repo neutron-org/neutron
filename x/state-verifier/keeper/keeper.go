@@ -22,11 +22,11 @@ import (
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		cometInfo  comet.BlockInfoService
-		headerInfo header.Service
-		authority  string
+		cdc               codec.BinaryCodec
+		storeKey          storetypes.StoreKey
+		cometInfoService  comet.BlockInfoService
+		headerInfoService header.Service
+		authority         string
 	}
 )
 
@@ -38,11 +38,11 @@ func NewKeeper(
 	authority string,
 ) *Keeper {
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		authority:  authority,
-		headerInfo: headerInfo,
-		cometInfo:  cometInfo,
+		cdc:               cdc,
+		storeKey:          storeKey,
+		authority:         authority,
+		headerInfoService: headerInfo,
+		cometInfoService:  cometInfo,
 	}
 }
 
@@ -57,8 +57,8 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 // SaveConsensusState extracts info about the current header from the context, composes ConsensusState structure with that info
 // and saves the structure to the state
 func (k *Keeper) SaveConsensusState(ctx sdk.Context) error {
-	headerInfo := k.headerInfo.GetHeaderInfo(ctx)
-	cometInfo := k.cometInfo.GetCometBlockInfo(ctx)
+	headerInfo := k.headerInfoService.GetHeaderInfo(ctx)
+	cometInfo := k.cometInfoService.GetCometBlockInfo(ctx)
 
 	cs := tendermint.ConsensusState{
 		Timestamp:          ctx.BlockTime(),

@@ -236,7 +236,13 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, err
 		}
 
-		if err := stateverification.VerifyStorageValues(msg.Result.KvResults, consensusState.GetRoot(), clientState.ProofSpecs, func(index int) error {
+		// an additional method of a verification of submitted storage values
+		// We need to check:
+		// * values are submitted only for the requested keys
+		// * values are submitted only for the requested module (StoragePrefix)
+		// * an additional sanity fix: if proof for a value has NonExist type, we need to nullify the value field itself
+		//		Otherwise, a malicious relayer can submit NonExist proof with non-null value which is not right (there can't be any value if key doesn't exist)
+		checkStorageValues := func(index int) error {
 			if !bytes.Equal(msg.Result.KvResults[index].Key, query.Keys[index].Key) {
 				return errors.Wrapf(types.ErrInvalidSubmittedResult, "KV key from result is not equal to registered query key: %v != %v", msg.Result.KvResults[index].Key, query.Keys[index].Key)
 			}
@@ -257,7 +263,9 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			}
 
 			return nil
-		}); err != nil {
+		}
+
+		if err := stateverification.VerifyStorageValues(msg.Result.KvResults, consensusState.GetRoot(), clientState.ProofSpecs, checkStorageValues); err != nil {
 			return nil, errors.Wrapf(types.ErrInvalidSubmittedResult, "failed to verify submitted result: %v", err)
 		}
 

@@ -9,7 +9,8 @@ import (
 	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
-// ExtraVerifier is a type
+// ExtraVerifier is a type describing a function that will be called for each storage value from the []StorageValue slice with an index of the value in the slice
+// to do any additional user-defined checks of storage values during the slice verification
 type ExtraVerifier func(index int) error
 
 // VerifyStorageValues verifies stValues slice against proof using proofSpecs
@@ -35,11 +36,11 @@ func VerifyStorageValues(stValues []*types.StorageValue, root exported.Root, pro
 		// we can get non-existence proof if someone queried some key which is not exists in the storage on remote chain
 		case *ics23.CommitmentProof_Nonexist:
 			if err := proof.VerifyNonMembership(proofSpecs, root, path); err != nil {
-				return errors.Wrapf(ErrInvalidProof, "failed to verify proof: %v", err)
+				return errors.Wrapf(ErrInvalidProof, "non-membership verification failed for value at index %d with path %s: %v", index, path, err)
 			}
 		case *ics23.CommitmentProof_Exist:
 			if err := proof.VerifyMembership(proofSpecs, root, path, value.Value); err != nil {
-				return errors.Wrapf(ErrInvalidProof, "failed to verify proof: %v", err)
+				return errors.Wrapf(ErrInvalidProof, "membership verification failed for value at index %d with path %s: %v", index, path, err)
 			}
 		default:
 			return errors.Wrapf(ErrInvalidProof, "unknown proof type %T", proof.GetProofs()[0].GetProof())

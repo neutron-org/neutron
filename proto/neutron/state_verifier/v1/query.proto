@@ -7,21 +7,22 @@ import "neutron/interchainqueries/tx.proto";
 option go_package = "github.com/neutron-org/neutron/v5/x/state-verifier/types";
 
 service Query {
-  // VerifyStateValues verifies the values and returns an error if values cannot be verified. The query returns `QueryVerifyStateValuesResponse` response.
+  // Verifies the values and returns an error if values cannot be verified. The query returns `QueryVerifyStateValuesResponse` response.
   rpc VerifyStateValues(QueryVerifyStateValuesRequest) returns (QueryVerifyStateValuesResponse) {
     option (google.api.http).get = "/neutron/state-verifier/verify_state_values";
   }
 }
 
-// QueryVerifyStateValuesRequest describes a structure to verify storage values from Neutron state from a particular height in the past
+// Describes a structure to verify storage values from the chain state from a particular height in the past
 message QueryVerifyStateValuesRequest {
-  // height refers to the block height to which the storage values belong.
+  // Refers to the block height to which the storage values belong.
   uint64 height = 1;
-  // storage_values that are present on the specified height and must be verified against
+  // A slice of []StorageValue that are present on the specified height and must be verified against
   repeated neutron.interchainqueries.StorageValue storage_values = 2;
 }
 
-// QueryVerifyStateValuesResponse is a response structure for `VerifyStateValues` query
+// Describes a response structure for `VerifyStateValues` query
 message QueryVerifyStateValuesResponse {
+  // The field describes a validity of all the storage values passed to the request at a specific height
   bool valid = 1;
 }

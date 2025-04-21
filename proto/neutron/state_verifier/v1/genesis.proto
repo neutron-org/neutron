@@ -5,16 +5,16 @@ import "ibc/lightclients/tendermint/v1/tendermint.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/state-verifier/types";
 
-// ConsensusState describes a "light" consensus state of Neutron at a particular height
+// Describes a "light" consensus state of Neutron at a particular height
 message ConsensusState {
-  // height describes a block height for which the consensus height is saved
+  // Describes a block height for which the consensus height is saved
   int64 height = 1;
 
   // ConsensusState defines the consensus state from Tendermint
   ibc.lightclients.tendermint.v1.ConsensusState cs = 2;
 }
 
-// GenesisState defines the state verifier module's genesis state.
+// Defines the state verifier module's genesis state.
 message GenesisState {
   repeated ConsensusState states = 1;
 }

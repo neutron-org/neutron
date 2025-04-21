@@ -22561,10 +22561,11 @@ definitions:
   neutron.state_verifier.v1.QueryVerifyStateValuesResponse:
     properties:
       valid:
+        title: >-
+          The field describes a validity of all the storage values passed to the
+          request at a specific height
         type: boolean
-    title: >-
-      QueryVerifyStateValuesResponse is a response structure for
-      `VerifyStateValues` query
+    title: Describes a response structure for `VerifyStateValues` query
     type: object
   osmosis.tokenfactory.Params:
     description: Params defines the parameters for the tokenfactory module.
@@ -50897,9 +50898,7 @@ paths:
     get:
       operationId: VerifyStateValues
       parameters:
-        - description: >-
-            height refers to the block height to which the storage values
-            belong.
+        - description: Refers to the block height to which the storage values belong.
           format: uint64
           in: query
           name: height
@@ -50911,10 +50910,11 @@ paths:
           schema:
             properties:
               valid:
+                title: >-
+                  The field describes a validity of all the storage values
+                  passed to the request at a specific height
                 type: boolean
-            title: >-
-              QueryVerifyStateValuesResponse is a response structure for
-              `VerifyStateValues` query
+            title: Describes a response structure for `VerifyStateValues` query
             type: object
         default:
           description: An unexpected error response.
@@ -50939,9 +50939,8 @@ paths:
                 type: string
             type: object
       summary: >-
-        VerifyStateValues verifies the values and returns an error if values
-        cannot be verified. The query returns `QueryVerifyStateValuesResponse`
-        response.
+        Verifies the values and returns an error if values cannot be verified.
+        The query returns `QueryVerifyStateValuesResponse` response.
       tags:
         - Query
   /osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata:
