@@ -17,7 +17,7 @@ service Query {
 message QueryVerifyStateValuesRequest {
   // Refers to the block height to which the storage values belong.
   uint64 height = 1;
-  // A slice of []StorageValue that are present on the specified height and must be verified against
+  // A slice of neutron.interchainqueries.StorageValue which relate to the specified height and must be verified against
   repeated neutron.interchainqueries.StorageValue storage_values = 2;
 }
 
