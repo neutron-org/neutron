@@ -40,13 +40,6 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 
 	ctx := suite.ChainA.GetContext()
 	resp, err := msgSrv.Transfer(ctx, &types.MsgTransfer{
-		Sender: "nonbech32",
-	})
-	suite.Nil(resp)
-	suite.ErrorIs(err, errors.ErrInvalidAddress)
-
-	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
 		SourcePort:    "nonexistent_port",
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(1000)),
@@ -119,26 +112,6 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	contractAddress := suite.InstantiateTestContract(ctx, testOwner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
-	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
-		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
-		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
-		Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(1000)),
-		Sender:        contractAddress.String(),
-		Receiver:      TestAddress,
-		TimeoutHeight: clienttypes.Height{
-			RevisionNumber: 10,
-			RevisionHeight: 10000,
-		},
-		Fee: feetypes.Fee{
-			RecvFee:    nil,
-			AckFee:     sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(1000))),
-			TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(1000))),
-		},
-	})
-	suite.Nil(resp)
-	suite.ErrorContains(err, "failed to lock fees")
-
 	suite.TopUpWallet(ctx, senderAddress, contractAddress)
 	ctx = suite.ChainA.GetContext()
 	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
@@ -162,6 +135,29 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 		Channel:    suite.TransferPath.EndpointA.ChannelID,
 	}, *resp)
 	suite.NoError(err)
+
+	ctx = suite.ChainA.GetContext()
+	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
+		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
+		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
+		Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(1000)),
+		Sender:        contractAddress.String(),
+		Receiver:      TestAddress,
+		TimeoutHeight: clienttypes.Height{
+			RevisionNumber: 10,
+			RevisionHeight: 10000,
+		},
+		Fee: feetypes.Fee{
+			RecvFee:    nil,
+			AckFee:     nil,
+			TimeoutFee: nil,
+		},
+	})
+	suite.Equal(types.MsgTransferResponse{
+		SequenceId: 3,
+		Channel:    suite.TransferPath.EndpointA.ChannelID,
+	}, *resp)
+	suite.NoError(err)
 }
 
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contractAddress sdktypes.AccAddress) {
@@ -182,7 +178,7 @@ func TestMsgTransferValidate(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	// required to initialize keeper
 	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
-	k, ctx, _ := keeper.TransferKeeper(t, wmKeeper, nil, nil, authKeeper)
+	k, ctx, _ := keeper.TransferKeeper(t, wmKeeper, nil, authKeeper)
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, gomock.Any()).Return(true).AnyTimes()
 
@@ -191,96 +187,6 @@ func TestMsgTransferValidate(t *testing.T) {
 		msg         types.MsgTransfer
 		expectedErr error
 	}{
-		{
-			"invalid ack fee",
-			types.MsgTransfer{
-				SourcePort:    "transfer",
-				SourceChannel: "channel-2",
-				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
-				Sender:        testutil.TestOwnerAddress,
-				Receiver:      TestAddress,
-				Fee: feetypes.Fee{
-					RecvFee: nil,
-					AckFee: sdktypes.Coins{
-						{
-							Denom:  "{}!@#a",
-							Amount: math.NewInt(100),
-						},
-					},
-					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			errors.ErrInvalidCoins,
-		},
-		{
-			"invalid timeout fee",
-			types.MsgTransfer{
-				SourcePort:    "transfer",
-				SourceChannel: "channel-2",
-				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
-				Sender:        testutil.TestOwnerAddress,
-				Receiver:      TestAddress,
-				Fee: feetypes.Fee{
-					RecvFee: nil,
-					AckFee:  sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-					TimeoutFee: sdktypes.Coins{
-						{
-							Denom:  params.DefaultDenom,
-							Amount: math.NewInt(-100),
-						},
-					},
-				},
-			},
-			errors.ErrInvalidCoins,
-		},
-		{
-			"non-zero recv fee",
-			types.MsgTransfer{
-				SourcePort:    "transfer",
-				SourceChannel: "channel-2",
-				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
-				Sender:        testutil.TestOwnerAddress,
-				Receiver:      TestAddress,
-				Fee: feetypes.Fee{
-					RecvFee:    sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-					AckFee:     sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			errors.ErrInvalidCoins,
-		},
-		{
-			"zero ack fee",
-			types.MsgTransfer{
-				SourcePort:    "transfer",
-				SourceChannel: "channel-2",
-				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
-				Sender:        testutil.TestOwnerAddress,
-				Receiver:      TestAddress,
-				Fee: feetypes.Fee{
-					RecvFee:    nil,
-					AckFee:     nil,
-					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			errors.ErrInvalidCoins,
-		},
-		{
-			"zero timeout fee",
-			types.MsgTransfer{
-				SourcePort:    "transfer",
-				SourceChannel: "channel-2",
-				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
-				Sender:        testutil.TestOwnerAddress,
-				Receiver:      TestAddress,
-				Fee: feetypes.Fee{
-					RecvFee:    nil,
-					AckFee:     sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-					TimeoutFee: nil,
-				},
-			},
-			errors.ErrInvalidCoins,
-		},
 		{
 			"empty source port",
 			types.MsgTransfer{
@@ -479,7 +385,7 @@ func TestMsgTransferValidate(t *testing.T) {
 					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 				},
 			},
-			errors.ErrInvalidAddress,
+			ibcerrors.ErrInvalidAddress,
 		},
 		{
 			"invalid sender",
@@ -495,7 +401,7 @@ func TestMsgTransferValidate(t *testing.T) {
 					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 				},
 			},
-			errors.ErrInvalidAddress,
+			ibcerrors.ErrInvalidAddress,
 		},
 		{
 			"empty receiver",

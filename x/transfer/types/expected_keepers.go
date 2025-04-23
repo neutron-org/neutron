@@ -5,19 +5,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-
-	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 )
 
 type WasmKeeper interface {
 	HasContractInfo(ctx context.Context, contractAddress sdk.AccAddress) bool
 	Sudo(ctx context.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
-}
-
-type FeeRefunderKeeper interface {
-	LockFees(ctx context.Context, payer sdk.AccAddress, packetID feerefundertypes.PacketID, fee feerefundertypes.Fee) error
-	DistributeAcknowledgementFee(ctx context.Context, receiver sdk.AccAddress, packetID feerefundertypes.PacketID)
-	DistributeTimeoutFee(ctx context.Context, receiver sdk.AccAddress, packetID feerefundertypes.PacketID)
 }
 
 // ChannelKeeper defines the expected IBC channel keeper

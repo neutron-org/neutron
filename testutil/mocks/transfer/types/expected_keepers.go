@@ -11,8 +11,6 @@ import (
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
-
-	types1 "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 )
 
 // MockWasmKeeper is a mock of WasmKeeper interface.
@@ -65,67 +63,6 @@ func (m *MockWasmKeeper) Sudo(ctx context.Context, contractAddress types.AccAddr
 func (mr *MockWasmKeeperMockRecorder) Sudo(ctx, contractAddress, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sudo", reflect.TypeOf((*MockWasmKeeper)(nil).Sudo), ctx, contractAddress, msg)
-}
-
-// MockFeeRefunderKeeper is a mock of FeeRefunderKeeper interface.
-type MockFeeRefunderKeeper struct {
-	ctrl     *gomock.Controller
-	recorder *MockFeeRefunderKeeperMockRecorder
-}
-
-// MockFeeRefunderKeeperMockRecorder is the mock recorder for MockFeeRefunderKeeper.
-type MockFeeRefunderKeeperMockRecorder struct {
-	mock *MockFeeRefunderKeeper
-}
-
-// NewMockFeeRefunderKeeper creates a new mock instance.
-func NewMockFeeRefunderKeeper(ctrl *gomock.Controller) *MockFeeRefunderKeeper {
-	mock := &MockFeeRefunderKeeper{ctrl: ctrl}
-	mock.recorder = &MockFeeRefunderKeeperMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockFeeRefunderKeeper) EXPECT() *MockFeeRefunderKeeperMockRecorder {
-	return m.recorder
-}
-
-// DistributeAcknowledgementFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeAcknowledgementFee(ctx context.Context, receiver types.AccAddress, packetID types1.PacketID) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DistributeAcknowledgementFee", ctx, receiver, packetID)
-}
-
-// DistributeAcknowledgementFee indicates an expected call of DistributeAcknowledgementFee.
-func (mr *MockFeeRefunderKeeperMockRecorder) DistributeAcknowledgementFee(ctx, receiver, packetID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DistributeAcknowledgementFee", reflect.TypeOf((*MockFeeRefunderKeeper)(nil).DistributeAcknowledgementFee), ctx, receiver, packetID)
-}
-
-// DistributeTimeoutFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeTimeoutFee(ctx context.Context, receiver types.AccAddress, packetID types1.PacketID) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DistributeTimeoutFee", ctx, receiver, packetID)
-}
-
-// DistributeTimeoutFee indicates an expected call of DistributeTimeoutFee.
-func (mr *MockFeeRefunderKeeperMockRecorder) DistributeTimeoutFee(ctx, receiver, packetID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DistributeTimeoutFee", reflect.TypeOf((*MockFeeRefunderKeeper)(nil).DistributeTimeoutFee), ctx, receiver, packetID)
-}
-
-// LockFees mocks base method.
-func (m *MockFeeRefunderKeeper) LockFees(ctx context.Context, payer types.AccAddress, packetID types1.PacketID, fee types1.Fee) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LockFees", ctx, payer, packetID, fee)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// LockFees indicates an expected call of LockFees.
-func (mr *MockFeeRefunderKeeperMockRecorder) LockFees(ctx, payer, packetID, fee interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockFees", reflect.TypeOf((*MockFeeRefunderKeeper)(nil).LockFees), ctx, payer, packetID, fee)
 }
 
 // MockChannelKeeper is a mock of ChannelKeeper interface.

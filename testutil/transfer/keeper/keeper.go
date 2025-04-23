@@ -26,7 +26,6 @@ import (
 func TransferKeeper(
 	t testing.TB,
 	managerKeeper types.WasmKeeper,
-	refunderKeeper types.FeeRefunderKeeper,
 	channelKeeper types.ChannelKeeper,
 	authKeeper types.AccountKeeper,
 ) (*keeper.KeeperTransferWrapper, sdk.Context, *storetypes.KVStoreKey) {
@@ -58,7 +57,6 @@ func TransferKeeper(
 		authKeeper,
 		nil,
 		capabilitykeeper.ScopedKeeper{},
-		refunderKeeper,
 		managerKeeper,
 		"authority",
 	)

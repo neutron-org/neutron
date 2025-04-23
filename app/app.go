@@ -1782,7 +1782,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		app.ScopedTransferKeeper,
-		app.FeeKeeper,
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)

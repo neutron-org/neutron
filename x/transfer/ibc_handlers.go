@@ -8,7 +8,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
-	feetypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 	"github.com/neutron-org/neutron/v6/x/interchaintxs/types"
 )
 
@@ -31,7 +30,6 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		return nil
 	}
 
-	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 	msg, err := keeper.PrepareSudoCallbackMessage(packet, &ack)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrJSONMarshal, "failed to marshal Packet/Acknowledgment: %v", err)
@@ -66,8 +64,6 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrJSONMarshal, "failed to marshal Packet: %v", err)
 	}
-
-	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	_, err = im.sudoKeeper.Sudo(ctx, senderAddress, msg)
 	if err != nil {
