@@ -22,6 +22,7 @@ import (
 	"github.com/cosmos/interchain-security/v5/testutil/integration"
 
 	sovereignUpgrade "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.0"
+	v601 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.1"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -245,6 +246,7 @@ const (
 var (
 	Upgrades = []upgrades.Upgrade{
 		sovereignUpgrade.Upgrade,
+		v601.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
@@ -860,7 +862,7 @@ func New(
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 		app.AccountKeeper,
 		&app.BankKeeper,
-		nil,
+		app.StakingKeeper,
 		nil,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
