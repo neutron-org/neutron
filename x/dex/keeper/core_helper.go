@@ -54,7 +54,8 @@ func (k Keeper) GetCurrLiq(ctx sdk.Context, tradePairID *types.TradePairID) *typ
 	defer ti.Close()
 	for ; ti.Valid(); ti.Next() {
 		tick := ti.Value()
-		if tick.HasToken() {
+		trancheMaybe := tick.GetLimitOrderTranche()
+		if tick.HasToken() && (trancheMaybe == nil || !trancheMaybe.IsExpired(ctx)) {
 			return &tick
 		}
 	}
