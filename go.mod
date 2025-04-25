@@ -230,7 +230,6 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.53.2-neutron.0.20250122164643-8ab684b5eff6
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/cometbft/cometbft-db => github.com/sotnikov-s/cometbft-db v0.12.0-no-leveldb-compression
-	github.com/cometbft/cometbft-db => github.com/sotnikov-s/cometbft-db v0.12.0-no-leveldb-compression
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3-0.20250416143613-af33b61c8d2d
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
