@@ -844,6 +844,7 @@ github.com/neutron-org/admin-module/v2 v2.0.2 h1:XDDFWjvkVBKRf3lBFCazT1zAXZ3dHX8
 github.com/neutron-org/admin-module/v2 v2.0.2/go.mod h1:RfOyabXsdJ5btcOKyKPZDYiZhtuKFubbJMOb8EJZtvA=
 github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250416103445-3767d64c919c h1:vrFQmGlqrX24zyyumhmeXwxIddhRyVxTAhY5SoKI1kg=
 github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250416103445-3767d64c919c/go.mod h1:eR/7/xIt3hbC7YytSL0qultTM2ueYD5Qr+ObWxvYXlo=
+github.com/neutron-org/cosmos-sdk v0.50.13-neutron-rpc/go.mod h1:eR/7/xIt3hbC7YytSL0qultTM2ueYD5Qr+ObWxvYXlo=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464 h1:5mbzd7sqp8pPYWzIhIYKFovMRBL0ru24N2E6dIWjL0o=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464/go.mod h1:DUa6djUsTeMOrbrcIZqWSVxU9IZNCXp96ruaojyBNpc=
 github.com/neutron-org/wasmd v0.53.2-neutron.0.20250407101311-6842dc9e01b6 h1:qlMsEQdz1KBDlQ07oQCl1CqAAn9tVJrTKqm1yIbNQiM=
