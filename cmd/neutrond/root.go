@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/neutron-org/neutron/v6/x/crypto/keyring"
+
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/snapshots"
@@ -82,7 +84,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(authtypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastSync).
 		WithHomeDir(app.DefaultNodeHome).
-		WithViper("")
+		WithViper("").
+		WithKeyringOptions(keyring.Option())
 
 	// Allows you to add extra params to your client.toml
 	// gas, gas-price, gas-adjustment, fees, note, etc.
