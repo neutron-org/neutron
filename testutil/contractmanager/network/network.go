@@ -5,17 +5,13 @@ import (
 	"testing"
 	"time"
 
-	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
-	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -24,9 +20,9 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v6/testutil/apptesting"
 
 	"github.com/neutron-org/neutron/v6/app"
-	"github.com/neutron-org/neutron/v6/testutil/consumer"
 )
 
 type (
@@ -67,29 +63,10 @@ func DefaultConfig() network.Config {
 		LegacyAmino:       encoding.Amino,
 		InterfaceRegistry: encoding.InterfaceRegistry,
 		AccountRetriever:  authtypes.AccountRetriever{},
-		AppConstructor: func(val network.ValidatorI) servertypes.Application {
-			err := consumer.ModifyConsumerGenesis(val.(network.Validator))
-			if err != nil {
-				panic(err)
-			}
-			err = consumer.ModifyGenesisBlockGas(val.(network.Validator))
-			if err != nil {
-				panic(err)
-			}
-
-			return app.New(
-				val.GetCtx().Logger, db.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
-				encoding,
-				sims.EmptyAppOptions{},
-				nil,
-				baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
-				baseapp.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
-				baseapp.SetChainID(chainID),
-			)
-		},
-		GenesisState:  app.ModuleBasics.DefaultGenesis(encoding.Marshaler),
-		TimeoutCommit: 2 * time.Second,
-		ChainID:       chainID,
+		AppConstructor:    apptesting.NewAppConstructor(chainID),
+		GenesisState:      app.ModuleBasics.DefaultGenesis(encoding.Marshaler),
+		TimeoutCommit:     2 * time.Second,
+		ChainID:           chainID,
 		// Some changes are introduced to make the tests run as if neutron is a standalone chain.
 		// This will only work if NumValidators is set to 1.
 		NumValidators:   1,

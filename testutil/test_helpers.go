@@ -34,7 +34,6 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
-	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
 	appparams "github.com/neutron-org/neutron/v6/app/params"
@@ -309,11 +308,6 @@ func SetupTestingApp() func() (ibctesting.TestingApp, map[string]json.RawMessage
 
 		return testApp, genesisState
 	}
-}
-
-// SetupValSetAppIniter is a simple wrapper for ICS e2e tests to satisfy interface
-func SetupValSetAppIniter(_ []cometbfttypes.ValidatorUpdate) icssimapp.AppIniter {
-	return SetupTestingApp()
 }
 
 func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
