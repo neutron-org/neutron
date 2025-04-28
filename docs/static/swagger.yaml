@@ -51122,7 +51122,7 @@ paths:
           description: A successful response.
           schema:
             description: >-
-              QueryDenomsFromCreatorRequest defines the response structure for
+              QueryDenomsFromCreatorResponse defines the response structure for
               the
 
               DenomsFromCreator gRPC query.

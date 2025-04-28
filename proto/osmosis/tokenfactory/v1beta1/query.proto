@@ -76,7 +76,7 @@ message QueryDenomsFromCreatorRequest {
   string creator = 1 [(gogoproto.moretags) = "yaml:\"creator\""];
 }
 
-// QueryDenomsFromCreatorRequest defines the response structure for the
+// QueryDenomsFromCreatorResponse defines the response structure for the
 // DenomsFromCreator gRPC query.
 message QueryDenomsFromCreatorResponse {
   repeated string denoms = 1 [(gogoproto.moretags) = "yaml:\"denoms\""];
