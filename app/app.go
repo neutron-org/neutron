@@ -909,9 +909,9 @@ func New(
 		marketmapModule,
 		oracleModule,
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
-		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 	)
 
 	app.mm.SetOrderPreBlockers(
