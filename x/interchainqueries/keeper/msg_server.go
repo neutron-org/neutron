@@ -8,16 +8,17 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ics23 "github.com/cosmos/ics23/go"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	ics23 "github.com/cosmos/ics23/go"
 
+	"github.com/neutron-org/neutron/v6/utils/stateverification"
 	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
@@ -235,43 +236,37 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, err
 		}
 
-		for index, result := range msg.Result.KvResults {
-			proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
+		// an additional method of a verification of submitted storage values
+		// We need to check:
+		// * values are submitted only for the requested keys
+		// * values are submitted only for the requested module (StoragePrefix)
+		// * an additional sanity fix: if proof for a value has NonExist type, we need to nullify the value field itself
+		//		Otherwise, a malicious relayer can submit NonExist proof with non-null value which is not right (there can't be any value if key doesn't exist)
+		checkStorageValues := func(index int) error {
+			if !bytes.Equal(msg.Result.KvResults[index].Key, query.Keys[index].Key) {
+				return errors.Wrapf(types.ErrInvalidSubmittedResult, "KV key from result is not equal to registered query key: %v != %v", msg.Result.KvResults[index].Key, query.Keys[index].Key)
+			}
+
+			if msg.Result.KvResults[index].StoragePrefix != query.Keys[index].Path {
+				return errors.Wrapf(types.ErrInvalidSubmittedResult, "KV path from result is not equal to registered query storage prefix: %v != %v", msg.Result.KvResults[index].StoragePrefix, query.Keys[index].Path)
+			}
+
+			proof, err := ibccommitmenttypes.ConvertProofs(msg.Result.KvResults[index].Proof)
 			if err != nil {
-				ctx.Logger().Debug("SubmitQueryResult: failed to ConvertProofs",
-					"error", err, "query", query, "message", msg)
-				return nil, errors.Wrapf(types.ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
+				return errors.Wrapf(stateverification.ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
 			}
 
-			if !bytes.Equal(result.Key, query.Keys[index].Key) {
-				return nil, errors.Wrapf(types.ErrInvalidSubmittedResult, "KV key from result is not equal to registered query key: %v != %v", result.Key, query.Keys[index].Key)
+			// if proof for a value has NonExist type, we need to nullify the value field itself
+			// Otherwise, a malicious relayer can submit NonExist proof with non-null value which is not right (there can't be any value if key doesn't exist)
+			if _, ok := proof.GetProofs()[0].GetProof().(*ics23.CommitmentProof_Nonexist); ok {
+				msg.Result.KvResults[index].Value = nil
 			}
 
-			if result.StoragePrefix != query.Keys[index].Path {
-				return nil, errors.Wrapf(types.ErrInvalidSubmittedResult, "KV path from result is not equal to registered query storage prefix: %v != %v", result.StoragePrefix, query.Keys[index].Path)
-			}
+			return nil
+		}
 
-			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
-			// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
-			// and call corresponding method to verify it
-			switch proof.GetProofs()[0].GetProof().(type) {
-			// we can get non-existence proof if someone queried some key which is not exists in the storage on remote chain
-			case *ics23.CommitmentProof_Nonexist:
-				if err := proof.VerifyNonMembership(clientState.ProofSpecs, consensusState.GetRoot(), path); err != nil {
-					ctx.Logger().Debug("SubmitQueryResult: failed to VerifyNonMembership",
-						"error", err, "query", query, "message", msg, "path", path)
-					return nil, errors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
-				}
-				result.Value = nil
-			case *ics23.CommitmentProof_Exist:
-				if err := proof.VerifyMembership(clientState.ProofSpecs, consensusState.GetRoot(), path, result.Value); err != nil {
-					ctx.Logger().Debug("SubmitQueryResult: failed to VerifyMembership",
-						"error", err, "query", query, "message", msg, "path", path)
-					return nil, errors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
-				}
-			default:
-				return nil, errors.Wrapf(types.ErrInvalidProof, "unknown proof type %T", proof.GetProofs()[0].GetProof())
-			}
+		if err := stateverification.VerifyStorageValues(msg.Result.KvResults, consensusState.GetRoot(), clientState.ProofSpecs, checkStorageValues); err != nil {
+			return nil, errors.Wrapf(types.ErrInvalidSubmittedResult, "failed to verify submitted result: %v", err)
 		}
 
 		if err = m.saveKVQueryResult(ctx, query, msg.Result); err != nil {

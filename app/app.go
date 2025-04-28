@@ -10,6 +10,11 @@ import (
 	"path/filepath"
 	"time"
 
+	dynamicfeestypes "github.com/neutron-org/neutron/v6/x/dynamicfees/types"
+	stateverifier "github.com/neutron-org/neutron/v6/x/state-verifier"
+	svkeeper "github.com/neutron-org/neutron/v6/x/state-verifier/keeper"
+	stateverifiertypes "github.com/neutron-org/neutron/v6/x/state-verifier/types"
+
 	"github.com/neutron-org/neutron/v6/x/harpoon"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -18,8 +23,6 @@ import (
 
 	sovereignUpgrade "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.0"
 	v601 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.1"
-
-	dynamicfeestypes "github.com/neutron-org/neutron/v6/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -417,6 +420,8 @@ type App struct {
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
 	ContractManagerKeeper   contractmanagermodulekeeper.Keeper
 
+	StateVerifierKeeper *svkeeper.Keeper
+
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
 	WasmKeeper     wasmkeeper.Keeper
@@ -513,7 +518,7 @@ func New(
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey,
-		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey,
+		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey, stateverifiertypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -691,6 +696,8 @@ func New(
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+
+	app.StateVerifierKeeper = svkeeper.NewKeeper(appCodec, keys[stateverifiertypes.StoreKey], runtime.ProvideCometInfoService(), runtime.ProvideHeaderInfoService(nil), authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -982,6 +989,7 @@ func New(
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
+		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 	)
 
 	app.mm.SetOrderPreBlockers(
@@ -1028,6 +1036,7 @@ func New(
 		dextypes.ModuleName,
 		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		stateverifiertypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -1067,6 +1076,7 @@ func New(
 		dextypes.ModuleName,
 		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		stateverifiertypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1112,6 +1122,7 @@ func New(
 		dynamicfeestypes.ModuleName,
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		stateverifiertypes.ModuleName,
 		revenuetypes.ModuleName,
 	)
 
