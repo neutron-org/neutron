@@ -55,7 +55,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/address"
 
 	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v10/testing"
 	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
@@ -203,8 +203,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
-	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
+	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
 
 	"github.com/neutron-org/neutron/v6/x/dex"
 	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
@@ -541,8 +541,6 @@ func New(
 
 	// grant capabilities for the ibc and ibc-transfer modules
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
-	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
-	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
@@ -626,7 +624,11 @@ func New(
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		appCodec,
+		runtime.NewKVStoreService(keys[ibchost.StoreKey]),
+		app.GetSubspace(ibchost.ModuleName),
+		app.UpgradeKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	// Feekeeper needs to be initialized before middlewares injection
@@ -663,21 +665,26 @@ func New(
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
-		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
+		appCodec,
+		runtime.NewKVStoreService(keys[icacontrollertypes.StoreKey]),
+		app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
-		scopedICAControllerKeeper, app.MsgServiceRouter(),
+		app.IBCKeeper.ChannelKeeper, // TODO: correct? removed port keeper here
+		app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
-		appCodec, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
+		appCodec,
+		runtime.NewKVStoreService(keys[icahosttypes.StoreKey]),
+		app.GetSubspace(icahosttypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
+		app.IBCKeeper.ChannelKeeper,
+		app.AccountKeeper,
+		app.MsgServiceRouter(),
+		app.GRPCQueryRouter(), // TODO: correct?
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
 		appCodec,
@@ -700,26 +707,27 @@ func New(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
-		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
-		scopedCCVConsumerKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		app.IBCKeeper.ConnectionKeeper,
-		app.IBCKeeper.ClientKeeper,
-		app.SlashingKeeper,
-		&app.BankKeeper,
-		app.AccountKeeper,
-		app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
-		// Since the keeper is only used to send reward to provider chain
-		app.IBCKeeper,
-		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
-		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-	)
+	// TODO: remove as we remove ccv stuff
+	//app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
+	//	appCodec,
+	//	keys[ccvconsumertypes.StoreKey],
+	//	app.GetSubspace(ccvconsumertypes.ModuleName),
+	//	scopedCCVConsumerKeeper,
+	//	app.IBCKeeper.ChannelKeeper,
+	//	app.IBCKeeper.PortKeeper,
+	//	app.IBCKeeper.ConnectionKeeper,
+	//	app.IBCKeeper.ClientKeeper,
+	//	app.SlashingKeeper,
+	//	&app.BankKeeper,
+	//	app.AccountKeeper,
+	//	app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
+	//	// Since the keeper is only used to send reward to provider chain
+	//	app.IBCKeeper,
+	//	authtypes.FeeCollectorName,
+	//	authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	//	address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+	//	address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
+	//)
 
 	// consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
@@ -1444,7 +1452,7 @@ func (app *App) setupUpgradeHandlers() {
 					StakingKeeper:       app.StakingKeeper,
 					DexKeeper:           &app.DexKeeper,
 					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
-					ChannelKeeper:       &app.IBCKeeper.ChannelKeeper,
+					ChannelKeeper:       app.IBCKeeper.ChannelKeeper,
 					TransferKeeper:      app.TransferKeeper.Keeper,
 					WasmKeeper:          &app.WasmKeeper,
 					HarpoonKeeper:       app.HarpoonKeeper,

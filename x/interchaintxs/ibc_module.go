@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
@@ -33,7 +32,6 @@ func (im IBCModule) OnChanOpenInit(
 	_ []string,
 	_ string,
 	_ string,
-	_ *capabilitytypes.Capability,
 	_ channeltypes.Counterparty,
 	version string,
 ) (string, error) {
@@ -48,7 +46,6 @@ func (im IBCModule) OnChanOpenTry(
 	_ []string,
 	_,
 	_ string,
-	_ *capabilitytypes.Capability,
 	_ channeltypes.Counterparty,
 	_ string,
 ) (string, error) {
@@ -100,15 +97,18 @@ func (im IBCModule) OnChanCloseConfirm(
 // logic returns without error.
 func (im IBCModule) OnRecvPacket(
 	_ sdk.Context,
+	_ string,
 	_ channeltypes.Packet,
 	_ sdk.AccAddress,
 ) ibcexported.Acknowledgement {
 	return channeltypes.NewErrorAcknowledgement(errors.New("cannot receive packet via interchain accounts authentication module"))
 }
 
+// TODO: pass channel version to keeper.HandleAcknowledgement?
 // OnAcknowledgementPacket implements the IBCModule interface.
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
@@ -116,9 +116,11 @@ func (im IBCModule) OnAcknowledgementPacket(
 	return im.keeper.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
 }
 
+// TODO: pass channel version to keeper.HandleTimeout?
 // OnTimeoutPacket implements the IBCModule interface.
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
