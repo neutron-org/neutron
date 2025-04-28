@@ -4,11 +4,11 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v7/x/revenue/types"
 
-	harpoontypes "github.com/neutron-org/neutron/v6/x/harpoon/types"
+	harpoontypes "github.com/neutron-org/neutron/v7/x/harpoon/types"
 
-	"github.com/neutron-org/neutron/v6/app/upgrades"
+	"github.com/neutron-org/neutron/v7/app/upgrades"
 )
 
 const (

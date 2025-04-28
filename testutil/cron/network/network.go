@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/neutron-org/neutron/v6/app/config"
+	"github.com/neutron-org/neutron/v7/app/config"
 
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	db "github.com/cosmos/cosmos-db"
@@ -16,11 +16,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/neutron-org/neutron/v6/testutil/consumer"
+	"github.com/neutron-org/neutron/v7/testutil/consumer"
 
-	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v7/app/params"
 
-	"github.com/neutron-org/neutron/v6/app"
+	"github.com/neutron-org/neutron/v7/app"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"

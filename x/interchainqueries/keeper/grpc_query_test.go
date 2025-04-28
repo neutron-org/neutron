@@ -12,8 +12,8 @@ import (
 
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v6/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v7/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
 )
 
 func (suite *KeeperTestSuite) TestRemoteLastHeight() {

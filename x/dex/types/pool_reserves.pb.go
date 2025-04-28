@@ -8,7 +8,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	github_com_neutron_org_neutron_v6_utils_math "github.com/neutron-org/neutron/v6/utils/math"
+	github_com_neutron_org_neutron_v7_utils_math "github.com/neutron-org/neutron/v7/utils/math"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -89,12 +89,12 @@ type PoolReserves struct {
 	Key                *PoolReservesKey      `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	ReservesMakerDenom cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=reserves_maker_denom,json=reservesMakerDenom,proto3,customtype=cosmossdk.io/math.Int" json:"reserves_maker_denom" yaml:"reserves_maker_denom"`
 	// DEPRECATED: price_taker_to_maker will be removed in future release, `maker_price` should always be used.
-	PriceTakerToMaker github_com_neutron_org_neutron_v6_utils_math.PrecDec `protobuf:"bytes,3,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v6/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"` // Deprecated: Do not use.
+	PriceTakerToMaker github_com_neutron_org_neutron_v7_utils_math.PrecDec `protobuf:"bytes,3,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v7/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"` // Deprecated: Do not use.
 	// DEPRECATED: price_opposite_taker_maker was an internal implementation detail and will be removed in a future release.
 	// It is being kept strictly for backwards compatibility. The actual field value is unused.
-	PriceOppositeTakerToMaker github_com_neutron_org_neutron_v6_utils_math.PrecDec `protobuf:"bytes,4,opt,name=price_opposite_taker_to_maker,json=priceOppositeTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v6/utils/math.PrecDec" json:"price_opposite_taker_to_maker" yaml:"price_opposite_taker_to_maker"` // Deprecated: Do not use.
+	PriceOppositeTakerToMaker github_com_neutron_org_neutron_v7_utils_math.PrecDec `protobuf:"bytes,4,opt,name=price_opposite_taker_to_maker,json=priceOppositeTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v7/utils/math.PrecDec" json:"price_opposite_taker_to_maker" yaml:"price_opposite_taker_to_maker"` // Deprecated: Do not use.
 	// This is the price of the PoolReserves denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
-	MakerPrice github_com_neutron_org_neutron_v6_utils_math.PrecDec `protobuf:"bytes,5,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v6/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
+	MakerPrice github_com_neutron_org_neutron_v7_utils_math.PrecDec `protobuf:"bytes,5,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v7/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
 }
 
 func (m *PoolReserves) Reset()         { *m = PoolReserves{} }
@@ -148,7 +148,7 @@ var fileDescriptor_f0fe9f734c7ad538 = []byte{
 	// 493 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x93, 0x41, 0x8b, 0xd3, 0x40,
 	0x14, 0x80, 0x3b, 0x66, 0x57, 0x70, 0xaa, 0xa8, 0x43, 0x17, 0xb2, 0xab, 0x26, 0x25, 0x78, 0xe8,
-	0x65, 0x13, 0x50, 0x11, 0x11, 0x4f, 0x4b, 0x41, 0x8a, 0x88, 0x25, 0xf4, 0xe4, 0x25, 0x64, 0x93,
+	0x65, 0x13, 0x50, 0x41, 0x11, 0x4f, 0x4b, 0x41, 0x8a, 0x88, 0x25, 0xf4, 0xe4, 0x25, 0x64, 0x93,
 	0x67, 0x77, 0x68, 0x93, 0x17, 0x26, 0xd3, 0xa5, 0xbd, 0x7a, 0xd0, 0xab, 0x77, 0xef, 0xfe, 0x10,
 	0x4f, 0x8b, 0xa7, 0x3d, 0x8a, 0x87, 0x20, 0xed, 0xcd, 0x63, 0x7f, 0x81, 0xcc, 0x24, 0xd5, 0x64,
 	0xad, 0x7a, 0xd8, 0x53, 0xde, 0xbc, 0xf7, 0xe5, 0xcd, 0xf7, 0x66, 0x18, 0x6a, 0xa7, 0x30, 0x93,
@@ -176,7 +176,7 @@ var fileDescriptor_f0fe9f734c7ad538 = []byte{
 	0x59, 0x4b, 0x3a, 0x3e, 0xd5, 0xab, 0xa1, 0x5a, 0x1c, 0x3d, 0x3f, 0x5b, 0x5a, 0xe4, 0x7c, 0x69,
 	0x91, 0xef, 0x4b, 0x8b, 0x7c, 0x58, 0x59, 0xad, 0xf3, 0x95, 0xd5, 0xfa, 0xba, 0xb2, 0x5a, 0xaf,
 	0x0f, 0xff, 0x2f, 0x30, 0x2f, 0x5f, 0xee, 0x22, 0x83, 0xfc, 0xf8, 0xaa, 0x7e, 0xb2, 0x0f, 0x7f,
-	0x06, 0x00, 0x00, 0xff, 0xff, 0xf5, 0x64, 0x31, 0xb9, 0x19, 0x04, 0x00, 0x00,
+	0x06, 0x00, 0x00, 0xff, 0xff, 0xf3, 0xcf, 0x24, 0x7b, 0x19, 0x04, 0x00, 0x00,
 }
 
 func (m *PoolReservesKey) Marshal() (dAtA []byte, err error) {

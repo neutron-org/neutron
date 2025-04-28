@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	stateverifier "github.com/neutron-org/neutron/v6/x/state-verifier/types"
+	stateverifier "github.com/neutron-org/neutron/v7/x/state-verifier/types"
 )
 
 type queryServer struct {

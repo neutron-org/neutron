@@ -6,10 +6,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	v2 "github.com/neutron-org/neutron/v6/x/contractmanager/migrations/v2"
-	"github.com/neutron-org/neutron/v6/x/contractmanager/types"
-	typesv1 "github.com/neutron-org/neutron/v6/x/contractmanager/types/v1"
+	"github.com/neutron-org/neutron/v7/testutil"
+	v2 "github.com/neutron-org/neutron/v7/x/contractmanager/migrations/v2"
+	"github.com/neutron-org/neutron/v7/x/contractmanager/types"
+	typesv1 "github.com/neutron-org/neutron/v7/x/contractmanager/types/v1"
 )
 
 type V2ContractManagerMigrationTestSuite struct {

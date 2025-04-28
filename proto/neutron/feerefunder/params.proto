@@ -4,7 +4,7 @@ package neutron.feerefunder;
 import "gogoproto/gogo.proto";
 import "neutron/feerefunder/fee.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/feerefunder/types";
+option go_package = "github.com/neutron-org/neutron/v7/x/feerefunder/types";
 
 // Params defines the parameters for the module.
 message Params {

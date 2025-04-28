@@ -7,7 +7,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v6/x/harpoon/types"
+	"github.com/neutron-org/neutron/v7/x/harpoon/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

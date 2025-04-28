@@ -19,8 +19,8 @@ import (
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
-	keeper "github.com/neutron-org/neutron/v6/x/transfer/keeper"
-	"github.com/neutron-org/neutron/v6/x/transfer/types"
+	keeper "github.com/neutron-org/neutron/v7/x/transfer/keeper"
+	"github.com/neutron-org/neutron/v7/x/transfer/types"
 )
 
 func TransferKeeper(

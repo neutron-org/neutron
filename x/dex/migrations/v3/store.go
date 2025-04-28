@@ -9,8 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/dex/types"
-	v2types "github.com/neutron-org/neutron/v6/x/dex/types/v2"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
+	v2types "github.com/neutron-org/neutron/v7/x/dex/types/v2"
 )
 
 // MigrateStore performs in-place store migrations.

@@ -22,7 +22,7 @@ import (
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	types2 "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v7/app/params"
 )
 
 const (

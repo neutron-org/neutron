@@ -13,7 +13,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	appparams "github.com/neutron-org/neutron/v6/app/params"
+	appparams "github.com/neutron-org/neutron/v7/app/params"
 )
 
 func StakeWithDrop(ctx sdk.Context, sk stakingkeeper.Keeper, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) error {

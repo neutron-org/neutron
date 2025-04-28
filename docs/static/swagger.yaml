@@ -18075,7 +18075,7 @@ definitions:
           If pickBestRoute == true then all routes are run and the route with
           the
 
-          best price is chosen otherwise, the first succesful route is used.
+          best price is chosen otherwise, the first successful route is used.
         type: boolean
       receiver:
         type: string
@@ -22683,7 +22683,7 @@ definitions:
     type: object
   osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse:
     description: |-
-      QueryDenomsFromCreatorRequest defines the response structure for the
+      QueryDenomsFromCreatorResponse defines the response structure for the
       DenomsFromCreator gRPC query.
     properties:
       denoms:
@@ -26936,7 +26936,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v6
+  version: v7
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -45790,7 +45790,7 @@ paths:
             If pickBestRoute == true then all routes are run and the route with
             the
 
-            best price is chosen otherwise, the first succesful route is used.
+            best price is chosen otherwise, the first successful route is used.
           in: query
           name: pick_best_route
           required: false
@@ -48060,7 +48060,7 @@ paths:
             If pickBestRoute == true then all routes are run and the route with
             the
 
-            best price is chosen otherwise, the first succesful route is used.
+            best price is chosen otherwise, the first successful route is used.
           in: query
           name: msg.pick_best_route
           required: false

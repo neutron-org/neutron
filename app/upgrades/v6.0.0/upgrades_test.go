@@ -25,10 +25,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/app/params"
-	v600 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.0"
+	"github.com/neutron-org/neutron/v7/app/params"
+	v600 "github.com/neutron-org/neutron/v7/app/upgrades/v6.0.0"
 
-	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v7/testutil"
 )
 
 //go:embed validators/staking

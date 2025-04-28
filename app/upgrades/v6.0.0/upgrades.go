@@ -15,10 +15,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 
-	appparams "github.com/neutron-org/neutron/v6/app/params"
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v6/x/dynamicfees/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
+	appparams "github.com/neutron-org/neutron/v7/app/params"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v7/x/dynamicfees/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v7/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v7/x/revenue/types"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -26,9 +26,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v6/app/upgrades"
-	harpoonkeeper "github.com/neutron-org/neutron/v6/x/harpoon/keeper"
-	"github.com/neutron-org/neutron/v6/x/harpoon/types"
+	"github.com/neutron-org/neutron/v7/app/upgrades"
+	harpoonkeeper "github.com/neutron-org/neutron/v7/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v7/x/harpoon/types"
 )
 
 /*
