@@ -10,9 +10,9 @@ import (
 
 	types "github.com/CosmWasm/wasmd/x/wasm/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
-	types1 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	types2 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	exported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	types1 "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	types2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	exported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	gomock "github.com/golang/mock/gomock"
 
 	types3 "github.com/neutron-org/neutron/v6/x/feerefunder/types"

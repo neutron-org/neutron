@@ -3,9 +3,9 @@ package types
 import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	clientkeeper "github.com/cosmos/ibc-go/v8/modules/core/02-client/keeper"
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
-	tendermintLightClientTypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	clientkeeper "github.com/cosmos/ibc-go/v10/modules/core/02-client/keeper"
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 )
 
 type HeaderVerifier interface {

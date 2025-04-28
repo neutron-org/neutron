@@ -5,7 +5,7 @@ import (
 
 	"github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
 	iqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"

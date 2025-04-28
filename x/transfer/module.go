@@ -5,15 +5,15 @@ import (
 
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	wrapkeeper "github.com/neutron-org/neutron/v6/x/transfer/keeper"
 	neutrontypes "github.com/neutron-org/neutron/v6/x/transfer/types"

@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

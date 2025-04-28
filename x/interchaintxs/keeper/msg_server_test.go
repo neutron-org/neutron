@@ -5,15 +5,15 @@ import (
 	"testing"
 	"time"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"cosmossdk.io/math"
 
 	"github.com/neutron-org/neutron/v6/app/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 	"github.com/neutron-org/neutron/v6/x/interchaintxs/keeper"

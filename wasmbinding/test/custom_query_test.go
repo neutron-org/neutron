@@ -16,8 +16,8 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	"github.com/neutron-org/neutron/v6/app"
 	"github.com/neutron-org/neutron/v6/testutil"

@@ -15,7 +15,7 @@ import (
 
 	feeburnertypes "github.com/neutron-org/neutron/v6/x/feeburner/types"
 
-	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
@@ -32,8 +32,8 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/v2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v6/app"

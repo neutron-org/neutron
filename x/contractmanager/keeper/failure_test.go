@@ -14,7 +14,7 @@ import (
 	"github.com/neutron-org/neutron/v6/testutil"
 	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/contractmanager/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
