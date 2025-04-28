@@ -13,7 +13,7 @@ import (
 )
 
 // NewAppConstructor returns a new Osmosis app given encoding type configs.
-func NewAppConstructor(chainId string) network.AppConstructor {
+func NewAppConstructor(chainID string) network.AppConstructor {
 	return func(val network.ValidatorI) servertypes.Application {
 		valCtx := val.GetCtx()
 		appConfig := val.GetAppConfig()
@@ -24,7 +24,7 @@ func NewAppConstructor(chainId string) network.AppConstructor {
 			sims.EmptyAppOptions{},
 			nil,
 			baseapp.SetMinGasPrices(appConfig.MinGasPrices),
-			baseapp.SetChainID(chainId),
+			baseapp.SetChainID(chainID),
 		)
 	}
 }
