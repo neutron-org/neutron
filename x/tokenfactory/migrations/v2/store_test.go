@@ -16,15 +16,15 @@ import (
 	"github.com/neutron-org/neutron/v6/x/tokenfactory/types/v1beta1"
 )
 
-type V3DexMigrationTestSuite struct {
+type V2TokenfactoryMigrationTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(V3DexMigrationTestSuite))
+	suite.Run(t, new(V2TokenfactoryMigrationTestSuite))
 }
 
-func (suite *V3DexMigrationTestSuite) TestParamsUpgrade() {
+func (suite *V2TokenfactoryMigrationTestSuite) TestParamsUpgrade() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
@@ -49,13 +49,13 @@ func (suite *V3DexMigrationTestSuite) TestParamsUpgrade() {
 
 	// Check params are correct
 	newParams := app.TokenFactoryKeeper.GetParams(ctx)
-	suite.Require().EqualValues(oldParams.DenomCreationFee, newParams.DenomCreationFee)
-	suite.Require().EqualValues(newParams.DenomCreationGasConsume, newParams.DenomCreationGasConsume)
-	suite.Require().EqualValues(newParams.FeeCollectorAddress, newParams.FeeCollectorAddress)
+	suite.Require().EqualValues(newParams.DenomCreationFee, oldParams.DenomCreationFee)
+	suite.Require().EqualValues(newParams.DenomCreationGasConsume, oldParams.DenomCreationGasConsume)
+	suite.Require().EqualValues(newParams.FeeCollectorAddress, oldParams.FeeCollectorAddress)
 	suite.Require().EqualValues(newParams.WhitelistedHooks, v2.WhitelistedHooks)
 }
 
-func (suite *V3DexMigrationTestSuite) TestHooksUpgrade() {
+func (suite *V2TokenfactoryMigrationTestSuite) TestHooksUpgrade() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
