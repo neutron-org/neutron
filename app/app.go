@@ -684,17 +684,10 @@ func New(
 	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
 
 	wasmDir := filepath.Join(homePath, "wasm")
-	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
+	wasmConfig, err := wasm.ReadNodeConfig(appOpts)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm cfg: %s", err))
 	}
-
-	// The last arguments can contain custom message handlers, and custom query handlers,
-	// if we want to allow any custom callbacks
-	// NOTE: we need staking feature here even if there is no staking module anymore because cosmwasm-std in the CosmWasm SDK requires this feature
-	// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
-	//       however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
-	supportedFeatures := []string{"iterator", "stargate", "staking", "neutron", "cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "cosmwasm_2_0", "cosmwasm_2_1"}
 
 	// register the proposal types
 	adminRouterLegacy := govv1beta1.NewRouter()
@@ -799,7 +792,10 @@ func New(
 		app.GRPCQueryRouter(),
 		wasmDir,
 		wasmConfig,
-		supportedFeatures,
+		wasmtypes.VMConfig{},
+		// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
+		//       however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
+		append(wasmkeeper.BuiltInCapabilities(), "neutron"),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		wasmOpts...,
 	)
@@ -883,7 +879,7 @@ func New(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		upgrade.NewAppModule(&app.UpgradeKeeper, address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -1064,7 +1060,7 @@ func New(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, nil, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),

@@ -16335,6 +16335,43 @@ definitions:
         title: Address is the contract address
         type: string
     type: object
+  cosmwasm.wasm.v1.QueryCodeInfoResponse:
+    properties:
+      checksum:
+        format: byte
+        type: string
+      code_id:
+        format: uint64
+        type: string
+      creator:
+        type: string
+      instantiate_permission:
+        description: AccessConfig access control type.
+        properties:
+          addresses:
+            items:
+              type: string
+            type: array
+          permission:
+            default: ACCESS_TYPE_UNSPECIFIED
+            description: >-
+              - ACCESS_TYPE_UNSPECIFIED: AccessTypeUnspecified placeholder for
+              empty value
+               - ACCESS_TYPE_NOBODY: AccessTypeNobody forbidden
+               - ACCESS_TYPE_EVERYBODY: AccessTypeEverybody unrestricted
+               - ACCESS_TYPE_ANY_OF_ADDRESSES: AccessTypeAnyOfAddresses allow any of the addresses
+            enum:
+              - ACCESS_TYPE_UNSPECIFIED
+              - ACCESS_TYPE_NOBODY
+              - ACCESS_TYPE_EVERYBODY
+              - ACCESS_TYPE_ANY_OF_ADDRESSES
+            title: AccessType permission types
+            type: string
+        type: object
+    title: >-
+      QueryCodeInfoResponse is the response type for the Query/CodeInfo RPC
+      method
+    type: object
   cosmwasm.wasm.v1.QueryCodeResponse:
     properties:
       code_info:
@@ -16758,6 +16795,15 @@ definitions:
     title: |-
       QuerySmartContractStateResponse is the response type for the
       Query/SmartContractState RPC method
+    type: object
+  cosmwasm.wasm.v1.QueryWasmLimitsConfigResponse:
+    description: |-
+      QueryWasmLimitsConfigResponse is the response type for the
+      Query/WasmLimitsConfig RPC method. It contains the JSON encoded limits for
+      static validation of Wasm files.
+    properties:
+      config:
+        type: string
     type: object
   feemarket.feemarket.v1.GasPriceResponse:
     description: |-
@@ -43034,6 +43080,80 @@ paths:
       summary: Codes gets the metadata for all stored wasm codes
       tags:
         - Query
+  /cosmwasm/wasm/v1/code-info/{code_id}:
+    get:
+      operationId: CodeInfo
+      parameters:
+        - format: uint64
+          in: path
+          name: code_id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              checksum:
+                format: byte
+                type: string
+              code_id:
+                format: uint64
+                type: string
+              creator:
+                type: string
+              instantiate_permission:
+                description: AccessConfig access control type.
+                properties:
+                  addresses:
+                    items:
+                      type: string
+                    type: array
+                  permission:
+                    default: ACCESS_TYPE_UNSPECIFIED
+                    description: >-
+                      - ACCESS_TYPE_UNSPECIFIED: AccessTypeUnspecified
+                      placeholder for empty value
+                       - ACCESS_TYPE_NOBODY: AccessTypeNobody forbidden
+                       - ACCESS_TYPE_EVERYBODY: AccessTypeEverybody unrestricted
+                       - ACCESS_TYPE_ANY_OF_ADDRESSES: AccessTypeAnyOfAddresses allow any of the addresses
+                    enum:
+                      - ACCESS_TYPE_UNSPECIFIED
+                      - ACCESS_TYPE_NOBODY
+                      - ACCESS_TYPE_EVERYBODY
+                      - ACCESS_TYPE_ANY_OF_ADDRESSES
+                    title: AccessType permission types
+                    type: string
+                type: object
+            title: >-
+              QueryCodeInfoResponse is the response type for the Query/CodeInfo
+              RPC method
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: CodeInfo gets the metadata for a single wasm code
+      tags:
+        - Query
   /cosmwasm/wasm/v1/code/{code_id}:
     get:
       operationId: Code
@@ -43112,7 +43232,7 @@ paths:
               message:
                 type: string
             type: object
-      summary: Code gets the binary code and metadata for a singe wasm code
+      summary: Code gets the binary code and metadata for a single wasm code
       tags:
         - Query
   /cosmwasm/wasm/v1/code/{code_id}/contracts:
@@ -44169,6 +44289,53 @@ paths:
                 type: string
             type: object
       summary: ContractsByCreator gets the contracts by creator
+      tags:
+        - Query
+  /cosmwasm/wasm/v1/wasm-limits-config:
+    get:
+      operationId: WasmLimitsConfig
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryWasmLimitsConfigResponse is the response type for the
+
+              Query/WasmLimitsConfig RPC method. It contains the JSON encoded
+              limits for
+
+              static validation of Wasm files.
+            properties:
+              config:
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        WasmLimitsConfig gets the configured limits for static validation of
+        Wasm
+
+        files, encoded in JSON.
       tags:
         - Query
   /feemarket/v1/gas_price/{denom}:
