@@ -21,6 +21,7 @@ import (
 	feeburnertypes "github.com/neutron-org/neutron/v7/x/feeburner/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/v7/x/interchaintxs/types"
+	stateverifiertypes "github.com/neutron-org/neutron/v7/x/state-verifier/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/v7/x/tokenfactory/types"
 
 	harpoontypes "github.com/neutron-org/neutron/v7/x/harpoon/types"
@@ -141,5 +142,8 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 
 		// harpoon
 		"/neutron.harpoon.Query/SubscribedContracts": func() proto.Message { return &harpoontypes.QuerySubscribedContractsResponse{} },
+
+		// state verifier
+		"/neutron.state_verifier.v1.Query/VerifyStateValues": func() proto.Message { return &stateverifiertypes.QueryVerifyStateValuesResponse{} },
 	}
 }
