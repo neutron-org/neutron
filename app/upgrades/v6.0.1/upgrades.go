@@ -32,7 +32,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Running dex upgrades...")
-		err = upgradeRemoveOrphanedLimitOrders(ctx, cdc, *keepers.DexKeeper)
+		err = UpgradeRemoveOrphanedLimitOrders(ctx, cdc, *keepers.DexKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +42,7 @@ func CreateUpgradeHandler(
 	}
 }
 
-func upgradeRemoveOrphanedLimitOrders(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper) error {
+func UpgradeRemoveOrphanedLimitOrders(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper) error {
 	allLimitOrderExpirations := k.GetAllLimitOrderExpiration(ctx)
 
 	expirationTrancheKeys := make(map[string]bool)
