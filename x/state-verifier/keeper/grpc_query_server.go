@@ -16,7 +16,7 @@ type queryServer struct {
 
 // QueryConsensusState implements `QueryConsensusState` gRPC query to query storage values
 func (q *queryServer) QueryConsensusState(ctx context.Context, request *stateverifier.QueryConsensusStateRequest) (*stateverifier.QueryConsensusStateResponse, error) {
-	cs, err := q.keeper.GetConsensusState(sdk.UnwrapSDKContext(ctx), int64(request.Height))
+	cs, err := q.keeper.GetConsensusState(sdk.UnwrapSDKContext(ctx), int64(request.Height)) //nolint:gosec
 	if err != nil {
 		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "failed to get consensus state for height %d: %v", request.Height, err)
 	}
