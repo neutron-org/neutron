@@ -3,6 +3,7 @@ package neutron.state_verifier.v1;
 
 import "google/api/annotations.proto";
 import "neutron/interchainqueries/tx.proto";
+import "neutron/state_verifier/v1/genesis.proto";
 
 option go_package = "github.com/neutron-org/neutron/v7/x/state-verifier/types";
 
@@ -10,6 +11,10 @@ service Query {
   // Verifies the values and returns an error if values cannot be verified. The query returns `QueryVerifyStateValuesResponse` response.
   rpc VerifyStateValues(QueryVerifyStateValuesRequest) returns (QueryVerifyStateValuesResponse) {
     option (google.api.http).get = "/neutron/state-verifier/verify_state_values";
+  }
+  // Queries saved consensus state by the height. The query returns `QueryConsensusStateResponse` response.
+  rpc QueryConsensusState(QueryConsensusStateRequest) returns (QueryConsensusStateResponse) {
+    option (google.api.http).get = "/neutron/state-verifier/query_consensus_state";
   }
 }
 
@@ -25,4 +30,16 @@ message QueryVerifyStateValuesRequest {
 message QueryVerifyStateValuesResponse {
   // The field describes a validity of all the storage values passed to the request at a specific height
   bool valid = 1;
+}
+
+// Describes a structure to query ConsensusState by the specified height
+message QueryConsensusStateRequest {
+  // Refers to the block height for which you want to query ConsensusState
+  uint64 height = 1;
+}
+
+// Describes a response structure for `QueryConsensusStateRequest` query
+message QueryConsensusStateResponse {
+  // ConsensusState defines the consensus state from the state-verifier module
+  neutron.state_verifier.v1.ConsensusState cs = 2;
 }

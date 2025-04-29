@@ -86,24 +86,36 @@ func (k *Keeper) WriteConsensusState(ctx sdk.Context, height int64, cs tendermin
 
 // Verify verifies that provided `values` are actually present on Neutron blockchain at `blockHeight`
 func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*icqtypes.StorageValue) error {
-	store := ctx.KVStore(k.storeKey)
-
 	// we need to use consensus state from the next height (N + 1), cause that consensus state contains .AppHash (Merkle Root) of the state for `blockHeight` (N)
-	csBz := store.Get(types.GetConsensusStateKey(blockHeight + 1))
-	if csBz == nil {
-		return errors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("consensus state for block %d not found", blockHeight))
+	cs, err := k.GetConsensusState(ctx, blockHeight+1)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrKeyNotFound, "failed to get consensus state for height %d: %v", blockHeight+1, err)
 	}
 
-	var cs tendermint.ConsensusState
-	if err := k.cdc.Unmarshal(csBz, &cs); err != nil {
-		return errors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
-	}
-
-	if err := stateverification.VerifyStorageValues(values, cs.Root, ibccommitmenttypes.GetSDKSpecs(), nil); err != nil {
+	if err := stateverification.VerifyStorageValues(values, cs.Cs.Root, ibccommitmenttypes.GetSDKSpecs(), nil); err != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 
 	return nil
+}
+
+func (k *Keeper) GetConsensusState(ctx sdk.Context, height int64) (*types.ConsensusState, error) {
+	store := ctx.KVStore(k.storeKey)
+
+	csBz := store.Get(types.GetConsensusStateKey(height))
+	if csBz == nil {
+		return nil, errors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("consensus state for block %d not found", height))
+	}
+
+	var cs tendermint.ConsensusState
+	if err := k.cdc.Unmarshal(csBz, &cs); err != nil {
+		return nil, errors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+
+	return &types.ConsensusState{
+		Height: height,
+		Cs:     &cs,
+	}, nil
 }
 
 // GetAllConsensusStates returns ALL consensus states that are present in the storage

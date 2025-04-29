@@ -20,6 +20,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	"github.com/neutron-org/neutron/v7/x/state-verifier/client/cli"
 	"github.com/neutron-org/neutron/v7/x/state-verifier/keeper"
 	"github.com/neutron-org/neutron/v7/x/state-verifier/types"
 )
@@ -89,7 +90,7 @@ func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 }
 
 func (a AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return &cobra.Command{}
+	return cli.GetQueryCmd(types.StoreKey)
 }
 
 // ----------------------------------------------------------------------------
