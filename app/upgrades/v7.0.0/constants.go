@@ -15,7 +15,14 @@ const (
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
-	StoreUpgrades: storetypes.StoreUpgrades{Added: []string{
-		stateverifier.ModuleName,
-	}},
+	StoreUpgrades: storetypes.StoreUpgrades{
+		Added: []string{
+			stateverifier.ModuleName,
+		},
+		// to avoid import of ccconsumer and auction modules just for their removal, i use just string here
+		Deleted: []string{
+			"ccvconsumer",
+			"auction",
+		},
+	},
 }
