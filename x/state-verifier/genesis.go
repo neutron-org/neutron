@@ -3,8 +3,8 @@ package stateverifier
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/state-verifier/keeper"
-	"github.com/neutron-org/neutron/v6/x/state-verifier/types"
+	"github.com/neutron-org/neutron/v7/x/state-verifier/keeper"
+	"github.com/neutron-org/neutron/v7/x/state-verifier/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

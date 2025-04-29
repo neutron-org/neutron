@@ -17373,6 +17373,40 @@ definitions:
 
       freezing clients
     type: object
+  ibc.core.commitment.v1.MerkleRoot:
+    description: |-
+      MerkleRoot defines a merkle root hash.
+      In the Cosmos SDK, the AppHash of a block header becomes the root.
+    properties:
+      hash:
+        format: byte
+        type: string
+    type: object
+  ibc.lightclients.tendermint.v1.ConsensusState:
+    description: ConsensusState defines the consensus state from Tendermint.
+    properties:
+      next_validators_hash:
+        format: byte
+        type: string
+      root:
+        title: commitment root (i.e app hash)
+        description: |-
+          MerkleRoot defines a merkle root hash.
+          In the Cosmos SDK, the AppHash of a block header becomes the root.
+        properties:
+          hash:
+            format: byte
+            type: string
+        type: object
+      timestamp:
+        description: >-
+          timestamp that corresponds to the block height in which the
+          ConsensusState
+
+          was stored.
+        format: date-time
+        type: string
+    type: object
   neutron.contractmanager.Failure:
     properties:
       address:
@@ -18075,7 +18109,7 @@ definitions:
           If pickBestRoute == true then all routes are run and the route with
           the
 
-          best price is chosen otherwise, the first succesful route is used.
+          best price is chosen otherwise, the first successful route is used.
         type: boolean
       receiver:
         type: string
@@ -22558,6 +22592,82 @@ definitions:
             type: string
         type: object
     type: object
+  neutron.state_verifier.v1.ConsensusState:
+    properties:
+      cs:
+        title: ConsensusState defines the consensus state from Tendermint
+        description: ConsensusState defines the consensus state from Tendermint.
+        properties:
+          next_validators_hash:
+            format: byte
+            type: string
+          root:
+            title: commitment root (i.e app hash)
+            description: |-
+              MerkleRoot defines a merkle root hash.
+              In the Cosmos SDK, the AppHash of a block header becomes the root.
+            properties:
+              hash:
+                format: byte
+                type: string
+            type: object
+          timestamp:
+            description: >-
+              timestamp that corresponds to the block height in which the
+              ConsensusState
+
+              was stored.
+            format: date-time
+            type: string
+        type: object
+      height:
+        format: int64
+        title: Describes a block height for which the consensus height is saved
+        type: string
+    title: Describes a "light" consensus state of the chain at a particular height
+    type: object
+  neutron.state_verifier.v1.QueryConsensusStateResponse:
+    properties:
+      cs:
+        title: >-
+          ConsensusState defines the consensus state from the state-verifier
+          module
+        properties:
+          cs:
+            title: ConsensusState defines the consensus state from Tendermint
+            description: ConsensusState defines the consensus state from Tendermint.
+            properties:
+              next_validators_hash:
+                format: byte
+                type: string
+              root:
+                title: commitment root (i.e app hash)
+                description: >-
+                  MerkleRoot defines a merkle root hash.
+
+                  In the Cosmos SDK, the AppHash of a block header becomes the
+                  root.
+                properties:
+                  hash:
+                    format: byte
+                    type: string
+                type: object
+              timestamp:
+                description: >-
+                  timestamp that corresponds to the block height in which the
+                  ConsensusState
+
+                  was stored.
+                format: date-time
+                type: string
+            type: object
+          height:
+            format: int64
+            title: Describes a block height for which the consensus height is saved
+            type: string
+        type: object
+    title: Describes a response structure for `QueryConsensusStateRequest` query
+    type: object
   neutron.state_verifier.v1.QueryVerifyStateValuesResponse:
     properties:
       valid:
@@ -22683,7 +22793,7 @@ definitions:
     type: object
   osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse:
     description: |-
-      QueryDenomsFromCreatorRequest defines the response structure for the
+      QueryDenomsFromCreatorResponse defines the response structure for the
       DenomsFromCreator gRPC query.
     properties:
       denoms:
@@ -26936,7 +27046,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v6
+  version: v7
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -45790,7 +45900,7 @@ paths:
             If pickBestRoute == true then all routes are run and the route with
             the
 
-            best price is chosen otherwise, the first succesful route is used.
+            best price is chosen otherwise, the first successful route is used.
           in: query
           name: pick_best_route
           required: false
@@ -48060,7 +48170,7 @@ paths:
             If pickBestRoute == true then all routes are run and the route with
             the
 
-            best price is chosen otherwise, the first succesful route is used.
+            best price is chosen otherwise, the first successful route is used.
           in: query
           name: msg.pick_best_route
           required: false
@@ -50894,7 +51004,97 @@ paths:
       summary: Fetches all validators' stats from the revenue module's state.
       tags:
         - Query
-  /neutron/state-verifier/verify_state_values:
+  /neutron/state-verifier/v1/query_consensus_state:
+    get:
+      operationId: QueryConsensusState
+      parameters:
+        - description: >-
+            Refers to the block height for which you want to query
+            ConsensusState.
+          format: uint64
+          in: query
+          name: height
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              cs:
+                title: >-
+                  ConsensusState defines the consensus state from the
+                  state-verifier module
+                properties:
+                  cs:
+                    title: ConsensusState defines the consensus state from Tendermint
+                    description: >-
+                      ConsensusState defines the consensus state from
+                      Tendermint.
+                    properties:
+                      next_validators_hash:
+                        format: byte
+                        type: string
+                      root:
+                        title: commitment root (i.e app hash)
+                        description: >-
+                          MerkleRoot defines a merkle root hash.
+
+                          In the Cosmos SDK, the AppHash of a block header
+                          becomes the root.
+                        properties:
+                          hash:
+                            format: byte
+                            type: string
+                        type: object
+                      timestamp:
+                        description: >-
+                          timestamp that corresponds to the block height in
+                          which the ConsensusState
+
+                          was stored.
+                        format: date-time
+                        type: string
+                    type: object
+                  height:
+                    format: int64
+                    title: >-
+                      Describes a block height for which the consensus height is
+                      saved
+                    type: string
+                type: object
+            title: >-
+              Describes a response structure for `QueryConsensusStateRequest`
+              query
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Queries saved consensus state by the height. The query returns
+        `QueryConsensusStateResponse` response.
+      tags:
+        - Query
+  /neutron/state-verifier/v1/verify_state_values:
     get:
       operationId: VerifyStateValues
       parameters:

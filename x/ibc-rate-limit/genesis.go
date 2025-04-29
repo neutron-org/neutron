@@ -3,7 +3,7 @@ package ibcratelimit
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
 )
 
 // InitGenesis initializes the x/ibc-rate-limit module's state from a provided genesis

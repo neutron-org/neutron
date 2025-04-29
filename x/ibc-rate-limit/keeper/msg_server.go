@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v6/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
 )
 
 type msgServer struct {

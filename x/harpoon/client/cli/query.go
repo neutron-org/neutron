@@ -10,7 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/neutron-org/neutron/v6/x/harpoon/types"
+	"github.com/neutron-org/neutron/v7/x/harpoon/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

@@ -4,7 +4,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
-	"github.com/neutron-org/neutron/v6/x/crypto/ethsecp256k1"
+	"github.com/neutron-org/neutron/v7/x/crypto/ethsecp256k1"
 )
 
 // RegisterInterfaces register the ethsecp256k1 key concrete types.

@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 func (s *DexTestSuite) TestDepositMultiCompleteFailure() {

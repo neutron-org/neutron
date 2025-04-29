@@ -4,7 +4,7 @@ package neutron.dynamicfees.v1;
 import "gogoproto/gogo.proto";
 import "neutron/dynamicfees/v1/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/dynamicfees/types";
+option go_package = "github.com/neutron-org/neutron/v7/x/dynamicfees/types";
 
 // GenesisState defines the dynamicfees module's genesis state.
 message GenesisState {

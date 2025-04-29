@@ -8,9 +8,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v7/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v7/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 func TestPoolReservesQuerySingle(t *testing.T) {

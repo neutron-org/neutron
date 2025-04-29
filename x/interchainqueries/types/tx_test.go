@@ -8,7 +8,7 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	iqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	iqtypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
 )
 
 const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
