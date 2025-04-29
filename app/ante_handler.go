@@ -27,7 +27,7 @@ type HandlerOptions struct {
 	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
 	GlobalFeeKeeper       globalfeekeeper.Keeper
-	WasmConfig            *wasmTypes.WasmConfig
+	NodeConfig            *wasmTypes.NodeConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 	FeeMarketKeeper       feemarketante.FeeMarketKeeper
 }
@@ -42,7 +42,7 @@ func NewAnteHandler(options HandlerOptions, _ log.Logger) (sdk.AnteHandler, erro
 	if options.SignModeHandler == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
 	}
-	if options.WasmConfig == nil {
+	if options.NodeConfig == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "wasm config is required for ante builder")
 	}
 	if options.TXCounterStoreService == nil {
@@ -60,7 +60,7 @@ func NewAnteHandler(options HandlerOptions, _ log.Logger) (sdk.AnteHandler, erro
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
-		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
+		wasmkeeper.NewLimitSimulationGasDecorator(options.NodeConfig.SimulationGasLimit), // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		ante.NewValidateBasicDecorator(),

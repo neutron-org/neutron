@@ -21,10 +21,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctesting "github.com/cosmos/ibc-go/v10/testing"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-
-	"github.com/neutron-org/neutron/v6/testutil/consumer"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -210,18 +206,6 @@ func GenesisStateWithValSet(
 		[]banktypes.SendEnabled{},
 	)
 	genesisState[banktypes.ModuleName] = codec.MustMarshalJSON(bankGenesis)
-
-	vals, err := tmtypes.PB2TM.ValidatorUpdates(initValPowers)
-	if err != nil {
-		panic("failed to get vals")
-	}
-
-	consumerGenesisState := consumer.CreateMinimalConsumerTestGenesis()
-	consumerGenesisState.Provider.InitialValSet = initValPowers
-	consumerGenesisState.Provider.ConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).
-		Hash()
-	consumerGenesisState.Params.Enabled = true
-	genesisState[consumertypes.ModuleName] = codec.MustMarshalJSON(consumerGenesisState)
 
 	return genesisState, nil
 }

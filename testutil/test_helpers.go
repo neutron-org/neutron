@@ -3,6 +3,7 @@ package testutil
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"math/rand"
 	"os"
 	"path"
@@ -10,13 +11,11 @@ import (
 	"time"
 
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
+	tmrand "github.com/cometbft/cometbft/libs/rand"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	types2 "github.com/cosmos/cosmos-sdk/crypto/types"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-
-	tmrand "github.com/cometbft/cometbft/libs/rand"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
 
@@ -34,7 +33,6 @@ import (
 	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v10/testing"
-	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
 	appparams "github.com/neutron-org/neutron/v6/app/params"
@@ -205,7 +203,7 @@ func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 
 	// trustingPeriodFraction := chainProvider.App.(*app.App).GetStakingKeeper().(stakingkeeper.Keeper).GetUnbonding(chainProvider.GetContext())
 	trustingPeriodFraction := 0.66
-	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointA.Chain.GetContext())
+	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointA.Chain.GetContext())
 	if err != nil {
 		panic(err)
 	}
@@ -214,7 +212,7 @@ func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodA
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingA
 
-	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointB.Chain.GetContext())
+	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointB.Chain.GetContext())
 	if err != nil {
 		panic(err)
 	}
@@ -311,22 +309,17 @@ func SetupTestingApp() func() (ibctesting.TestingApp, map[string]json.RawMessage
 	}
 }
 
-// SetupValSetAppIniter is a simple wrapper for ICS e2e tests to satisfy interface
-func SetupValSetAppIniter(_ []cometbfttypes.ValidatorUpdate) icssimapp.AppIniter {
-	return SetupTestingApp()
-}
-
 func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
 	path.EndpointA.ChannelConfig.PortID = types.PortID
 	path.EndpointB.ChannelConfig.PortID = types.PortID
 	path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
 	path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
-	path.EndpointA.ChannelConfig.Version = types.Version
-	path.EndpointB.ChannelConfig.Version = types.Version
+	path.EndpointA.ChannelConfig.Version = types.V1
+	path.EndpointB.ChannelConfig.Version = types.V1
 
 	trustingPeriodFraction := 0.66
-	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointA.Chain.GetContext())
+	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointA.Chain.GetContext())
 	if err != nil {
 		panic(err)
 	}
@@ -335,7 +328,7 @@ func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodA
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingA
 
-	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointB.Chain.GetContext())
+	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointB.Chain.GetContext())
 	if err != nil {
 		panic(err)
 	}
@@ -384,7 +377,7 @@ func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain
 		}
 	}()
 
-	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.CurrentHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
+	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.LatestCommittedHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
 	if err != nil {
 		return nil, err
 	}
@@ -456,28 +449,35 @@ func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAdd
 
 func (suite *IBCConnectionTestSuite) commitBlock(res *cometbfttypes.ResponseFinalizeBlock, chain *ibctesting.TestChain) {
 	_, err := chain.App.Commit()
-	suite.Require().NoError(err)
+	require.NoError(chain.TB, err)
 
 	// set the last header to the current header
 	// use nil trusted fields
-	chain.LastHeader = chain.CurrentTMClientHeader()
+	chain.LatestCommittedHeader = chain.CurrentTMClientHeader()
+	// set the trusted validator set to the next validator set
+	// The latest trusted validator set is the next validator set
+	// associated with the header being committed in storage. This will
+	// allow for header updates to be proved against these validators.
+	chain.TrustedValidators[uint64(chain.ProposedHeader.Height)] = chain.NextVals
 
 	// val set changes returned from previous block get applied to the next validators
 	// of this block. See tendermint spec for details.
 	chain.Vals = chain.NextVals
-
 	chain.NextVals = ibctesting.ApplyValSetChanges(chain, chain.Vals, res.ValidatorUpdates)
 
+	// increment the proposer priority of validators
+	chain.Vals.IncrementProposerPriority(1)
+
 	// increment the current header
-	chain.CurrentHeader = cmtproto.Header{
+	chain.ProposedHeader = cmtproto.Header{
 		ChainID: chain.ChainID,
 		Height:  chain.App.LastBlockHeight() + 1,
 		AppHash: chain.App.LastCommitID().Hash,
 		// NOTE: the time is increased by the coordinator to maintain time synchrony amongst
 		// chains.
-		Time:               chain.CurrentHeader.Time,
+		Time:               chain.ProposedHeader.Time,
 		ValidatorsHash:     chain.Vals.Hash(),
 		NextValidatorsHash: chain.NextVals.Hash(),
-		ProposerAddress:    chain.CurrentHeader.ProposerAddress,
+		ProposerAddress:    chain.Vals.Proposer.Address,
 	}
 }

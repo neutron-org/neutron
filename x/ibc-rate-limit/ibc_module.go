@@ -19,6 +19,8 @@ import (
 	"github.com/neutron-org/neutron/v6/x/ibc-rate-limit/types"
 )
 
+var _ porttypes.IBCModule = &IBCModule{}
+
 type IBCModule struct {
 	app            porttypes.IBCModule
 	ics4Middleware *ICS4Wrapper
@@ -37,7 +39,6 @@ func (im *IBCModule) OnChanOpenInit(ctx sdk.Context,
 	connectionHops []string,
 	portID string,
 	channelID string,
-	channelCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
@@ -47,7 +48,6 @@ func (im *IBCModule) OnChanOpenInit(ctx sdk.Context,
 		connectionHops,
 		portID,
 		channelID,
-		channelCap,
 		counterparty,
 		version,
 	)
@@ -60,11 +60,10 @@ func (im *IBCModule) OnChanOpenTry(
 	connectionHops []string,
 	portID,
 	channelID string,
-	channelCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
-	return im.app.OnChanOpenTry(ctx, order, connectionHops, portID, channelID, channelCap, counterparty, counterpartyVersion)
+	return im.app.OnChanOpenTry(ctx, order, connectionHops, portID, channelID, counterparty, counterpartyVersion)
 }
 
 // OnChanOpenAck implements the IBCModule interface
@@ -128,6 +127,7 @@ func ValidateReceiverAddress(packet exported.PacketI) error {
 // OnRecvPacket implements the IBCModule interface
 func (im *IBCModule) OnRecvPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) exported.Acknowledgement {
@@ -138,7 +138,7 @@ func (im *IBCModule) OnRecvPacket(
 	contract := im.ics4Middleware.GetContractAddress(ctx)
 	if contract == "" {
 		// The contract has not been configured. Continue as usual
-		return im.app.OnRecvPacket(ctx, packet, relayer)
+		return im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 
 	err := CheckAndUpdateRateLimits(ctx, im.ics4Middleware.ContractKeeper, msgRecv, contract, packet)
@@ -151,12 +151,13 @@ func (im *IBCModule) OnRecvPacket(
 	}
 
 	// if this returns an Acknowledgement that isn't successful, all state changes are discarded
-	return im.app.OnRecvPacket(ctx, packet, relayer)
+	return im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
 }
 
 // OnAcknowledgementPacket implements the IBCModule interface
 func (im *IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
@@ -183,12 +184,13 @@ func (im *IBCModule) OnAcknowledgementPacket(
 		}
 	}
 
-	return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	return im.app.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket implements the IBCModule interface
 func (im *IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
@@ -203,7 +205,7 @@ func (im *IBCModule) OnTimeoutPacket(
 			),
 		)
 	}
-	return im.app.OnTimeoutPacket(ctx, packet, relayer)
+	return im.app.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 }
 
 // RevertSentPacket Notifies the contract that a sent packet wasn't properly received

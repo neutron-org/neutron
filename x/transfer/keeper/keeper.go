@@ -84,15 +84,25 @@ func (k KeeperTransferWrapper) UpdateParams(goCtx context.Context, msg *wrappedt
 // NewKeeper creates a new IBC transfer Keeper(KeeperTransferWrapper) instance
 func NewKeeper(
 	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
-	ics4Wrapper porttypes.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper, portKeeper types.PortKeeper,
-	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
+	ics4Wrapper porttypes.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper,
+	msgRouter,
+	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper,
 	feeKeeper wrappedtypes.FeeRefunderKeeper,
 	sudoKeeper wrappedtypes.WasmKeeper, authority string,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		channelKeeper: channelKeeper,
-		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
-			authKeeper, bankKeeper, scopedKeeper, authority),
+		Keeper: keeper.NewKeeper(
+			cdc,
+			key,
+			paramSpace,
+			ics4Wrapper,
+			channelKeeper,
+			msgRouter,
+			authKeeper,
+			bankKeeper,
+			authority,
+		),
 		FeeKeeper:  feeKeeper,
 		SudoKeeper: sudoKeeper,
 	}

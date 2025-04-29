@@ -16,8 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/neutron-org/neutron/v6/testutil/consumer"
-
 	"github.com/neutron-org/neutron/v6/app/params"
 
 	"github.com/neutron-org/neutron/v6/app"
@@ -76,15 +74,6 @@ func DefaultConfig() network.Config {
 		InterfaceRegistry: encoding.InterfaceRegistry,
 		AccountRetriever:  authtypes.AccountRetriever{},
 		AppConstructor: func(val network.ValidatorI) servertypes.Application {
-			err := consumer.ModifyConsumerGenesis(val.(network.Validator))
-			if err != nil {
-				panic(err)
-			}
-			err = consumer.ModifyGenesisBlockGas(val.(network.Validator))
-			if err != nil {
-				panic(err)
-			}
-
 			return app.New(
 				val.GetCtx().Logger, db.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,

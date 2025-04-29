@@ -26,7 +26,6 @@ import (
 	"github.com/neutron-org/neutron/v6/app/params"
 
 	"github.com/neutron-org/neutron/v6/app"
-	"github.com/neutron-org/neutron/v6/testutil/consumer"
 )
 
 type (
@@ -68,11 +67,6 @@ func DefaultConfig() network.Config {
 		InterfaceRegistry: encoding.InterfaceRegistry,
 		AccountRetriever:  authtypes.AccountRetriever{},
 		AppConstructor: func(val network.ValidatorI) servertypes.Application {
-			err := consumer.ModifyConsumerGenesis(val.(network.Validator))
-			if err != nil {
-				panic(err)
-			}
-
 			return app.New(
 				val.GetCtx().Logger, db.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
