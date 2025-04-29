@@ -51004,7 +51004,7 @@ paths:
       summary: Fetches all validators' stats from the revenue module's state.
       tags:
         - Query
-  /neutron/state-verifier/query_consensus_state:
+  /neutron/state-verifier/v1/query_consensus_state:
     get:
       operationId: QueryConsensusState
       parameters:
@@ -51094,7 +51094,7 @@ paths:
         `QueryConsensusStateResponse` response.
       tags:
         - Query
-  /neutron/state-verifier/verify_state_values:
+  /neutron/state-verifier/v1/verify_state_values:
     get:
       operationId: VerifyStateValues
       parameters:

@@ -242,9 +242,9 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_VerifyStateValues_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "state-verifier", "verify_state_values"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_VerifyStateValues_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"neutron", "state-verifier", "v1", "verify_state_values"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_QueryConsensusState_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "state-verifier", "query_consensus_state"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryConsensusState_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"neutron", "state-verifier", "v1", "query_consensus_state"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (
