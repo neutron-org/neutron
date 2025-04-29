@@ -21,10 +21,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-
-	"github.com/neutron-org/neutron/v7/testutil/consumer"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -211,80 +207,10 @@ func GenesisStateWithValSet(
 	)
 	genesisState[banktypes.ModuleName] = codec.MustMarshalJSON(bankGenesis)
 
-	vals, err := tmtypes.PB2TM.ValidatorUpdates(initValPowers)
+	_, err := tmtypes.PB2TM.ValidatorUpdates(initValPowers)
 	if err != nil {
 		panic("failed to get vals")
 	}
 
-	consumerGenesisState := consumer.CreateMinimalConsumerTestGenesis()
-	consumerGenesisState.Provider.InitialValSet = initValPowers
-	consumerGenesisState.Provider.ConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).
-		Hash()
-	consumerGenesisState.Params.Enabled = true
-	genesisState[consumertypes.ModuleName] = codec.MustMarshalJSON(consumerGenesisState)
-
 	return genesisState, nil
 }
-
-// type EmptyAppOptions struct {
-//	servertypes.AppOptions
-// }
-
-// // Get implements AppOptions
-// func (ao EmptyAppOptions) Get(_ string) interface{} {
-//	return nil
-// }
-
-// var _ network.TestFixtureFactory = NewTestNetworkFixture
-
-// func NewTestNetworkFixture() network.TestFixture {
-//	dir, err := os.MkdirTemp("", "neutron")
-//	if err != nil {
-//		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
-//	}
-//	defer os.RemoveAll(dir)
-
-//	encConfig := MakeEncodingConfig()
-
-//	app := NewApp(
-//		log.NewNopLogger(),
-//		dbm.NewMemDB(),
-//		nil,
-//		true,
-//		map[int64]bool{},
-//		DefaultNodeHome,
-//		5,
-//		EmptyAppOptions{},
-//		encConfig,
-//		nil,
-//	)
-
-//	appCtr := func(val network.ValidatorI) servertypes.Application {
-//		return NewApp(
-//			val.GetCtx().Logger,
-//			dbm.NewMemDB(),
-//			nil,
-//			true,
-//			map[int64]bool{},
-//			DefaultNodeHome,
-//			5,
-//			EmptyAppOptions{},
-//			encConfig,
-//			nil,
-//			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
-//			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
-//			bam.SetChainID(val.GetCtx().Viper.GetString(flags.FlagChainID)),
-//		)
-//	}
-
-//	return network.TestFixture{
-//		AppConstructor: appCtr,
-//		GenesisState:   NewDefaultGenesisState(app.AppCodec()),
-//		EncodingConfig: moduletestutil.TestEncodingConfig{
-//			InterfaceRegistry: app.InterfaceRegistry(),
-//			Codec:             app.AppCodec(),
-//			TxConfig:          encConfig.TxConfig,
-//			Amino:             app.LegacyAmino(),
-//		},
-//	}
-// }

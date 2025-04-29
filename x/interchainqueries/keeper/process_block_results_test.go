@@ -254,7 +254,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 					suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 				}
 				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
-					RevisionNumber: 0,
+					RevisionNumber: 1,
 					RevisionHeight: 15,
 				})
 				suite.Require().NoError(err)

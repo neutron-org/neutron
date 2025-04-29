@@ -128,7 +128,7 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		suite.TransferPath.EndpointB.ChannelID,
 		suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		suite.TransferPath.EndpointA.ChannelID,
-		clienttypes.NewHeight(0, 150),
+		clienttypes.NewHeight(1, 150),
 		0,
 	)
 }
