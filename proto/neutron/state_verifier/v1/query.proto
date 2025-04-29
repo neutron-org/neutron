@@ -10,11 +10,11 @@ option go_package = "github.com/neutron-org/neutron/v7/x/state-verifier/types";
 service Query {
   // Verifies the values and returns an error if values cannot be verified. The query returns `QueryVerifyStateValuesResponse` response.
   rpc VerifyStateValues(QueryVerifyStateValuesRequest) returns (QueryVerifyStateValuesResponse) {
-    option (google.api.http).get = "/neutron/state-verifier/verify_state_values";
+    option (google.api.http).get = "/neutron/state-verifier/v1/verify_state_values";
   }
   // Queries saved consensus state by the height. The query returns `QueryConsensusStateResponse` response.
   rpc QueryConsensusState(QueryConsensusStateRequest) returns (QueryConsensusStateResponse) {
-    option (google.api.http).get = "/neutron/state-verifier/query_consensus_state";
+    option (google.api.http).get = "/neutron/state-verifier/v1/query_consensus_state";
   }
 }
 
