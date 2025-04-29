@@ -31,9 +31,11 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		// just for the testnet upgrade, should be removed for the mainnet release
-		if err := v601.UpgradeRemoveOrphanedLimitOrders(ctx, cdc, *keepers.DexKeeper); err != nil {
-			return vm, errors.Wrapf(err, "failed to remove orphaned limit orders")
+		if ctx.ChainID() == "pion-1" {
+			// this migration was already applied on mainnet, we don't need to do that twice
+			if err := v601.UpgradeRemoveOrphanedLimitOrders(ctx, cdc, *keepers.DexKeeper); err != nil {
+				return vm, errors.Wrapf(err, "failed to remove orphaned limit orders")
+			}
 		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
