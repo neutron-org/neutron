@@ -2,14 +2,12 @@ package transfer
 
 import (
 	"context"
-
+	"cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
-	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
@@ -83,18 +81,23 @@ func (k KeeperTransferWrapper) UpdateParams(goCtx context.Context, msg *wrappedt
 
 // NewKeeper creates a new IBC transfer Keeper(KeeperTransferWrapper) instance
 func NewKeeper(
-	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
-	ics4Wrapper porttypes.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper,
-	msgRouter,
-	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper,
+	cdc codec.BinaryCodec,
+	store store.KVStoreService,
+	paramSpace paramtypes.Subspace,
+	ics4Wrapper porttypes.ICS4Wrapper,
+	channelKeeper wrappedtypes.ChannelKeeper,
+	msgRouter types.MessageRouter,
+	authKeeper types.AccountKeeper,
+	bankKeeper types.BankKeeper,
 	feeKeeper wrappedtypes.FeeRefunderKeeper,
-	sudoKeeper wrappedtypes.WasmKeeper, authority string,
+	sudoKeeper wrappedtypes.WasmKeeper,
+	authority string,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		channelKeeper: channelKeeper,
 		Keeper: keeper.NewKeeper(
 			cdc,
-			key,
+			store,
 			paramSpace,
 			ics4Wrapper,
 			channelKeeper,
