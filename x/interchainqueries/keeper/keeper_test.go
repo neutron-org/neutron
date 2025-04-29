@@ -988,7 +988,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			iqtypes.ErrInvalidType,
+			iqtypes.ErrInvalidSubmittedResult,
 		},
 		{
 			"non-registered key in KV result",
@@ -1238,7 +1238,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			iqtypes.ErrInvalidProof,
+			iqtypes.ErrInvalidSubmittedResult,
 		},
 		{
 			"query result height is too old",

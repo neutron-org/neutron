@@ -4,30 +4,26 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
-
-	harpoontypes "github.com/neutron-org/neutron/v6/x/harpoon/types"
-
-	globalfeetypes "github.com/neutron-org/neutron/v6/x/globalfee/types"
-
-	dynamicfeestypes "github.com/neutron-org/neutron/v6/x/dynamicfees/types"
 
 	crontypes "github.com/neutron-org/neutron/v6/x/cron/types"
 	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/v6/x/feeburner/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	stateverifiertypes "github.com/neutron-org/neutron/v6/x/state-verifier/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	harpoontypes "github.com/neutron-org/neutron/v6/x/harpoon/types"
+	globalfeetypes "github.com/neutron-org/neutron/v6/x/globalfee/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v6/x/dynamicfees/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
@@ -129,12 +125,6 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		// globalfee
 		"/gaia.globalfee.v1beta1.Query/Params": &globalfeetypes.QueryParamsResponse{},
 
-		// consumer
-		"/interchain_security.ccv.consumer.v1.Query/QueryParams": &consumertypes.QueryParamsResponse{},
-
-		// distribution
-		"/cosmos.distribution.v1beta1.Query/DelegationRewards": &types.QueryDelegationRewardsResponse{},
-
 		// staking
 		"/cosmos.staking.v1beta1.Query/Delegation":                    &stakingtypes.QueryDelegationResponse{},
 		"/cosmos.staking.v1beta1.Query/UnbondingDelegation":           &stakingtypes.QueryUnbondingDelegationResponse{},
@@ -144,5 +134,8 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 
 		// harpoon
 		"/neutron.harpoon.Query/SubscribedContracts": &harpoontypes.QuerySubscribedContractsResponse{},
+
+		// state verifier
+		"/neutron.state_verifier.v1.Query/VerifyStateValues": &stateverifiertypes.QueryVerifyStateValuesResponse{},
 	}
 }

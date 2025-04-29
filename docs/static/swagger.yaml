@@ -17717,6 +17717,11 @@ definitions:
         type: boolean
       fail_tx_on_bel:
         type: boolean
+      swap_on_deposit:
+        type: boolean
+      swap_on_deposit_slop_tolerance_bps:
+        format: uint64
+        type: string
     type: object
   neutron.dex.DepositRecord:
     properties:
@@ -18003,6 +18008,11 @@ definitions:
               type: boolean
             fail_tx_on_bel:
               type: boolean
+            swap_on_deposit:
+              type: boolean
+            swap_on_deposit_slop_tolerance_bps:
+              format: uint64
+              type: string
           type: object
         type: array
       receiver:
@@ -21912,18 +21922,6 @@ definitions:
   neutron.revenue.Params:
     description: Defines the parameters for the module.
     properties:
-      base_compensation:
-        description: >-
-          The compensation amount measured in USD. USD is used as a quote in
-          price queries to the slinky oracle
-
-          module to determine the price of the reward denom. The base
-          compensation amount is divided
-
-          by the price of the reward denom to determine the final compensation
-          amount.
-        format: uint64
-        type: string
       blocks_performance_requirement:
         description: >-
           Specifies performance requirements for validators in scope of blocks
@@ -21999,6 +21997,38 @@ definitions:
           monthly_payment_schedule_type:
             description: Monthly periods with payments made at the end of each month.
             type: object
+        type: object
+      reward_asset:
+        description: >-
+          The asset used in revenue payments to validators. Expected to be a
+          native token of the chain
+
+          with its denom metadata registered in the bank module. The denom
+          metadata must have a defined
+
+          symbol field and contain a denom unit with an alias equal to the
+          symbol and a specified
+
+          exponent.
+        type: string
+      reward_quote:
+        description: Quotation of the reward asset.
+        properties:
+          amount:
+            description: >-
+              The compensation amount measured in the quote asset. The amount is
+              divided by the price of
+
+              the reward asset to determine the base revenue amount.
+            format: uint64
+            type: string
+          asset:
+            description: >-
+              The name of the quote asset. It is used as a quote in price
+              queries to the slinky oracle
+
+              module to determine the price of the reward asset.
+            type: string
         type: object
       twap_window:
         description: >-
@@ -22124,18 +22154,6 @@ definitions:
       params:
         description: Contains all parameters of the module.
         properties:
-          base_compensation:
-            description: >-
-              The compensation amount measured in USD. USD is used as a quote in
-              price queries to the slinky oracle
-
-              module to determine the price of the reward denom. The base
-              compensation amount is divided
-
-              by the price of the reward denom to determine the final
-              compensation amount.
-            format: uint64
-            type: string
           blocks_performance_requirement:
             description: >-
               Specifies performance requirements for validators in scope of
@@ -22212,6 +22230,38 @@ definitions:
                 description: Monthly periods with payments made at the end of each month.
                 type: object
             type: object
+          reward_asset:
+            description: >-
+              The asset used in revenue payments to validators. Expected to be a
+              native token of the chain
+
+              with its denom metadata registered in the bank module. The denom
+              metadata must have a defined
+
+              symbol field and contain a denom unit with an alias equal to the
+              symbol and a specified
+
+              exponent.
+            type: string
+          reward_quote:
+            description: Quotation of the reward asset.
+            properties:
+              amount:
+                description: >-
+                  The compensation amount measured in the quote asset. The
+                  amount is divided by the price of
+
+                  the reward asset to determine the base revenue amount.
+                format: uint64
+                type: string
+              asset:
+                description: >-
+                  The name of the quote asset. It is used as a quote in price
+                  queries to the slinky oracle
+
+                  module to determine the price of the reward asset.
+                type: string
+            type: object
           twap_window:
             description: >-
               The time window, in seconds, used to calculate the TWAP of the
@@ -22224,15 +22274,17 @@ definitions:
     description: Response type for the Query/PaymentInfo RPC method.
     properties:
       base_revenue_amount:
-        description: >-
-          The current evaluation of the base revenue amount. This whole amount
-          will be paid to the
+        description: |-
+          Coin defines a token with a denomination and an amount.
 
-          validators with impeccable performance (at least as good as
-          allowed_to_miss). For the others
-
-          this amount will be multiplied by their performance rating.
-        type: string
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
       effective_period_progress:
         description: >-
           Revenue amount multiplier value that corresponds to the effective
@@ -22275,12 +22327,9 @@ definitions:
                 type: string
             type: object
         type: object
-      reward_denom:
-        description: The denom used in revenue payments.
-        type: string
-      reward_denom_twap:
+      reward_asset_twap:
         title: >-
-          The current TWAP of the reward denom in USD. Is calculated as:
+          The current TWAP of the reward asset in quote asset. Is calculated as:
 
           twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) -
           cumulative_price_at_t(m)) / (t(n) - t(m))
@@ -22294,15 +22343,19 @@ definitions:
         properties:
           expected_revenue:
             description: >-
-              Contains expected revenue for the validator based on their
-              performance rating in the current
+              Coin defines a token with a denomination and an amount.
 
-              payment period, current reward denom TWAP, and duration of
-              validator's presence in the active
 
-              validator set. Does not take into account effective payment period
-              progress.
-            type: string
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
           performance_rating:
             description: >-
               The validator's performance rating. Represented as a decimal
@@ -22353,15 +22406,19 @@ definitions:
           properties:
             expected_revenue:
               description: >-
-                Contains expected revenue for the validator based on their
-                performance rating in the current
+                Coin defines a token with a denomination and an amount.
 
-                payment period, current reward denom TWAP, and duration of
-                validator's presence in the active
 
-                validator set. Does not take into account effective payment
-                period progress.
-              type: string
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
             performance_rating:
               description: >-
                 The validator's performance rating. Represented as a decimal
@@ -22403,6 +22460,25 @@ definitions:
           type: object
         type: array
     type: object
+  neutron.revenue.RewardQuote:
+    description: Defines information about the reward quote.
+    properties:
+      amount:
+        description: >-
+          The compensation amount measured in the quote asset. The amount is
+          divided by the price of
+
+          the reward asset to determine the base revenue amount.
+        format: uint64
+        type: string
+      asset:
+        description: >-
+          The name of the quote asset. It is used as a quote in price queries to
+          the slinky oracle
+
+          module to determine the price of the reward asset.
+        type: string
+    type: object
   neutron.revenue.ValidatorInfo:
     description: Contains information about a validator.
     properties:
@@ -22434,16 +22510,17 @@ definitions:
     description: Contains validator's info and their performance rating.
     properties:
       expected_revenue:
-        description: >-
-          Contains expected revenue for the validator based on their performance
-          rating in the current
+        description: |-
+          Coin defines a token with a denomination and an amount.
 
-          payment period, current reward denom TWAP, and duration of validator's
-          presence in the active
-
-          validator set. Does not take into account effective payment period
-          progress.
-        type: string
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
       performance_rating:
         description: The validator's performance rating. Represented as a decimal value.
         type: string
@@ -22480,6 +22557,15 @@ definitions:
             description: The validator's node operator address.
             type: string
         type: object
+    type: object
+  neutron.state_verifier.v1.QueryVerifyStateValuesResponse:
+    properties:
+      valid:
+        title: >-
+          The field describes a validity of all the storage values passed to the
+          request at a specific height
+        type: boolean
+    title: Describes a response structure for `VerifyStateValues` query
     type: object
   osmosis.tokenfactory.Params:
     description: Params defines the parameters for the tokenfactory module.
@@ -50364,18 +50450,6 @@ paths:
               params:
                 description: Contains all parameters of the module.
                 properties:
-                  base_compensation:
-                    description: >-
-                      The compensation amount measured in USD. USD is used as a
-                      quote in price queries to the slinky oracle
-
-                      module to determine the price of the reward denom. The
-                      base compensation amount is divided
-
-                      by the price of the reward denom to determine the final
-                      compensation amount.
-                    format: uint64
-                    type: string
                   blocks_performance_requirement:
                     description: >-
                       Specifies performance requirements for validators in scope
@@ -50454,6 +50528,38 @@ paths:
                           month.
                         type: object
                     type: object
+                  reward_asset:
+                    description: >-
+                      The asset used in revenue payments to validators. Expected
+                      to be a native token of the chain
+
+                      with its denom metadata registered in the bank module. The
+                      denom metadata must have a defined
+
+                      symbol field and contain a denom unit with an alias equal
+                      to the symbol and a specified
+
+                      exponent.
+                    type: string
+                  reward_quote:
+                    description: Quotation of the reward asset.
+                    properties:
+                      amount:
+                        description: >-
+                          The compensation amount measured in the quote asset.
+                          The amount is divided by the price of
+
+                          the reward asset to determine the base revenue amount.
+                        format: uint64
+                        type: string
+                      asset:
+                        description: >-
+                          The name of the quote asset. It is used as a quote in
+                          price queries to the slinky oracle
+
+                          module to determine the price of the reward asset.
+                        type: string
+                    type: object
                   twap_window:
                     description: >-
                       The time window, in seconds, used to calculate the TWAP of
@@ -50498,14 +50604,19 @@ paths:
             properties:
               base_revenue_amount:
                 description: >-
-                  The current evaluation of the base revenue amount. This whole
-                  amount will be paid to the
+                  Coin defines a token with a denomination and an amount.
 
-                  validators with impeccable performance (at least as good as
-                  allowed_to_miss). For the others
 
-                  this amount will be multiplied by their performance rating.
-                type: string
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                properties:
+                  amount:
+                    type: string
+                  denom:
+                    type: string
+                type: object
               effective_period_progress:
                 description: >-
                   Revenue amount multiplier value that corresponds to the
@@ -50554,12 +50665,10 @@ paths:
                         type: string
                     type: object
                 type: object
-              reward_denom:
-                description: The denom used in revenue payments.
-                type: string
-              reward_denom_twap:
+              reward_asset_twap:
                 title: >-
-                  The current TWAP of the reward denom in USD. Is calculated as:
+                  The current TWAP of the reward asset in quote asset. Is
+                  calculated as:
 
                   twap_from_time_t(n)_to_time_t(m) = (cumulative_price_at_t(n) -
                   cumulative_price_at_t(m)) / (t(n) - t(m))
@@ -50612,15 +50721,19 @@ paths:
                 properties:
                   expected_revenue:
                     description: >-
-                      Contains expected revenue for the validator based on their
-                      performance rating in the current
+                      Coin defines a token with a denomination and an amount.
 
-                      payment period, current reward denom TWAP, and duration of
-                      validator's presence in the active
 
-                      validator set. Does not take into account effective
-                      payment period progress.
-                    type: string
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
                   performance_rating:
                     description: >-
                       The validator's performance rating. Represented as a
@@ -50702,15 +50815,19 @@ paths:
                   properties:
                     expected_revenue:
                       description: >-
-                        Contains expected revenue for the validator based on
-                        their performance rating in the current
+                        Coin defines a token with a denomination and an amount.
 
-                        payment period, current reward denom TWAP, and duration
-                        of validator's presence in the active
 
-                        validator set. Does not take into account effective
-                        payment period progress.
-                      type: string
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
                     performance_rating:
                       description: >-
                         The validator's performance rating. Represented as a
@@ -50775,6 +50892,55 @@ paths:
                 type: string
             type: object
       summary: Fetches all validators' stats from the revenue module's state.
+      tags:
+        - Query
+  /neutron/state-verifier/verify_state_values:
+    get:
+      operationId: VerifyStateValues
+      parameters:
+        - description: Refers to the block height to which the storage values belong.
+          format: uint64
+          in: query
+          name: height
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              valid:
+                title: >-
+                  The field describes a validity of all the storage values
+                  passed to the request at a specific height
+                type: boolean
+            title: Describes a response structure for `VerifyStateValues` query
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Verifies the values and returns an error if values cannot be verified.
+        The query returns `QueryVerifyStateValuesResponse` response.
       tags:
         - Query
   /osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata:
@@ -50956,7 +51122,7 @@ paths:
           description: A successful response.
           schema:
             description: >-
-              QueryDenomsFromCreatorRequest defines the response structure for
+              QueryDenomsFromCreatorResponse defines the response structure for
               the
 
               DenomsFromCreator gRPC query.

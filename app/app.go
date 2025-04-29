@@ -10,14 +10,17 @@ import (
 	"path/filepath"
 	"time"
 
+	dynamicfeestypes "github.com/neutron-org/neutron/v6/x/dynamicfees/types"
+	stateverifier "github.com/neutron-org/neutron/v6/x/state-verifier"
+	svkeeper "github.com/neutron-org/neutron/v6/x/state-verifier/keeper"
+	stateverifiertypes "github.com/neutron-org/neutron/v6/x/state-verifier/types"
+
 	"github.com/neutron-org/neutron/v6/x/harpoon"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	v601 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.1"
-
-	dynamicfeestypes "github.com/neutron-org/neutron/v6/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -58,6 +61,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
+	ibctestingtypes "github.com/cosmos/ibc-go/v10/testing/types"
 	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
 	"github.com/neutron-org/neutron/v6/docs"
@@ -207,15 +213,9 @@ import (
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
-	blocksdk "github.com/skip-mev/block-sdk/v2/block"
-	"github.com/skip-mev/block-sdk/v2/x/auction"
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
-	rewardsaddressprovider "github.com/skip-mev/block-sdk/v2/x/auction/rewards"
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
-
 	"github.com/skip-mev/block-sdk/v2/abci/checktx"
+	blocksdk "github.com/skip-mev/block-sdk/v2/block"
 	"github.com/skip-mev/block-sdk/v2/block/base"
-
 	"github.com/skip-mev/slinky/x/marketmap"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
@@ -284,7 +284,6 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		ibcratelimit.AppModuleBasic{},
-		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 		feemarket.AppModuleBasic{},
 		dex.AppModuleBasic{},
@@ -298,7 +297,6 @@ var (
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:                  nil,
-		auctiontypes.ModuleName:                     nil,
 		ibctransfertypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                         nil,
 		wasmtypes.ModuleName:                        {authtypes.Burner},
@@ -359,12 +357,10 @@ type App struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper     authkeeper.AccountKeeper
-	AdminmoduleKeeper adminmodulekeeper.Keeper
-	AuthzKeeper       authzkeeper.Keeper
-	BankKeeper        bankkeeper.BaseKeeper
-	// AuctionKeeper handles the processing of bid-txs, the selection of winners per height, and the distribution of rewards.
-	AuctionKeeper       auctionkeeper.Keeper
+	AccountKeeper       authkeeper.AccountKeeper
+	AdminmoduleKeeper   adminmodulekeeper.Keeper
+	AuthzKeeper         authzkeeper.Keeper
+	BankKeeper          bankkeeper.BaseKeeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
@@ -404,6 +400,8 @@ type App struct {
 	InterchainQueriesKeeper interchainqueriesmodulekeeper.Keeper
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
 	ContractManagerKeeper   contractmanagermodulekeeper.Keeper
+
+	StateVerifierKeeper *svkeeper.Keeper
 
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
@@ -487,9 +485,9 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey,
-		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey,
+		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey, stateverifiertypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -660,6 +658,8 @@ func New(
 
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 
+	app.StateVerifierKeeper = svkeeper.NewKeeper(appCodec, keys[stateverifiertypes.StoreKey], runtime.ProvideCometInfoService(), runtime.ProvideHeaderInfoService(nil), authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec, runtime.NewKVStoreService(keys[evidencetypes.StoreKey]), app.StakingKeeper, app.SlashingKeeper,
@@ -681,17 +681,6 @@ func New(
 		keys[dextypes.MemStoreKey],
 		tkeys[dextypes.TStoreKey],
 		app.BankKeeper.WithMintCoinsRestriction(dextypes.NewDexDenomMintCoinsRestriction()),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	app.AuctionKeeper = auctionkeeper.NewKeeperWithRewardsAddressProvider(
-		appCodec,
-		keys[auctiontypes.StoreKey],
-		app.AccountKeeper,
-		&app.BankKeeper,
-		// 25% of rewards should be sent to the redistribute address
-		// TODO: what is this?
-		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -924,8 +913,8 @@ func New(
 		dexModule,
 		marketmapModule,
 		oracleModule,
-		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -939,7 +928,6 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
-		auctiontypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -974,10 +962,10 @@ func New(
 		dextypes.ModuleName,
 		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		stateverifiertypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
-		auctiontypes.ModuleName,
 		crisistypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -1013,6 +1001,7 @@ func New(
 		dextypes.ModuleName,
 		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		stateverifiertypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1021,7 +1010,6 @@ func New(
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
 	app.mm.SetOrderInitGenesis(
-		auctiontypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -1058,6 +1046,7 @@ func New(
 		dynamicfeestypes.ModuleName,
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		stateverifiertypes.ModuleName,
 		revenuetypes.ModuleName,
 	)
 
@@ -1121,7 +1110,7 @@ func New(
 			HandlerOptions: ante.HandlerOptions{
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
-				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+				SigGasConsumer:  DefaultSigVerificationGasConsumer,
 			},
 			BankKeeper:            app.BankKeeper,
 			AccountKeeper:         app.AccountKeeper,
@@ -1372,7 +1361,6 @@ func (app *App) setupUpgradeHandlers() {
 					SlashingKeeper:     app.SlashingKeeper,
 					ParamsKeeper:       app.ParamsKeeper,
 					CapabilityKeeper:   app.CapabilityKeeper,
-					AuctionKeeper:      app.AuctionKeeper,
 					ContractManager:    app.ContractManagerKeeper,
 					AdminModule:        app.AdminmoduleKeeper,
 					ConsensusKeeper:    &app.ConsensusParamsKeeper,
@@ -1493,14 +1481,7 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 // BlockedAddrs returns the set of addresses that are not allowed
 // to send and receive funds
 func (app *App) BlockedAddrs() map[string]bool {
-	// Remove the fee-pool from the group of blocked recipient addresses in bank
-	// this is required for the consumer chain to be able to send tokens to
-	// the provider chain
 	bankBlockedAddrs := app.ModuleAccountAddrs()
-	//// TODO
-	//delete(bankBlockedAddrs, authtypes.NewModuleAddress(
-	//	ccvconsumertypes.ConsumerToSendToProviderName).String())
-
 	return bankBlockedAddrs
 }
 
@@ -1594,8 +1575,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
-
-	//paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 
 	// MOTE: legacy subspaces for migration sdk47 only //nolint:staticcheck
 	paramsKeeper.Subspace(crontypes.StoreKey).WithKeyTable(crontypes.ParamKeyTable())

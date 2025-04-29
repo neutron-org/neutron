@@ -15,7 +15,6 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v10/modules/core/04-channel/keeper"
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
@@ -64,7 +63,6 @@ type UpgradeKeepers struct {
 	SlashingKeeper     slashingkeeper.Keeper
 	ParamsKeeper       paramskeeper.Keeper
 	CapabilityKeeper   *capabilitykeeper.Keeper
-	AuctionKeeper      auctionkeeper.Keeper
 	ContractManager    contractmanagerkeeper.Keeper
 	AdminModule        adminmodulekeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper
