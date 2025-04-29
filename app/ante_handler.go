@@ -27,7 +27,7 @@ type HandlerOptions struct {
 	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
 	GlobalFeeKeeper       globalfeekeeper.Keeper
-	WasmConfig            *wasmTypes.WasmConfig
+	WasmConfig            *wasmTypes.NodeConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 	FeeMarketKeeper       feemarketante.FeeMarketKeeper
 }

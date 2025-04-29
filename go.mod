@@ -16,8 +16,8 @@ require (
 	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/tx v0.13.7
 	cosmossdk.io/x/upgrade v0.1.4
-	github.com/CosmWasm/wasmd v0.53.2
-	github.com/CosmWasm/wasmvm/v2 v2.1.5
+	github.com/CosmWasm/wasmd v0.54.0
+	github.com/CosmWasm/wasmvm/v2 v2.2.3
 	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
 	github.com/cosmos/cosmos-db v1.1.1
@@ -93,7 +93,7 @@ require (
 	github.com/cometbft/cometbft-db v0.15.0 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/iavl v1.2.2 // indirect
+	github.com/cosmos/iavl v1.2.4 // indirect
 	github.com/cosmos/interchain-security/v5 v5.2.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.14.0 // indirect
 	github.com/danieljoos/wincred v1.2.0 // indirect
@@ -225,7 +225,7 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.53.2-neutron.0.20250122164643-8ab684b5eff6
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.54.0-rc0
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron
