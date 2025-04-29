@@ -267,9 +267,8 @@ func TestPlaceLimitOrderTaker(t *testing.T) {
 			s.handleTakerErrors(tc, err)
 
 			expIn, expOut := ExpectedInOut(tc)
-			// TODO: fix rounding issues
 			s.intsApproxEqual("swapAmountIn", expIn, resp.CoinIn.Amount, 1)
-			s.intsApproxEqual("swapAmountOut", expOut, resp.TakerCoinOut.Amount, 0)
+			s.intsApproxEqual("swapAmountOut", expOut, resp.TakerCoinOut.Amount, 1)
 
 			s.True(
 				tc.LimitPrice.MulInt(resp.CoinIn.Amount).TruncateInt().LTE(resp.TakerCoinOut.Amount),
