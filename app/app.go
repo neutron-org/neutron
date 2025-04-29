@@ -19,9 +19,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/interchain-security/v5/testutil/integration"
 
-	sovereignUpgrade "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.0"
 	v601 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.1"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
@@ -57,16 +55,14 @@ import (
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 
-	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
-	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 
 	"github.com/neutron-org/neutron/v6/docs"
 
@@ -199,9 +195,6 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
@@ -218,15 +211,9 @@ import (
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
-	blocksdk "github.com/skip-mev/block-sdk/v2/block"
-	"github.com/skip-mev/block-sdk/v2/x/auction"
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
-	rewardsaddressprovider "github.com/skip-mev/block-sdk/v2/x/auction/rewards"
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
-
 	"github.com/skip-mev/block-sdk/v2/abci/checktx"
+	blocksdk "github.com/skip-mev/block-sdk/v2/block"
 	"github.com/skip-mev/block-sdk/v2/block/base"
-
 	"github.com/skip-mev/slinky/x/marketmap"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
@@ -245,7 +232,6 @@ const (
 
 var (
 	Upgrades = []upgrades.Upgrade{
-		sovereignUpgrade.Upgrade,
 		v601.Upgrade,
 	}
 
@@ -296,7 +282,6 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		ibcratelimit.AppModuleBasic{},
-		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 		feemarket.AppModuleBasic{},
 		dex.AppModuleBasic{},
@@ -310,7 +295,6 @@ var (
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:                  nil,
-		auctiontypes.ModuleName:                     nil,
 		ibctransfertypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                         nil,
 		wasmtypes.ModuleName:                        {authtypes.Burner},
@@ -371,12 +355,10 @@ type App struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper     authkeeper.AccountKeeper
-	AdminmoduleKeeper adminmodulekeeper.Keeper
-	AuthzKeeper       authzkeeper.Keeper
-	BankKeeper        bankkeeper.BaseKeeper
-	// AuctionKeeper handles the processing of bid-txs, the selection of winners per height, and the distribution of rewards.
-	AuctionKeeper       auctionkeeper.Keeper
+	AccountKeeper       authkeeper.AccountKeeper
+	AdminmoduleKeeper   adminmodulekeeper.Keeper
+	AuthzKeeper         authzkeeper.Keeper
+	BankKeeper          bankkeeper.BaseKeeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
@@ -392,7 +374,6 @@ type App struct {
 	DynamicFeesKeeper   *dynamicfeeskeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
-	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	StakingKeeper       *stakingkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 	CronKeeper          cronkeeper.Keeper
@@ -410,11 +391,10 @@ type App struct {
 	HooksICS4Wrapper        ibchooks.ICS4Middleware
 
 	// make scoped keepers public for test purposes
-	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper    capabilitykeeper.ScopedKeeper
-	ScopedWasmKeeper        capabilitykeeper.ScopedKeeper
-	ScopedInterTxKeeper     capabilitykeeper.ScopedKeeper
-	ScopedCCVConsumerKeeper capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
+	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
+	ScopedWasmKeeper     capabilitykeeper.ScopedKeeper
+	ScopedInterTxKeeper  capabilitykeeper.ScopedKeeper
 
 	InterchainQueriesKeeper interchainqueriesmodulekeeper.Keeper
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
@@ -467,18 +447,6 @@ func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 	}
 }
 
-func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
-	return app.BankKeeper
-}
-
-func (app *App) GetTestAccountKeeper() integration.TestAccountKeeper {
-	return app.AccountKeeper
-}
-
-func (app *App) GetTestSlashingKeeper() integration.TestSlashingKeeper {
-	return app.SlashingKeeper
-}
-
 func (app *App) GetTestEvidenceKeeper() evidencekeeper.Keeper {
 	return app.EvidenceKeeper
 }
@@ -515,8 +483,8 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
+		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey,
 		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey, stateverifiertypes.StoreKey,
 	)
@@ -552,7 +520,6 @@ func New(
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedInterTxKeeper := app.CapabilityKeeper.ScopeToModule(interchaintxstypes.ModuleName)
-	scopedCCVConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ccvconsumertypes.ModuleName)
 
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
@@ -617,17 +584,6 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		revenuetypes.RevenueFeeRedistributePoolName,
 	)
-
-	// ... other modules keepers
-	// pre-initialize ConsumerKeeper to satisfy ibckeeper.NewKeeper
-	// which would panic on nil or zero keeper
-	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe
-	// communication over IBC is not affected by these changes
-	// app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
-	//	appCodec,
-	//	keys[ccvconsumertypes.StoreKey],
-	//	app.GetSubspace(ccvconsumertypes.ModuleName),
-	//)
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
@@ -707,28 +663,6 @@ func New(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
-		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
-		scopedCCVConsumerKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		app.IBCKeeper.ConnectionKeeper,
-		app.IBCKeeper.ClientKeeper,
-		app.SlashingKeeper,
-		&app.BankKeeper,
-		app.AccountKeeper,
-		app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
-		// Since the keeper is only used to send reward to provider chain
-		app.IBCKeeper,
-		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
-		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-	)
-
-	// consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
 
 	app.BankKeeper.BaseSendKeeper = app.BankKeeper.BaseSendKeeper.SetHooks(
@@ -742,16 +676,6 @@ func New(
 		keys[dextypes.MemStoreKey],
 		tkeys[dextypes.TStoreKey],
 		app.BankKeeper.WithMintCoinsRestriction(dextypes.NewDexDenomMintCoinsRestriction()),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	app.AuctionKeeper = auctionkeeper.NewKeeperWithRewardsAddressProvider(
-		appCodec,
-		keys[auctiontypes.StoreKey],
-		app.AccountKeeper,
-		&app.BankKeeper,
-		// 25% of rewards should be sent to the redistribute address
-		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -927,7 +851,6 @@ func New(
 		AddRoute(ibctransfertypes.ModuleName, app.TransferStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
 		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper))
-	// AddRoute(ccvconsumertypes.ModuleName, consumerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	app.RevenueKeeper = revenuekeeper.NewKeeper(
@@ -985,11 +908,10 @@ func New(
 		dexModule,
 		marketmapModule,
 		oracleModule,
-		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
-		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 	)
 
 	app.mm.SetOrderPreBlockers(
@@ -1001,7 +923,6 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
-		auctiontypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -1040,7 +961,6 @@ func New(
 	)
 
 	app.mm.SetOrderEndBlockers(
-		auctiontypes.ModuleName,
 		crisistypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -1085,7 +1005,6 @@ func New(
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
 	app.mm.SetOrderInitGenesis(
-		auctiontypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -1258,9 +1177,6 @@ func New(
 		panic(err)
 	}
 
-	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
-	// ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
-
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
 	oracleProposalHandler := slinkyproposals.NewProposalHandler(
@@ -1392,7 +1308,6 @@ func New(
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.ScopedWasmKeeper = scopedWasmKeeper
 	app.ScopedInterTxKeeper = scopedInterTxKeeper
-	app.ScopedCCVConsumerKeeper = scopedCCVConsumerKeeper
 
 	return app
 }
@@ -1435,33 +1350,30 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
-					BankKeeper:          app.BankKeeper,
-					AccountKeeper:       app.AccountKeeper,
-					FeeBurnerKeeper:     app.FeeBurnerKeeper,
-					CronKeeper:          app.CronKeeper,
-					IcqKeeper:           app.InterchainQueriesKeeper,
-					TokenFactoryKeeper:  app.TokenFactoryKeeper,
-					SlashingKeeper:      app.SlashingKeeper,
-					ParamsKeeper:        app.ParamsKeeper,
-					CapabilityKeeper:    app.CapabilityKeeper,
-					AuctionKeeper:       app.AuctionKeeper,
-					ContractManager:     app.ContractManagerKeeper,
-					AdminModule:         app.AdminmoduleKeeper,
-					ConsensusKeeper:     &app.ConsensusParamsKeeper,
-					ConsumerKeeper:      &app.ConsumerKeeper,
-					MarketmapKeeper:     app.MarketMapKeeper,
-					FeeMarketKeeper:     app.FeeMarkerKeeper,
-					DynamicfeesKeeper:   app.DynamicFeesKeeper,
-					StakingKeeper:       app.StakingKeeper,
-					DexKeeper:           &app.DexKeeper,
-					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
-					ChannelKeeper:       &app.IBCKeeper.ChannelKeeper,
-					TransferKeeper:      app.TransferKeeper.Keeper,
-					WasmKeeper:          &app.WasmKeeper,
-					HarpoonKeeper:       app.HarpoonKeeper,
-					RevenueKeeper:       app.RevenueKeeper,
-					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
-					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
+					BankKeeper:         app.BankKeeper,
+					AccountKeeper:      app.AccountKeeper,
+					FeeBurnerKeeper:    app.FeeBurnerKeeper,
+					CronKeeper:         app.CronKeeper,
+					IcqKeeper:          app.InterchainQueriesKeeper,
+					TokenFactoryKeeper: app.TokenFactoryKeeper,
+					SlashingKeeper:     app.SlashingKeeper,
+					ParamsKeeper:       app.ParamsKeeper,
+					CapabilityKeeper:   app.CapabilityKeeper,
+					ContractManager:    app.ContractManagerKeeper,
+					AdminModule:        app.AdminmoduleKeeper,
+					ConsensusKeeper:    &app.ConsensusParamsKeeper,
+					MarketmapKeeper:    app.MarketMapKeeper,
+					FeeMarketKeeper:    app.FeeMarkerKeeper,
+					DynamicfeesKeeper:  app.DynamicFeesKeeper,
+					StakingKeeper:      app.StakingKeeper,
+					DexKeeper:          &app.DexKeeper,
+					IbcRateLimitKeeper: app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
+					ChannelKeeper:      &app.IBCKeeper.ChannelKeeper,
+					TransferKeeper:     app.TransferKeeper.Keeper,
+					WasmKeeper:         &app.WasmKeeper,
+					HarpoonKeeper:      app.HarpoonKeeper,
+					RevenueKeeper:      app.RevenueKeeper,
+					GlobalFeeSubspace:  app.GetSubspace(globalfee.ModuleName),
 				},
 				app,
 				app.AppCodec(),
@@ -1567,12 +1479,7 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 // BlockedAddrs returns the set of addresses that are not allowed
 // to send and receive funds
 func (app *App) BlockedAddrs() map[string]bool {
-	// Remove the fee-pool from the group of blocked recipient addresses in bank
-	// this is required for the consumer chain to be able to send tokens to
-	// the provider chain
 	bankBlockedAddrs := app.ModuleAccountAddrs()
-	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
-		ccvconsumertypes.ConsumerToSendToProviderName).String())
 
 	return bankBlockedAddrs
 }
@@ -1668,8 +1575,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
-
 	// MOTE: legacy subspaces for migration sdk47 only //nolint:staticcheck
 	paramsKeeper.Subspace(crontypes.StoreKey).WithKeyTable(crontypes.ParamKeyTable())
 	paramsKeeper.Subspace(feeburnertypes.StoreKey).WithKeyTable(feeburnertypes.ParamKeyTable())
@@ -1717,11 +1622,6 @@ func (app *App) GetStakingKeeper() ibctestingtypes.StakingKeeper {
 // GetScopedIBCKeeper implements the TestingApp interface.
 func (app *App) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 	return app.ScopedIBCKeeper
-}
-
-// GetConsumerKeeper implements the ConsumerApp interface.
-func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
-	return app.ConsumerKeeper
 }
 
 func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
