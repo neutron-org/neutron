@@ -91,7 +91,7 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 
 func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLastRemoteHeight) (*types.QueryLastRemoteHeightResponse, error) {
 	req := contypes.QueryConnectionClientStateRequest{ConnectionId: request.ConnectionId}
-	r, err := k.ibcKeeper.ConnectionClientState(goCtx, &req)
+	r, err := k.ibcKeeper.ConnectionKeeper.ConnectionClientState(goCtx, &req)
 	if err != nil {
 		return nil, errors.Wrapf(types.ErrInvalidConnectionID, "connection not found")
 	}

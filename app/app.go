@@ -586,7 +586,7 @@ func New(
 		app.UpgradeKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-
+	
 	// Feekeeper needs to be initialized before middlewares injection
 	app.FeeKeeper = feekeeper.NewKeeper(
 		appCodec,

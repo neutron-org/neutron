@@ -7,19 +7,20 @@ import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "ibc/applications/transfer/v1/transfer.proto";
 import "google/api/annotations.proto";
+import "ibc/applications/transfer/v1/token.proto";
 
 option go_package = "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // DenomTraces queries all denomination traces.
-  rpc DenomTraces(QueryDenomTracesRequest) returns (QueryDenomTracesResponse) {
-    option (google.api.http).get = "/ibc/apps/transfer/v1/denom_traces";
+  // Denoms queries all denominations
+  rpc Denoms(QueryDenomsRequest) returns (QueryDenomsResponse) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/denoms";
   }
 
-  // DenomTrace queries a denomination trace information.
-  rpc DenomTrace(QueryDenomTraceRequest) returns (QueryDenomTraceResponse) {
-    option (google.api.http).get = "/ibc/apps/transfer/v1/denom_traces/{hash=**}";
+  // Denom queries a denomination
+  rpc Denom(QueryDenomRequest) returns (QueryDenomResponse) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/denoms/{hash=**}";
   }
 
   // Params queries all parameters of the ibc-transfer module.
@@ -43,32 +44,32 @@ service Query {
   }
 }
 
-// QueryDenomTraceRequest is the request type for the Query/DenomTrace RPC
+// QueryDenomRequest is the request type for the Query/Denom RPC
 // method
-message QueryDenomTraceRequest {
-  // hash (in hex format) or denom (full denom with ibc prefix) of the denomination trace information.
+message QueryDenomRequest {
+  // hash (in hex format) or denom (full denom with ibc prefix) of the on chain denomination.
   string hash = 1;
 }
 
-// QueryDenomTraceResponse is the response type for the Query/DenomTrace RPC
+// QueryDenomResponse is the response type for the Query/Denom RPC
 // method.
-message QueryDenomTraceResponse {
-  // denom_trace returns the requested denomination trace information.
-  DenomTrace denom_trace = 1;
+message QueryDenomResponse {
+  // denom returns the requested denomination.
+  Denom denom = 1;
 }
 
-// QueryConnectionsRequest is the request type for the Query/DenomTraces RPC
+// QueryDenomsRequest is the request type for the Query/Denoms RPC
 // method
-message QueryDenomTracesRequest {
+message QueryDenomsRequest {
   // pagination defines an optional pagination for the request.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
-// QueryConnectionsResponse is the response type for the Query/DenomTraces RPC
+// QueryDenomsResponse is the response type for the Query/Denoms RPC
 // method.
-message QueryDenomTracesResponse {
-  // denom_traces returns all denominations trace information.
-  repeated DenomTrace denom_traces = 1 [(gogoproto.castrepeated) = "Traces", (gogoproto.nullable) = false];
+message QueryDenomsResponse {
+  // denoms returns all denominations.
+  repeated Denom denoms = 1 [(gogoproto.castrepeated) = "Denoms", (gogoproto.nullable) = false];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

@@ -20,6 +20,7 @@ import (
 )
 
 var (
+	// TODO: why we check against IBCModule here?
 	_ porttypes.Middleware  = &IBCModule{}
 	_ porttypes.ICS4Wrapper = &ICS4Wrapper{}
 )
@@ -59,7 +60,8 @@ func NewICS4Middleware(
 // used, transfers are not prevented and handled by the wrapped IBC app
 func (i *ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
-	sourcePort, sourceChannel string,
+	sourcePort,
+	sourceChannel string,
 	timeoutHeight clienttypes.Height,
 	timeoutTimestamp uint64,
 	data []byte) (uint64, error) {

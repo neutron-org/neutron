@@ -1,16 +1,15 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"testing"
 
 	"cosmossdk.io/log"
-	metrics2 "cosmossdk.io/store/metrics"
-	db2 "github.com/cosmos/cosmos-db"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-
 	"cosmossdk.io/store"
+	metrics2 "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	db2 "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,6 +30,7 @@ func TransferKeeper(
 	authKeeper types.AccountKeeper,
 ) (*keeper.KeeperTransferWrapper, sdk.Context, *storetypes.KVStoreKey) {
 	storeKey := storetypes.NewKVStoreKey(transfertypes.StoreKey)
+	storeService := runtime.NewKVStoreService(storeKey)
 	memStoreKey := storetypes.NewMemoryStoreKey("mem_" + transfertypes.StoreKey)
 
 	db := db2.NewMemDB()
@@ -50,14 +50,13 @@ func TransferKeeper(
 	)
 	k := keeper.NewKeeper(
 		cdc,
-		storeKey,
+		storeService,
 		paramsSubspace,
-		nil, // iscwrapper
+		nil, // ics4wrapper
 		channelKeeper,
 		nil,
 		authKeeper,
 		nil,
-		capabilitykeeper.ScopedKeeper{},
 		refunderKeeper,
 		managerKeeper,
 		"authority",

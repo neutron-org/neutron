@@ -9,14 +9,14 @@ option go_package = "github.com/neutron-org/neutron/v6/x/transfer/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // DenomTrace queries a denomination trace information.
-  rpc DenomTrace(ibc.applications.transfer.v1.QueryDenomTraceRequest) returns (ibc.applications.transfer.v1.QueryDenomTraceResponse) {
-    option (google.api.http).get = "/ibc/apps/transfer/v1/denom_traces/{hash}";
+  // Denoms queries all denominations
+  rpc Denoms(ibc.applications.transfer.v1.QueryDenomsRequest) returns (ibc.applications.transfer.v1.QueryDenomsRequest) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/denoms";
   }
 
-  // DenomTraces queries all denomination traces.
-  rpc DenomTraces(ibc.applications.transfer.v1.QueryDenomTracesRequest) returns (ibc.applications.transfer.v1.QueryDenomTracesResponse) {
-    option (google.api.http).get = "/ibc/apps/transfer/v1/denom_traces";
+  // Denom queries a denomination
+  rpc Denom(ibc.applications.transfer.v1.QueryDenomRequest) returns (ibc.applications.transfer.v1.QueryDenomResponse) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/denoms/{hash=**}";
   }
 
   // Params queries all parameters of the ibc-transfer module.

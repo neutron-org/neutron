@@ -10,7 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
@@ -230,23 +229,21 @@ func (im *IBCModule) RevertSentPacket(
 // SendPacket implements the ICS4 Wrapper interface
 func (im *IBCModule) SendPacket(
 	ctx sdk.Context,
-	chanCap *capabilitytypes.Capability,
 	sourcePort, sourceChannel string,
 	timeoutHeight clienttypes.Height,
 	timeoutTimestamp uint64,
 	data []byte,
 ) (uint64, error) {
-	return im.ics4Middleware.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	return im.ics4Middleware.SendPacket(ctx, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
 
 // WriteAcknowledgement implements the ICS4 Wrapper interface
 func (im *IBCModule) WriteAcknowledgement(
 	ctx sdk.Context,
-	chanCap *capabilitytypes.Capability,
 	packet exported.PacketI,
 	ack exported.Acknowledgement,
 ) error {
-	return im.ics4Middleware.WriteAcknowledgement(ctx, chanCap, packet, ack)
+	return im.ics4Middleware.WriteAcknowledgement(ctx, packet, ack)
 }
 
 func (im *IBCModule) GetAppVersion(ctx sdk.Context, portID, channelID string) (string, bool) {

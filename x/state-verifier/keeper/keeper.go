@@ -12,8 +12,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
+	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
 	"github.com/neutron-org/neutron/v6/utils/stateverification"
 	icqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"

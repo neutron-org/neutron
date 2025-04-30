@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
+	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v6/testutil/apptesting"

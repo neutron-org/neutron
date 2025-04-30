@@ -501,7 +501,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 
 	resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-		Height: suite.ChainB.LastHeader.Header.Height - 1,
+		Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
 	})
@@ -521,7 +521,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 			// and we don't have access to it here
 			Block:    nil,
 			Height:   uint64(resp.Height), //nolint:gosec
-			Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+			Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 		},
 	}
 

@@ -11,7 +11,6 @@ import (
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
-
 	types1 "github.com/neutron-org/neutron/v6/x/feerefunder/types"
 )
 
@@ -193,6 +192,20 @@ func (m *MockChannelKeeper) GetNextSequenceSend(ctx types.Context, portID, chann
 func (mr *MockChannelKeeperMockRecorder) GetNextSequenceSend(ctx, portID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextSequenceSend", reflect.TypeOf((*MockChannelKeeper)(nil).GetNextSequenceSend), ctx, portID, channelID)
+}
+
+// HasChannel mocks base method.
+func (m *MockChannelKeeper) HasChannel(ctx types.Context, portID, channelID string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasChannel", ctx, portID, channelID)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasChannel indicates an expected call of HasChannel.
+func (mr *MockChannelKeeperMockRecorder) HasChannel(ctx, portID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasChannel", reflect.TypeOf((*MockChannelKeeper)(nil).HasChannel), ctx, portID, channelID)
 }
 
 // MockAccountKeeper is a mock of AccountKeeper interface.

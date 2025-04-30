@@ -40,20 +40,20 @@ func (h WasmHooks) ProperlyConfigured() bool {
 	return h.ContractKeeper != nil
 }
 
-func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
+func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
 	if !h.ProperlyConfigured() {
 		// Not configured
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 	isIcs20, data := isIcs20Packet(packet)
 	if !isIcs20 {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 
 	// Validate the memo
 	isWasmRouted, contractAddr, msgBytes, err := validateAndParseMemo(data.GetMemo(), data.Receiver)
 	if !isWasmRouted {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 	if err != nil {
 		return utils.NewEmitErrorAcknowledgement(ctx, types.ErrMsgValidation, err.Error())
@@ -84,7 +84,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 	packet.Data = bz
 
 	// Execute the receive
-	ack := im.App.OnRecvPacket(ctx, packet, relayer)
+	ack := im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	if !ack.Success() {
 		return ack
 	}

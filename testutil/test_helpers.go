@@ -89,26 +89,29 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	sdk.DefaultBondDenom = appparams.DefaultDenom
 
 	suite.Coordinator = NewProviderConsumerCoordinator(suite.T())
+	//suite.Coordinator = ibctesting.NewCoordinator(suite.T(), 4)
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
 	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
 
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
-
-	suite.Coordinator.SetupConnections(suite.Path)
+	suite.Path.SetupConnections()
+	//suite.Coordinator.SetupConnections(suite.Path)
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
 	suite.TransferPathAC = NewTransferPath(suite.ChainA, suite.ChainC)
-	suite.Coordinator.SetupConnections(suite.TransferPathAC)
+	suite.TransferPathAC.SetupConnections()
+	//suite.Coordinator.SetupConnections(suite.TransferPathAC)
 	err := SetupTransferPath(suite.TransferPathAC)
 	suite.Require().NoError(err)
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB)
-	suite.Coordinator.SetupConnections(suite.TransferPath)
+	suite.TransferPath.SetupConnections()
+	//suite.Coordinator.SetupConnections(suite.TransferPath)
 	err := SetupTransferPath(suite.TransferPath)
 	suite.Require().NoError(err)
 }

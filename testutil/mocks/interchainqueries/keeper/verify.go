@@ -13,7 +13,6 @@ import (
 	exported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	gomock "github.com/golang/mock/gomock"
-
 	types1 "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
 )
 
@@ -56,17 +55,17 @@ func (mr *MockHeaderVerifierMockRecorder) UnpackHeader(anyHeader interface{}) *g
 }
 
 // VerifyHeaders mocks base method.
-func (m *MockHeaderVerifier) VerifyHeaders(ctx types0.Context, cleintkeeper keeper.Keeper, clientID string, header, nextHeader exported.ClientMessage) error {
+func (m *MockHeaderVerifier) VerifyHeaders(ctx types0.Context, clientkeeper keeper.Keeper, clientID string, header, nextHeader exported.ClientMessage) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyHeaders", ctx, cleintkeeper, clientID, header, nextHeader)
+	ret := m.ctrl.Call(m, "VerifyHeaders", ctx, clientkeeper, clientID, header, nextHeader)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VerifyHeaders indicates an expected call of VerifyHeaders.
-func (mr *MockHeaderVerifierMockRecorder) VerifyHeaders(ctx, cleintkeeper, clientID, header, nextHeader interface{}) *gomock.Call {
+func (mr *MockHeaderVerifierMockRecorder) VerifyHeaders(ctx, clientkeeper, clientID, header, nextHeader interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyHeaders", reflect.TypeOf((*MockHeaderVerifier)(nil).VerifyHeaders), ctx, cleintkeeper, clientID, header, nextHeader)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyHeaders", reflect.TypeOf((*MockHeaderVerifier)(nil).VerifyHeaders), ctx, clientkeeper, clientID, header, nextHeader)
 }
 
 // MockTransactionVerifier is a mock of TransactionVerifier interface.

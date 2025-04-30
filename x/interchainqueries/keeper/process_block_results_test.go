@@ -56,7 +56,7 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 		ValidatorsHash:     vsetHash,
 		NextValidatorsHash: vsetHash,
 		ConsensusHash:      tmhash.Sum([]byte("consensus_hash")),
-		AppHash:            chain.CurrentHeader.AppHash,
+		AppHash:            chain.ProposedHeader.AppHash,
 		LastResultsHash:    tmhash.Sum([]byte("last_results_hash")),
 		EvidenceHash:       tmhash.Sum([]byte("evidence_hash")),
 		ProposerAddress:    tmValSet.Proposer.Address, //nolint:staticcheck
@@ -96,8 +96,8 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 
 func NextBlock(chain *ibctesting.TestChain) {
 	_, err := chain.App.FinalizeBlock(&abci.RequestFinalizeBlock{
-		Height:             chain.CurrentHeader.Height,
-		Time:               chain.CurrentHeader.GetTime(),
+		Height:             chain.ProposedHeader.Height,
+		Time:               chain.ProposedHeader.GetTime(),
 		NextValidatorsHash: chain.NextVals.Hash(),
 	})
 	require.NoError(chain.TB, err)
@@ -107,23 +107,23 @@ func NextBlock(chain *ibctesting.TestChain) {
 
 	// set the last header to the current header
 	// use nil trusted fields
-	ph, err := tmtypes.HeaderFromProto(chain.LastHeader.Header)
+	ph, err := tmtypes.HeaderFromProto(chain.LatestCommittedHeader.Header)
 	require.NoError(chain.TB, err)
 
 	var signers []tmtypes.PrivValidator
 	for _, val := range chain.Vals.Validators {
 		signers = append(signers, chain.Signers[val.PubKey.Address().String()])
 	}
-	chain.LastHeader = CreateTMClientHeader(chain, chain.ChainID, chain.CurrentHeader.Height, ibcclienttypes.Height{}, chain.CurrentHeader.Time, chain.Vals, nil, signers, &ph)
+	chain.LatestCommittedHeader = CreateTMClientHeader(chain, chain.ChainID, chain.ProposedHeader.Height, ibcclienttypes.Height{}, chain.ProposedHeader.Time, chain.Vals, nil, signers, &ph)
 
 	// increment the current header
-	chain.CurrentHeader = tmproto.Header{
+	chain.ProposedHeader = tmproto.Header{
 		ChainID: chain.ChainID,
 		Height:  chain.App.LastBlockHeight() + 1,
 		AppHash: chain.App.LastCommitID().Hash,
 		// NOTE: the time is increased by the coordinator to maintain time synchrony amongst
 		// chains.
-		Time:               chain.CurrentHeader.Time,
+		Time:               chain.ProposedHeader.Time,
 		ValidatorsHash:     chain.Vals.Hash(),
 		NextValidatorsHash: chain.Vals.Hash(),
 	}
@@ -148,7 +148,7 @@ func UpdateClient(endpoint *ibctesting.Endpoint) (err error) {
 
 	switch endpoint.ClientConfig.GetClientType() {
 	case exported.Tendermint:
-		header, err = endpoint.Chain.ConstructUpdateTMClientHeader(endpoint.Counterparty.Chain, endpoint.ClientID)
+		header, err = endpoint.Chain.IBCClientHeader(endpoint.Counterparty.Chain.LatestCommittedHeader, endpoint.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 
 	default:
 		err = fmt.Errorf("client type %s is not supported", endpoint.ClientConfig.GetClientType())
@@ -182,14 +182,14 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 				clientID := suite.Path.EndpointA.ClientID
 				CommitBlock(suite.Coordinator, suite.ChainB)
-				header, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
+				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				CommitBlock(suite.Coordinator, suite.ChainB)
-				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
+				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
-				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), *suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
 			},
 			"",
 		},
@@ -201,17 +201,17 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				clientID := suite.Path.EndpointA.ClientID
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				header, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
+				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				// skip one block to set nextHeader's height + 2
 				CommitBlock(suite.Coordinator, suite.ChainB)
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
+				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
-				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), *suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
 			},
 			"block.NextBlockHeader is not next for the block.Header",
 		},
@@ -224,17 +224,17 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				CommitBlock(suite.Coordinator, suite.ChainB)
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				header, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
+				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
 				header.SignedHeader.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
 
-				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
+				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
-				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), *suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
 			},
 			"invalid header: untrustedHeader.ValidateBasic failed: commit signs block",
 		},
@@ -246,14 +246,15 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				clientID := suite.Path.EndpointA.ClientID
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				oldHeader := *suite.ChainB.LastHeader
+				oldHeader := *suite.ChainB.LatestCommittedHeader
 				CommitBlock(suite.Coordinator, suite.ChainB)
-				oldNextHeader := *suite.ChainB.LastHeader
+				oldNextHeader := *suite.ChainB.LatestCommittedHeader
 
 				for i := 0; i < 30; i++ {
 					suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 				}
-				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
+				// TODO: correct?
+				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.IBCClientHeader(&oldHeader, ibcclienttypes.Height{
 					RevisionNumber: 1,
 					RevisionHeight: 15,
 				})
@@ -265,7 +266,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				oldNextHeader.TrustedHeight = headerWithTrustedHeight.TrustedHeight
 				oldNextHeader.TrustedValidators = headerWithTrustedHeight.TrustedValidators
 
-				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, &oldHeader, &oldNextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), *suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, &oldHeader, &oldNextHeader)
 			},
 			"",
 		},
@@ -306,7 +307,7 @@ func TestSudoHasAddress(t *testing.T) {
 	hv := mock_types.NewMockHeaderVerifier(ctrl)
 	tv := mock_types.NewMockTransactionVerifier(ctrl)
 	cm := mock_types.NewMockContractManagerKeeper(ctrl)
-	ibck := ibckeeper.Keeper{ClientKeeper: clientkeeper.Keeper{}}
+	ibck := ibckeeper.Keeper{ClientKeeper: &clientkeeper.Keeper{}}
 
 	k, ctx := icqtestkeeper.InterchainQueriesKeeper(t, &ibck, cm, hv, tv)
 	address := types.MustAccAddressFromBech32(testutil.TestOwnerAddress)

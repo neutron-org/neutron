@@ -6,7 +6,7 @@ toolchain go1.23.8
 
 require (
 	cosmossdk.io/api v0.7.6
-	cosmossdk.io/client/v2 v2.0.0-beta.5
+	cosmossdk.io/client/v2 v2.0.0-beta.7
 	cosmossdk.io/core v0.11.1
 	cosmossdk.io/errors v1.0.1
 	cosmossdk.io/log v1.5.0
@@ -28,7 +28,6 @@ require (
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 v10.1.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/v10 v10.1.1
-	github.com/cosmos/ibc-go/v8 v8.5.1
 	github.com/cosmos/ics23/go v0.11.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0
 	github.com/gogo/protobuf v1.3.3
@@ -95,7 +94,7 @@ require (
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/iavl v1.2.4 // indirect
-	github.com/cosmos/interchain-security/v5 v5.2.0 // indirect
+	github.com/cosmos/interchain-security/v7 v7.0.1 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.14.0 // indirect
 	github.com/danieljoos/wincred v1.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -230,12 +229,13 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.53.2-neutron.0.20250428134837-c5ca39185239
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
-	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3
+	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.4-0.20250429141721-800017cc9109
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
 	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464
+	github.com/skip-mev/slinky => github.com/neutron-org/connect v1.2.1-0.20250429131206-f16a8750d6ee
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )

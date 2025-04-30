@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	ics23 "github.com/cosmos/ics23/go"
 	"strconv"
 	"time"
 
@@ -206,7 +207,7 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, errors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), len(query.Keys))
 		}
 
-		resp, err := m.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
+		resp, err := m.ibcKeeper.ConnectionKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 			ConnectionId:   query.ConnectionId,
 			RevisionNumber: msg.Result.Revision,
 			RevisionHeight: msg.Result.Height + 1,

@@ -110,7 +110,7 @@ func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID
 		return errors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack next block header: %v", err)
 	}
 
-	if err := k.headerVerifier.VerifyHeaders(ctx, k.ibcKeeper.ClientKeeper, clientID, header, nextHeader); err != nil {
+	if err := k.headerVerifier.VerifyHeaders(ctx, *k.ibcKeeper.ClientKeeper, clientID, header, nextHeader); err != nil {
 		ctx.Logger().Debug("ProcessBlock: failed to verify headers", "error", err)
 		return errors.Wrapf(types.ErrInvalidHeader, "failed to verify headers: %v", err)
 	}

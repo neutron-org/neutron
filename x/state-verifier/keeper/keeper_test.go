@@ -9,9 +9,9 @@ import (
 	"github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibctypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibctypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v6/app/params"
