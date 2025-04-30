@@ -71,6 +71,10 @@ $BINARY  gentx val1 "1000000$STAKEDENOM" --home "$CHAIN_DIR" --chain-id "$CHAINI
 $BINARY  collect-gentxs --home "$CHAIN_DIR"
 ### PARAMETERS SECTION
 
+## consensus params
+CONSENSUS_BLOCK_MAX_GAS=1000000000
+CONSENSUS_VOTE_EXTENSIONS_ENABLE_HEIGHT=1
+
 ## slashing params
 SLASHING_SIGNED_BLOCKS_WINDOW=140000
 SLASHING_MIN_SIGNED=0.050000000000000000
@@ -821,14 +825,15 @@ set_genesis_param_jq ".app_state.globalfee.params.bypass_min_fee_msg_types" "$BY
 set_genesis_param proposer_fee                          "\"0.25\""                                        # builder(POB)
 set_genesis_param escrow_account_address                "\"$DAO_CONTRACT_ADDRESS_B64\","                  # builder(POB)
 set_genesis_param sudo_call_gas_limit                   "\"1000000\""                                     # contractmanager
-set_genesis_param max_gas                               "\"1000000000\""                                  # consensus_params
-set_genesis_param vote_extensions_enable_height         "\"1\""                                           # consensus_params
+set_genesis_param max_gas                               "\"$CONSENSUS_BLOCK_MAX_GAS\""                    # consensus_params
+set_genesis_param vote_extensions_enable_height         "\"$CONSENSUS_VOTE_EXTENSIONS_ENABLE_HEIGHT\""    # consensus_params
 set_genesis_param_jq ".app_state.marketmap.params.admin" "\"$ADMIN_MODULE_ADDRESS\""                      # marketmap
 set_genesis_param_jq ".app_state.marketmap.params.market_authorities" "[\"$ADMIN_MODULE_ADDRESS\"]"       # marketmap
+set_genesis_param_jq ".app_state.feemarket.params.max_block_utilization" "\"$CONSENSUS_BLOCK_MAX_GAS\""   # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.min_base_gas_price"    "\"0.0025\""                     # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.fee_denom"       "\"untrn\""                            # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.max_learning_rate" "\"0.5\""                            # feemarket
-set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                            # feemarket
+set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                           # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[

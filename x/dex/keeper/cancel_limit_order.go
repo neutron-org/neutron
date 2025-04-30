@@ -6,8 +6,8 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 // CancelLimitOrderCore handles the logic for MsgCancelLimitOrder including bank operations and event emissions.
@@ -112,7 +112,10 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		k.UpdateTranche(ctx, tranche)
 	}
 
-	if trancheUser.OrderType.HasExpiration() {
+	// If the tranche still is being moved to inactive we can safely remove the LimitOrderExpiration.
+	// If there is still remaining dust after the cancel we leave it in on the orderbook
+	// It will still be purged according to the expiration logic
+	if !tranche.HasTokenIn() && tranche.HasExpiration() {
 		k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())
 	}
 

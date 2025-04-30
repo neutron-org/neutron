@@ -10,7 +10,7 @@ import "neutron/revenue/genesis.proto";
 import "neutron/revenue/params.proto";
 import "neutron/revenue/tx.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
+option go_package = "github.com/neutron-org/neutron/v7/x/revenue/types";
 
 // Defines the Query interface of the module.
 service Query {

@@ -15,16 +15,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
-	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v7/x/dex/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v6/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v7/x/contractmanager/types"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 
-	"github.com/neutron-org/neutron/v6/wasmbinding/bindings"
-	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
-	icatypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v7/wasmbinding/bindings"
+	"github.com/neutron-org/neutron/v7/x/interchainqueries/types"
+	icatypes "github.com/neutron-org/neutron/v7/x/interchaintxs/types"
 )
 
 func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*bindings.QueryRegisteredQueryResultResponse, error) {
