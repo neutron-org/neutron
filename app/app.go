@@ -389,11 +389,6 @@ type App struct {
 	RateLimitingICS4Wrapper *ibcratelimit.ICS4Wrapper
 	HooksICS4Wrapper        ibchooks.ICS4Middleware
 
-	// make scoped keepers public for test purposes
-	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
-	//ScopedWasmKeeper     capabilitykeeper.ScopedKeeper
-	ScopedInterTxKeeper capabilitykeeper.ScopedKeeper
-
 	InterchainQueriesKeeper interchainqueriesmodulekeeper.Keeper
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
 	ContractManagerKeeper   contractmanagermodulekeeper.Keeper
@@ -510,10 +505,6 @@ func New(
 	// add capability keeper and ScopeToModule for ibc module
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
 
-	// grant capabilities for the ibc and ibc-transfer modules
-	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	app.ScopedTransferKeeper = scopedTransferKeeper
-
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
@@ -586,7 +577,7 @@ func New(
 		app.UpgradeKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	
+
 	// Feekeeper needs to be initialized before middlewares injection
 	app.FeeKeeper = feekeeper.NewKeeper(
 		appCodec,
@@ -863,6 +854,9 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	clientKeeper := app.IBCKeeper.ClientKeeper
+	tmLightClientModule := tendermint.NewLightClientModule(appCodec, clientKeeper.GetStoreProvider())
+
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -912,6 +906,7 @@ func New(
 		oracleModule,
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
+		tendermint.NewAppModule(tmLightClientModule),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1305,8 +1300,6 @@ func New(
 	if loadLatest {
 		app.LoadLatest()
 	}
-
-	app.ScopedTransferKeeper = scopedTransferKeeper
 
 	return app
 }

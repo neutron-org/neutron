@@ -3,6 +3,7 @@ package testutil
 import (
 	"encoding/json"
 	"fmt"
+	ibctmtypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"os"
@@ -89,11 +90,18 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	sdk.DefaultBondDenom = appparams.DefaultDenom
 
 	suite.Coordinator = NewProviderConsumerCoordinator(suite.T())
+
 	//suite.Coordinator = ibctesting.NewCoordinator(suite.T(), 4)
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
 	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
+
+	storeProvider := suite.ChainA.App.GetIBCKeeper().ClientKeeper.GetStoreProvider()
+	tmLightClientModule := ibctmtypes.NewLightClientModule(suite.ChainA.Codec, storeProvider)
+	chainBLC := ibctmtypes.NewLightClientModule(suite.ChainB.Codec, storeProvider)
+	suite.ChainA.App.GetIBCKeeper().ClientKeeper.AddRoute(ibctmtypes.ModuleName, &tmLightClientModule)
+	suite.ChainB.App.GetIBCKeeper().ClientKeeper.AddRoute(ibctmtypes.ModuleName, &chainBLC)
 
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
 	suite.Path.SetupConnections()
