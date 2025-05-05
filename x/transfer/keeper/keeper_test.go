@@ -563,7 +563,7 @@ func TestMsgTransferValidate(t *testing.T) {
 					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 				},
 			},
-			transfertypes.ErrInvalidDenomForTransfer,
+			ibcerrors.ErrInvalidCoins,
 		},
 		{
 			"invalid token denom prefix format with separator",
@@ -582,7 +582,7 @@ func TestMsgTransferValidate(t *testing.T) {
 					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 				},
 			},
-			transfertypes.ErrInvalidDenomForTransfer,
+			ibcerrors.ErrInvalidCoins,
 		},
 	}
 

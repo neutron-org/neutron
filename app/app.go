@@ -844,6 +844,7 @@ func New(
 
 	clientKeeper := app.IBCKeeper.ClientKeeper
 	tmLightClientModule := tendermint.NewLightClientModule(appCodec, clientKeeper.GetStoreProvider())
+	clientKeeper.AddRoute(tendermint.ModuleName, &tmLightClientModule)
 
 	/****  Module Options ****/
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/cosmos/ibc-go/v10/modules/core/03-connection/keeper"
 	ics23 "github.com/cosmos/ics23/go"
 	"strconv"
 	"time"
@@ -55,7 +56,7 @@ func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, errors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
 	}
 
-	if _, err := m.ibcKeeper.ConnectionKeeper.Connection(goCtx, &ibcconnectiontypes.QueryConnectionRequest{ConnectionId: msg.ConnectionId}); err != nil {
+	if _, err := keeper.NewQueryServer(m.ibcKeeper.ConnectionKeeper).Connection(goCtx, &ibcconnectiontypes.QueryConnectionRequest{ConnectionId: msg.ConnectionId}); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to get connection with ID", "message", msg)
 		return nil, errors.Wrapf(types.ErrInvalidConnectionID, "failed to get connection with ID '%s': %v", msg.ConnectionId, err)
 	}

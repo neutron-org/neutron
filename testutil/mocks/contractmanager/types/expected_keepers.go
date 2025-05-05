@@ -11,7 +11,6 @@ import (
 	types "github.com/CosmWasm/wasmd/x/wasm/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
-
 	types1 "github.com/neutron-org/neutron/v7/x/contractmanager/types"
 )
 

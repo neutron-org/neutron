@@ -35,7 +35,7 @@ func TestIBCHooksTestSuite(t *testing.T) {
 
 func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 	var (
-		trace    transfertypes.DenomTrace
+		trace    transfertypes.Denom
 		amount   math.Int
 		receiver string
 		status   testutils.Status
@@ -67,7 +67,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 			amount = math.NewInt(100) // must be explicitly changed in malleate
 			seq := uint64(1)
 
-			trace = transfertypes.ParseDenomTrace(params.DefaultDenom)
+			trace = transfertypes.ExtractDenomFromPath(params.DefaultDenom)
 
 			// send coin from chainA to chainB
 			transferMsg := transfertypes.NewMsgTransfer(
@@ -83,11 +83,11 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 
 			tc.malleate(&status)
 
-			data := transfertypes.NewFungibleTokenPacketData(trace.GetFullDenomPath(), amount.String(), suite.ChainA.SenderAccount.GetAddress().String(), receiver, "")
+			data := transfertypes.NewFungibleTokenPacketData(trace.String(), amount.String(), suite.ChainA.SenderAccount.GetAddress().String(), receiver, "")
 			packet := channeltypes.NewPacket(data.GetBytes(), seq, suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID, clienttypes.NewHeight(1, 100), 0)
 
 			ack := suite.GetNeutronZoneApp(suite.ChainB).TransferStack.
-				OnRecvPacket(suite.ChainB.GetContext(), packet, suite.ChainA.SenderAccount.GetAddress())
+				OnRecvPacket(suite.ChainB.GetContext(), channelVersion, packet, suite.ChainA.SenderAccount.GetAddress())
 
 			if tc.expPass {
 				suite.Require().True(ack.Success())
@@ -138,14 +138,10 @@ func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
 }
 
 func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, prevSequence uint64) []byte {
-	channelCap := suite.ChainB.GetChannelCapability(
-		suite.TransferPath.EndpointB.ChannelConfig.PortID,
-		suite.TransferPath.EndpointB.ChannelID)
-
 	packet := suite.makeMockPacket(receiver, memo, prevSequence)
 
 	seqID, err := suite.GetNeutronZoneApp(suite.ChainB).HooksICS4Wrapper.SendPacket(
-		suite.ChainB.GetContext(), channelCap, suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
+		suite.ChainB.GetContext(), suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
 	suite.Require().NoError(err, "IBC send failed. Expected success. %s", err)
 	suite.Require().Equal(prevSequence+1, seqID)
 

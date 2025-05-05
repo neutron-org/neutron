@@ -3,7 +3,6 @@ package testutil
 import (
 	"encoding/json"
 	"fmt"
-	ibctmtypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"os"
@@ -74,10 +73,9 @@ type IBCConnectionTestSuite struct {
 	Coordinator *ibctesting.Coordinator
 
 	// testing chains used for convenience and readability
-	ChainProvider *ibctesting.TestChain
-	ChainA        *ibctesting.TestChain
-	ChainB        *ibctesting.TestChain
-	ChainC        *ibctesting.TestChain
+	ChainA *ibctesting.TestChain
+	ChainB *ibctesting.TestChain
+	ChainC *ibctesting.TestChain
 
 	Path         *ibctesting.Path
 	TransferPath *ibctesting.Path
@@ -89,19 +87,11 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	// we need to redefine this variable to make tests work cause we use untrn as default bond denom in neutron
 	sdk.DefaultBondDenom = appparams.DefaultDenom
 
-	suite.Coordinator = NewProviderConsumerCoordinator(suite.T())
+	suite.Coordinator = NewCoordinator(suite.T())
 
-	//suite.Coordinator = ibctesting.NewCoordinator(suite.T(), 4)
-	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
 	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
-
-	storeProvider := suite.ChainA.App.GetIBCKeeper().ClientKeeper.GetStoreProvider()
-	tmLightClientModule := ibctmtypes.NewLightClientModule(suite.ChainA.Codec, storeProvider)
-	chainBLC := ibctmtypes.NewLightClientModule(suite.ChainB.Codec, storeProvider)
-	suite.ChainA.App.GetIBCKeeper().ClientKeeper.AddRoute(ibctmtypes.ModuleName, &tmLightClientModule)
-	suite.ChainB.App.GetIBCKeeper().ClientKeeper.AddRoute(ibctmtypes.ModuleName, &chainBLC)
 
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
 	suite.Path.SetupConnections()
@@ -118,7 +108,6 @@ func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB)
 	suite.TransferPath.SetupConnections()
-	//suite.Coordinator.SetupConnections(suite.TransferPath)
 	err := SetupTransferPath(suite.TransferPath)
 	suite.Require().NoError(err)
 }
@@ -146,28 +135,26 @@ func testHomeDir(chainID string) string {
 	return path.Join(projectRoot, ".testchains", chainID)
 }
 
-// NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
-func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
+// NewCoordinator initializes Coordinator with 4 neutron chains
+func NewCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 0)
-	chainID := ibctesting.GetChainID(1)
-
-	ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
-	providerChain := coordinator.GetChain(chainID)
 
 	_ = config.GetDefaultConfig()
 	sdk.SetAddrCacheEnabled(false)
+
+	ibctesting.DefaultTestingAppInit = SetupTestingApp()
+
+	chainID := ibctesting.GetChainID(1)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
+
 	chainID = ibctesting.GetChainID(2)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
-		chainID, providerChain.Vals, providerChain.Signers)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 
 	chainID = ibctesting.GetChainID(3)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
-		chainID, providerChain.Vals, providerChain.Signers)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 
 	chainID = ibctesting.GetChainID(4)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
-		chainID, providerChain.Vals, providerChain.Signers)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 
 	return coordinator
 }
