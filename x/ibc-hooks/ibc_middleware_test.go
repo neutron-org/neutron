@@ -87,7 +87,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 			packet := channeltypes.NewPacket(data.GetBytes(), seq, suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID, clienttypes.NewHeight(1, 100), 0)
 
 			ack := suite.GetNeutronZoneApp(suite.ChainB).TransferStack.
-				OnRecvPacket(suite.ChainB.GetContext(), channelVersion, packet, suite.ChainA.SenderAccount.GetAddress())
+				OnRecvPacket(suite.ChainB.GetContext(), "V1", packet, suite.ChainA.SenderAccount.GetAddress())
 
 			if tc.expPass {
 				suite.Require().True(ack.Success())

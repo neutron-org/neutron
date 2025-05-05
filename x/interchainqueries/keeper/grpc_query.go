@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"github.com/cosmos/ibc-go/v10/modules/core/03-connection/keeper"
 
 	"cosmossdk.io/errors"
 
@@ -91,7 +92,7 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 
 func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLastRemoteHeight) (*types.QueryLastRemoteHeightResponse, error) {
 	req := contypes.QueryConnectionClientStateRequest{ConnectionId: request.ConnectionId}
-	r, err := k.ibcKeeper.ConnectionKeeper.ConnectionClientState(goCtx, &req)
+	r, err := keeper.NewQueryServer(k.ibcKeeper.ConnectionKeeper).ConnectionClientState(goCtx, &req)
 	if err != nil {
 		return nil, errors.Wrapf(types.ErrInvalidConnectionID, "connection not found")
 	}
