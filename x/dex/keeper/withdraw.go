@@ -135,6 +135,7 @@ func (k Keeper) ExecuteWithdraw(
 			fee,
 			outAmount0,
 			outAmount1,
+			pool.Id,
 			sharesToRemove,
 		)
 		events = append(events, withdrawEvent)
