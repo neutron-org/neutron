@@ -61,7 +61,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 
 	chainBResp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-		Height: suite.ChainB.LastHeader.Header.Height - 1,
+		Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
 	})
@@ -77,7 +77,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 		// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 		Block:    nil,
 		Height:   uint64(chainBResp.Height), //nolint:gosec
-		Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+		Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 	}
 	err = neutron.InterchainQueriesKeeper.SaveKVQueryResult(ctx, lastID, expectedQueryResult)
 	suite.Require().NoError(err)
@@ -93,7 +93,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	suite.Require().NoError(err)
 
 	suite.Require().Equal(uint64(chainBResp.Height), resp.Result.Height) //nolint:gosec
-	suite.Require().Equal(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
+	suite.Require().Equal(suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
 	suite.Require().Empty(resp.Result.Block)
 	suite.Require().NotEmpty(resp.Result.KvResults)
 	suite.Require().Equal([]*icqtypes.StorageValue{{

@@ -37,7 +37,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -58,7 +58,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -79,7 +79,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -100,7 +100,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -121,7 +121,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})

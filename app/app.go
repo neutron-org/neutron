@@ -128,9 +128,6 @@ import (
 	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
 
 	// "github.com/cosmos/gaia/v11/x/globalfee"
-	"github.com/cosmos/ibc-go/modules/capability"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
 	icacontroller "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
@@ -244,7 +241,6 @@ var (
 		auth.AppModuleBasic{},
 		authzmodule.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		capability.AppModuleBasic{},
 		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
@@ -358,7 +354,6 @@ type App struct {
 	AdminmoduleKeeper   adminmodulekeeper.Keeper
 	AuthzKeeper         authzkeeper.Keeper
 	BankKeeper          bankkeeper.BaseKeeper
-	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
 	UpgradeKeeper       upgradekeeper.Keeper
@@ -473,8 +468,7 @@ func New(
 	keys := storetypes.NewKVStoreKeys(
 		authzkeeper.StoreKey, authtypes.StoreKey, banktypes.StoreKey, slashingtypes.StoreKey,
 		paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
-		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
-		icahosttypes.StoreKey, capabilitytypes.StoreKey,
+		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey, icahosttypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey,
@@ -482,7 +476,7 @@ func New(
 		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey, stateverifiertypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
-	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
+	memKeys := storetypes.NewMemoryStoreKeys(feetypes.MemStoreKey)
 
 	app := &App{
 		BaseApp:           bApp,
@@ -501,9 +495,6 @@ func New(
 	// set the BaseApp's parameter store
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), runtime.EventService{})
 	bApp.SetParamStore(&app.ConsensusParamsKeeper.ParamsStore)
-
-	// add capability keeper and ScopeToModule for ibc module
-	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
 
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
@@ -873,7 +864,6 @@ func New(
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		upgrade.NewAppModule(&app.UpgradeKeeper, address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())),
@@ -905,8 +895,8 @@ func New(
 		marketmapModule,
 		oracleModule,
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
-		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 		tendermint.NewAppModule(tmLightClientModule),
+		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -921,7 +911,6 @@ func New(
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
-		capabilitytypes.ModuleName,
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		vestingtypes.ModuleName,
@@ -959,7 +948,6 @@ func New(
 
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
-		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		authz.ModuleName,
 		banktypes.ModuleName,
@@ -998,11 +986,7 @@ func New(
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
-	// NOTE: Capability module must occur first so that it can initialize any capabilities
-	// so that other modules that want to create or claim capabilities afterwards in InitChain
-	// can do so safely.
 	app.mm.SetOrderInitGenesis(
-		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		authz.ModuleName,
@@ -1056,7 +1040,6 @@ func New(
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil, app.GetSubspace(authtypes.ModuleName)),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, nil, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
@@ -1350,7 +1333,6 @@ func (app *App) setupUpgradeHandlers() {
 					TokenFactoryKeeper: app.TokenFactoryKeeper,
 					SlashingKeeper:     app.SlashingKeeper,
 					ParamsKeeper:       app.ParamsKeeper,
-					CapabilityKeeper:   app.CapabilityKeeper,
 					ContractManager:    app.ContractManagerKeeper,
 					AdminModule:        app.AdminmoduleKeeper,
 					ConsensusKeeper:    &app.ConsensusParamsKeeper,

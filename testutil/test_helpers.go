@@ -105,7 +105,6 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
 	suite.Path.SetupConnections()
-	//suite.Coordinator.SetupConnections(suite.Path)
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
