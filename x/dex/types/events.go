@@ -8,7 +8,7 @@ import (
 	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 )
 
 // Shared Attributes

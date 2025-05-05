@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 func TestHasTokenEmptyReserves(t *testing.T) {

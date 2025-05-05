@@ -16335,6 +16335,43 @@ definitions:
         title: Address is the contract address
         type: string
     type: object
+  cosmwasm.wasm.v1.QueryCodeInfoResponse:
+    properties:
+      checksum:
+        format: byte
+        type: string
+      code_id:
+        format: uint64
+        type: string
+      creator:
+        type: string
+      instantiate_permission:
+        description: AccessConfig access control type.
+        properties:
+          addresses:
+            items:
+              type: string
+            type: array
+          permission:
+            default: ACCESS_TYPE_UNSPECIFIED
+            description: >-
+              - ACCESS_TYPE_UNSPECIFIED: AccessTypeUnspecified placeholder for
+              empty value
+               - ACCESS_TYPE_NOBODY: AccessTypeNobody forbidden
+               - ACCESS_TYPE_EVERYBODY: AccessTypeEverybody unrestricted
+               - ACCESS_TYPE_ANY_OF_ADDRESSES: AccessTypeAnyOfAddresses allow any of the addresses
+            enum:
+              - ACCESS_TYPE_UNSPECIFIED
+              - ACCESS_TYPE_NOBODY
+              - ACCESS_TYPE_EVERYBODY
+              - ACCESS_TYPE_ANY_OF_ADDRESSES
+            title: AccessType permission types
+            type: string
+        type: object
+    title: >-
+      QueryCodeInfoResponse is the response type for the Query/CodeInfo RPC
+      method
+    type: object
   cosmwasm.wasm.v1.QueryCodeResponse:
     properties:
       code_info:
@@ -16758,6 +16795,15 @@ definitions:
     title: |-
       QuerySmartContractStateResponse is the response type for the
       Query/SmartContractState RPC method
+    type: object
+  cosmwasm.wasm.v1.QueryWasmLimitsConfigResponse:
+    description: |-
+      QueryWasmLimitsConfigResponse is the response type for the
+      Query/WasmLimitsConfig RPC method. It contains the JSON encoded limits for
+      static validation of Wasm files.
+    properties:
+      config:
+        type: string
     type: object
   feemarket.feemarket.v1.GasPriceResponse:
     description: |-
@@ -17372,6 +17418,40 @@ definitions:
       and
 
       freezing clients
+    type: object
+  ibc.core.commitment.v1.MerkleRoot:
+    description: |-
+      MerkleRoot defines a merkle root hash.
+      In the Cosmos SDK, the AppHash of a block header becomes the root.
+    properties:
+      hash:
+        format: byte
+        type: string
+    type: object
+  ibc.lightclients.tendermint.v1.ConsensusState:
+    description: ConsensusState defines the consensus state from Tendermint.
+    properties:
+      next_validators_hash:
+        format: byte
+        type: string
+      root:
+        title: commitment root (i.e app hash)
+        description: |-
+          MerkleRoot defines a merkle root hash.
+          In the Cosmos SDK, the AppHash of a block header becomes the root.
+        properties:
+          hash:
+            format: byte
+            type: string
+        type: object
+      timestamp:
+        description: >-
+          timestamp that corresponds to the block height in which the
+          ConsensusState
+
+          was stored.
+        format: date-time
+        type: string
     type: object
   neutron.contractmanager.Failure:
     properties:
@@ -18075,7 +18155,7 @@ definitions:
           If pickBestRoute == true then all routes are run and the route with
           the
 
-          best price is chosen otherwise, the first succesful route is used.
+          best price is chosen otherwise, the first successful route is used.
         type: boolean
       receiver:
         type: string
@@ -22558,6 +22638,82 @@ definitions:
             type: string
         type: object
     type: object
+  neutron.state_verifier.v1.ConsensusState:
+    properties:
+      cs:
+        title: ConsensusState defines the consensus state from Tendermint
+        description: ConsensusState defines the consensus state from Tendermint.
+        properties:
+          next_validators_hash:
+            format: byte
+            type: string
+          root:
+            title: commitment root (i.e app hash)
+            description: |-
+              MerkleRoot defines a merkle root hash.
+              In the Cosmos SDK, the AppHash of a block header becomes the root.
+            properties:
+              hash:
+                format: byte
+                type: string
+            type: object
+          timestamp:
+            description: >-
+              timestamp that corresponds to the block height in which the
+              ConsensusState
+
+              was stored.
+            format: date-time
+            type: string
+        type: object
+      height:
+        format: int64
+        title: Describes a block height for which the consensus height is saved
+        type: string
+    title: Describes a "light" consensus state of the chain at a particular height
+    type: object
+  neutron.state_verifier.v1.QueryConsensusStateResponse:
+    properties:
+      cs:
+        title: >-
+          ConsensusState defines the consensus state from the state-verifier
+          module
+        properties:
+          cs:
+            title: ConsensusState defines the consensus state from Tendermint
+            description: ConsensusState defines the consensus state from Tendermint.
+            properties:
+              next_validators_hash:
+                format: byte
+                type: string
+              root:
+                title: commitment root (i.e app hash)
+                description: >-
+                  MerkleRoot defines a merkle root hash.
+
+                  In the Cosmos SDK, the AppHash of a block header becomes the
+                  root.
+                properties:
+                  hash:
+                    format: byte
+                    type: string
+                type: object
+              timestamp:
+                description: >-
+                  timestamp that corresponds to the block height in which the
+                  ConsensusState
+
+                  was stored.
+                format: date-time
+                type: string
+            type: object
+          height:
+            format: int64
+            title: Describes a block height for which the consensus height is saved
+            type: string
+        type: object
+    title: Describes a response structure for `QueryConsensusStateRequest` query
+    type: object
   neutron.state_verifier.v1.QueryVerifyStateValuesResponse:
     properties:
       valid:
@@ -22683,7 +22839,7 @@ definitions:
     type: object
   osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse:
     description: |-
-      QueryDenomsFromCreatorRequest defines the response structure for the
+      QueryDenomsFromCreatorResponse defines the response structure for the
       DenomsFromCreator gRPC query.
     properties:
       denoms:
@@ -26936,7 +27092,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v6
+  version: v7
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -42924,6 +43080,80 @@ paths:
       summary: Codes gets the metadata for all stored wasm codes
       tags:
         - Query
+  /cosmwasm/wasm/v1/code-info/{code_id}:
+    get:
+      operationId: CodeInfo
+      parameters:
+        - format: uint64
+          in: path
+          name: code_id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              checksum:
+                format: byte
+                type: string
+              code_id:
+                format: uint64
+                type: string
+              creator:
+                type: string
+              instantiate_permission:
+                description: AccessConfig access control type.
+                properties:
+                  addresses:
+                    items:
+                      type: string
+                    type: array
+                  permission:
+                    default: ACCESS_TYPE_UNSPECIFIED
+                    description: >-
+                      - ACCESS_TYPE_UNSPECIFIED: AccessTypeUnspecified
+                      placeholder for empty value
+                       - ACCESS_TYPE_NOBODY: AccessTypeNobody forbidden
+                       - ACCESS_TYPE_EVERYBODY: AccessTypeEverybody unrestricted
+                       - ACCESS_TYPE_ANY_OF_ADDRESSES: AccessTypeAnyOfAddresses allow any of the addresses
+                    enum:
+                      - ACCESS_TYPE_UNSPECIFIED
+                      - ACCESS_TYPE_NOBODY
+                      - ACCESS_TYPE_EVERYBODY
+                      - ACCESS_TYPE_ANY_OF_ADDRESSES
+                    title: AccessType permission types
+                    type: string
+                type: object
+            title: >-
+              QueryCodeInfoResponse is the response type for the Query/CodeInfo
+              RPC method
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: CodeInfo gets the metadata for a single wasm code
+      tags:
+        - Query
   /cosmwasm/wasm/v1/code/{code_id}:
     get:
       operationId: Code
@@ -43002,7 +43232,7 @@ paths:
               message:
                 type: string
             type: object
-      summary: Code gets the binary code and metadata for a singe wasm code
+      summary: Code gets the binary code and metadata for a single wasm code
       tags:
         - Query
   /cosmwasm/wasm/v1/code/{code_id}/contracts:
@@ -44059,6 +44289,53 @@ paths:
                 type: string
             type: object
       summary: ContractsByCreator gets the contracts by creator
+      tags:
+        - Query
+  /cosmwasm/wasm/v1/wasm-limits-config:
+    get:
+      operationId: WasmLimitsConfig
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryWasmLimitsConfigResponse is the response type for the
+
+              Query/WasmLimitsConfig RPC method. It contains the JSON encoded
+              limits for
+
+              static validation of Wasm files.
+            properties:
+              config:
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        WasmLimitsConfig gets the configured limits for static validation of
+        Wasm
+
+        files, encoded in JSON.
       tags:
         - Query
   /feemarket/v1/gas_price/{denom}:
@@ -45790,7 +46067,7 @@ paths:
             If pickBestRoute == true then all routes are run and the route with
             the
 
-            best price is chosen otherwise, the first succesful route is used.
+            best price is chosen otherwise, the first successful route is used.
           in: query
           name: pick_best_route
           required: false
@@ -48060,7 +48337,7 @@ paths:
             If pickBestRoute == true then all routes are run and the route with
             the
 
-            best price is chosen otherwise, the first succesful route is used.
+            best price is chosen otherwise, the first successful route is used.
           in: query
           name: msg.pick_best_route
           required: false
@@ -50894,7 +51171,97 @@ paths:
       summary: Fetches all validators' stats from the revenue module's state.
       tags:
         - Query
-  /neutron/state-verifier/verify_state_values:
+  /neutron/state-verifier/v1/query_consensus_state:
+    get:
+      operationId: QueryConsensusState
+      parameters:
+        - description: >-
+            Refers to the block height for which you want to query
+            ConsensusState.
+          format: uint64
+          in: query
+          name: height
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              cs:
+                title: >-
+                  ConsensusState defines the consensus state from the
+                  state-verifier module
+                properties:
+                  cs:
+                    title: ConsensusState defines the consensus state from Tendermint
+                    description: >-
+                      ConsensusState defines the consensus state from
+                      Tendermint.
+                    properties:
+                      next_validators_hash:
+                        format: byte
+                        type: string
+                      root:
+                        title: commitment root (i.e app hash)
+                        description: >-
+                          MerkleRoot defines a merkle root hash.
+
+                          In the Cosmos SDK, the AppHash of a block header
+                          becomes the root.
+                        properties:
+                          hash:
+                            format: byte
+                            type: string
+                        type: object
+                      timestamp:
+                        description: >-
+                          timestamp that corresponds to the block height in
+                          which the ConsensusState
+
+                          was stored.
+                        format: date-time
+                        type: string
+                    type: object
+                  height:
+                    format: int64
+                    title: >-
+                      Describes a block height for which the consensus height is
+                      saved
+                    type: string
+                type: object
+            title: >-
+              Describes a response structure for `QueryConsensusStateRequest`
+              query
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Queries saved consensus state by the height. The query returns
+        `QueryConsensusStateResponse` response.
+      tags:
+        - Query
+  /neutron/state-verifier/v1/verify_state_values:
     get:
       operationId: VerifyStateValues
       parameters:

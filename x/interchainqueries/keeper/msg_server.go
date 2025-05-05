@@ -18,8 +18,8 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
 
-	"github.com/neutron-org/neutron/v6/utils/stateverification"
-	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v7/utils/stateverification"
+	"github.com/neutron-org/neutron/v7/x/interchainqueries/types"
 )
 
 var _ types.MsgServer = msgServer{}

@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"gopkg.in/yaml.v2"
 
-	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v7/app/params"
 )
 
 var (

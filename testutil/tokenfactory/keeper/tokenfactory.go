@@ -14,9 +14,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	"github.com/neutron-org/neutron/v6/x/tokenfactory/keeper"
-	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v7/testutil"
+	"github.com/neutron-org/neutron/v7/x/tokenfactory/keeper"
+	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
 )
 
 func TokenFactoryKeeper(

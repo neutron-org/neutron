@@ -3,15 +3,15 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v6/app/config"
+	"github.com/neutron-org/neutron/v7/app/config"
 
-	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v7/testutil"
 
-	testkeeper "github.com/neutron-org/neutron/v6/testutil/cron/keeper"
+	testkeeper "github.com/neutron-org/neutron/v7/testutil/cron/keeper"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/cron/types"
+	"github.com/neutron-org/neutron/v7/x/cron/types"
 )
 
 func TestGetParams(t *testing.T) {

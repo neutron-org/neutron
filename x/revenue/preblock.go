@@ -9,8 +9,8 @@ import (
 	slinkyabcitypes "github.com/skip-mev/slinky/abci/types"
 	slinkyve "github.com/skip-mev/slinky/abci/ve"
 
-	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
+	revenuekeeper "github.com/neutron-org/neutron/v7/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v7/x/revenue/types"
 )
 
 // NewPreBlockHandler returns a new PreBlockHandler. The handler is responsible for recording

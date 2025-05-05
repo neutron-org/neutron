@@ -8,9 +8,9 @@ import (
 	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/testutil/apptesting"
-	stateverifier "github.com/neutron-org/neutron/v6/x/state-verifier"
-	"github.com/neutron-org/neutron/v6/x/state-verifier/types"
+	"github.com/neutron-org/neutron/v7/testutil/apptesting"
+	stateverifier "github.com/neutron-org/neutron/v7/x/state-verifier"
+	"github.com/neutron-org/neutron/v7/x/state-verifier/types"
 )
 
 type GenesisTestSuite struct {

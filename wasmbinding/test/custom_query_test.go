@@ -8,9 +8,9 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/app/params"
-	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v7/app/params"
+	feerefundertypes "github.com/neutron-org/neutron/v7/x/feerefunder/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v7/x/tokenfactory/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
@@ -19,11 +19,11 @@ import (
 	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v6/app"
-	"github.com/neutron-org/neutron/v6/testutil"
-	"github.com/neutron-org/neutron/v6/wasmbinding/bindings"
-	icqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
-	ictxtypes "github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v7/app"
+	"github.com/neutron-org/neutron/v7/testutil"
+	"github.com/neutron-org/neutron/v7/wasmbinding/bindings"
+	icqtypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
+	ictxtypes "github.com/neutron-org/neutron/v7/x/interchaintxs/types"
 )
 
 type CustomQuerierTestSuite struct {

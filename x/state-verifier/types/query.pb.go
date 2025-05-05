@@ -8,7 +8,7 @@ import (
 	fmt "fmt"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
-	types "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	types "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -130,9 +130,103 @@ func (m *QueryVerifyStateValuesResponse) GetValid() bool {
 	return false
 }
 
+// Describes a structure to query ConsensusState by the specified height
+type QueryConsensusStateRequest struct {
+	// Refers to the block height for which you want to query ConsensusState
+	Height uint64 `protobuf:"varint,1,opt,name=height,proto3" json:"height,omitempty"`
+}
+
+func (m *QueryConsensusStateRequest) Reset()         { *m = QueryConsensusStateRequest{} }
+func (m *QueryConsensusStateRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryConsensusStateRequest) ProtoMessage()    {}
+func (*QueryConsensusStateRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_57fce5d311842a25, []int{2}
+}
+func (m *QueryConsensusStateRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryConsensusStateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryConsensusStateRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryConsensusStateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryConsensusStateRequest.Merge(m, src)
+}
+func (m *QueryConsensusStateRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryConsensusStateRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryConsensusStateRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryConsensusStateRequest proto.InternalMessageInfo
+
+func (m *QueryConsensusStateRequest) GetHeight() uint64 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+// Describes a response structure for `QueryConsensusStateRequest` query
+type QueryConsensusStateResponse struct {
+	// ConsensusState defines the consensus state from the state-verifier module
+	Cs *ConsensusState `protobuf:"bytes,2,opt,name=cs,proto3" json:"cs,omitempty"`
+}
+
+func (m *QueryConsensusStateResponse) Reset()         { *m = QueryConsensusStateResponse{} }
+func (m *QueryConsensusStateResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryConsensusStateResponse) ProtoMessage()    {}
+func (*QueryConsensusStateResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_57fce5d311842a25, []int{3}
+}
+func (m *QueryConsensusStateResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryConsensusStateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryConsensusStateResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryConsensusStateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryConsensusStateResponse.Merge(m, src)
+}
+func (m *QueryConsensusStateResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryConsensusStateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryConsensusStateResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryConsensusStateResponse proto.InternalMessageInfo
+
+func (m *QueryConsensusStateResponse) GetCs() *ConsensusState {
+	if m != nil {
+		return m.Cs
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*QueryVerifyStateValuesRequest)(nil), "neutron.state_verifier.v1.QueryVerifyStateValuesRequest")
 	proto.RegisterType((*QueryVerifyStateValuesResponse)(nil), "neutron.state_verifier.v1.QueryVerifyStateValuesResponse")
+	proto.RegisterType((*QueryConsensusStateRequest)(nil), "neutron.state_verifier.v1.QueryConsensusStateRequest")
+	proto.RegisterType((*QueryConsensusStateResponse)(nil), "neutron.state_verifier.v1.QueryConsensusStateResponse")
 }
 
 func init() {
@@ -140,30 +234,35 @@ func init() {
 }
 
 var fileDescriptor_57fce5d311842a25 = []byte{
-	// 353 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x91, 0x41, 0x4b, 0x32, 0x41,
-	0x18, 0xc7, 0x1d, 0xdf, 0x57, 0x79, 0x99, 0x97, 0xf7, 0x85, 0x96, 0x08, 0x93, 0x5a, 0x64, 0x21,
-	0x12, 0xc2, 0x19, 0x54, 0x10, 0xbb, 0xf6, 0x01, 0x82, 0x56, 0xf0, 0xd0, 0x45, 0x46, 0x7b, 0xda,
-	0x1d, 0xb0, 0x99, 0x75, 0x66, 0x76, 0xd1, 0x6b, 0x97, 0xae, 0x41, 0x9f, 0xa7, 0x73, 0x1d, 0x85,
-	0x2e, 0x1d, 0x43, 0xfb, 0x20, 0xb1, 0xb3, 0x5a, 0x99, 0xd8, 0xa1, 0xe3, 0x03, 0xcf, 0xef, 0xf7,
-	0xff, 0xcf, 0x3c, 0xf8, 0x40, 0x40, 0x6c, 0x94, 0x14, 0x54, 0x1b, 0x66, 0xa0, 0x97, 0x80, 0xe2,
-	0x97, 0x1c, 0x14, 0x4d, 0xea, 0x74, 0x14, 0x83, 0x9a, 0x90, 0x48, 0x49, 0x23, 0x9d, 0xdd, 0xc5,
-	0x1a, 0x59, 0x5d, 0x23, 0x49, 0xbd, 0xbc, 0x17, 0x48, 0x19, 0x0c, 0x81, 0xb2, 0x88, 0x53, 0x26,
-	0x84, 0x34, 0xcc, 0x70, 0x29, 0x74, 0x06, 0x96, 0xbd, 0xa5, 0x9f, 0x0b, 0x03, 0x6a, 0x10, 0x32,
-	0x2e, 0x52, 0x2f, 0x07, 0x4d, 0xcd, 0x38, 0xdb, 0xf1, 0x6e, 0x10, 0xde, 0x3f, 0x4b, 0xc3, 0xba,
-	0xa9, 0x76, 0xd2, 0x49, 0x23, 0xba, 0x6c, 0x18, 0x83, 0xf6, 0x61, 0x14, 0x83, 0x36, 0xce, 0x0e,
-	0x2e, 0x86, 0xc0, 0x83, 0xd0, 0x94, 0x50, 0x05, 0x55, 0x7f, 0xfb, 0x8b, 0xc9, 0x39, 0xc5, 0xff,
-	0xb5, 0x91, 0x8a, 0x05, 0xd0, 0x4b, 0x2c, 0x50, 0xca, 0x57, 0x7e, 0x55, 0xff, 0x36, 0x0e, 0xc9,
-	0xb2, 0xef, 0x5a, 0x2c, 0xe9, 0x64, 0x80, 0x0d, 0xf0, 0xff, 0xe9, 0x4f, 0x93, 0xf6, 0x5a, 0xd8,
-	0xdd, 0x54, 0x44, 0x47, 0x52, 0x68, 0x70, 0xb6, 0x71, 0x21, 0x61, 0x43, 0x7e, 0x61, 0x8b, 0xfc,
-	0xf1, 0xb3, 0xa1, 0xf1, 0x80, 0x70, 0xc1, 0x82, 0xce, 0x3d, 0xc2, 0x5b, 0x6b, 0xb4, 0xd3, 0x26,
-	0x1b, 0xff, 0x8f, 0x7c, 0xfb, 0xf2, 0xf2, 0xf1, 0x0f, 0xc8, 0xac, 0xaa, 0xd7, 0xbc, 0x7e, 0x7a,
-	0xbd, 0xcb, 0xd7, 0x9c, 0x23, 0xba, 0x72, 0xe3, 0xda, 0xc7, 0x8d, 0x2d, 0xda, 0x5b, 0x88, 0x2d,
-	0x7c, 0xe2, 0x3f, 0xce, 0x5c, 0x34, 0x9d, 0xb9, 0xe8, 0x65, 0xe6, 0xa2, 0xdb, 0xb9, 0x9b, 0x9b,
-	0xce, 0xdd, 0xdc, 0xf3, 0xdc, 0xcd, 0x9d, 0xb7, 0x03, 0x6e, 0xc2, 0xb8, 0x4f, 0x06, 0xf2, 0x6a,
-	0x29, 0xac, 0x49, 0x15, 0xbc, 0xcb, 0x93, 0x16, 0x1d, 0x7f, 0x4d, 0x30, 0x93, 0x08, 0x74, 0xbf,
-	0x68, 0xcf, 0xdc, 0x7c, 0x0b, 0x00, 0x00, 0xff, 0xff, 0x2f, 0xda, 0x0c, 0x8f, 0x6c, 0x02, 0x00,
-	0x00,
+	// 443 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x93, 0x4f, 0x6b, 0xd4, 0x40,
+	0x18, 0xc6, 0x77, 0x52, 0x5b, 0x64, 0x8a, 0x82, 0xa3, 0x48, 0x8d, 0x1a, 0x4a, 0x40, 0xba, 0x1e,
+	0x3a, 0xd3, 0x46, 0x5d, 0xb7, 0x57, 0xbd, 0x0b, 0xa6, 0x50, 0xc4, 0x4b, 0x98, 0xc6, 0xd7, 0x64,
+	0x60, 0x9d, 0x49, 0x67, 0x26, 0xa1, 0xb9, 0x7a, 0xf1, 0xe0, 0x45, 0xf0, 0xfb, 0x88, 0x47, 0x8f,
+	0x05, 0x2f, 0x1e, 0x65, 0xd7, 0x0f, 0x22, 0x99, 0x24, 0xd2, 0x3f, 0xbb, 0x5b, 0xec, 0x2d, 0x03,
+	0xcf, 0xf3, 0xbc, 0xbf, 0x27, 0xef, 0x0c, 0x7e, 0x24, 0xa1, 0xb4, 0x5a, 0x49, 0x66, 0x2c, 0xb7,
+	0x90, 0x54, 0xa0, 0xc5, 0x7b, 0x01, 0x9a, 0x55, 0xbb, 0xec, 0xa8, 0x04, 0x5d, 0xd3, 0x42, 0x2b,
+	0xab, 0xc8, 0xbd, 0x4e, 0x46, 0xcf, 0xca, 0x68, 0xb5, 0xeb, 0x3f, 0xc8, 0x94, 0xca, 0x26, 0xc0,
+	0x78, 0x21, 0x18, 0x97, 0x52, 0x59, 0x6e, 0x85, 0x92, 0xa6, 0x35, 0xfa, 0x61, 0x9f, 0x2f, 0xa4,
+	0x05, 0x9d, 0xe6, 0x5c, 0xc8, 0x26, 0x57, 0x80, 0x61, 0xf6, 0xb8, 0xd3, 0x6c, 0x2d, 0x66, 0xc8,
+	0x40, 0x82, 0x11, 0x5d, 0x58, 0xf8, 0x09, 0xe1, 0x87, 0xaf, 0x1b, 0xaa, 0x83, 0x46, 0x52, 0xef,
+	0x37, 0xf2, 0x03, 0x3e, 0x29, 0xc1, 0xc4, 0x70, 0x54, 0x82, 0xb1, 0xe4, 0x2e, 0x5e, 0xcb, 0x41,
+	0x64, 0xb9, 0xdd, 0x40, 0x9b, 0x68, 0x78, 0x2d, 0xee, 0x4e, 0xe4, 0x15, 0xbe, 0x69, 0xac, 0xd2,
+	0x3c, 0x83, 0xa4, 0x72, 0x86, 0x0d, 0x6f, 0x73, 0x65, 0xb8, 0x1e, 0x6d, 0xd1, 0xbe, 0xd8, 0x05,
+	0x3e, 0xba, 0xdf, 0x1a, 0xdc, 0x80, 0xf8, 0x86, 0x39, 0x75, 0x32, 0xe1, 0x08, 0x07, 0x8b, 0x40,
+	0x4c, 0xa1, 0xa4, 0x01, 0x72, 0x07, 0xaf, 0x56, 0x7c, 0x22, 0xde, 0x39, 0x90, 0xeb, 0x71, 0x7b,
+	0x08, 0x9f, 0x62, 0xdf, 0xf9, 0x5e, 0x36, 0x1a, 0x69, 0x4a, 0xe3, 0xac, 0x97, 0xd0, 0x87, 0x6f,
+	0xf0, 0xfd, 0xb9, 0xae, 0x6e, 0xd4, 0x1e, 0xf6, 0xd2, 0xa6, 0x10, 0x1a, 0xae, 0x47, 0x8f, 0xe9,
+	0xc2, 0x4d, 0xd1, 0x73, 0x76, 0x2f, 0x35, 0xd1, 0xe7, 0x15, 0xbc, 0xea, 0xa2, 0xc9, 0x77, 0x84,
+	0x6f, 0x5d, 0x68, 0x43, 0xc6, 0x4b, 0xe2, 0x96, 0x6e, 0xc2, 0xdf, 0xbb, 0x82, 0xb3, 0xed, 0x13,
+	0x8e, 0x3e, 0xfe, 0xfc, 0xf3, 0xd5, 0xdb, 0x21, 0x94, 0x9d, 0xb9, 0x18, 0xdb, 0xa7, 0x2f, 0x86,
+	0xfb, 0xae, 0x93, 0x2e, 0xbb, 0x85, 0xfd, 0x86, 0xf0, 0xed, 0x39, 0xff, 0x89, 0x3c, 0xbb, 0x0c,
+	0x65, 0xee, 0x36, 0xfc, 0xd1, 0xff, 0xda, 0x3a, 0xfc, 0xb1, 0xc3, 0x8f, 0xc8, 0xce, 0x12, 0x7c,
+	0xf7, 0xb6, 0x92, 0xb4, 0x0f, 0x68, 0x7b, 0xbc, 0x88, 0x7f, 0x4c, 0x03, 0x74, 0x32, 0x0d, 0xd0,
+	0xef, 0x69, 0x80, 0xbe, 0xcc, 0x82, 0xc1, 0xc9, 0x2c, 0x18, 0xfc, 0x9a, 0x05, 0x83, 0xb7, 0xe3,
+	0x4c, 0xd8, 0xbc, 0x3c, 0xa4, 0xa9, 0xfa, 0xd0, 0xa7, 0x6e, 0x2b, 0x9d, 0xfd, 0x9b, 0x50, 0x3d,
+	0x67, 0xc7, 0xe7, 0xc7, 0xd8, 0xba, 0x00, 0x73, 0xb8, 0xe6, 0x9e, 0xce, 0x93, 0xbf, 0x01, 0x00,
+	0x00, 0xff, 0xff, 0x3d, 0x1a, 0x1f, 0xbb, 0xe9, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -180,6 +279,8 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Verifies the values and returns an error if values cannot be verified. The query returns `QueryVerifyStateValuesResponse` response.
 	VerifyStateValues(ctx context.Context, in *QueryVerifyStateValuesRequest, opts ...grpc.CallOption) (*QueryVerifyStateValuesResponse, error)
+	// Queries saved consensus state by the height. The query returns `QueryConsensusStateResponse` response.
+	QueryConsensusState(ctx context.Context, in *QueryConsensusStateRequest, opts ...grpc.CallOption) (*QueryConsensusStateResponse, error)
 }
 
 type queryClient struct {
@@ -199,10 +300,21 @@ func (c *queryClient) VerifyStateValues(ctx context.Context, in *QueryVerifyStat
 	return out, nil
 }
 
+func (c *queryClient) QueryConsensusState(ctx context.Context, in *QueryConsensusStateRequest, opts ...grpc.CallOption) (*QueryConsensusStateResponse, error) {
+	out := new(QueryConsensusStateResponse)
+	err := c.cc.Invoke(ctx, "/neutron.state_verifier.v1.Query/QueryConsensusState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Verifies the values and returns an error if values cannot be verified. The query returns `QueryVerifyStateValuesResponse` response.
 	VerifyStateValues(context.Context, *QueryVerifyStateValuesRequest) (*QueryVerifyStateValuesResponse, error)
+	// Queries saved consensus state by the height. The query returns `QueryConsensusStateResponse` response.
+	QueryConsensusState(context.Context, *QueryConsensusStateRequest) (*QueryConsensusStateResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -211,6 +323,9 @@ type UnimplementedQueryServer struct {
 
 func (*UnimplementedQueryServer) VerifyStateValues(ctx context.Context, req *QueryVerifyStateValuesRequest) (*QueryVerifyStateValuesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyStateValues not implemented")
+}
+func (*UnimplementedQueryServer) QueryConsensusState(ctx context.Context, req *QueryConsensusStateRequest) (*QueryConsensusStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryConsensusState not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -235,6 +350,24 @@ func _Query_VerifyStateValues_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_QueryConsensusState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryConsensusStateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryConsensusState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/neutron.state_verifier.v1.Query/QueryConsensusState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryConsensusState(ctx, req.(*QueryConsensusStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "neutron.state_verifier.v1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -242,6 +375,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyStateValues",
 			Handler:    _Query_VerifyStateValues_Handler,
+		},
+		{
+			MethodName: "QueryConsensusState",
+			Handler:    _Query_QueryConsensusState_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -323,6 +460,69 @@ func (m *QueryVerifyStateValuesResponse) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryConsensusStateRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryConsensusStateRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryConsensusStateRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Height != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryConsensusStateResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryConsensusStateResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryConsensusStateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Cs != nil {
+		{
+			size, err := m.Cs.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -360,6 +560,31 @@ func (m *QueryVerifyStateValuesResponse) Size() (n int) {
 	_ = l
 	if m.Valid {
 		n += 2
+	}
+	return n
+}
+
+func (m *QueryConsensusStateRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Height != 0 {
+		n += 1 + sovQuery(uint64(m.Height))
+	}
+	return n
+}
+
+func (m *QueryConsensusStateResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Cs != nil {
+		l = m.Cs.Size()
+		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
@@ -522,6 +747,161 @@ func (m *QueryVerifyStateValuesResponse) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.Valid = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryConsensusStateRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryConsensusStateRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryConsensusStateRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
+			}
+			m.Height = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Height |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryConsensusStateResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryConsensusStateResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryConsensusStateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Cs", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Cs == nil {
+				m.Cs = &ConsensusState{}
+			}
+			if err := m.Cs.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])

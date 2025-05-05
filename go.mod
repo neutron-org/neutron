@@ -1,4 +1,4 @@
-module github.com/neutron-org/neutron/v6
+module github.com/neutron-org/neutron/v7
 
 go 1.23.6
 
@@ -16,8 +16,8 @@ require (
 	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/tx v0.13.7
 	cosmossdk.io/x/upgrade v0.1.4
-	github.com/CosmWasm/wasmd v0.53.2
-	github.com/CosmWasm/wasmvm/v2 v2.2.1
+	github.com/CosmWasm/wasmd v0.54.0
+	github.com/CosmWasm/wasmvm/v2 v2.2.3
 	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
 	github.com/cosmos/cosmos-db v1.1.1

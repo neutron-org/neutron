@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v6/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v7/x/ibc-hooks/types"
 
 	// ibc-go
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"

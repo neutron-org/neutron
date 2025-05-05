@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	keepertest "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v7/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 func TestTickLiquidityQueryPaginated(t *testing.T) {
