@@ -100,15 +100,24 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
 	suite.TransferPathAC = NewTransferPath(suite.ChainA, suite.ChainC)
 	suite.TransferPathAC.SetupConnections()
-	//suite.Coordinator.SetupConnections(suite.TransferPathAC)
+
+	//suite.TransferPathAC.SetupConnections()
 	err := SetupTransferPath(suite.TransferPathAC)
 	suite.Require().NoError(err)
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB)
+
+	//suite.TransferPath.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
+	//suite.TransferPath.EndpointA.ChannelConfig.PortID = ibctesting.TransferPort
+	//suite.TransferPath.EndpointB.ChannelConfig.PortID = ibctesting.TransferPort
+	//suite.TransferPath.Setup()
 	suite.TransferPath.SetupConnections()
+	//suite.TransferPath.CreateChannels()
+	//suite.TransferPath.SetupConnections()
 	err := SetupTransferPath(suite.TransferPath)
+	//fmt.Printf("EndpointA.ChannelID: %+v\nEndpointB.ChannelID: %+v", suite.TransferPath.EndpointA.ChannelID, suite.TransferPath.EndpointB.ChannelID)
 	suite.Require().NoError(err)
 }
 
@@ -308,57 +317,73 @@ func SetupTestingApp() func() (ibctesting.TestingApp, map[string]json.RawMessage
 
 func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
-	path.EndpointA.ChannelConfig.PortID = types.PortID
-	path.EndpointB.ChannelConfig.PortID = types.PortID
-	path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
-	path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
+	path.EndpointA.ChannelConfig.PortID = ibctesting.TransferPort
+	path.EndpointB.ChannelConfig.PortID = ibctesting.TransferPort
+	//path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
+	//path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
 	path.EndpointA.ChannelConfig.Version = types.V1
 	path.EndpointB.ChannelConfig.Version = types.V1
 
-	trustingPeriodFraction := 0.66
-	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointA.Chain.GetContext())
-	if err != nil {
-		panic(err)
-	}
-	UnbondingPeriodA := paramsA.UnbondingTime
-	trustingA := time.Duration(float64(UnbondingPeriodA.Nanoseconds()) * trustingPeriodFraction)
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodA
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingA
-
-	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointB.Chain.GetContext())
-	if err != nil {
-		panic(err)
-	}
-	UnbondingPeriodB := paramsB.UnbondingTime
-	trustingB := time.Duration(float64(UnbondingPeriodB.Nanoseconds()) * trustingPeriodFraction)
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodB
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingB
+	//trustingPeriodFraction := 0.66
+	//paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointA.Chain.GetContext())
+	//if err != nil {
+	//	panic(err)
+	//}
+	//UnbondingPeriodA := paramsA.UnbondingTime
+	//trustingA := time.Duration(float64(UnbondingPeriodA.Nanoseconds()) * trustingPeriodFraction)
+	//path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodA
+	//path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingA
+	//
+	//paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointB.Chain.GetContext())
+	//if err != nil {
+	//	panic(err)
+	//}
+	//UnbondingPeriodB := paramsB.UnbondingTime
+	//trustingB := time.Duration(float64(UnbondingPeriodB.Nanoseconds()) * trustingPeriodFraction)
+	//path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodB
+	//path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingB
 
 	return path
 }
 
-// SetupTransferPath
 func SetupTransferPath(path *ibctesting.Path) error {
-	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointA.Chain.GetContext())
-	channelSequenceB := path.EndpointB.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointB.Chain.GetContext())
+	//channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointA.Chain.GetContext())
+	//channelSequenceB := path.EndpointB.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointB.Chain.GetContext())
 
 	// update port/channel ids
-	path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
-	path.EndpointB.ChannelID = channeltypes.FormatChannelIdentifier(channelSequenceB)
+	//path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
+	//path.EndpointB.ChannelID = channeltypes.FormatChannelIdentifier(channelSequenceB)
+	//path.EndpointA.ChannelConfig.PortID = types.PortID
 
+	//fmt.Printf("ChanOpenInit\n")
 	if err := path.EndpointA.ChanOpenInit(); err != nil {
 		return err
 	}
-
+	//fmt.Printf("ChanOpenTry\n")
 	if err := path.EndpointB.ChanOpenTry(); err != nil {
 		return err
 	}
 
+	//path.EndpointA.Chain.NextBlock()
+	//path.EndpointA.UpdateClient()
+	//path.EndpointB.UpdateClient()
+	//fmt.Printf("ChanOpenAck\n")
 	if err := path.EndpointA.ChanOpenAck(); err != nil {
 		return err
 	}
+	//fmt.Printf("ChanOpenConfirm\n")
+	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
+		return err
+	}
 
-	return path.EndpointB.ChanOpenConfirm()
+	if err := path.EndpointA.UpdateClient(); err != nil {
+		return err
+	}
+	if err := path.EndpointB.UpdateClient(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // SendMsgsNoCheck is an alternative to ibctesting.TestChain.SendMsgs so that it doesn't check for errors. That should be handled by the caller

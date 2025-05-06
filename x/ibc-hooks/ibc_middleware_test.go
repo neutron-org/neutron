@@ -121,7 +121,7 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		Memo:     memo,
 	}
 
-	return channeltypes.NewPacket(
+	packet := channeltypes.NewPacket(
 		packetData.GetBytes(),
 		prevSequence+1,
 		suite.TransferPath.EndpointB.ChannelConfig.PortID,
@@ -131,6 +131,8 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		clienttypes.NewHeight(1, 150),
 		0,
 	)
+	//fmt.Printf("\nMock packet: %+v\n\n", packet)
+	return packet
 }
 
 func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
@@ -140,8 +142,9 @@ func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
 func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, prevSequence uint64) []byte {
 	packet := suite.makeMockPacket(receiver, memo, prevSequence)
 
+	// somewhere here should be send to escrow
 	seqID, err := suite.GetNeutronZoneApp(suite.ChainB).HooksICS4Wrapper.SendPacket(
-		suite.ChainB.GetContext(), suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
+		suite.ChainB.GetContext(), suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
 	suite.Require().NoError(err, "IBC send failed. Expected success. %s", err)
 	suite.Require().Equal(prevSequence+1, seqID)
 
@@ -160,7 +163,7 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 	suite.Require().NoError(err)
 
 	// manually send the acknowledgement to chain b
-	err = suite.TransferPath.EndpointA.AcknowledgePacket(packet, ack)
+	err = suite.TransferPath.EndpointB.AcknowledgePacket(packet, ack)
 	suite.Require().NoError(err)
 	return ack
 }
