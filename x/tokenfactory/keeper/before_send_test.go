@@ -172,7 +172,7 @@ func (suite *KeeperTestSuite) TestBeforeSendHook() {
 				// to check this, we try triggering bank hooks via token factory keeper
 				for _, coin := range sendTc.msg(denom).Amount {
 					_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(coin.Denom, coin.Amount.Int64())))
-					if coin.Denom == denom && coin.Amount.Equal(math.NewInt(100)) {
+					if sendTc.desc == "sending 100 of factorydenom should error" {
 						suite.Require().Error(err, "test: %v", sendTc.desc)
 					}
 				}

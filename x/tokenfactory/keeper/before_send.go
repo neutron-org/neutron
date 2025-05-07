@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	types2 "cosmossdk.io/store/types"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
@@ -165,7 +165,7 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 
 			em := sdk.NewEventManager()
 
-			childCtx := c.WithGasMeter(types2.NewGasMeter(types.BeforeSendHookGasLimit))
+			childCtx := c.WithGasMeter(storetypes.NewGasMeter(types.BeforeSendHookGasLimit))
 			_, err = k.contractKeeper.Sudo(childCtx.WithEventManager(em), cwAddr, msgBz)
 			if err != nil {
 				return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
