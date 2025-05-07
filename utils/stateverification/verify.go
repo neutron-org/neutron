@@ -29,7 +29,6 @@ func VerifyStorageValues(stValues []*types.StorageValue, root exported.Root, pro
 			}
 		}
 
-		// TODO: check
 		path := ibccommitmenttypes.NewMerklePath([]byte(value.StoragePrefix), value.Key)
 		// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
 		// and call corresponding method to verify it

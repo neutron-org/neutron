@@ -132,7 +132,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 					Proof:         resp.ProofOps,
 					Value:         resp.Value,
 					StoragePrefix: "kekekek",
-				}}, resp.Height, fmt.Errorf("Please ensure the path and value are both correct.") //nolint:revive
+				}}, resp.Height, fmt.Errorf("provided key doesn't match proof") //nolint:revive
 			},
 		},
 	}
