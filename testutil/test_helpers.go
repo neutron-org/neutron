@@ -109,15 +109,8 @@ func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB)
 
-	//suite.TransferPath.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
-	//suite.TransferPath.EndpointA.ChannelConfig.PortID = ibctesting.TransferPort
-	//suite.TransferPath.EndpointB.ChannelConfig.PortID = ibctesting.TransferPort
-	//suite.TransferPath.Setup()
 	suite.TransferPath.SetupConnections()
-	//suite.TransferPath.CreateChannels()
-	//suite.TransferPath.SetupConnections()
 	err := SetupTransferPath(suite.TransferPath)
-	//fmt.Printf("EndpointA.ChannelID: %+v\nEndpointB.ChannelID: %+v", suite.TransferPath.EndpointA.ChannelID, suite.TransferPath.EndpointB.ChannelID)
 	suite.Require().NoError(err)
 }
 
@@ -347,35 +340,18 @@ func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 }
 
 func SetupTransferPath(path *ibctesting.Path) error {
-	//channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointA.Chain.GetContext())
-	//channelSequenceB := path.EndpointB.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointB.Chain.GetContext())
-
-	// update port/channel ids
-	//path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
-	//path.EndpointB.ChannelID = channeltypes.FormatChannelIdentifier(channelSequenceB)
-	//path.EndpointA.ChannelConfig.PortID = types.PortID
-
-	//fmt.Printf("ChanOpenInit\n")
 	if err := path.EndpointA.ChanOpenInit(); err != nil {
 		return err
 	}
-	//fmt.Printf("ChanOpenTry\n")
 	if err := path.EndpointB.ChanOpenTry(); err != nil {
 		return err
 	}
-
-	//path.EndpointA.Chain.NextBlock()
-	//path.EndpointA.UpdateClient()
-	//path.EndpointB.UpdateClient()
-	//fmt.Printf("ChanOpenAck\n")
 	if err := path.EndpointA.ChanOpenAck(); err != nil {
 		return err
 	}
-	//fmt.Printf("ChanOpenConfirm\n")
 	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
 		return err
 	}
-
 	if err := path.EndpointA.UpdateClient(); err != nil {
 		return err
 	}

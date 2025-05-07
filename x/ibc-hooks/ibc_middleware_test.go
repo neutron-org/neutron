@@ -89,8 +89,6 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 			ack := suite.GetNeutronZoneApp(suite.ChainB).TransferStack.
 				OnRecvPacket(suite.ChainB.GetContext(), transfertypes.V1, packet, suite.ChainA.SenderAccount.GetAddress())
 
-			fmt.Printf("\n\nAck: %+v", string(ack.Acknowledgement()))
-
 			if tc.expPass {
 				suite.Require().True(ack.Success())
 			} else {
@@ -133,7 +131,6 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		clienttypes.NewHeight(1, 150),
 		0,
 	)
-	//fmt.Printf("\nMock packet: %+v\n\n", packet)
 	return packet
 }
 
