@@ -199,6 +199,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 			Funds:    sdk.NewCoins(),
 		}
 		_, err := k.WasmMsgServer.ExecuteContract(cacheCtx, &executeMsg)
+		telemetry.ModuleMeasureSince(types.ModuleName, startTimeContract, LabelExecuteCronContract, schedule.Name, msg.Contract)
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
@@ -209,7 +210,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 			)
 			return err
 		}
-		defer telemetry.ModuleMeasureSince(types.ModuleName, startTimeContract, LabelExecuteCronContract, schedule.Name, msg.Contract)
+
 	}
 
 	// only save state if all the messages in a schedule were executed successfully
