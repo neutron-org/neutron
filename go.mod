@@ -26,7 +26,6 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 v10.1.0
-	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/v10 v10.1.1
 	github.com/cosmos/ics23/go v0.11.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0
@@ -94,6 +93,7 @@ require (
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/iavl v1.2.4 // indirect
+	github.com/cosmos/ibc-go/modules/capability v1.0.1 // indirect
 	github.com/cosmos/interchain-security/v7 v7.0.1 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.14.0 // indirect
 	github.com/danieljoos/wincred v1.2.1 // indirect

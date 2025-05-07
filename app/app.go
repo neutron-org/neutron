@@ -774,7 +774,7 @@ func New(
 		app.GRPCQueryRouter(),
 		wasmDir,
 		nodeConfig,
-		wasmtypes.VMConfig{}, // TODO: configure?
+		wasmtypes.VMConfig{},
 		// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
 		// however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
 		append(wasmkeeper.BuiltInCapabilities(), "neutron"),
@@ -1684,6 +1684,6 @@ func (app *App) WireICS20PreWasmKeeper(
 
 	// Hooks Middleware
 	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
-	
+
 	app.TransferStack = &hooksTransferModule
 }

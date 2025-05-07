@@ -2,7 +2,6 @@ package v700
 
 import (
 	storetypes "cosmossdk.io/store/types"
-
 	"github.com/neutron-org/neutron/v7/app/upgrades"
 	stateverifier "github.com/neutron-org/neutron/v7/x/state-verifier/types"
 )
@@ -23,6 +22,7 @@ var Upgrade = upgrades.Upgrade{
 		Deleted: []string{
 			"ccvconsumer",
 			"auction",
+			"capability",
 		},
 	},
 }
