@@ -37,7 +37,10 @@ func (k Keeper) createDenomAfterValidation(ctx sdk.Context, creatorAddr, denom s
 				Denom:    denom,
 				Exponent: 0,
 			}},
-			Base: denom,
+			Base:    denom,
+			Name:    denom,
+			Symbol:  denom,
+			Display: denom,
 		}
 
 		k.bankKeeper.SetDenomMetaData(ctx, denomMetaData)
