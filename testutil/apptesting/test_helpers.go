@@ -12,7 +12,7 @@ import (
 	"github.com/neutron-org/neutron/v7/app"
 )
 
-// NewAppConstructor returns a new Osmosis app given encoding type configs.
+// NewAppConstructor returns a new Neutron app given encoding type configs.
 func NewAppConstructor(chainID string) network.AppConstructor {
 	return func(val network.ValidatorI) servertypes.Application {
 		valCtx := val.GetCtx()

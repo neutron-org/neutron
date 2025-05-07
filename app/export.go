@@ -2,9 +2,8 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	tmtypes "github.com/cometbft/cometbft/types"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -39,16 +38,13 @@ func (app *App) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := app.GetValidatorSet(ctx)
-	if err != nil {
-		return servertypes.ExportedApp{}, err
-	}
+	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
 	return servertypes.ExportedApp{
 		AppState:        appState,
 		Validators:      validators,
 		Height:          height,
 		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
-	}, nil
+	}, err
 }
 
 // prepare for fresh start at zero height
@@ -81,25 +77,4 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, _ []string) error {
 			return false
 		},
 	)
-}
-
-// GetValidatorSet returns a slice of bonded validators.
-func (app *App) GetValidatorSet(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
-	cVals, err := app.StakingKeeper.GetAllValidators(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if len(cVals) == 0 {
-		return nil, fmt.Errorf("empty validator set")
-	}
-
-	vals := []tmtypes.GenesisValidator{}
-	for _, v := range cVals {
-		pk, err := v.ConsPubKey()
-		if err != nil {
-			return nil, err
-		}
-		vals = append(vals, tmtypes.GenesisValidator{Address: pk.Address(), Power: v.GetConsensusPower(app.StakingKeeper.PowerReduction(ctx))})
-	}
-	return vals, nil
 }
