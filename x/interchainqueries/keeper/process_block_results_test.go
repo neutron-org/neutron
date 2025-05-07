@@ -182,11 +182,11 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 				clientID := suite.Path.EndpointA.ClientID
 				CommitBlock(suite.Coordinator, suite.ChainB)
-				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
+				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointA.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				CommitBlock(suite.Coordinator, suite.ChainB)
-				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
+				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointA.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), *suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
@@ -201,14 +201,14 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				clientID := suite.Path.EndpointA.ClientID
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
+				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointA.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				// skip one block to set nextHeader's height + 2
 				CommitBlock(suite.Coordinator, suite.ChainB)
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
+				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointA.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), *suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
@@ -224,14 +224,14 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				CommitBlock(suite.Coordinator, suite.ChainB)
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
+				header, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointA.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
 				header.SignedHeader.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
 
-				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointB.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
+				nextHeader, err := suite.Path.EndpointA.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointA.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)
 
 				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), *suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)

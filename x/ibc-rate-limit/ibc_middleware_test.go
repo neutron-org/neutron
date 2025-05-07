@@ -354,6 +354,9 @@ func (suite *MiddlewareTestSuite) TestSendTransferReset() {
 	oneSecAfterReset := resetTime.Add(time.Second)
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
 
+	// Move chainA forward one block
+	suite.ChainA.NextBlock()
+
 	// Sending should succeed again
 	_, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
 	suite.Require().NoError(err)
@@ -373,13 +376,10 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 
 	// This is the first one. Inside the tests. It works as expected.
 	channelValue := CalculateChannelValue(suite.ChainA.GetContext(), denom, app.BankKeeper)
-	fmt.Printf("\nchannel value: %+v\n", channelValue)
 
 	// The amount to be sent is 2% (weekly quota is 4%, daily is 2%)
 	quota := channelValue.QuoRaw(int64(100 / quotaPercentage))
-	sendAmount := quota.QuoRaw(2).Sub(sdkmath.NewInt(1))
-	fmt.Printf("\nquota: %+v\n", quota)
-	fmt.Printf("\nsend amount: %+v\n", sendAmount)
+	sendAmount := quota.QuoRaw(2)
 
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
@@ -419,8 +419,11 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	suite.ChainA.NextBlock()
 
 	// Reset time + one second
-	oneSecAfterReset := resetTime.Add(time.Second)
+	oneSecAfterReset := resetTime.Add(time.Hour)
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
+	suite.ChainA.NextBlock()
+
+	suite.ChainA.ProposedHeader.Time = suite.Coordinator.CurrentTime.UTC()
 
 	// Sending should succeed again. It hits daily quota for the second time & weekly quota at the same time
 	r, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sendAmount))
@@ -451,6 +454,11 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	oneSecAfterResetDayTwo := resetTime.Add(time.Second)
 	// Now we're waiting for the second 'day' to expire
 	suite.Coordinator.IncrementTimeBy(oneSecAfterResetDayTwo.Sub(suite.Coordinator.CurrentTime))
+	//
+	//for _, chain := range suite.Coordinator.Chains {
+	//	chain.LatestCommittedHeader.Header.Time = suite.Coordinator.CurrentTime
+	//}
+	suite.ChainA.NextBlock()
 
 	// Sending should fail. Daily quota is refreshed but weekly is over
 	_, err = suite.AssertSend(false, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
