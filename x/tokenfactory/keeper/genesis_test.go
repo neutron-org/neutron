@@ -59,7 +59,8 @@ func (suite *KeeperTestSuite) TestGenesis() {
 	suite.Require().Equal(genesisState, *exportedGenesis)
 
 	// verify that the exported bank genesis is valid
-	app.BankKeeper.SetParams(context, banktypes.DefaultParams())
+	err = app.BankKeeper.SetParams(context, banktypes.DefaultParams())
+	suite.Require().NoError(err)
 	exportedBankGenesis := app.BankKeeper.ExportGenesis(context)
 	suite.Require().NoError(exportedBankGenesis.Validate())
 
