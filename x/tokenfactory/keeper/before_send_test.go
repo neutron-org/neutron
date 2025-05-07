@@ -167,6 +167,15 @@ func (suite *KeeperTestSuite) TestBeforeSendHook() {
 				} else {
 					suite.Require().Error(err, "test: %v", sendTc.desc)
 				}
+
+				// this is a check to ensure bank keeper wired in token factory keeper has hooks properly set
+				// to check this, we try triggering bank hooks via token factory keeper
+				for _, coin := range sendTc.msg(denom).Amount {
+					_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(coin.Denom, coin.Amount.Int64())))
+					if coin.Denom == denom && coin.Amount.Equal(math.NewInt(100)) {
+						suite.Require().Error(err, "test: %v", sendTc.desc)
+					}
+				}
 			}
 		})
 	}
