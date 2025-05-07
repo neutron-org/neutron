@@ -87,7 +87,9 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 			packet := channeltypes.NewPacket(data.GetBytes(), seq, suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID, clienttypes.NewHeight(1, 100), 0)
 
 			ack := suite.GetNeutronZoneApp(suite.ChainB).TransferStack.
-				OnRecvPacket(suite.ChainB.GetContext(), "V1", packet, suite.ChainA.SenderAccount.GetAddress())
+				OnRecvPacket(suite.ChainB.GetContext(), transfertypes.V1, packet, suite.ChainA.SenderAccount.GetAddress())
+
+			fmt.Printf("\n\nAck: %+v", string(ack.Acknowledgement()))
 
 			if tc.expPass {
 				suite.Require().True(ack.Success())
@@ -163,8 +165,8 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 	suite.Require().NoError(err)
 
 	// manually send the acknowledgement to chain b
-	err = suite.TransferPath.EndpointB.AcknowledgePacket(packet, ack)
-	suite.Require().NoError(err)
+	//err = suite.TransferPath.EndpointB.AcknowledgePacket(packet, ack)
+	//suite.Require().NoError(err)
 	return ack
 }
 

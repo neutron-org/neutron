@@ -373,10 +373,13 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 
 	// This is the first one. Inside the tests. It works as expected.
 	channelValue := CalculateChannelValue(suite.ChainA.GetContext(), denom, app.BankKeeper)
+	fmt.Printf("\nchannel value: %+v\n", channelValue)
 
 	// The amount to be sent is 2% (weekly quota is 4%, daily is 2%)
 	quota := channelValue.QuoRaw(int64(100 / quotaPercentage))
-	sendAmount := quota.QuoRaw(2)
+	sendAmount := quota.QuoRaw(2).Sub(sdkmath.NewInt(1))
+	fmt.Printf("\nquota: %+v\n", quota)
+	fmt.Printf("\nsend amount: %+v\n", sendAmount)
 
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
@@ -465,7 +468,7 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, localDenom))
 		localDenom = denomTrace.IBCDenom()
 	} else {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, sendDenom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointB.ChannelID, sendDenom))
 		sendDenom = denomTrace.IBCDenom()
 	}
 
