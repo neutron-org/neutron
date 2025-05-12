@@ -304,7 +304,7 @@ func (ac appCreator) newApp(
 		baseapp.SetChainID(chainID),
 	}
 
-	if isEnabled, err := cast.ToBoolE(appOpts.Get(server.FlagOptimisticExecutionEnabled)); err == nil && isEnabled {
+	if isEnabled := cast.ToBool(appOpts.Get(server.FlagOptimisticExecutionEnabled)); isEnabled {
 		logger.Info("Optimistic execution enabled")
 		baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution())
 	} else {
