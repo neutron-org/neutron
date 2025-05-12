@@ -10,7 +10,6 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v7/testutil"
@@ -19,9 +18,9 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
@@ -355,6 +354,9 @@ func (suite *MiddlewareTestSuite) TestSendTransferReset() {
 	oneSecAfterReset := resetTime.Add(time.Second)
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
 
+	// Move chainA forward one block
+	suite.ChainA.NextBlock()
+
 	// Sending should succeed again
 	_, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
 	suite.Require().NoError(err)
@@ -417,8 +419,11 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	suite.ChainA.NextBlock()
 
 	// Reset time + one second
-	oneSecAfterReset := resetTime.Add(time.Second)
+	oneSecAfterReset := resetTime.Add(time.Hour)
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
+	suite.ChainA.NextBlock()
+
+	suite.ChainA.ProposedHeader.Time = suite.Coordinator.CurrentTime.UTC()
 
 	// Sending should succeed again. It hits daily quota for the second time & weekly quota at the same time
 	r, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sendAmount))
@@ -449,6 +454,11 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	oneSecAfterResetDayTwo := resetTime.Add(time.Second)
 	// Now we're waiting for the second 'day' to expire
 	suite.Coordinator.IncrementTimeBy(oneSecAfterResetDayTwo.Sub(suite.Coordinator.CurrentTime))
+	//
+	//for _, chain := range suite.Coordinator.Chains {
+	//	chain.LatestCommittedHeader.Header.Time = suite.Coordinator.CurrentTime
+	//}
+	suite.ChainA.NextBlock()
 
 	// Sending should fail. Daily quota is refreshed but weekly is over
 	_, err = suite.AssertSend(false, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
@@ -466,7 +476,7 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, localDenom))
 		localDenom = denomTrace.IBCDenom()
 	} else {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, sendDenom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointB.ChannelID, sendDenom))
 		sendDenom = denomTrace.IBCDenom()
 	}
 
@@ -630,7 +640,7 @@ func (suite *MiddlewareTestSuite) TestNonICS20() {
 	suite.RegisterRateLimitingContract(addr)
 
 	data := []byte("{}")
-	_, err := app.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), capabilitytypes.NewCapability(1), "wasm.neutron1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
+	_, err := app.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), "wasm.neutron1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
 
 	suite.Require().Error(err)
 	// This will error out, but not because of rate limiting

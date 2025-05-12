@@ -9,9 +9,9 @@ import (
 	"github.com/neutron-org/neutron/v7/x/ibc-hooks/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
 // NewEmitErrorAcknowledgement creates a new error acknowledgement after having emitted an event with the
@@ -43,6 +43,7 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 	}
 
 	var denom string
+	// TODO
 	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		// remove prefix added by sender chain
 		voucherPrefix := transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
@@ -54,13 +55,15 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 
 		// The denomination used to send the coins is either the native denom or the hash of the path
 		// if the denomination is not native.
-		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
-		if denomTrace.Path != "" {
+		denomTrace := transfertypes.ExtractDenomFromPath(unprefixedDenom)
+		if denomTrace.Path() != "" {
 			denom = denomTrace.IBCDenom()
 		}
 	} else {
+		// TODO
+		//transfertypes.NewHop().String()
 		prefixedDenom := transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom
-		denom = transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
+		denom = transfertypes.ExtractDenomFromPath(prefixedDenom).IBCDenom()
 	}
 	return denom
 }
