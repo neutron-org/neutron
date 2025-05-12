@@ -7,19 +7,20 @@ import (
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/testutil/apptesting"
-	"github.com/neutron-org/neutron/v6/testutil/common/sample"
-	testkeeper "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v6/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v7/testutil/apptesting"
+	"github.com/neutron-org/neutron/v7/testutil/common/sample"
+	testkeeper "github.com/neutron-org/neutron/v7/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v7/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v7/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 // Test suite
@@ -1532,6 +1533,11 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 
 func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
 	s.Ctx = s.Ctx.WithBlockTime(blockTime)
+	// fill in empty CometBFT info just to avoid nil pointer panics (we don't care about validity of the info in these tests)
+	s.Ctx = s.Ctx.WithCometInfo(baseapp.NewBlockInfo(nil, nil, nil, abci.CommitInfo{
+		Round: 0,
+		Votes: nil,
+	}))
 	_, err := s.App.BeginBlocker(s.Ctx)
 	s.NoError(err)
 }

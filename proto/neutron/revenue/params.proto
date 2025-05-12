@@ -5,7 +5,7 @@ import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/revenue/types";
+option go_package = "github.com/neutron-org/neutron/v7/x/revenue/types";
 
 // Defines the parameters for the module.
 message Params {

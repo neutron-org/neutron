@@ -27,5 +27,5 @@ done
 cd ..
 
 # move proto files to the right places
-cp -r github.com/neutron-org/neutron/v6/x/* x/
+cp -r github.com/neutron-org/neutron/v7/x/* x/
 rm -rf github.com

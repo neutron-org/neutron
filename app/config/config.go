@@ -1,6 +1,8 @@
 package config
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 const (
 	// Bech32MainPrefix defines the main SDK Bech32 prefix of an account's address

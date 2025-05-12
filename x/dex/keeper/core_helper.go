@@ -1,14 +1,15 @@
 package keeper
 
 import (
+	"slices"
+
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"golang.org/x/exp/slices"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
-	"github.com/neutron-org/neutron/v6/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v7/x/dex/utils"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

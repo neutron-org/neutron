@@ -2,6 +2,7 @@ package dex_state_test
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
 	"time"
 
@@ -11,11 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v6/testutil/apptesting"
-	"github.com/neutron-org/neutron/v6/testutil/common/sample"
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v7/testutil/apptesting"
+	"github.com/neutron-org/neutron/v7/testutil/common/sample"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v7/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 // Constants //////////////////////////////////////////////////////////////////
@@ -409,17 +410,6 @@ func (s *DexStateTestSuite) SetupTest() {
 	s.msgServer = dexkeeper.NewMsgServerImpl(s.App.DexKeeper)
 }
 
-func cloneMap(original map[string]string) map[string]string {
-	// Create a new map
-	cloned := make(map[string]string)
-	// Copy each key-value pair from the original map to the new map
-	for key, value := range original {
-		cloned[key] = value
-	}
-
-	return cloned
-}
-
 type testParams struct {
 	field  string
 	states []string
@@ -439,7 +429,7 @@ func generatePermutations(testStates []testParams) []map[string]string {
 		// Iterate through all possible values and create new states
 		for _, value := range testStates[index].states {
 			fieldName := testStates[index].field
-			temp := cloneMap(current)
+			temp := maps.Clone(current)
 			temp[fieldName] = value
 			generate(index+1, temp)
 		}

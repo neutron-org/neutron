@@ -6,8 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
-	"github.com/neutron-org/neutron/v6/x/revenue/keeper"
-	"github.com/neutron-org/neutron/v6/x/revenue/types"
+	"github.com/neutron-org/neutron/v7/x/revenue/keeper"
+	"github.com/neutron-org/neutron/v7/x/revenue/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

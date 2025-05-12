@@ -7,8 +7,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 // Core tests w/ GTC limitOrders //////////////////////////////////////////////
