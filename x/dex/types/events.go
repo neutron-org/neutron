@@ -30,7 +30,7 @@ const (
 	AttributeTickIndex            = "TickIndex"
 	AttributeFee                  = "Fee"
 	AttributeTrancheKey           = "TrancheKey"
-	AttributePoolId               = "PoolId"
+	AttributePoolID               = "PoolID"
 	AttributeSharesMinted         = "SharesMinted"
 	AttributeReserves0Deposited   = "ReservesZeroDeposited"
 	AttributeReserves1Deposited   = "ReservesOneDeposited"
@@ -91,7 +91,7 @@ func CreateDepositEvent(
 	depositAmountReserve1 math.Int,
 	amountIn0 math.Int,
 	amountIn1 math.Int,
-	poolId uint64,
+	poolID uint64,
 	sharesMinted math.Int,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -105,7 +105,7 @@ func CreateDepositEvent(
 		sdk.NewAttribute(AttributeFee, strconv.FormatUint(fee, 10)),
 		sdk.NewAttribute(AttributeReserves0Deposited, depositAmountReserve0.String()),
 		sdk.NewAttribute(AttributeReserves1Deposited, depositAmountReserve1.String()),
-		sdk.NewAttribute(AttributePoolId, strconv.FormatUint(poolId, 10)),
+		sdk.NewAttribute(AttributePoolID, strconv.FormatUint(poolID, 10)),
 		sdk.NewAttribute(AttributeSharesMinted, sharesMinted.String()),
 		sdk.NewAttribute(AttributeAmountIn0, amountIn0.String()),
 		sdk.NewAttribute(AttributeAmountIn1, amountIn1.String()),
@@ -123,7 +123,7 @@ func CreateWithdrawEvent(
 	fee uint64,
 	withdrawAmountReserve0 math.Int,
 	withdrawAmountReserve1 math.Int,
-	poolId uint64,
+	poolID uint64,
 	sharesRemoved math.Int,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -137,7 +137,7 @@ func CreateWithdrawEvent(
 		sdk.NewAttribute(AttributeFee, strconv.FormatUint(fee, 10)),
 		sdk.NewAttribute(AttributeReserves0Withdrawn, withdrawAmountReserve0.String()),
 		sdk.NewAttribute(AttributeReserves1Withdrawn, withdrawAmountReserve1.String()),
-		sdk.NewAttribute(AttributePoolId, strconv.FormatUint(poolId, 10)),
+		sdk.NewAttribute(AttributePoolID, strconv.FormatUint(poolID, 10)),
 		sdk.NewAttribute(AttributeSharesRemoved, sharesRemoved.String()),
 	}
 
