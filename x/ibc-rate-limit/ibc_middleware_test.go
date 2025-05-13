@@ -419,7 +419,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	suite.ChainA.NextBlock()
 
 	// Reset time + one second
-	oneSecAfterReset := resetTime.Add(time.Hour)
+	oneSecAfterReset := resetTime.Add(time.Second)
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
 	suite.ChainA.NextBlock()
 
@@ -454,10 +454,6 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	oneSecAfterResetDayTwo := resetTime.Add(time.Second)
 	// Now we're waiting for the second 'day' to expire
 	suite.Coordinator.IncrementTimeBy(oneSecAfterResetDayTwo.Sub(suite.Coordinator.CurrentTime))
-	//
-	//for _, chain := range suite.Coordinator.Chains {
-	//	chain.LatestCommittedHeader.Header.Time = suite.Coordinator.CurrentTime
-	//}
 	suite.ChainA.NextBlock()
 
 	// Sending should fail. Daily quota is refreshed but weekly is over

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/neutron-org/neutron/v7/app/upgrades/nextupgrade"
 	v700 "github.com/neutron-org/neutron/v7/app/upgrades/v7.0.0"
 	"io"
 	"io/fs"
@@ -231,6 +232,7 @@ var (
 	Upgrades = []upgrades.Upgrade{
 		v601.Upgrade,
 		v700.Upgrade,
+		nextupgrade.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
@@ -609,7 +611,7 @@ func New(
 		runtime.NewKVStoreService(keys[icacontrollertypes.StoreKey]),
 		app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper, // TODO: correct? removed port keeper here
+		app.IBCKeeper.ChannelKeeper,
 		app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -622,7 +624,7 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		app.AccountKeeper,
 		app.MsgServiceRouter(),
-		app.GRPCQueryRouter(), // TODO: correct?
+		app.GRPCQueryRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -670,7 +672,7 @@ func New(
 	wasmDir := filepath.Join(homePath, "wasm")
 	nodeConfig, err := wasm.ReadNodeConfig(appOpts)
 	if err != nil {
-		panic(fmt.Sprintf("error while reading wasm config: %s", err))
+		panic(fmt.Sprintf("error while reading wasm node config: %s", err))
 	}
 
 	// register the proposal types
@@ -802,9 +804,8 @@ func New(
 	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
 
 	var icaControllerStack ibcporttypes.IBCModule
-
 	icaControllerStack = interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
-	// TODO: is this correct? what does it do?
+	// TODO: review it
 	icaControllerStack = icacontroller.NewIBCMiddlewareWithAuth(icaControllerStack, app.ICAControllerKeeper)
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
@@ -1684,6 +1685,5 @@ func (app *App) WireICS20PreWasmKeeper(
 
 	// Hooks Middleware
 	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
-
 	app.TransferStack = &hooksTransferModule
 }

@@ -20,7 +20,6 @@ import (
 )
 
 var (
-	// TODO: why we check against IBCModule here?
 	_ porttypes.Middleware  = &IBCModule{}
 	_ porttypes.ICS4Wrapper = &ICS4Wrapper{}
 )

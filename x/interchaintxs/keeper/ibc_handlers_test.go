@@ -47,11 +47,12 @@ func TestHandleAcknowledgement(t *testing.T) {
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
+	channelVersion := "ica-v1"
 
-	err = icak.HandleAcknowledgement(ctx, channeltypes.Packet{}, nil, relayerAddress)
+	err = icak.HandleAcknowledgement(ctx, channelVersion, channeltypes.Packet{}, nil, relayerAddress)
 	require.ErrorContains(t, err, "failed to get ica owner from port")
 
-	err = icak.HandleAcknowledgement(ctx, p, nil, relayerAddress)
+	err = icak.HandleAcknowledgement(ctx, channelVersion, p, nil, relayerAddress)
 	require.ErrorContains(t, err, "cannot unmarshal ICS-27 packet acknowledgement")
 
 	msgAck, err := keeper.PrepareSudoCallbackMessage(p, &resACK)
@@ -61,14 +62,14 @@ func TestHandleAcknowledgement(t *testing.T) {
 	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck)
-	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
+	err = icak.HandleAcknowledgement(ctx, channelVersion, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 
 	// error contract SudoResponse
 	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("error sudoResponse"))
-	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
+	err = icak.HandleAcknowledgement(ctx, channelVersion, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 }
 
@@ -90,25 +91,26 @@ func TestHandleTimeout(t *testing.T) {
 		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId,
 		SourceChannel: "channel-0",
 	}
+	channelVersion := "ica-v1"
 
 	msgAck, err := keeper.PrepareSudoCallbackMessage(p, nil)
 	require.NoError(t, err)
 
-	err = icak.HandleTimeout(ctx, channeltypes.Packet{}, relayerAddress)
+	err = icak.HandleTimeout(ctx, channelVersion, channeltypes.Packet{}, relayerAddress)
 	require.ErrorContains(t, err, "failed to get ica owner from port")
 
 	// contract success
 	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck)
-	err = icak.HandleTimeout(ctx, p, relayerAddress)
+	err = icak.HandleTimeout(ctx, channelVersion, p, relayerAddress)
 	require.NoError(t, err)
 
 	// contract error
 	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("SudoTimeout error"))
-	err = icak.HandleTimeout(ctx, p, relayerAddress)
+	err = icak.HandleTimeout(ctx, channelVersion, p, relayerAddress)
 	require.NoError(t, err)
 }
 

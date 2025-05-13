@@ -104,7 +104,6 @@ func (im IBCModule) OnRecvPacket(
 	return channeltypes.NewErrorAcknowledgement(errors.New("cannot receive packet via interchain accounts authentication module"))
 }
 
-// TODO: pass channel version to keeper.HandleAcknowledgement?
 // OnAcknowledgementPacket implements the IBCModule interface.
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
@@ -113,10 +112,9 @@ func (im IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
+	return im.keeper.HandleAcknowledgement(ctx, channelVersion, packet, acknowledgement, relayer)
 }
 
-// TODO: pass channel version to keeper.HandleTimeout?
 // OnTimeoutPacket implements the IBCModule interface.
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
@@ -124,5 +122,5 @@ func (im IBCModule) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleTimeout(ctx, packet, relayer)
+	return im.keeper.HandleTimeout(ctx, channelVersion, packet, relayer)
 }

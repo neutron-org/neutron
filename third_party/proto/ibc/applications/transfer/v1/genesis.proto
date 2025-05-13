@@ -13,7 +13,7 @@ import "gogoproto/gogo.proto";
 message GenesisState {
   string                              port_id = 1;
   repeated Denom                      denoms  = 2 [(gogoproto.castrepeated) = "Denoms", (gogoproto.nullable) = false];
-  ibc.applications.transfer.v1.Params params  = 3 [(gogoproto.nullable) = false];
+  Params params  = 3 [(gogoproto.nullable) = false];
   // total_escrowed contains the total amount of tokens escrowed
   // by the transfer module
   repeated cosmos.base.v1beta1.Coin total_escrowed = 4

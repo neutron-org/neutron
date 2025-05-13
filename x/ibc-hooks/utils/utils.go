@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/types/address"
 
@@ -43,12 +44,10 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 	}
 
 	var denom string
-	// TODO
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
+	voucherPrefix := transfertypes.NewHop(packet.GetSourcePort(), packet.GetSourceChannel()).String()
+	if strings.HasPrefix(data.Denom, voucherPrefix) {
 		// remove prefix added by sender chain
-		voucherPrefix := transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
-
-		unprefixedDenom := data.Denom[len(voucherPrefix):]
+		unprefixedDenom := data.Denom[len(voucherPrefix)+1:]
 
 		// coin denomination used in sending from the escrow address
 		denom = unprefixedDenom
@@ -60,9 +59,7 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 			denom = denomTrace.IBCDenom()
 		}
 	} else {
-		// TODO
-		//transfertypes.NewHop().String()
-		prefixedDenom := transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom
+		prefixedDenom := fmt.Sprintf("%s/%s", transfertypes.NewHop(packet.GetDestPort(), packet.GetDestChannel()).String(), data.Denom)
 		denom = transfertypes.ExtractDenomFromPath(prefixedDenom).IBCDenom()
 	}
 	return denom

@@ -101,15 +101,14 @@ func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
 	suite.TransferPathAC = NewTransferPath(suite.ChainA, suite.ChainC)
 	suite.TransferPathAC.SetupConnections()
 
-	//suite.TransferPathAC.SetupConnections()
 	err := SetupTransferPath(suite.TransferPathAC)
 	suite.Require().NoError(err)
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB)
-
 	suite.TransferPath.SetupConnections()
+
 	err := SetupTransferPath(suite.TransferPath)
 	suite.Require().NoError(err)
 }
@@ -312,29 +311,10 @@ func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
 	path.EndpointA.ChannelConfig.PortID = ibctesting.TransferPort
 	path.EndpointB.ChannelConfig.PortID = ibctesting.TransferPort
-	//path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
-	//path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
+	path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
+	path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
 	path.EndpointA.ChannelConfig.Version = types.V1
 	path.EndpointB.ChannelConfig.Version = types.V1
-
-	//trustingPeriodFraction := 0.66
-	//paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointA.Chain.GetContext())
-	//if err != nil {
-	//	panic(err)
-	//}
-	//UnbondingPeriodA := paramsA.UnbondingTime
-	//trustingA := time.Duration(float64(UnbondingPeriodA.Nanoseconds()) * trustingPeriodFraction)
-	//path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodA
-	//path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingA
-	//
-	//paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointB.Chain.GetContext())
-	//if err != nil {
-	//	panic(err)
-	//}
-	//UnbondingPeriodB := paramsB.UnbondingTime
-	//trustingB := time.Duration(float64(UnbondingPeriodB.Nanoseconds()) * trustingPeriodFraction)
-	//path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodB
-	//path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingB
 
 	return path
 }
@@ -375,7 +355,7 @@ func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain
 		}
 	}()
 
-	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.LatestCommittedHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
+	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.ProposedHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
 	if err != nil {
 		return nil, err
 	}
