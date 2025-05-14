@@ -141,7 +141,12 @@ func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
 func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, prevSequence uint64) []byte {
 	packet := suite.makeMockPacket(receiver, memo, prevSequence)
 
-	// somewhere here should be send to escrow
+	// Escrow manually for test purposes. This is needed because we don't call transfer.SendTransfer but HooksICS4Wrapper.SendPacket in this test.
+	// So that when transfer fails, and we call suite.TransferPath.EndpointB.AcknowledgePacket, there were some tokens to unescrow.
+	escrowAddress := transfertypes.GetEscrowAddress(suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID)
+	err := suite.GetNeutronZoneApp(suite.ChainB).TransferKeeper.EscrowCoin(suite.ChainB.GetContext(), suite.ChainB.SenderAccount.GetAddress(), escrowAddress, sdk.NewCoin("untrn", math.NewInt(1)))
+	suite.NoError(err)
+
 	seqID, err := suite.GetNeutronZoneApp(suite.ChainB).HooksICS4Wrapper.SendPacket(
 		suite.ChainB.GetContext(), suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
 	suite.Require().NoError(err, "IBC send failed. Expected success. %s", err)
@@ -162,8 +167,8 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 	suite.Require().NoError(err)
 
 	// manually send the acknowledgement to chain b
-	//err = suite.TransferPath.EndpointB.AcknowledgePacket(packet, ack)
-	//suite.Require().NoError(err)
+	err = suite.TransferPath.EndpointB.AcknowledgePacket(packet, ack)
+	suite.Require().NoError(err)
 	return ack
 }
 
