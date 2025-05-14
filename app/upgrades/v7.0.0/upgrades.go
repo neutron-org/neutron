@@ -57,7 +57,10 @@ func UpgradeDenomsMetadata(ctx sdk.Context, tk tokenfactorykeeper.Keeper, bk ban
 	for ; iterator.Valid(); iterator.Next() {
 		denom := string(iterator.Value())
 
-		metadata, _ := bk.GetDenomMetaData(ctx, denom)
+		metadata, found := bk.GetDenomMetaData(ctx, denom)
+		if !found {
+			continue
+		}
 
 		metadata.Name = denom
 		metadata.Symbol = denom
