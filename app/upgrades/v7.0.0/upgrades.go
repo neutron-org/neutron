@@ -59,6 +59,8 @@ func UpgradeDenomsMetadata(ctx sdk.Context, tk tokenfactorykeeper.Keeper, bk ban
 
 		metadata, found := bk.GetDenomMetaData(ctx, denom)
 		if !found {
+			ctx.Logger().Error(fmt.Sprintf("failed to get %s denom metadata", denom))
+
 			continue
 		}
 
