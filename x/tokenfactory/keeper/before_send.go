@@ -146,14 +146,12 @@ func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, fro
 	cacheCtx, writeFn := createCachedContext(ctx, types.BeforeSendHookGasLimit)
 
 	// get msgBz, either BlockBeforeSend or TrackBeforeSend
-	// Note that for trackBeforeSend, we need to gas meter computations to prevent infinite loop
-	// specifically because module to module sends are not gas metered.
-	// We don't need to do this for blockBeforeSend since blockBeforeSend is not called during module to module sends.
 	msgBz, err := k.constructCosmwasmMsg(blockBeforeSend, from, to, coin)
 	if err != nil {
 		return err, cacheCtx.GasMeter().GasConsumed()
 	}
 
+	// contain outOfGas recovery inside function to wrap potential err cleanly
 	func() {
 		defer outOfGasRecovery(cacheCtx.GasMeter(), &err)
 		_, err = k.contractKeeper.Sudo(cacheCtx.WithEventManager(sdk.NewEventManager()), cwAddr, msgBz)
@@ -213,28 +211,3 @@ func outOfGasRecovery(
 		*err = errorsmod.Wrapf(types.ErrBeforeSendHookOutOfGas, "%v", r)
 	}
 }
-
-// returning error from this will:
-// - in blockBeforeSend - return error.
-// - in trackBeforeSend - ignored
-
-// out of gas exception from this will:
-// - in both - panic - recover - return error
-// then behaviour A anyways
-
-// potential problems now
-// - track before send on out of gas panic will skip error anyways, that is strange
-
-// what do we need ideally
-// - gas always consumed in block and track (err or no err)
-// - contract state is recovered - that means that we use child context and write only if no errors and gas problems
-// - on error block cancels tx, track ignores it
-// - on inner out of gas we return err and DO NOT propagate outOfGas
-// - on outer out of gas we DO propagate outOfGas as normal
-
-// i don't like the idea of using contract manager Sudo call because
-// it will store failure. And we have no intention of calling this after err, especially on blockBeforeSend.
-// (because blockBeforeSend failure is not a failure, it's a block for send transaction.
-
-// where can beforeSend be called from?
-// what if it's called not from tx, but from other begin/endblock or something else?
