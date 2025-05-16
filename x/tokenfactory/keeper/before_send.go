@@ -2,9 +2,8 @@ package keeper
 
 import (
 	"context"
-	"encoding/json"
-
 	storetypes "cosmossdk.io/store/types"
+	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
@@ -101,16 +100,9 @@ func (h Hooks) BlockBeforeSend(ctx context.Context, from, to sdk.AccAddress, amo
 
 // callBeforeSendListener iterates over each coin and sends corresponding sudo msg to the contract address stored in state.
 // If blockBeforeSend is true, sudoMsg wraps BlockBeforeSendMsg, otherwise sudoMsg wraps TrackBeforeSendMsg.
-// Note that we gas meter trackBeforeSend to prevent infinite contract calls.
-// CONTRACT: this should not be called in beginBlock or endBlock since out of gas will cause this method to panic.
-func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins, blockBeforeSend bool) (err error) {
-	c := sdk.UnwrapSDKContext(ctx)
-
-	defer func() {
-		if r := recover(); r != nil {
-			err = errorsmod.Wrapf(types.ErrBeforeSendHookOutOfGas, "%v", r)
-		}
-	}()
+// Note that we have inner gas meter limit to prevent potential infinite calls from begin/endblocker.
+func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins, blockBeforeSend bool) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	for _, coin := range amount {
 		contractAddr := k.GetBeforeSendHook(ctx, coin.Denom)
@@ -124,8 +116,8 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 			// NOTE: hooks must already be whitelisted before they can be added, so under normal operation this check should never fail.
 			// It is here as an emergency override if we want to shutoff a hook. We do not return the error because once it is removed from the whitelist
 			// a hook should not be able to block a send.
-			if err := k.AssertIsHookWhitelisted(c, coin.Denom, cwAddr); err != nil {
-				c.Logger().Error(
+			if err := k.AssertIsHookWhitelisted(sdkCtx, coin.Denom, cwAddr); err != nil {
+				sdkCtx.Logger().Error(
 					"Skipped hook execution due to missing whitelist",
 					"err", err,
 					"denom", coin.Denom,
@@ -134,46 +126,115 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 				continue
 			}
 
-			var msgBz []byte
+			err, gasConsumed := k.callBeforeSendForCoin(sdkCtx, blockBeforeSend, from, to, coin, cwAddr)
 
-			// get msgBz, either BlockBeforeSend or TrackBeforeSend
-			// Note that for trackBeforeSend, we need to gas meter computations to prevent infinite loop
-			// specifically because module to module sends are not gas metered.
-			// We don't need to do this for blockBeforeSend since blockBeforeSend is not called during module to module sends.
-			if blockBeforeSend {
-				msg := types.BlockBeforeSendSudoMsg{
-					BlockBeforeSend: types.BlockBeforeSendMsg{
-						From:   from.String(),
-						To:     to.String(),
-						Amount: CWCoinFromSDKCoin(coin),
-					},
-				}
-				msgBz, err = json.Marshal(msg)
-			} else {
-				msg := types.TrackBeforeSendSudoMsg{
-					TrackBeforeSend: types.TrackBeforeSendMsg{
-						From:   from.String(),
-						To:     to.String(),
-						Amount: CWCoinFromSDKCoin(coin),
-					},
-				}
-				msgBz, err = json.Marshal(msg)
-			}
+			// consume gas used for calling contract to the parent ctx
+			// note that we consume gas even in case of error
+			sdkCtx.GasMeter().ConsumeGas(gasConsumed, "track before send gas")
+
 			if err != nil {
 				return err
 			}
-
-			em := sdk.NewEventManager()
-
-			childCtx := c.WithGasMeter(storetypes.NewGasMeter(types.BeforeSendHookGasLimit))
-			_, err = k.contractKeeper.Sudo(childCtx.WithEventManager(em), cwAddr, msgBz)
-			if err != nil {
-				return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
-			}
-
-			// consume gas used for calling contract to the parent ctx
-			c.GasMeter().ConsumeGas(childCtx.GasMeter().GasConsumed(), "track before send gas")
 		}
 	}
 	return nil
 }
+
+func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, from sdk.AccAddress, to sdk.AccAddress, coin sdk.Coin, cwAddr sdk.AccAddress) (err error, gasConsumed storetypes.Gas) {
+	// this types.BeforeSendHookGasLimit limit needed in case trackBeforeSend is called from begin/endblocker and does not have an outer gas limit.
+	// because contract code can be added by anybody, it can be a security issue
+	cacheCtx, writeFn := createCachedContext(ctx, types.BeforeSendHookGasLimit)
+
+	// get msgBz, either BlockBeforeSend or TrackBeforeSend
+	// Note that for trackBeforeSend, we need to gas meter computations to prevent infinite loop
+	// specifically because module to module sends are not gas metered.
+	// We don't need to do this for blockBeforeSend since blockBeforeSend is not called during module to module sends.
+	msgBz, err := k.constructCosmwasmMsg(blockBeforeSend, from, to, coin)
+	if err != nil {
+		return err, cacheCtx.GasMeter().GasConsumed()
+	}
+
+	func() {
+		defer outOfGasRecovery(cacheCtx.GasMeter(), &err)
+		_, err = k.contractKeeper.Sudo(cacheCtx.WithEventManager(sdk.NewEventManager()), cwAddr, msgBz)
+	}()
+
+	if err != nil {
+		return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom), cacheCtx.GasMeter().GasConsumed()
+	}
+	writeFn()
+
+	return nil, cacheCtx.GasMeter().GasConsumed()
+}
+
+func (k Keeper) constructCosmwasmMsg(blockBeforeSend bool, from sdk.AccAddress, to sdk.AccAddress, coin sdk.Coin) (msgBz []byte, err error) {
+	if blockBeforeSend {
+		msg := types.BlockBeforeSendSudoMsg{
+			BlockBeforeSend: types.BlockBeforeSendMsg{
+				From:   from.String(),
+				To:     to.String(),
+				Amount: CWCoinFromSDKCoin(coin),
+			},
+		}
+		msgBz, err = json.Marshal(msg)
+	} else {
+		msg := types.TrackBeforeSendSudoMsg{
+			TrackBeforeSend: types.TrackBeforeSendMsg{
+				From:   from.String(),
+				To:     to.String(),
+				Amount: CWCoinFromSDKCoin(coin),
+			},
+		}
+		msgBz, err = json.Marshal(msg)
+	}
+	return
+}
+
+// createCachedContext creates a cached context with a limited gas meter.
+func createCachedContext(ctx sdk.Context, gasLimit uint64) (sdk.Context, func()) {
+	cacheCtx, writeFn := ctx.CacheContext()
+	gasMeter := storetypes.NewGasMeter(gasLimit)
+	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
+	return cacheCtx, writeFn
+}
+
+// outOfGasRecovery converts `out of gas` panic into an error
+// leaving unprocessed any other kinds of panics
+func outOfGasRecovery(
+	gasMeter storetypes.GasMeter,
+	err *error,
+) {
+	// TODO: maybe recover from all panics? in case of potential malicious contract here?
+	if r := recover(); r != nil {
+		_, ok := r.(storetypes.ErrorOutOfGas)
+		if !ok || !gasMeter.IsOutOfGas() {
+			panic(r)
+		}
+		*err = errorsmod.Wrapf(types.ErrBeforeSendHookOutOfGas, "%v", r)
+	}
+}
+
+// returning error from this will:
+// - in blockBeforeSend - return error.
+// - in trackBeforeSend - ignored
+
+// out of gas exception from this will:
+// - in both - panic - recover - return error
+// then behaviour A anyways
+
+// potential problems now
+// - track before send on out of gas panic will skip error anyways, that is strange
+
+// what do we need ideally
+// - gas always consumed in block and track (err or no err)
+// - contract state is recovered - that means that we use child context and write only if no errors and gas problems
+// - on error block cancels tx, track ignores it
+// - on inner out of gas we return err and DO NOT propagate outOfGas
+// - on outer out of gas we DO propagate outOfGas as normal
+
+// i don't like the idea of using contract manager Sudo call because
+// it will store failure. And we have no intention of calling this after err, especially on blockBeforeSend.
+// (because blockBeforeSend failure is not a failure, it's a block for send transaction.
+
+// where can beforeSend be called from?
+// what if it's called not from tx, but from other begin/endblock or something else?
