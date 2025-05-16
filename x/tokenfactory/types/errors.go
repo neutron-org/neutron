@@ -18,7 +18,7 @@ var (
 	ErrCreatorTooLong               = errorsmod.Register(ModuleName, 9, fmt.Sprintf("creator too long, max length is %d bytes", MaxCreatorLength))
 	ErrDenomDoesNotExist            = errorsmod.Register(ModuleName, 10, "denom does not exist")
 	ErrBurnFromModuleAccount        = errorsmod.Register(ModuleName, 11, "burning from Module Account is not allowed")
-	ErrBeforeSendHookOutOfGas       = errorsmod.Register(ModuleName, 12, "gas meter hit maximum limit")
+	ErrBeforeSendHookOutOfGas       = errorsmod.Register(ModuleName, 12, "beforeSend gas meter hit maximum limit")
 	ErrInvalidHookContractAddress   = errorsmod.Register(ModuleName, 13, "invalid hook contract address")
 	ErrBeforeSendHookNotWhitelisted = errorsmod.Register(ModuleName, 14, "beforeSendHook is not whitelisted")
 )
