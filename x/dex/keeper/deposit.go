@@ -7,10 +7,10 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/utils"
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v6/x/dex/utils"
+	"github.com/neutron-org/neutron/v7/utils"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v7/x/dex/utils"
 )
 
 // DepositCore handles core logic for MsgDeposit including bank operations and event emissions
@@ -176,6 +176,7 @@ func (k Keeper) ExecuteDeposit(
 			depositAmount1,
 			inAmount0,
 			inAmount1,
+			pool.Id,
 			outShares.Amount,
 		)
 		events = append(events, depositEvent)

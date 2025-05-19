@@ -7,10 +7,10 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	appparams "github.com/neutron-org/neutron/v6/app/params"
-	"github.com/neutron-org/neutron/v6/testutil/common/nullify"
-	testkeeper "github.com/neutron-org/neutron/v6/testutil/dynamicfees/keeper"
-	"github.com/neutron-org/neutron/v6/x/dynamicfees/types"
+	appparams "github.com/neutron-org/neutron/v7/app/params"
+	"github.com/neutron-org/neutron/v7/testutil/common/nullify"
+	testkeeper "github.com/neutron-org/neutron/v7/testutil/dynamicfees/keeper"
+	"github.com/neutron-org/neutron/v7/x/dynamicfees/types"
 )
 
 func TestConvertToDenom(t *testing.T) {

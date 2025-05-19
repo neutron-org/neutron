@@ -15,10 +15,10 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/app/params"
-	"github.com/neutron-org/neutron/v6/testutil"
-	"github.com/neutron-org/neutron/v6/x/ibc-hooks/testutils"
-	"github.com/neutron-org/neutron/v6/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v7/app/params"
+	"github.com/neutron-org/neutron/v7/testutil"
+	"github.com/neutron-org/neutron/v7/x/ibc-hooks/testutils"
+	"github.com/neutron-org/neutron/v7/x/ibc-hooks/utils"
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
@@ -128,7 +128,7 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		suite.TransferPath.EndpointB.ChannelID,
 		suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		suite.TransferPath.EndpointA.ChannelID,
-		clienttypes.NewHeight(0, 150),
+		clienttypes.NewHeight(1, 150),
 		0,
 	)
 }

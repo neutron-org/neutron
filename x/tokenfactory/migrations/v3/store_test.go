@@ -3,15 +3,15 @@ package v3_test
 import (
 	"testing"
 
-	v3 "github.com/neutron-org/neutron/v6/x/tokenfactory/migrations/v3"
+	v3 "github.com/neutron-org/neutron/v7/x/tokenfactory/migrations/v3"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	v2 "github.com/neutron-org/neutron/v6/x/tokenfactory/migrations/v2"
-	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v7/testutil"
+	v2 "github.com/neutron-org/neutron/v7/x/tokenfactory/migrations/v2"
+	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
 )
 
 type V3TokenfactoryMigrationTestSuite struct {

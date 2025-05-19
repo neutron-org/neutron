@@ -9,8 +9,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/dex/keeper"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v7/x/dex/keeper"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 const gasRequiredToPurgeOneLO uint64 = 9_000

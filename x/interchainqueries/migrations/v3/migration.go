@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v7/x/interchainqueries/types"
 )
 
 func MigrateParams(ctx sdk.Context, cdc codec.BinaryCodec, storeKey store.StoreKey) error {

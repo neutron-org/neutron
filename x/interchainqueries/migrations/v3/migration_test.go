@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v2"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	v3 "github.com/neutron-org/neutron/v6/x/interchainqueries/migrations/v3"
-	"github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v7/testutil"
+	v3 "github.com/neutron-org/neutron/v7/x/interchainqueries/migrations/v3"
+	"github.com/neutron-org/neutron/v7/x/interchainqueries/types"
 )
 
 type V3ICQMigrationTestSuite struct {

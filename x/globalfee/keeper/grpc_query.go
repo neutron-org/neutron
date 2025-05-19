@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/neutron-org/neutron/v6/x/globalfee/types"
+	"github.com/neutron-org/neutron/v7/x/globalfee/types"
 )
 
 var _ types.QueryServer = Keeper{}

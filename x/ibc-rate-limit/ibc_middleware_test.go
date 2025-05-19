@@ -2,6 +2,7 @@ package ibcratelimit_test
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -11,9 +12,8 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slices"
 
-	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v7/testutil"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -24,7 +24,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {

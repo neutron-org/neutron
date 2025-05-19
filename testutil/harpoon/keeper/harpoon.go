@@ -18,8 +18,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/harpoon/keeper"
-	"github.com/neutron-org/neutron/v6/x/harpoon/types"
+	"github.com/neutron-org/neutron/v7/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v7/x/harpoon/types"
 )
 
 func HarpoonKeeper(t testing.TB, wasmKeeper types.WasmKeeper) (*keeper.Keeper, sdk.Context) {

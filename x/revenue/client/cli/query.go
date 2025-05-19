@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"github.com/neutron-org/neutron/v6/x/revenue/types"
+	"github.com/neutron-org/neutron/v7/x/revenue/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

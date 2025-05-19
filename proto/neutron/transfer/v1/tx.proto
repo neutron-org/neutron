@@ -9,7 +9,7 @@ import "ibc/applications/transfer/v1/transfer.proto";
 import "ibc/core/client/v1/client.proto";
 import "neutron/feerefunder/fee.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/transfer/types";
+option go_package = "github.com/neutron-org/neutron/v7/x/transfer/types";
 
 // Msg defines the ibc/transfer Msg service.
 service Msg {

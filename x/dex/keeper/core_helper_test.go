@@ -2,16 +2,17 @@ package keeper_test
 
 import (
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	neutronapp "github.com/neutron-org/neutron/v6/app"
-	"github.com/neutron-org/neutron/v6/testutil"
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v7/app"
+	"github.com/neutron-org/neutron/v7/testutil"
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
 // Test Suite ///////////////////////////////////////////////////////////////
@@ -249,5 +250,32 @@ func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken1Valid() {
 	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, 18, 1, math.ZeroInt(), math.OneInt())
 
 	// THEN pool is BEL
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestExpiredLimitOrderNotCountedForBEL() {
+	s.ctx = s.ctx.WithBlockTime(time.Now())
+	// Given a GTT tranche that has not expired
+	expTime := s.ctx.BlockTime().Add(time.Hour * 24)
+	tranche := &types.LimitOrderTranche{
+		Key: &types.LimitOrderTrancheKey{
+			TradePairId:           defaultTradePairID1To0,
+			TrancheKey:            "1",
+			TickIndexTakerToMaker: 0,
+		},
+		ExpirationTime:     &expTime,
+		ReservesMakerDenom: math.NewInt(1000000),
+	}
+
+	s.app.DexKeeper.SetLimitOrderTranche(s.ctx, tranche)
+	// Pool is behind enemy lines
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
+	s.True(isBEL)
+
+	// When tranche is  expired
+	expTime = s.ctx.BlockTime().Add(-time.Hour * 24)
+	tranche.ExpirationTime = &expTime
+	s.app.DexKeeper.UpdateTranche(s.ctx, tranche)
+	isBEL = s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
 	s.False(isBEL)
 }

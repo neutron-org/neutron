@@ -4,7 +4,7 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 
-	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
 )
 
 // Params is a copy of v2 params type

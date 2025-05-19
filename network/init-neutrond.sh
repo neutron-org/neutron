@@ -71,6 +71,10 @@ $BINARY  gentx val1 "1000000$STAKEDENOM" --home "$CHAIN_DIR" --chain-id "$CHAINI
 $BINARY  collect-gentxs --home "$CHAIN_DIR"
 ### PARAMETERS SECTION
 
+## consensus params
+CONSENSUS_BLOCK_MAX_GAS=1000000000
+CONSENSUS_VOTE_EXTENSIONS_ENABLE_HEIGHT=1
+
 ## slashing params
 SLASHING_SIGNED_BLOCKS_WINDOW=140000
 SLASHING_MIN_SIGNED=0.050000000000000000
@@ -805,6 +809,34 @@ MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pa
 
 rm markets.json
 
+BANK_DENOMS_METADATA='
+[{
+    "description": "The native staking token of the Neutron network",
+    "denom_units": [
+      {
+        "denom": "untrn",
+        "exponent": 0,
+        "aliases": [
+          "microntrn"
+        ]
+      },
+      {
+        "denom": "ntrn",
+        "exponent": 6,
+        "aliases": [
+          "NTRN"
+        ]
+      }
+    ],
+    "base": "untrn",
+    "display": "ntrn",
+    "name": "Neutron",
+    "symbol": "NTRN",
+    "uri": "",
+    "uri_hash": ""
+  }]
+'
+
 echo "Setting the rest of Neutron genesis params..."
 set_genesis_param admins                                 "[\"$NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS\"]"  # admin module
 set_genesis_param treasury_address                       "\"$DAO_CONTRACT_ADDRESS\""                      # feeburner
@@ -821,16 +853,18 @@ set_genesis_param_jq ".app_state.globalfee.params.bypass_min_fee_msg_types" "$BY
 set_genesis_param proposer_fee                          "\"0.25\""                                        # builder(POB)
 set_genesis_param escrow_account_address                "\"$DAO_CONTRACT_ADDRESS_B64\","                  # builder(POB)
 set_genesis_param sudo_call_gas_limit                   "\"1000000\""                                     # contractmanager
-set_genesis_param max_gas                               "\"1000000000\""                                  # consensus_params
-set_genesis_param vote_extensions_enable_height         "\"1\""                                           # consensus_params
+set_genesis_param max_gas                               "\"$CONSENSUS_BLOCK_MAX_GAS\""                    # consensus_params
+set_genesis_param vote_extensions_enable_height         "\"$CONSENSUS_VOTE_EXTENSIONS_ENABLE_HEIGHT\""    # consensus_params
 set_genesis_param_jq ".app_state.marketmap.params.admin" "\"$ADMIN_MODULE_ADDRESS\""                      # marketmap
 set_genesis_param_jq ".app_state.marketmap.params.market_authorities" "[\"$ADMIN_MODULE_ADDRESS\"]"       # marketmap
+set_genesis_param_jq ".app_state.feemarket.params.max_block_utilization" "\"$CONSENSUS_BLOCK_MAX_GAS\""   # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.min_base_gas_price"    "\"0.0025\""                     # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.fee_denom"       "\"untrn\""                            # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.max_learning_rate" "\"0.5\""                            # feemarket
-set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                            # feemarket
+set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                           # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
+set_genesis_param_jq ".app_state.bank.denom_metadata" "$BANK_DENOMS_METADATA"                                    # bank metadata
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 1},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 3},
