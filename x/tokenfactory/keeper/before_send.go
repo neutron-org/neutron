@@ -2,8 +2,10 @@ package keeper
 
 import (
 	"context"
-	storetypes "cosmossdk.io/store/types"
 	"encoding/json"
+
+	storetypes "cosmossdk.io/store/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
@@ -126,7 +128,7 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 				continue
 			}
 
-			err, gasConsumed := k.callBeforeSendForCoin(sdkCtx, blockBeforeSend, from, to, coin, cwAddr)
+			gasConsumed, err := k.callBeforeSendForCoin(sdkCtx, blockBeforeSend, from, to, coin, cwAddr)
 
 			// consume gas used for calling contract to the parent ctx
 			// note that we consume gas even in case of error
@@ -140,7 +142,7 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 	return nil
 }
 
-func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, from sdk.AccAddress, to sdk.AccAddress, coin sdk.Coin, cwAddr sdk.AccAddress) (err error, gasConsumed storetypes.Gas) {
+func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, from, to sdk.AccAddress, coin sdk.Coin, cwAddr sdk.AccAddress) (gasConsumed storetypes.Gas, err error) {
 	// this types.BeforeSendHookGasLimit limit needed in case trackBeforeSend is called from begin/endblocker and does not have an outer gas limit.
 	// because contract code can be added by anybody, it can be a security issue
 	cacheCtx, writeFn := createCachedContext(ctx, types.BeforeSendHookGasLimit)
@@ -148,7 +150,7 @@ func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, fro
 	// get msgBz, either BlockBeforeSend or TrackBeforeSend
 	msgBz, err := k.constructCosmwasmMsg(blockBeforeSend, from, to, coin)
 	if err != nil {
-		return err, cacheCtx.GasMeter().GasConsumed()
+		return cacheCtx.GasMeter().GasConsumed(), err
 	}
 
 	// contain outOfGas recovery inside function to wrap potential err cleanly
@@ -158,14 +160,14 @@ func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, fro
 	}()
 
 	if err != nil {
-		return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom), cacheCtx.GasMeter().GasConsumed()
+		return cacheCtx.GasMeter().GasConsumed(), errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
 	}
 	writeFn()
 
-	return nil, cacheCtx.GasMeter().GasConsumed()
+	return cacheCtx.GasMeter().GasConsumed(), nil
 }
 
-func (k Keeper) constructCosmwasmMsg(blockBeforeSend bool, from sdk.AccAddress, to sdk.AccAddress, coin sdk.Coin) (msgBz []byte, err error) {
+func (k Keeper) constructCosmwasmMsg(blockBeforeSend bool, from, to sdk.AccAddress, coin sdk.Coin) (msgBz []byte, err error) {
 	if blockBeforeSend {
 		msg := types.BlockBeforeSendSudoMsg{
 			BlockBeforeSend: types.BlockBeforeSendMsg{
@@ -202,7 +204,6 @@ func outOfGasRecovery(
 	gasMeter storetypes.GasMeter,
 	err *error,
 ) {
-	// TODO: maybe recover from all panics? in case of potential malicious contract here?
 	if r := recover(); r != nil {
 		_, ok := r.(storetypes.ErrorOutOfGas)
 		if !ok || !gasMeter.IsOutOfGas() {
