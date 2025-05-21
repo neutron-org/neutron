@@ -52,17 +52,10 @@ func CreateUpgradeHandler(
 }
 
 func UpgradeDenomsMetadata(ctx sdk.Context, tk tokenfactorykeeper.Keeper, bk bankkeeper.Keeper) error {
-	iterator := tk.GetAllDenomsIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		denom := string(iterator.Value())
+	allDenomMetadata := bk.GetAllDenomMetaData(ctx)
 
-		metadata, found := bk.GetDenomMetaData(ctx, denom)
-		if !found {
-			ctx.Logger().Error(fmt.Sprintf("failed to get %s denom metadata", denom))
-
-			continue
-		}
+	for _, metadata := range allDenomMetadata {
+		denom := metadata.Base
 
 		metadata.Name = denom
 		metadata.Symbol = denom
