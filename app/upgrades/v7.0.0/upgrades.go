@@ -13,7 +13,6 @@ import (
 
 	"github.com/neutron-org/neutron/v7/app/upgrades"
 	v601 "github.com/neutron-org/neutron/v7/app/upgrades/v6.0.1"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v7/x/tokenfactory/keeper"
 )
 
 func CreateUpgradeHandler(
@@ -41,7 +40,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Running tokenfactory upgrades...")
-		err = UpgradeDenomsMetadata(ctx, *keepers.TokenFactoryKeeper, keepers.BankKeeper)
+		err = UpgradeDenomsMetadata(ctx, keepers.BankKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +50,7 @@ func CreateUpgradeHandler(
 	}
 }
 
-func UpgradeDenomsMetadata(ctx sdk.Context, tk tokenfactorykeeper.Keeper, bk bankkeeper.Keeper) error {
+func UpgradeDenomsMetadata(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	allDenomMetadata := bk.GetAllDenomMetaData(ctx)
 
 	for _, metadata := range allDenomMetadata {
