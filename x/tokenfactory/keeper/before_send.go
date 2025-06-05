@@ -132,7 +132,7 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 
 			// consume gas used for calling contract to the parent ctx
 			// note that we consume gas even in case of error
-			sdkCtx.GasMeter().ConsumeGas(gasConsumed, "track before send gas")
+			sdkCtx.GasMeter().ConsumeGas(gasConsumed, "before send gas")
 
 			if err != nil {
 				return err
