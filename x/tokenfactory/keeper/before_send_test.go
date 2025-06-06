@@ -296,7 +296,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 			expectedPanic:   false,
 		},
 		{
-			name:            "track_before_send: sending tokenfactory denom from module to module with infinite contract should panic when outer layer gas is breached on trackBeforeSend",
+			name:            "track_before_send: sending tokenfactory denom from module to module with infinite contract should panic when outer layer gas limit is breached on trackBeforeSend",
 			wasmFile:        infiniteTrackBeforeSendContract,
 			blockBeforeSend: false,
 			useHookedDenom:  true,
