@@ -65,6 +65,7 @@ func (suite *KeeperTestSuite) Setup() {
 		0,
 		FeeCollectorAddress,
 		types.DefaultWhitelistedHooks,
+		types.DefaultTrackBeforeSendGasLimit,
 	))
 	suite.Require().NoError(err)
 

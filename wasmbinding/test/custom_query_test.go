@@ -256,6 +256,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 		0,
 		FeeCollectorAddress,
 		tokenfactorytypes.DefaultWhitelistedHooks,
+		tokenfactorytypes.DefaultTrackBeforeSendGasLimit,
 	))
 	suite.Require().NoError(err)
 
