@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
 	"github.com/neutron-org/neutron/v7/app/upgrades"
 	v601 "github.com/neutron-org/neutron/v7/app/upgrades/v6.0.1"
@@ -38,7 +39,35 @@ func CreateUpgradeHandler(
 			}
 		}
 
+		ctx.Logger().Info("Running tokenfactory upgrades...")
+		err = UpgradeDenomsMetadata(ctx, keepers.BankKeeper)
+		if err != nil {
+			return nil, err
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
+}
+
+func UpgradeDenomsMetadata(ctx sdk.Context, bk bankkeeper.Keeper) error {
+	allDenomMetadata := bk.GetAllDenomMetaData(ctx)
+
+	for _, metadata := range allDenomMetadata {
+		denom := metadata.Base
+
+		if metadata.Name == "" {
+			metadata.Name = denom
+		}
+		if metadata.Symbol == "" {
+			metadata.Symbol = denom
+		}
+		if metadata.Display == "" {
+			metadata.Display = denom
+		}
+
+		bk.SetDenomMetaData(ctx, metadata)
+	}
+
+	return nil
 }
