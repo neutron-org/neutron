@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	storetypes "cosmossdk.io/store/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
