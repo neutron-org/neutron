@@ -56,9 +56,15 @@ func UpgradeDenomsMetadata(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	for _, metadata := range allDenomMetadata {
 		denom := metadata.Base
 
-		metadata.Name = denom
-		metadata.Symbol = denom
-		metadata.Display = denom
+		if metadata.Name == "" {
+			metadata.Name = denom
+		}
+		if metadata.Symbol == "" {
+			metadata.Symbol = denom
+		}
+		if metadata.Display == "" {
+			metadata.Display = denom
+		}
 
 		bk.SetDenomMetaData(ctx, metadata)
 	}
