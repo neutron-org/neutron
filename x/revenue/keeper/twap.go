@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"slices"
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -230,10 +231,8 @@ func (k *Keeper) getRewardAssetExponent(ctx sdk.Context) (uint32, error) {
 	}
 
 	for _, unit := range rewardAssetMd.DenomUnits {
-		for _, alias := range unit.Aliases {
-			if alias == rewardAssetMd.Symbol {
-				return unit.Exponent, nil
-			}
+		if slices.Contains(unit.Aliases, rewardAssetMd.Symbol) {
+			return unit.Exponent, nil
 		}
 	}
 	return 0, fmt.Errorf("couldn't find exponent for reward asset alias %s in reward denom metadata", rewardAssetMd.Symbol)
