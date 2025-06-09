@@ -805,7 +805,6 @@ func New(
 
 	var icaControllerStack ibcporttypes.IBCModule
 	icaControllerStack = interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
-	// TODO: review it
 	icaControllerStack = icacontroller.NewIBCMiddlewareWithAuth(icaControllerStack, app.ICAControllerKeeper)
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
