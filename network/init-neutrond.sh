@@ -807,6 +807,34 @@ MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pa
 
 rm markets.json
 
+BANK_DENOMS_METADATA='
+[{
+    "description": "The native staking token of the Neutron network",
+    "denom_units": [
+      {
+        "denom": "untrn",
+        "exponent": 0,
+        "aliases": [
+          "microntrn"
+        ]
+      },
+      {
+        "denom": "ntrn",
+        "exponent": 6,
+        "aliases": [
+          "NTRN"
+        ]
+      }
+    ],
+    "base": "untrn",
+    "display": "ntrn",
+    "name": "Neutron",
+    "symbol": "NTRN",
+    "uri": "",
+    "uri_hash": ""
+  }]
+'
+
 echo "Setting the rest of Neutron genesis params..."
 set_genesis_param admins                                 "[\"$NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS\"]"  # admin module
 set_genesis_param treasury_address                       "\"$DAO_CONTRACT_ADDRESS\""                      # feeburner
@@ -834,6 +862,7 @@ set_genesis_param_jq ".app_state.feemarket.params.max_learning_rate" "\"0.5\""  
 set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                           # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
+set_genesis_param_jq ".app_state.bank.denom_metadata" "$BANK_DENOMS_METADATA"                                    # bank metadata
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 1},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 3},

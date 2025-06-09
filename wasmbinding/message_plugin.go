@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -1105,13 +1106,7 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 }
 
 func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
-	for _, admin := range m.AdminKeeper.GetAdmins(ctx) {
-		if admin == contractAddr.String() {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(m.AdminKeeper.GetAdmins(ctx), contractAddr.String())
 }
 
 func getRegisterFee(fee sdk.Coins) sdk.Coins {
