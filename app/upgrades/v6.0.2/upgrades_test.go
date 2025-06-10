@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	v601 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.1"
+	v602 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.2"
 	"github.com/neutron-org/neutron/v6/testutil"
 )
 
@@ -23,13 +23,13 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	suite.IBCConnectionTestSuite.SetupTest()
 }
 
-func (suite *UpgradeTestSuite) TestUpgradeRemoveOrphanedLimitOrders() {
+func (suite *UpgradeTestSuite) TestUpgrade() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	ctx := suite.ChainA.GetContext().WithChainID("neutron-1")
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
-		Name:   v601.UpgradeName,
+		Name:   v602.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
