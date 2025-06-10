@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	v602 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.2"
 	"github.com/neutron-org/neutron/v6/x/harpoon"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -244,6 +245,7 @@ var (
 	Upgrades = []upgrades.Upgrade{
 		sovereignUpgrade.Upgrade,
 		v601.Upgrade,
+		v602.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
