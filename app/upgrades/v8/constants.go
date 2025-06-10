@@ -2,6 +2,7 @@ package v8
 
 import (
 	storetypes "cosmossdk.io/store/types"
+
 	"github.com/neutron-org/neutron/v7/app/upgrades"
 )
 

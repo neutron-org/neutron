@@ -3,14 +3,15 @@ package app
 import (
 	"context"
 	"fmt"
-	v700 "github.com/neutron-org/neutron/v7/app/upgrades/v7.0.0"
-	"github.com/neutron-org/neutron/v7/app/upgrades/v8"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	v700 "github.com/neutron-org/neutron/v7/app/upgrades/v7.0.0"
+	v8 "github.com/neutron-org/neutron/v7/app/upgrades/v8"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v7/x/dynamicfees/types"
 	stateverifier "github.com/neutron-org/neutron/v7/x/state-verifier"

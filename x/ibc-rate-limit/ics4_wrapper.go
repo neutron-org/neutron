@@ -63,7 +63,8 @@ func (i *ICS4Wrapper) SendPacket(
 	sourceChannel string,
 	timeoutHeight clienttypes.Height,
 	timeoutTimestamp uint64,
-	data []byte) (uint64, error) {
+	data []byte,
+) (uint64, error) {
 	var packetdata transfertypes.FungibleTokenPacketData
 	if err := json.Unmarshal(data, &packetdata); err != nil {
 		return i.channel.SendPacket(ctx, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)

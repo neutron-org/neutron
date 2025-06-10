@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/cosmos/ibc-go/v10/modules/core/03-connection/keeper"
 
 	"cosmossdk.io/errors"

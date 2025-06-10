@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/cosmos/ibc-go/v10/modules/core/03-connection/keeper"
-	ics23 "github.com/cosmos/ics23/go"
 	"strconv"
 	"time"
+
+	"github.com/cosmos/ibc-go/v10/modules/core/03-connection/keeper"
+	ics23 "github.com/cosmos/ics23/go"
 
 	"cosmossdk.io/errors"
 	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"

@@ -18,7 +18,7 @@ import (
 )
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a sudo call.
-func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, channelVersion string, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
+func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, _ string, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleAcknowledgment)
 	k.Logger(ctx).Debug("Handling acknowledgement")
 	icaOwner, err := types.ICAOwnerFromPort(packet.SourcePort)
@@ -51,7 +51,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, channelVersion string, p
 
 // HandleTimeout passes the timeout data to the appropriate contract via a sudo call.
 // Since all ICA channels are ORDERED, a single timeout shuts down a channel.
-func (k *Keeper) HandleTimeout(ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) error {
+func (k *Keeper) HandleTimeout(ctx sdk.Context, _ string, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleTimeout)
 	k.Logger(ctx).Debug("HandleTimeout")
 	icaOwner, err := types.ICAOwnerFromPort(packet.SourcePort)

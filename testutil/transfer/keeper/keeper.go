@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	"github.com/cosmos/cosmos-sdk/runtime"
 	"testing"
+
+	"github.com/cosmos/cosmos-sdk/runtime"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"

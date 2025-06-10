@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"

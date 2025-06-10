@@ -2,6 +2,7 @@ package transfer
 
 import (
 	"fmt"
+
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 
 	"cosmossdk.io/core/appmodule"

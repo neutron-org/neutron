@@ -278,8 +278,7 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	// Get the denom and amount to send
 	denom := sdk.DefaultBondDenom
 	if !native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, denom))
-		denom = denomTrace.IBCDenom()
+		denom = transfertypes.NewDenom(denom, transfertypes.NewHop("transfers", suite.TransferPath.EndpointA.ChannelID)).IBCDenom()
 	}
 
 	app := suite.GetNeutronZoneApp(suite.ChainA)
@@ -469,11 +468,9 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	sendDenom := sdk.DefaultBondDenom
 	localDenom := sdk.DefaultBondDenom
 	if native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, localDenom))
-		localDenom = denomTrace.IBCDenom()
+		localDenom = transfertypes.NewDenom(localDenom, transfertypes.NewHop("transfers", suite.TransferPath.EndpointA.ChannelID)).IBCDenom()
 	} else {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointB.ChannelID, sendDenom))
-		sendDenom = denomTrace.IBCDenom()
+		localDenom = transfertypes.NewDenom(sendDenom, transfertypes.NewHop("transfers", suite.TransferPath.EndpointA.ChannelID)).IBCDenom()
 	}
 
 	app := suite.GetNeutronZoneApp(suite.ChainA)
