@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/neutron-org/neutron/v7/app/upgrades/nextupgrade"
 	v700 "github.com/neutron-org/neutron/v7/app/upgrades/v7.0.0"
+	"github.com/neutron-org/neutron/v7/app/upgrades/v8"
 	"io"
 	"io/fs"
 	"net/http"
@@ -232,7 +232,7 @@ var (
 	Upgrades = []upgrades.Upgrade{
 		v601.Upgrade,
 		v700.Upgrade,
-		nextupgrade.Upgrade,
+		v8.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon

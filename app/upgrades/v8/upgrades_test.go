@@ -1,4 +1,4 @@
-package nextupgrade_test
+package v8_test
 
 import (
 	"testing"
