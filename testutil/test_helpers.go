@@ -437,6 +437,7 @@ func (suite *IBCConnectionTestSuite) commitBlock(res *cometbfttypes.ResponseFina
 	// The latest trusted validator set is the next validator set
 	// associated with the header being committed in storage. This will
 	// allow for header updates to be proved against these validators.
+	//nolint:gosec // G115: This conversion is intentional to observe wrap-around for demonstration.
 	chain.TrustedValidators[uint64(chain.ProposedHeader.Height)] = chain.NextVals
 
 	// val set changes returned from previous block get applied to the next validators
