@@ -22,7 +22,6 @@ var Upgrade = upgrades.Upgrade{
 		Deleted: []string{
 			"ccvconsumer",
 			"auction",
-			"capability",
 		},
 	},
 }
