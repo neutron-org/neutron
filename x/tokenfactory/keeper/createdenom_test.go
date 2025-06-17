@@ -7,6 +7,8 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
 )
 
@@ -138,6 +140,22 @@ func (suite *KeeperTestSuite) TestCreateDenom() {
 				suite.Require().NoError(err)
 				suite.Require().Equal(suite.TestAccs[0].String(), queryRes.AuthorityMetadata.Admin)
 
+				app := suite.GetNeutronZoneApp(suite.ChainA)
+				ctx := suite.ChainA.GetContext()
+
+				// Make sure that the denom metadata is initialized correctly
+				metadata, found := app.BankKeeper.GetDenomMetaData(ctx, res.GetNewTokenDenom())
+				suite.Require().True(found)
+				suite.Require().Equal(banktypes.Metadata{
+					DenomUnits: []*banktypes.DenomUnit{{
+						Denom:    res.GetNewTokenDenom(),
+						Exponent: 0,
+					}},
+					Base:    res.GetNewTokenDenom(),
+					Display: res.GetNewTokenDenom(),
+					Name:    res.GetNewTokenDenom(),
+					Symbol:  res.GetNewTokenDenom(),
+				}, metadata)
 			} else {
 				suite.Require().Error(err)
 			}
