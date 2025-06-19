@@ -291,12 +291,7 @@ func (ac appCreator) newApp(
 		chainID = appGenesis.ChainID
 	}
 
-	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
-		homeDir,
-		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
-		ac.encCfg,
-		appOpts,
-		wasmOpts,
+	baseAppOptions := []func(*baseapp.BaseApp){
 		baseapp.SetPruning(pruningOpts),
 		baseapp.SetMinGasPrices(cast.ToString(appOpts.Get(server.FlagMinGasPrices))),
 		baseapp.SetHaltHeight(cast.ToUint64(appOpts.Get(server.FlagHaltHeight))),
@@ -307,6 +302,24 @@ func (ac appCreator) newApp(
 		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
 		baseapp.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{Interval: cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval)), KeepRecent: cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))}),
 		baseapp.SetChainID(chainID),
+		baseapp.SetIAVLCacheSize(cast.ToInt(appOpts.Get(server.FlagIAVLCacheSize))),
+		baseapp.SetIAVLDisableFastNode(cast.ToBool(appOpts.Get(server.FlagDisableIAVLFastNode))),
+	}
+
+	if isEnabled := cast.ToBool(appOpts.Get(server.FlagOptimisticExecutionEnabled)); isEnabled {
+		logger.Info("Optimistic execution enabled")
+		baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution())
+	} else {
+		logger.Info("Optimistic execution disabled")
+	}
+
+	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
+		homeDir,
+		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
+		ac.encCfg,
+		appOpts,
+		wasmOpts,
+		baseAppOptions...,
 	)
 }
 
