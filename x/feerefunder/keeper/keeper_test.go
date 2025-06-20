@@ -254,9 +254,9 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 		),
 	}, ctx.EventManager().Events())
 
-	feeInfo, err := k.GetFeeInfo(ctx, packet)
+	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
-	require.ErrorContains(t, err, "no fee info")
+	require.False(t, found, "no fee info")
 }
 
 func TestDistributeTimeoutFee(t *testing.T) {
@@ -320,9 +320,9 @@ func TestDistributeTimeoutFee(t *testing.T) {
 		),
 	}, ctx.EventManager().Events())
 
-	feeInfo, err := k.GetFeeInfo(ctx, packet)
+	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
-	require.ErrorContains(t, err, "no fee info")
+	require.False(t, found, "no fee info")
 }
 
 func TestFeeInfo(t *testing.T) {
