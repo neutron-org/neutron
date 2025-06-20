@@ -28,8 +28,8 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(minfee Fee) Params {
-	return Params{MinFee: minfee}
+func NewParams(minFee Fee) Params {
+	return Params{MinFee: minFee}
 }
 
 // DefaultParams returns a default set of parameters
