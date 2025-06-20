@@ -305,38 +305,38 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 			},
 			sdkerrors.ErrInvalidCoins,
 		},
-		//{
-		//	"zero ack fee",
-		//	types.MsgSubmitTx{
-		//		FromAddress:         testutil.TestOwnerAddress,
-		//		ConnectionId:        "connection-id",
-		//		InterchainAccountId: "1",
-		//		Msgs:                []*codectypes.Any{&cosmosMsg},
-		//		Timeout:             1,
-		//		Fee: feerefundertypes.Fee{
-		//			RecvFee:    nil,
-		//			AckFee:     nil,
-		//			TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-		//		},
-		//	},
-		//	sdkerrors.ErrInvalidCoins,
-		//},
-		//{
-		//	"zero timeout fee",
-		//	types.MsgSubmitTx{
-		//		FromAddress:         testutil.TestOwnerAddress,
-		//		ConnectionId:        "connection-id",
-		//		InterchainAccountId: "1",
-		//		Msgs:                []*codectypes.Any{&cosmosMsg},
-		//		Timeout:             1,
-		//		Fee: feerefundertypes.Fee{
-		//			RecvFee:    nil,
-		//			AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-		//			TimeoutFee: nil,
-		//		},
-		//	},
-		//	sdkerrors.ErrInvalidCoins,
-		//},
+		{
+			"zero ack fee",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     nil,
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"zero timeout fee",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: nil,
+				},
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
 		{
 			"empty connection id",
 			types.MsgSubmitTx{

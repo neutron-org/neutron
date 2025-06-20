@@ -88,6 +88,34 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 			},
 			sdkerrors.ErrInvalidCoins.Error(),
 		},
+		{
+			"zero ack fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					MinFee: types.Fee{
+						RecvFee:    nil,
+						AckFee:     nil,
+						TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins.Error(),
+		},
+		{
+			"zero timeout fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					MinFee: types.Fee{
+						RecvFee:    nil,
+						AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+						TimeoutFee: nil,
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins.Error(),
+		},
 	}
 
 	for _, tt := range tests {
