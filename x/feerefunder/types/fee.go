@@ -33,7 +33,6 @@ func (m Fee) Total() sdk.Coins {
 
 // Validate asserts that each Fee is valid:
 // * RecvFee must be zero;
-// * AckFee and TimeoutFee must be non-zero
 func (m Fee) Validate() error {
 	var errFees []string
 	if !m.AckFee.IsValid() {
