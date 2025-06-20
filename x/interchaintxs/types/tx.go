@@ -58,8 +58,11 @@ func (msg *MsgRegisterInterchainAccount) GetSignBytes() []byte {
 //----------------------------------------------------------------
 
 func (msg *MsgSubmitTx) Validate() error {
-	// Do not validate Msg.Fee since it can be burned off by setting Feerefunder.Params.FeeEnabled = false
-	// It's validated in LockFees
+	// Do not validate Msg.Fee fully since it can be turned off by `Feerefunder.Params.FeeEnabled` = false
+	// Full validation is in in `Feerefunder.LockFees`
+	if err := msg.Fee.ValidateBasic(); err != nil {
+		return errors.Wrapf(err, "failed to validate fee")
+	}
 
 	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID

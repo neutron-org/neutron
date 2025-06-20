@@ -11,7 +11,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (msg *MsgTransfer) Validate() error {
+func (msg *MsgTransfer) Validate(isContract bool) error {
+	if isContract {
+		if err := msg.Fee.Validate(); err != nil {
+			return err
+		}
+	}
+
 	sdkMsg := types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp, msg.Memo)
 	return sdkMsg.ValidateBasic()
 }
