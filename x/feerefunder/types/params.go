@@ -14,27 +14,31 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyFees     = []byte("FEES")
-	DefaultFees = Fee{
+	KeyFees       = []byte("FEES")
+	KeyFeeEnabled = []byte("FEEENABLED")
+	DefaultFees   = Fee{
 		RecvFee:    nil,
 		AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1000))),
 		TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1000))),
 	}
+	DefaultFeeEnabled = true
 )
 
 // ParamKeyTable the param key table for launch module
 func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable(paramtypes.NewParamSetPair(KeyFees, DefaultFees, validateFee))
+	return paramtypes.NewKeyTable(
+		paramtypes.NewParamSetPair(KeyFees, DefaultFees, validateFee),
+		paramtypes.NewParamSetPair(KeyFeeEnabled, DefaultFeeEnabled, validateFeeEnabled))
 }
 
 // NewParams creates a new Params instance
-func NewParams(minFee Fee) Params {
-	return Params{MinFee: minFee}
+func NewParams(minFee Fee, feeEnabled bool) Params {
+	return Params{MinFee: minFee, FeeEnabled: feeEnabled}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultFees)
+	return NewParams(DefaultFees, DefaultFeeEnabled)
 }
 
 // ParamSetPairs get the params.ParamSet
@@ -44,7 +48,15 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	return p.MinFee.Validate()
+	if err := validateFee(p.MinFee); err != nil {
+		return err
+	}
+
+	if err := validateFeeEnabled(p.FeeEnabled); err != nil {
+		return fmt.Errorf("invalid feeEnabled: %w", err)
+	}
+
+	return nil
 }
 
 // String implements the Stringer interface.
@@ -60,4 +72,13 @@ func validateFee(i interface{}) error {
 	}
 
 	return v.Validate()
+}
+
+func validateFeeEnabled(v interface{}) error {
+	_, ok := v.(bool)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", v)
+	}
+
+	return nil
 }

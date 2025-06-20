@@ -38,6 +38,7 @@ func TestKeeperCheckFees(t *testing.T) {
 			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 		},
+		FeeEnabled: true,
 	})
 	require.NoError(t, err)
 
@@ -147,6 +148,7 @@ func TestKeeperLockFees(t *testing.T) {
 			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 		},
+		FeeEnabled: true,
 	})
 	require.NoError(t, err)
 
@@ -191,6 +193,8 @@ func TestKeeperLockFees(t *testing.T) {
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
 		),
 	}, ctx.EventManager().Events())
+
+	// TODO: add case with fees disabled
 }
 
 func TestDistributeAcknowledgementFee(t *testing.T) {
@@ -257,6 +261,8 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
 	require.False(t, found, "no fee info")
+
+	// TODO: fee disabled check
 }
 
 func TestDistributeTimeoutFee(t *testing.T) {
@@ -323,6 +329,8 @@ func TestDistributeTimeoutFee(t *testing.T) {
 	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
 	require.False(t, found, "no fee info")
+
+	// TODO: fee disabled check
 }
 
 func TestFeeInfo(t *testing.T) {

@@ -231,12 +231,11 @@ func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 	params := k.GetParams(ctx)
 
-	// TODO: check these conditions
-	if !params.MinFee.TimeoutFee.IsZero() && !fees.TimeoutFee.IsAnyGTE(params.MinFee.TimeoutFee) {
+	if !fees.TimeoutFee.IsAnyGTE(params.MinFee.TimeoutFee) {
 		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min governance set timeout fee: %v < %v", fees.TimeoutFee, params.MinFee.TimeoutFee)
 	}
 
-	if !params.MinFee.AckFee.IsZero() && !fees.AckFee.IsAnyGTE(params.MinFee.AckFee) {
+	if !fees.AckFee.IsAnyGTE(params.MinFee.AckFee) {
 		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", fees.AckFee, params.MinFee.AckFee)
 	}
 
