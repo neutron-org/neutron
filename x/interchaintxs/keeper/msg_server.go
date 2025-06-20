@@ -154,7 +154,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 			"source port: %s, source channel: %s", portID, channelID,
 		)
 	}
-	
+
 	if err := k.feeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
 		return nil, errors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
 	}

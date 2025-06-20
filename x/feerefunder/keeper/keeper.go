@@ -58,6 +58,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
 	c := sdk.UnwrapSDKContext(ctx)
 
+	if err := fee.Validate(); err != nil {
+		return errors.Wrapf(err, "failed to lock fees")
+	}
+
 	k.Logger(c).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
 
 	params := k.GetParams(c)
