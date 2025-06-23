@@ -287,7 +287,14 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 	require.Nil(t, feeInfo)
 	require.False(t, found, "no fee info")
 
-	// TODO: fee disabled check
+	// simulate fee disabled
+	noFeePacket := types.PacketID{
+		ChannelId: "channel-0",
+		PortId:    "transfer",
+		Sequence:  112123,
+	}
+	// does not call fee transfers
+	assert.NotPanics(t, func() { k.DistributeAcknowledgementFee(ctx, receiver, noFeePacket) })
 }
 
 func TestDistributeTimeoutFee(t *testing.T) {
@@ -354,7 +361,14 @@ func TestDistributeTimeoutFee(t *testing.T) {
 	require.Nil(t, feeInfo)
 	require.False(t, found, "no fee info")
 
-	// TODO: fee disabled check
+	// simulate fee disabled
+	noFeePacket := types.PacketID{
+		ChannelId: "channel-0",
+		PortId:    "transfer",
+		Sequence:  112123,
+	}
+	// does not call fee transfers
+	assert.NotPanics(t, func() { k.DistributeTimeoutFee(ctx, receiver, noFeePacket) })
 }
 
 func TestFeeInfo(t *testing.T) {
