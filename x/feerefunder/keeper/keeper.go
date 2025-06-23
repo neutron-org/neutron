@@ -58,10 +58,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
 	c := sdk.UnwrapSDKContext(ctx)
 
-	if err := fee.Validate(); err != nil {
-		return errors.Wrapf(err, "failed to lock fees")
-	}
-
 	k.Logger(c).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
 
 	params := k.GetParams(c)
@@ -70,12 +66,16 @@ func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID typ
 		return nil
 	}
 
-	if _, ok := k.channelKeeper.GetChannel(c, packetID.PortId, packetID.ChannelId); !ok {
-		return errors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
+	if err := fee.Validate(); err != nil {
+		return errors.Wrapf(err, "failed to lock fees")
 	}
 
 	if err := k.checkFees(c, fee); err != nil {
 		return errors.Wrapf(err, "failed to lock fees")
+	}
+
+	if _, ok := k.channelKeeper.GetChannel(c, packetID.PortId, packetID.ChannelId); !ok {
+		return errors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
 	}
 
 	feeInfo := types.FeeInfo{
@@ -234,6 +234,10 @@ func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 
 func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 	params := k.GetParams(ctx)
+
+	if fees.AckFee.IsZero() || fees.TimeoutFee.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")
+	}
 
 	if !fees.TimeoutFee.IsAnyGTE(params.MinFee.TimeoutFee) {
 		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min governance set timeout fee: %v < %v", fees.TimeoutFee, params.MinFee.TimeoutFee)

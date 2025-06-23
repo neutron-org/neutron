@@ -133,7 +133,6 @@ func TestKeeperCheckFees(t *testing.T) {
 	}
 }
 
-// TODO: add tests for Fee.Validate()
 func TestKeeperLockFees(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -159,22 +158,16 @@ func TestKeeperLockFees(t *testing.T) {
 		Sequence:  111,
 	}
 
+	// channel not found
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, false)
 	err = k.LockFees(ctx, payer, packet, types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100))),
 	})
 	require.True(t, channeltypes.ErrChannelNotFound.Is(err))
 
-	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
-	err = k.LockFees(ctx, payer, packet, types.Fee{
-		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
-	})
-	require.True(t, sdkerrors.ErrInsufficientFee.Is(err))
-
+	// bank send error
 	validFee := types.Fee{
 		RecvFee:    nil,
 		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
@@ -185,6 +178,7 @@ func TestKeeperLockFees(t *testing.T) {
 	err = k.LockFees(ctx, payer, packet, validFee)
 	require.ErrorContains(t, err, "bank error")
 
+	//  valid case
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, validFee.Total()).Return(nil)
 	err = k.LockFees(ctx, payer, packet, validFee)
@@ -203,7 +197,29 @@ func TestKeeperLockFees(t *testing.T) {
 		),
 	}, ctx.EventManager().Events())
 
-	// TODO: add case with fees disabled
+	// insufficient fee
+	err = k.LockFees(ctx, payer, packet, types.Fee{
+		RecvFee:    nil,
+		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+	})
+	require.True(t, sdkerrors.ErrInsufficientFee.Is(err))
+
+	// ack fee is empty
+	err = k.LockFees(ctx, payer, packet, types.Fee{
+		RecvFee:    nil,
+		AckFee:     nil,
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+	})
+	require.Error(t, err)
+
+	// timeout fee is empty
+	err = k.LockFees(ctx, payer, packet, types.Fee{
+		RecvFee:    nil,
+		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+		TimeoutFee: nil,
+	})
+	require.Error(t, err)
 }
 
 func TestDistributeAcknowledgementFee(t *testing.T) {

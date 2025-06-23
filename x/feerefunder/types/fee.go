@@ -31,8 +31,11 @@ func (m Fee) Total() sdk.Coins {
 	return m.RecvFee.Add(m.AckFee...).Add(m.TimeoutFee...)
 }
 
-func (m Fee) ValidateBasic() error {
+// Validate asserts that each Fee is valid:
+// * RecvFee must be zero;
+func (m Fee) Validate() error {
 	var errFees []string
+
 	if !m.AckFee.IsValid() {
 		errFees = append(errFees, "ack fee is invalid")
 	}
@@ -46,16 +49,6 @@ func (m Fee) ValidateBasic() error {
 
 	if !m.RecvFee.IsZero() {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
-	}
-
-	return nil
-}
-
-// Validate asserts that each Fee is valid:
-// * RecvFee must be zero;
-func (m Fee) Validate() error {
-	if err := m.ValidateBasic(); err != nil {
-		return err
 	}
 
 	// if ack or timeout fees are zero or empty return an error
