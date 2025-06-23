@@ -66,10 +66,6 @@ func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID typ
 		return nil
 	}
 
-	if err := fee.Validate(); err != nil {
-		return errors.Wrapf(err, "failed to lock fees")
-	}
-
 	if err := k.checkFees(c, fee); err != nil {
 		return errors.Wrapf(err, "failed to lock fees")
 	}
@@ -235,6 +231,10 @@ func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 	params := k.GetParams(ctx)
 
+	if err := fees.Validate(); err != nil {
+		return errors.Wrapf(err, "fees do not pass validation")
+	}
+
 	if fees.AckFee.IsZero() || fees.TimeoutFee.IsZero() {
 		return errors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")
 	}
@@ -253,11 +253,6 @@ func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 
 	if hasNotAllowedCoins(fees.AckFee, params.MinFee.AckFee) {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "ack fee cannot have coins other than in params")
-	}
-
-	// we don't allow users to set recv fees, because we can't refund relayers for such messages
-	if !fees.RecvFee.IsZero() {
-		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
 	}
 
 	return nil

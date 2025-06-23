@@ -13,7 +13,6 @@ import (
 	testutil_keeper "github.com/neutron-org/neutron/v7/testutil/feerefunder/keeper"
 	mock_types "github.com/neutron-org/neutron/v7/testutil/mocks/feerefunder/types"
 
-	cosmoserrors "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
@@ -46,7 +45,7 @@ func TestKeeperCheckFees(t *testing.T) {
 		desc    string
 		fees    *types.Fee
 		minFees types.Fee
-		err     *cosmoserrors.Error
+		err     error
 	}{
 		{
 			desc: "SingleProperDenomInsufficient",
@@ -73,7 +72,7 @@ func TestKeeperCheckFees(t *testing.T) {
 				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 			},
-			err: sdkerrors.ErrInvalidCoins,
+			err: fmt.Errorf("recv fee must be zero: %w", sdkerrors.ErrInvalidCoins),
 		},
 		{
 			desc: "SingleDenomSufficient",

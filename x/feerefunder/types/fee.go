@@ -47,6 +47,7 @@ func (m Fee) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "contains invalid fees: %s", strings.Join(errFees, " , "))
 	}
 
+	// we don't allow users to set recv fees, because we can't refund relayers for such messages
 	if !m.RecvFee.IsZero() {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
 	}
