@@ -11,4 +11,5 @@ message Params {
   option (gogoproto.goproto_stringer) = false;
 
   Fee min_fee = 1 [(gogoproto.nullable) = false];
+  bool fee_enabled = 2;
 }

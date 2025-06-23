@@ -51,7 +51,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 	}
 
 	// if the sender is a contract, lock fees.
-	// Because contracts are required to pay fees for the acknowledgements
+	// Because contracts are required to pay fees for the acknowledgements and timeouts
 	if isContract {
 		if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
 			return nil, errors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
