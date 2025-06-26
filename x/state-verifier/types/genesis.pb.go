@@ -6,7 +6,7 @@ package types
 import (
 	fmt "fmt"
 	proto "github.com/cosmos/gogoproto/proto"
-	_07_tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	_07_tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	io "io"
 	math "math"
 	math_bits "math/bits"
