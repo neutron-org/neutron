@@ -55,6 +55,9 @@ const (
 
 	// JITPerBlock is the key to retrieve the number of JIT limit orders place in a single block
 	JITsInBlockKey = "JITsInBlock/count/"
+
+	// AmountsOwedKey is the prefix to retrieve the amounts owed
+	AmountsOwedKey = "FracAmountsOwed/value/"
 )
 
 func KeyPrefix(p string) []byte {
