@@ -55,6 +55,9 @@ const (
 
 	// JITPerBlock is the key to retrieve the number of JIT limit orders place in a single block
 	JITsInBlockKey = "JITsInBlock/count/"
+
+	// TrancheCountKey provides a unique identifier for each tranche
+	TrancheCountKey = "Tranche/count/"
 )
 
 func KeyPrefix(p string) []byte {
