@@ -23,7 +23,7 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	suite.IBCConnectionTestSuite.SetupTest()
 }
 
-func (suite *UpgradeTestSuite) TestUpgradeDenomsMetadata() {
+func (suite *UpgradeTestSuite) TestUpgradeFeeKeeperParams() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	ctx := suite.ChainA.GetContext()
 

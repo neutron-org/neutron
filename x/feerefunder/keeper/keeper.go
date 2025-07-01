@@ -67,7 +67,7 @@ func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID typ
 	}
 
 	if err := k.checkFees(c, fee); err != nil {
-		return errors.Wrapf(err, "failed to lock fees")
+		return errors.Wrapf(err, "fees check failed")
 	}
 
 	if _, ok := k.channelKeeper.GetChannel(c, packetID.PortId, packetID.ChannelId); !ok {
@@ -233,10 +233,6 @@ func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 
 	if err := fees.Validate(); err != nil {
 		return errors.Wrapf(err, "fees do not pass validation")
-	}
-
-	if fees.AckFee.IsZero() || fees.TimeoutFee.IsZero() {
-		return errors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")
 	}
 
 	if !fees.TimeoutFee.IsAnyGTE(params.MinFee.TimeoutFee) {

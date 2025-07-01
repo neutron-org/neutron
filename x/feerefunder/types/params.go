@@ -43,13 +43,16 @@ func DefaultParams() Params {
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{paramtypes.NewParamSetPair(KeyFees, &p.MinFee, validateFee)}
+	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(KeyFees, &p.MinFee, validateFee),
+		paramtypes.NewParamSetPair(KeyFeeEnabled, &p.FeeEnabled, validateFeeEnabled),
+	}
 }
 
 // Validate validates the set of params
 func (p Params) Validate() error {
 	if err := validateFee(p.MinFee); err != nil {
-		return err
+		return fmt.Errorf("invalid minFee: %w", err)
 	}
 
 	if err := validateFeeEnabled(p.FeeEnabled); err != nil {

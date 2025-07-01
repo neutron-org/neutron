@@ -250,6 +250,38 @@ func TestMsgTransferValidate(t *testing.T) {
 			errors.ErrInvalidCoins,
 		},
 		{
+			"zero ack fee",
+			types.MsgTransfer{
+				SourcePort:    "transfer",
+				SourceChannel: "channel-2",
+				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
+				Sender:        testutil.TestOwnerAddress,
+				Receiver:      TestAddress,
+				Fee: feetypes.Fee{
+					RecvFee:    nil,
+					AckFee:     nil,
+					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			errors.ErrInvalidCoins,
+		},
+		{
+			"zero timeout fee",
+			types.MsgTransfer{
+				SourcePort:    "transfer",
+				SourceChannel: "channel-2",
+				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
+				Sender:        testutil.TestOwnerAddress,
+				Receiver:      TestAddress,
+				Fee: feetypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: nil,
+				},
+			},
+			errors.ErrInvalidCoins,
+		},
+		{
 			"empty source port",
 			types.MsgTransfer{
 				SourcePort:    "",

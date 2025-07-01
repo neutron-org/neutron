@@ -210,7 +210,7 @@ func TestKeeperLockFees(t *testing.T) {
 		AckFee:     nil,
 		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
 	})
-	require.Error(t, err)
+	require.ErrorContains(t, err, "ack fee or timeout fee is zero")
 
 	// timeout fee is empty
 	err = k.LockFees(ctx, payer, packet, types.Fee{
@@ -218,7 +218,7 @@ func TestKeeperLockFees(t *testing.T) {
 		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
 		TimeoutFee: nil,
 	})
-	require.Error(t, err)
+	require.ErrorContains(t, err, "ack fee or timeout fee is zero")
 }
 
 func TestDistributeAcknowledgementFee(t *testing.T) {
@@ -253,7 +253,6 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 		PortId:    "transfer",
 		Sequence:  1,
 	}
-	k.DistributeAcknowledgementFee(ctx, receiver, invalidPacket)
 	assert.NotPanics(t, func() { k.DistributeAcknowledgementFee(ctx, receiver, invalidPacket) })
 
 	panicErrorToCatch := errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing ack fee: receiver = %s, packetID=%v", receiver, packet)
@@ -284,7 +283,7 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 
 	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
-	require.False(t, found, "no fee info")
+	require.False(t, found, "no expected fee info")
 
 	// simulate fee disabled
 	noFeePacket := types.PacketID{
@@ -358,7 +357,7 @@ func TestDistributeTimeoutFee(t *testing.T) {
 
 	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
-	require.False(t, found, "no fee info")
+	require.False(t, found, "no expected fee info")
 
 	// simulate fee disabled
 	noFeePacket := types.PacketID{
