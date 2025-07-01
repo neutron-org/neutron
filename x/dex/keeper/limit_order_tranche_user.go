@@ -23,9 +23,9 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 	if found {
 		if userShareData.TradePairId.Equal(*tradePairID) && userShareData.TickIndexTakerToMaker == tickIndex {
 			return userShareData, nil
-		} else { // This case should never happen
-			return nil, sdkerrors.Wrapf(types.ErrDuplicateTrancheKey, "tranche key already exists for different trade pair id or tick index")
-		}
+		} // else
+		// This case should never happen, but it's here for extra safety
+		return nil, sdkerrors.Wrapf(types.ErrDuplicateTrancheKey, "tranche key already exists for different trade pair id or tick index")
 	}
 
 	return &types.LimitOrderTrancheUser{
