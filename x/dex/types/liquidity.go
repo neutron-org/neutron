@@ -7,6 +7,6 @@ import (
 )
 
 type Liquidity interface {
-	Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *math.Int) (inAmount, outAmount math.Int)
+	Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *math.Int) (inAmount, outAmount math_utils.PrecDec)
 	Price() math_utils.PrecDec
 }

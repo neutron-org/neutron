@@ -285,8 +285,8 @@ func CancelLimitOrderEvent(
 }
 
 type SwapMetadata struct {
-	AmountIn  math.Int
-	AmountOut math.Int
+	AmountIn  math_utils.PrecDec
+	AmountOut math_utils.PrecDec
 	TokenIn   string
 }
 

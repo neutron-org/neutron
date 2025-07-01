@@ -63,19 +63,19 @@ func (p *Pool) Fee() uint64 {
 	return p.UpperTick1.Key.Fee
 }
 
-func (p *Pool) GetLowerReserve0() math.Int {
-	return p.LowerTick0.ReservesMakerDenom
+func (p *Pool) GetLowerReserve0() math_utils.PrecDec {
+	return p.LowerTick0.DecReservesMakerDenom
 }
 
-func (p *Pool) GetUpperReserve1() math.Int {
-	return p.UpperTick1.ReservesMakerDenom
+func (p *Pool) GetUpperReserve1() math_utils.PrecDec {
+	return p.UpperTick1.DecReservesMakerDenom
 }
 
 func (p *Pool) Swap(
 	tradePairID *TradePairID,
 	maxAmountTakerIn math.Int,
 	maxAmountMakerOut *math.Int,
-) (amountTakerIn, amountMakerOut math.Int) {
+) (amountTakerIn, amountMakerOut math_utils.PrecDec) {
 	var takerReserves, makerReserves *PoolReserves
 	if tradePairID.IsMakerDenomToken0() {
 		makerReserves = p.LowerTick0
@@ -86,25 +86,25 @@ func (p *Pool) Swap(
 	}
 
 	if maxAmountTakerIn.Equal(math.ZeroInt()) ||
-		makerReserves.ReservesMakerDenom.Equal(math.ZeroInt()) {
-		return math.ZeroInt(), math.ZeroInt()
+		makerReserves.DecReservesMakerDenom.IsZero() {
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec()
 	}
 
-	maxOutGivenTakerIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(makerReserves.MakerPrice).TruncateInt()
-	possibleAmountsMakerOut := []math.Int{makerReserves.ReservesMakerDenom, maxOutGivenTakerIn}
+	maxOutGivenTakerIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(makerReserves.MakerPrice)
+	possibleAmountsMakerOut := []math_utils.PrecDec{makerReserves.DecReservesMakerDenom, maxOutGivenTakerIn}
 	if maxAmountMakerOut != nil {
-		possibleAmountsMakerOut = append(possibleAmountsMakerOut, *maxAmountMakerOut)
+		possibleAmountsMakerOut = append(possibleAmountsMakerOut, math_utils.NewPrecDecFromInt(*maxAmountMakerOut))
 	}
 
 	// outAmount will be the smallest value of:
 	// a) The available reserves1
 	// b) The most the user could get out given maxAmountIn0 (maxOutGivenIn1)
 	// c) The maximum amount the user wants out (maxAmountOut1)
-	amountMakerOut = utils.MinIntArr(possibleAmountsMakerOut)
+	amountMakerOut = utils.MinPrecDecArr(possibleAmountsMakerOut)
 
-	amountTakerIn = makerReserves.MakerPrice.MulInt(amountMakerOut).Ceil().TruncateInt()
-	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
-	makerReserves.ReservesMakerDenom = makerReserves.ReservesMakerDenom.Sub(amountMakerOut)
+	amountTakerIn = makerReserves.MakerPrice.Mul(amountMakerOut)
+	takerReserves.SetMakerReserves(takerReserves.DecReservesMakerDenom.Add(amountTakerIn))
+	makerReserves.SetMakerReserves(makerReserves.DecReservesMakerDenom.Sub(amountMakerOut))
 
 	return amountTakerIn, amountMakerOut
 }
@@ -117,8 +117,8 @@ func (p *Pool) Deposit(
 	existingShares math.Int,
 	autoswap bool,
 ) (inAmount0, inAmount1 math.Int, outShares sdk.Coin) {
-	lowerReserve0 := &p.LowerTick0.ReservesMakerDenom
-	upperReserve1 := &p.UpperTick1.ReservesMakerDenom
+	lowerReserve0 := &p.LowerTick0.DecReservesMakerDenom
+	upperReserve1 := &p.UpperTick1.DecReservesMakerDenom
 
 	centerPrice1To0 := p.MustCalcPrice1To0Center()
 	var depositValueAsToken0 math_utils.PrecDec
@@ -151,8 +151,8 @@ func (p *Pool) Deposit(
 	}
 
 	outShares = p.CalcSharesMinted(depositValueAsToken0, existingShares, autoswapFee)
-	*lowerReserve0 = lowerReserve0.Add(inAmount0)
-	*upperReserve1 = upperReserve1.Add(inAmount1)
+	p.LowerTick0.SetMakerReserves(lowerReserve0.Add(math_utils.NewPrecDecFromInt(inAmount0)))
+	p.UpperTick1.SetMakerReserves(upperReserve1.Add(math_utils.NewPrecDecFromInt(inAmount1)))
 
 	return inAmount0, inAmount1, outShares
 }
@@ -182,9 +182,9 @@ func (p *Pool) CalcSharesMinted(
 ) (sharesMinted sdk.Coin) {
 	price1To0Center := p.MustCalcPrice1To0Center()
 
-	valueExistingToken0 := CalcAmountAsToken0(
-		p.LowerTick0.ReservesMakerDenom,
-		p.UpperTick1.ReservesMakerDenom,
+	valueExistingToken0 := CalcDecAmountAsToken0(
+		p.LowerTick0.DecReservesMakerDenom,
+		p.UpperTick1.DecReservesMakerDenom,
 		price1To0Center,
 	)
 
@@ -202,16 +202,16 @@ func (p *Pool) CalcSharesMinted(
 }
 
 func (p *Pool) RedeemValue(sharesToRemove, totalShares math.Int) (outAmount0, outAmount1 math.Int) {
-	reserves0 := &p.LowerTick0.ReservesMakerDenom
-	reserves1 := &p.UpperTick1.ReservesMakerDenom
+	reserves0 := p.LowerTick0.DecReservesMakerDenom
+	reserves1 := p.UpperTick1.DecReservesMakerDenom
 	// outAmount1 = ownershipRatio * reserves1
 	//            = (sharesToRemove / totalShares) * reserves1
 	//            = (reserves1 * sharesToRemove ) / totalShares
-	outAmount1 = math.LegacyNewDecFromInt(reserves1.Mul(sharesToRemove)).QuoInt(totalShares).TruncateInt()
+	outAmount1 = reserves1.MulInt(sharesToRemove).QuoInt(totalShares).TruncateInt()
 	// outAmount0 = ownershipRatio * reserves1
 	//            = (sharesToRemove / totalShares) * reserves1
 	//            = (reserves1 * sharesToRemove ) / totalShares
-	outAmount0 = math.LegacyNewDecFromInt(reserves0.Mul(sharesToRemove)).QuoInt(totalShares).TruncateInt()
+	outAmount0 = reserves0.MulInt(sharesToRemove).QuoInt(totalShares).TruncateInt()
 
 	return outAmount0, outAmount1
 }
@@ -228,26 +228,24 @@ func (p *Pool) Withdraw(sharesToRemove, totalShares math.Int) (outAmount0, outAm
 
 // Balance deposit amounts to match the existing ratio in the pool. If pool is empty allow any ratio.
 func CalcGreatestMatchingRatio(
-	targetAmount0 math.Int,
-	targetAmount1 math.Int,
+	targetAmount0 math_utils.PrecDec,
+	targetAmount1 math_utils.PrecDec,
 	amount0 math.Int,
 	amount1 math.Int,
 ) (resultAmount0, resultAmount1 math.Int) {
-	targetAmount0Dec := math.LegacyNewDecFromInt(targetAmount0)
-	targetAmount1Dec := math.LegacyNewDecFromInt(targetAmount1)
 
-	if targetAmount1.GT(math.ZeroInt()) {
+	if targetAmount1.IsPositive() {
 		resultAmount0 = math.MinInt(
 			amount0,
-			math.LegacyNewDecFromInt(amount1).Mul(targetAmount0Dec).Quo(targetAmount1Dec).TruncateInt())
+			math_utils.NewPrecDecFromInt(amount1).Mul(targetAmount0).Quo(targetAmount1).TruncateInt())
 	} else {
 		resultAmount0 = amount0
 	}
 
-	if targetAmount0.GT(math.ZeroInt()) {
+	if targetAmount0.IsPositive() {
 		resultAmount1 = math.MinInt(
 			amount1,
-			math.LegacyNewDecFromInt(amount0).Mul(targetAmount1Dec).Quo(targetAmount0Dec).TruncateInt())
+			math_utils.NewPrecDecFromInt(amount0).Mul(targetAmount1).Quo(targetAmount0).TruncateInt())
 	} else {
 		resultAmount1 = amount1
 	}
@@ -258,9 +256,9 @@ func CalcGreatestMatchingRatio(
 // CalcAutoswapAmount calculates the smallest swap to match the current pool ratio.
 // see: https://www.notion.so/Autoswap-Spec-ca5f35a4cd5b4dbf9ae27e0454ddd445?pvs=4#12032ea59b0e802c925efae10c3ca85f
 func CalcAutoswapAmount(
-	reserves0,
-	reserves1,
-	depositAmount0,
+	reserves0 math_utils.PrecDec,
+	reserves1 math_utils.PrecDec,
+	depositAmount0 math.Int,
 	depositAmount1 math.Int,
 	price1To0 math_utils.PrecDec,
 ) (resultAmount0, resultAmount1 math.Int) {
@@ -269,11 +267,9 @@ func CalcAutoswapAmount(
 		return math.ZeroInt(), math.ZeroInt()
 	}
 
-	reserves0Dec := math_utils.NewPrecDecFromInt(reserves0)
-	reserves1Dec := math_utils.NewPrecDecFromInt(reserves1)
 	// swapAmount = (reserves0*depositAmount1 - reserves1*depositAmount0) / (price * reserves1  + reserves0)
-	swapAmount := reserves0Dec.MulInt(depositAmount1).Sub(reserves1Dec.MulInt(depositAmount0)).
-		Quo(reserves0Dec.Add(reserves1Dec.Quo(price1To0)))
+	swapAmount := reserves0.MulInt(depositAmount1).Sub(reserves1.MulInt(depositAmount0)).
+		Quo(reserves0.Add(reserves1.Quo(price1To0)))
 
 	switch {
 	case swapAmount.IsZero(): // nothing to be swapped
@@ -304,4 +300,8 @@ func CalcAmountAsToken0(amount0, amount1 math.Int, price1To0 math_utils.PrecDec)
 	amount1Dec := math_utils.NewPrecDecFromInt(amount1)
 
 	return amount0Dec.Add(amount1Dec.Quo(price1To0))
+}
+
+func CalcDecAmountAsToken0(amount0, amount1 math_utils.PrecDec, price1To0 math_utils.PrecDec) math_utils.PrecDec {
+	return amount0.Add(amount1.Quo(price1To0))
 }

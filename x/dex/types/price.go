@@ -7,7 +7,6 @@ import (
 	fmt "fmt"
 
 	"cosmossdk.io/errors"
-	"cosmossdk.io/math"
 
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 	"github.com/neutron-org/neutron/v7/x/dex/utils"
@@ -140,8 +139,8 @@ func ValidateTickFee(tick int64, fee uint64) error {
 	return nil
 }
 
-func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
-	amountOut := math_utils.NewPrecDecFromInt(amountIn).Quo(price)
+func ValidateFairOutput(amountIn math_utils.PrecDec, price math_utils.PrecDec) error {
+	amountOut := amountIn.Quo(price)
 	if amountOut.LT(math_utils.OnePrecDec()) {
 		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}

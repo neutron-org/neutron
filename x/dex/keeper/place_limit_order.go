@@ -24,7 +24,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	minAvgSellPriceP *math_utils.PrecDec,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin sdk.Coin, err error) {
+) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin types.PrecDecCoin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	takerTradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
@@ -47,11 +47,10 @@ func (k Keeper) PlaceLimitOrderCore(
 	}
 
 	if swapOutCoin.IsPositive() {
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(
+		err = k.fractionBanker.SendFractionalToken(
 			ctx,
-			types.ModuleName,
 			receiverAddr,
-			sdk.Coins{swapOutCoin},
+			[]types.PrecDecCoin{swapOutCoin},
 		)
 		if err != nil {
 			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
@@ -111,13 +110,13 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	receiverAddr sdk.AccAddress,
 ) (
 	trancheKey string,
-	totalIn math.Int,
-	swapInCoin, swapOutCoin sdk.Coin,
+	totalIn math_utils.PrecDec,
+	swapInCoin, swapOutCoin types.PrecDecCoin,
 	sharesIssued math.Int,
 	minAvgSellPrice math_utils.PrecDec,
 	err error,
 ) {
-	amountLeft := amountIn
+	amountLeft := math_utils.NewPrecDecFromInt(amountIn)
 
 	limitBuyPrice, err := types.CalcPrice(tickIndexInToOut)
 	if err != nil {
@@ -186,8 +185,10 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		if err != nil {
 			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 		}
-		placeTranche.PlaceMakerLimitOrder(amountLeft)
-		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountLeft)
+
+		amountToPlace := amountLeft.TruncateInt()
+		placeTranche.PlaceMakerLimitOrder(amountToPlace)
+		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountToPlace)
 
 		if orderType.HasExpiration() {
 			goodTilRecord := NewLimitOrderExpiration(placeTranche)
@@ -200,7 +201,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		k.UpdateTranche(ctx, placeTranche)
 
 		totalIn = totalIn.Add(amountLeft)
-		sharesIssued = amountLeft
+		sharesIssued = amountToPlace
 	}
 
 	// This update will ALWAYS save the trancheUser as active.

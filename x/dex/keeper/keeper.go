@@ -13,12 +13,13 @@ import (
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		memKey     storetypes.StoreKey
-		tKey       storetypes.StoreKey
-		bankKeeper types.BankKeeper
-		authority  string
+		cdc            codec.BinaryCodec
+		storeKey       storetypes.StoreKey
+		memKey         storetypes.StoreKey
+		tKey           storetypes.StoreKey
+		bankKeeper     types.BankKeeper
+		authority      string
+		fractionBanker *FractionalBanker
 	}
 )
 
@@ -31,12 +32,13 @@ func NewKeeper(
 	authority string,
 ) *Keeper {
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		tKey:       tKey,
-		bankKeeper: bankKeeper,
-		authority:  authority,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		memKey:         memKey,
+		tKey:           tKey,
+		bankKeeper:     bankKeeper,
+		authority:      authority,
+		fractionBanker: NewFractionalBanker(storeKey, bankKeeper, cdc),
 	}
 }
 

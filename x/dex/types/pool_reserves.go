@@ -19,6 +19,7 @@ func NewPoolReservesFromCounterpart(
 	return &PoolReserves{
 		Key:                       thisID,
 		ReservesMakerDenom:        math.ZeroInt(),
+		DecReservesMakerDenom:     math_utils.ZeroPrecDec(),
 		MakerPrice:                makerPrice,
 		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
 		PriceOppositeTakerToMaker: counterpart.PriceTakerToMaker,
@@ -41,6 +42,7 @@ func NewPoolReserves(
 	return &PoolReserves{
 		Key:                       poolReservesID,
 		ReservesMakerDenom:        math.ZeroInt(),
+		DecReservesMakerDenom:     math_utils.ZeroPrecDec(),
 		MakerPrice:                makerPrice,
 		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
 		PriceOppositeTakerToMaker: priceOppositeTakerToMaker,
@@ -55,4 +57,9 @@ func MustNewPoolReserves(
 		panic(err)
 	}
 	return poolReserves
+}
+
+func (p *PoolReserves) SetMakerReserves(reserves math_utils.PrecDec) {
+	p.ReservesMakerDenom = reserves.TruncateInt()
+	p.DecReservesMakerDenom = reserves
 }

@@ -1,11 +1,44 @@
 package types
 
 import (
+	"errors"
 	fmt "fmt"
 	"sort"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 )
+
+func NewPrecDecCoin(denom string, amount math_utils.PrecDec) PrecDecCoin {
+	coin := PrecDecCoin{
+		Denom:  denom,
+		Amount: amount,
+	}
+
+	if err := coin.Validate(); err != nil {
+		panic(err)
+	}
+
+	return coinxw
+}
+
+// Validate returns an error if the Coin has a negative amount or if
+// the denom is invalid.
+func (coin PrecDecCoin) Validate() error {
+	if err := sdk.ValidateDenom(coin.Denom); err != nil {
+		return err
+	}
+
+	if coin.Amount.IsNil() {
+		return errors.New("amount is nil")
+	}
+
+	if coin.Amount.IsNegative() {
+		return fmt.Errorf("negative coin amount: %v", coin.Amount)
+	}
+
+	return nil
+}
 
 func (coin PrecDecCoin) Add(coinB PrecDecCoin) PrecDecCoin {
 	if coin.Denom != coinB.Denom {

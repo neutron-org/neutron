@@ -34,12 +34,14 @@ func NewLimitOrderTranche(
 			TrancheKey:            trancheKey,
 			TickIndexTakerToMaker: tickIndex,
 		},
-		ReservesMakerDenom: reservesMakerDenom,
-		ReservesTakerDenom: reservesTakerDenom,
-		TotalMakerDenom:    totalMakerDenom,
-		TotalTakerDenom:    totalTakerDenom,
-		MakerPrice:         makerPrice,
-		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(makerPrice),
+		ReservesMakerDenom:    reservesMakerDenom,
+		ReservesTakerDenom:    reservesTakerDenom,
+		DecReservesMakerDenom: math_utils.NewPrecDecFromInt(reservesMakerDenom),
+		DecReservesTakerDenom: math_utils.NewPrecDecFromInt(reservesTakerDenom),
+		TotalMakerDenom:       totalMakerDenom,
+		TotalTakerDenom:       totalTakerDenom,
+		MakerPrice:            makerPrice,
+		PriceTakerToMaker:     math_utils.OnePrecDec().Quo(makerPrice),
 	}, nil
 }
 
@@ -80,11 +82,11 @@ func MustNewLimitOrderTranche(
 }
 
 func (t LimitOrderTranche) IsPlaceTranche() bool {
-	return t.ReservesMakerDenom.Equal(t.TotalMakerDenom)
+	return t.DecReservesMakerDenom.Equal(math_utils.NewPrecDecFromInt(t.TotalMakerDenom))
 }
 
 func (t LimitOrderTranche) IsFilled() bool {
-	return t.ReservesMakerDenom.IsZero()
+	return t.DecReservesMakerDenom.IsZero()
 }
 
 func (t LimitOrderTranche) HasExpiration() bool {
@@ -100,11 +102,11 @@ func (t LimitOrderTranche) IsExpired(ctx sdk.Context) bool {
 }
 
 func (t LimitOrderTranche) HasTokenIn() bool {
-	return t.ReservesMakerDenom.GT(math.ZeroInt())
+	return t.DecReservesMakerDenom.IsPositive()
 }
 
 func (t LimitOrderTranche) HasTokenOut() bool {
-	return t.ReservesTakerDenom.GT(math.ZeroInt())
+	return t.DecReservesTakerDenom.IsPositive()
 }
 
 func (t LimitOrderTranche) Price() math_utils.PrecDec {
@@ -128,10 +130,6 @@ func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
 	return withdrawableAmount
 }
 
-func (t LimitOrderTranche) HasLiquidity() bool {
-	return t.ReservesMakerDenom.GT(math.ZeroInt())
-}
-
 func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
 ) (amountToRemove math.Int) {
@@ -139,7 +137,7 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).
 		QuoInt(t.TotalMakerDenom).
 		TruncateInt()
-	t.ReservesMakerDenom = t.ReservesMakerDenom.Sub(amountToRemove)
+	t.SetMakerReserves(t.DecReservesMakerDenom.Sub(math_utils.NewPrecDecFromInt(amountToRemove)))
 
 	return amountToRemove
 }
@@ -161,30 +159,30 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 
 func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn, tokenOut math.Int) {
 	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
-	t.ReservesTakerDenom = t.ReservesTakerDenom.Sub(amountOutTokenOut)
+	t.SetTakerReserves(t.DecReservesTakerDenom.Sub(math_utils.NewPrecDecFromInt(amountOutTokenOut)))
 
 	return amountOutTokenIn, amountOutTokenOut
 }
 
 func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *math.Int) (
 	inAmount math.Int,
-	outAmount math.Int,
+	outAmount math_utils.PrecDec,
 ) {
-	reservesTokenOut := &t.ReservesMakerDenom
-	fillTokenIn := &t.ReservesTakerDenom
-	totalTokenIn := &t.TotalTakerDenom
-	maxOutGivenIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(t.MakerPrice).TruncateInt()
-	possibleOutAmounts := []math.Int{*reservesTokenOut, maxOutGivenIn}
+	reservesTokenOut := t.DecReservesMakerDenom
+	fillTokenIn := t.DecReservesTakerDenom
+	totalTokenIn := t.TotalTakerDenom
+	maxOutGivenIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(t.MakerPrice)
+	possibleOutAmounts := []math_utils.PrecDec{reservesTokenOut, maxOutGivenIn}
 	if maxAmountMakerOut != nil {
-		possibleOutAmounts = append(possibleOutAmounts, *maxAmountMakerOut)
+		possibleOutAmounts = append(possibleOutAmounts, math_utils.NewPrecDecFromInt(*maxAmountMakerOut))
 	}
-	outAmount = utils.MinIntArr(possibleOutAmounts)
+	outAmount = utils.MinPrecDecArr(possibleOutAmounts)
 
-	inAmount = t.MakerPrice.MulInt(outAmount).Ceil().TruncateInt()
+	inAmount = t.MakerPrice.Mul(outAmount).Ceil().TruncateInt()
 
-	*fillTokenIn = fillTokenIn.Add(inAmount)
-	*totalTokenIn = totalTokenIn.Add(inAmount)
-	*reservesTokenOut = reservesTokenOut.Sub(outAmount)
+	t.SetTakerReserves(fillTokenIn.Add(math_utils.NewPrecDecFromInt(inAmount)))
+	totalTokenIn = totalTokenIn.Add(math_utils.NewPrecDecFromInt(inAmount))
+	reservesTokenOut = reservesTokenOut.Sub(math_utils.NewPrecDecFromInt(outAmount))
 
 	return inAmount, outAmount
 }
@@ -192,4 +190,14 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *m
 func (t *LimitOrderTranche) PlaceMakerLimitOrder(amountIn math.Int) {
 	t.ReservesMakerDenom = t.ReservesMakerDenom.Add(amountIn)
 	t.TotalMakerDenom = t.TotalMakerDenom.Add(amountIn)
+}
+
+func (t *LimitOrderTranche) SetMakerReserves(reserves math_utils.PrecDec) {
+	t.ReservesMakerDenom = reserves.TruncateInt()
+	t.DecReservesMakerDenom = reserves
+}
+
+func (t *LimitOrderTranche) SetTakerReserves(reserves math_utils.PrecDec) {
+	t.ReservesTakerDenom = reserves.TruncateInt()
+	t.DecReservesTakerDenom = reserves
 }

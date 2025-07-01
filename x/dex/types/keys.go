@@ -56,8 +56,8 @@ const (
 	// JITPerBlock is the key to retrieve the number of JIT limit orders place in a single block
 	JITsInBlockKey = "JITsInBlock/count/"
 
-	// AmountsOwedKey is the prefix to retrieve the amounts owed
-	AmountsOwedKey = "FracAmountsOwed/value/"
+	// FractionalBalanceKey is the prefix to retrieve a user's fractional balance
+	FractionalBalanceKeyPrefix = "FractionalBalance/value/"
 )
 
 func KeyPrefix(p string) []byte {
@@ -176,6 +176,16 @@ func PoolIDKey(
 
 	feeBytes := sdk.Uint64ToBigEndian(fee)
 	key = append(key, feeBytes...)
+	key = append(key, []byte("/")...)
+
+	return key
+}
+
+func FractionalBalanceKey(address sdk.AccAddress) []byte {
+	var key []byte
+
+	addressBytes := []byte(address.String())
+	key = append(key, addressBytes...)
 	key = append(key, []byte("/")...)
 
 	return key

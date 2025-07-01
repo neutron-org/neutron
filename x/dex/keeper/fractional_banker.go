@@ -1,10 +1,8 @@
 package keeper
 
 import (
-	"errors"
-
-	"cosmossdk.io/collections"
-	"cosmossdk.io/core/store"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
@@ -12,38 +10,65 @@ import (
 )
 
 type FractionalBanker struct {
-	AmountsOwed collections.Map[string, PrecDecCoins]
-	BankKeeper  types.BankKeeper
+	BankKeeper types.BankKeeper
+	storeKey   storetypes.StoreKey
+	cdc        codec.BinaryCodec
 }
 
-func NewFractionalBanker(storeService store.KVStoreService, bankKeeper types.BankKeeper, cdc codec.Codec) *FractionalBanker {
-	sb := collections.NewSchemaBuilder(storeService)
+func NewFractionalBanker(storeKey storetypes.StoreKey, bankKeeper types.BankKeeper, cdc codec.BinaryCodec) *FractionalBanker {
 
 	return &FractionalBanker{
 		BankKeeper: bankKeeper,
-		AmountsOwed: collections.NewMap(
-			sb,
-			collections.NewPrefix(types.AmountsOwedKey),
-			"AmountsOwed",
-			collections.StringKey,
-			codec.CollValue[types.PrecDecCoins](cdc),
-		),
+		storeKey:   storeKey,
+		cdc:        cdc,
 	}
 }
 
-func (k *FractionalBanker) SendFractionalToken(ctx sdk.Context, address string, tokens []types.PrecDecCoin) error {
-	amountsOwed, err := k.AmountsOwed.Get(ctx, address)
-	if errors.Is(err, collections.ErrNotFound) {
-		amountsOwed = types.PrecDecCoins{}
-	} else if err != nil {
-		return err
+func (k *FractionalBanker) GetFractionalBalance(ctx sdk.Context, address sdk.AccAddress) types.PrecDecCoins {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
+	b := store.Get(types.FractionalBalanceKey(address))
+
+	if b == nil {
+		return []types.PrecDecCoin{}
 	}
 
-	amountsOwed = amountsOwed.Add(tokens...)
+	var balance types.FractionalBalance
+	k.cdc.MustUnmarshal(b, &balance)
 
+	return balance.Balance
 }
 
-func GetWholeTokenAmounts(tokens []types.PrecDecCoin) (wholeTokens types.Coins, fractionalTokens types.PrecDecCoins) {
+func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, coins types.PrecDecCoins) {
+
+	balance := types.FractionalBalance{
+		Balance: coins,
+	}
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
+	b := k.cdc.MustMarshal(&balance)
+	store.Set(types.FractionalBalanceKey(address), b)
+}
+
+func (k *FractionalBanker) SendFractionalToken(ctx sdk.Context, address sdk.AccAddress, tokens []types.PrecDecCoin) error {
+	var balance types.PrecDecCoins = k.GetFractionalBalance(ctx, address)
+
+	newBalance := balance.Add(tokens...)
+
+	wholeTokens, fractionalTokens := GetWholeTokenAmounts(newBalance)
+
+	if !wholeTokens.Empty() {
+		err := k.BankKeeper.SendCoinsFromAccountToModule(ctx, address, types.ModuleName, wholeTokens)
+		if err != nil {
+			return err
+		}
+	}
+
+	k.SetFractionalBalance(ctx, address, fractionalTokens)
+
+	return nil
+}
+
+func GetWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Coins, fractionalTokens types.PrecDecCoins) {
 	wholeTokens = sdk.Coins{}
 	fractionalTokens = types.PrecDecCoins{}
 
