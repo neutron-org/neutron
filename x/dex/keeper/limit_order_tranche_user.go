@@ -26,7 +26,6 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 		} else { // This case should never happen
 			return nil, sdkerrors.Wrapf(types.ErrDuplicateTrancheKey, "tranche key already exists for different trade pair id or tick index")
 		}
-
 	}
 
 	return &types.LimitOrderTrancheUser{
@@ -38,7 +37,6 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 		TradePairId:           tradePairID,
 		OrderType:             orderType,
 	}, nil
-
 }
 
 // SetLimitOrderTrancheUser set a specific LimitOrderTrancheUser in the store from its index
