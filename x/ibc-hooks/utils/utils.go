@@ -46,15 +46,13 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 	var denom string
 	voucherPrefix := transfertypes.NewHop(packet.GetSourcePort(), packet.GetSourceChannel()).String()
 	if strings.HasPrefix(data.Denom, voucherPrefix) {
-		// remove prefix added by sender chain
-		unprefixedDenom := data.Denom[len(voucherPrefix)+1:]
-
 		// coin denomination used in sending from the escrow address
-		denom = unprefixedDenom
+		// remove prefix added by sender chain
+		denom = data.Denom[len(voucherPrefix)+1:]
 
 		// The denomination used to send the coins is either the native denom or the hash of the path
 		// if the denomination is not native.
-		denomTrace := transfertypes.ExtractDenomFromPath(unprefixedDenom)
+		denomTrace := transfertypes.ExtractDenomFromPath(denom)
 		if denomTrace.Path() != "" {
 			denom = denomTrace.IBCDenom()
 		}
