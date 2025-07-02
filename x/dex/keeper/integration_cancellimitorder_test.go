@@ -559,3 +559,18 @@ func (s *DexTestSuite) TestCancelExpiringLimitOrderWithDust() {
 	// THEN the tranche is deleted
 	s.assertLimitLiquidityAtTick("TokenA", -66671, 0)
 }
+
+func (s *DexTestSuite) TestWrongSharesProtectionCancel() {
+	s.fundAliceBalances(1, 0)
+
+	trancheKey := s.aliceLimitSells("TokenA", 0, 1)
+
+	trancheUser, _ := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
+
+	// This should be impossible, but we still want to check that if there is a bug with the share calculation the user cannot withdraw more than the balance of the tranche
+	trancheUser.SharesOwned = sdkmath.NewInt(1_000_000_000_000_000_000)
+
+	s.App.DexKeeper.SetLimitOrderTrancheUser(s.Ctx, trancheUser)
+
+	s.aliceCancelsLimitSellFails(trancheKey, types.ErrInsufficientReserves)
+}
