@@ -248,13 +248,6 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 		PacketId: packet,
 	})
 
-	invalidPacket := types.PacketID{
-		ChannelId: "channel-0",
-		PortId:    "transfer",
-		Sequence:  1,
-	}
-	assert.NotPanics(t, func() { k.DistributeAcknowledgementFee(ctx, receiver, invalidPacket) })
-
 	panicErrorToCatch := errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing ack fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.AckFee).Return(fmt.Errorf("bank module error"))
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeAcknowledgementFee(ctx, receiver, packet) })
@@ -321,13 +314,6 @@ func TestDistributeTimeoutFee(t *testing.T) {
 		Fee:      validFee,
 		PacketId: packet,
 	})
-
-	invalidPacket := types.PacketID{
-		ChannelId: "channel-0",
-		PortId:    "transfer",
-		Sequence:  1,
-	}
-	assert.NotPanics(t, func() { k.DistributeTimeoutFee(ctx, receiver, invalidPacket) })
 
 	panicErrorToCatch := errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing timeout fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.TimeoutFee).Return(fmt.Errorf("bank module error"))

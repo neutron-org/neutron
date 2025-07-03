@@ -55,6 +55,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// LockFees locks interchain transaction `fee` from given `payer`
 func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
 	c := sdk.UnwrapSDKContext(ctx)
 
@@ -102,6 +103,9 @@ func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID typ
 	return nil
 }
 
+// DistributeAcknowledgementFee distributes ack fee to the `receiver`
+// and returns back unused timeout fee to the `feeInfo.Payer`.
+// In case feeInfo for this `packetID` is not found, do nothing.
 func (k Keeper) DistributeAcknowledgementFee(ctx context.Context, receiver sdk.AccAddress, packetID types.PacketID) {
 	c := sdk.UnwrapSDKContext(ctx)
 
@@ -141,6 +145,9 @@ func (k Keeper) DistributeAcknowledgementFee(ctx context.Context, receiver sdk.A
 	k.removeFeeInfo(c, packetID)
 }
 
+// DistributeTimeoutFee distributes timeout fee to the `receiver`
+// and returns back unused ack fee to the `feeInfo.Payer`.
+// In case feeInfo for this `packetID` is not found, do nothing.
 func (k Keeper) DistributeTimeoutFee(ctx context.Context, receiver sdk.AccAddress, packetID types.PacketID) {
 	c := sdk.UnwrapSDKContext(ctx)
 
