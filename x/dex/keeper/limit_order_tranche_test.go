@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"strconv"
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -24,7 +24,7 @@ func createNLimitOrderTranches(
 		items[i] = types.MustNewLimitOrderTranche(
 			"TokenA",
 			"TokenB",
-			strconv.Itoa(i),
+			keeper.NewTrancheKey(ctx),
 			int64(i),
 			math.ZeroInt(),
 			math.ZeroInt(),
@@ -40,13 +40,14 @@ func createNLimitOrderTranches(
 func TestGetLimitOrderTranche(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
 	items := createNLimitOrderTranches(keeper, ctx, 10)
-	for _, item := range items {
+	for n, item := range items {
 		rst := keeper.GetLimitOrderTranche(ctx, item.Key)
 		require.NotNil(t, rst)
 		require.Equal(t,
 			nullify.Fill(item),
 			nullify.Fill(rst),
 		)
+		require.Equal(t, fmt.Sprintf("tk-%d", n), item.Key.TrancheKey)
 	}
 }
 
