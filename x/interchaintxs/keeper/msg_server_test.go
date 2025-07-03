@@ -233,7 +233,11 @@ func TestRegisterInterchainAccountUnordered(t *testing.T) {
 }
 
 func TestMsgSubmitTXValidate(t *testing.T) {
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 
