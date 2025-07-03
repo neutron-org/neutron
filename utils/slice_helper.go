@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"slices"
 	"sort"
 
 	"golang.org/x/exp/constraints"
@@ -9,9 +10,7 @@ import (
 // SortSlice sorts a slice of type T elements that implement constraints.Ordered.
 // Mutates input slice s
 func SortSlice[T constraints.Ordered](s []T) {
-	sort.Slice(s, func(i, j int) bool {
-		return s[i] < s[j]
-	})
+	slices.Sort(s)
 }
 
 func Filter[T interface{}](filter func(T) bool, s []T) []T {
