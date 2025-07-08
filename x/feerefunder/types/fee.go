@@ -53,10 +53,5 @@ func (m Fee) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
 	}
 
-	// if ack or timeout fees are zero or empty return an error
-	if m.AckFee.IsZero() || m.TimeoutFee.IsZero() {
-		return errors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")
-	}
-
 	return nil
 }

@@ -242,6 +242,11 @@ func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 		return errors.Wrapf(err, "fees do not pass validation")
 	}
 
+	// if ack or timeout fees are zero or empty return an error
+	if fees.AckFee.IsZero() || fees.TimeoutFee.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidCoins, "provided ack fee or timeout fee is zero")
+	}
+
 	if !fees.TimeoutFee.IsAnyGTE(params.MinFee.TimeoutFee) {
 		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min governance set timeout fee: %v < %v", fees.TimeoutFee, params.MinFee.TimeoutFee)
 	}
