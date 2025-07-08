@@ -47,8 +47,9 @@ func (k Keeper) PlaceLimitOrderCore(
 	}
 
 	if swapOutCoin.IsPositive() {
-		err = k.fractionBanker.SendFractionalToken(
+		err = k.fractionalBanker.SendFractionalCoinsFromModuleToAccount(
 			ctx,
+			types.ModuleName,
 			receiverAddr,
 			[]types.PrecDecCoin{swapOutCoin},
 		)
@@ -58,13 +59,13 @@ func (k Keeper) PlaceLimitOrderCore(
 	}
 
 	if totalIn.IsPositive() {
-		totalInCoin = sdk.NewCoin(tokenIn, totalIn)
+		totalInCoin = types.NewPrecDecCoin(tokenIn, totalIn)
 
-		err = k.bankKeeper.SendCoinsFromAccountToModule(
+		err = k.fractionalBanker.SendFractionalCoinsFromAccountToModule(
 			ctx,
 			callerAddr,
 			types.ModuleName,
-			sdk.Coins{totalInCoin},
+			[]types.PrecDecCoin{totalInCoin},
 		)
 		if err != nil {
 			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
@@ -130,8 +131,8 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		minAvgSellPrice = *minAvgSellPriceP
 	}
 
-	// Ensure that after rounding user will get at least 1 token out.
-	err = types.ValidateFairOutput(amountIn, limitBuyPrice)
+	// Ensure user will get at least 1 token out.
+	err = types.ValidateFairOutput(math_utils.NewPrecDecFromInt(amountIn), limitBuyPrice)
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 	}

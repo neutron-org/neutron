@@ -14,7 +14,7 @@ type PoolLiquidity struct {
 func (pl *PoolLiquidity) Swap(
 	maxAmountTakerDenomIn math.Int,
 	maxAmountMakerDenomOut *math.Int,
-) (inAmount, outAmount math.Int) {
+) (inAmount, outAmount math_utils.PrecDec) {
 	return pl.Pool.Swap(
 		pl.TradePairID,
 		maxAmountTakerDenomIn,

@@ -38,7 +38,9 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "total_maker_denom"
   ];
+  // DEPRECATED: total_taker_denom will be removed in future release, `dec_total_taker_denom` should always be used.
   string total_taker_denom = 5 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"total_taker_denom\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -80,5 +82,13 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_reserves_taker_denom"
   ];
+
+  string dec_total_taker_denom = 11 [
+    (gogoproto.moretags) = "yaml:\"dec_total_taker_denom\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "total_taker_denom"
+  ];
+  
   
 }

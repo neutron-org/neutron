@@ -5,6 +5,7 @@ import (
 	fmt "fmt"
 	"sort"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 )
@@ -19,7 +20,34 @@ func NewPrecDecCoin(denom string, amount math_utils.PrecDec) PrecDecCoin {
 		panic(err)
 	}
 
-	return coinxw
+	return coin
+}
+
+func NewPrecDecCoinFromInt(denom string, amount math.Int) PrecDecCoin {
+	coin := PrecDecCoin{
+		Denom:  denom,
+		Amount: math_utils.NewPrecDecFromInt(amount),
+	}
+
+	if err := coin.Validate(); err != nil {
+		panic(err)
+	}
+
+	return coin
+}
+
+func (coin PrecDecCoin) TruncateToCoin() sdk.Coin {
+	return sdk.Coin{
+		Denom:  coin.Denom,
+		Amount: coin.Amount.TruncateInt(), // TODO: check if this is correct
+	}
+}
+
+func (coin PrecDecCoin) CeilToCoin() sdk.Coin {
+	return sdk.Coin{
+		Denom:  coin.Denom,
+		Amount: coin.Amount.Ceil().TruncateInt(), // TODO: check if this is correct
+	}
 }
 
 // Validate returns an error if the Coin has a negative amount or if
@@ -66,6 +94,14 @@ func (coins PrecDecCoins) isSorted() bool {
 // IsZero returns if this represents no money
 func (coin PrecDecCoin) IsZero() bool {
 	return coin.Amount.IsZero()
+}
+
+func (coin PrecDecCoin) IsPositive() bool {
+	return coin.Amount.IsPositive()
+}
+
+func (coin PrecDecCoin) IsNegative() bool {
+	return coin.Amount.IsNegative()
 }
 
 //-----------------------------------------------------------------------------
@@ -125,4 +161,9 @@ func (coins PrecDecCoins) safeAdd(coinsB PrecDecCoins) (coalesced PrecDecCoins) 
 		return PrecDecCoins{}
 	}
 	return coalesced.Sort()
+}
+
+// Empty returns true if there are no coins and false otherwise.
+func (coins PrecDecCoins) Empty() bool {
+	return len(coins) == 0
 }

@@ -611,7 +611,7 @@ func (s *DexTestSuite) swapInt(
 	tokenIn string,
 	tokenOut string,
 	maxAmountIn sdkmath.Int,
-) (coinIn, coinOut sdk.Coin, filled bool, err error) {
+) (coinIn, coinOut types.PrecDecCoin, filled bool, err error) {
 	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
 	s.Assert().NoError(err)
 	return s.App.DexKeeper.Swap(
@@ -627,7 +627,7 @@ func (s *DexTestSuite) swapSuccess(
 	tokenIn string,
 	tokenOut string,
 	maxAmountIn int64,
-) (coinIn, coinOut sdk.Coin) {
+) (coinIn, coinOut types.PrecDecCoin) {
 	coinIn, coinOut, _, err := s.swapInt(tokenIn, tokenOut, sdkmath.NewInt(maxAmountIn).Mul(denomMultiple))
 	s.Assert().NoError(err)
 	return coinIn, coinOut
@@ -638,7 +638,7 @@ func (s *DexTestSuite) swapWithMaxOut(
 	tokenOut string,
 	maxAmountIn int64,
 	maxAmountOut int64,
-) (coinIn, coinOut sdk.Coin) {
+) (coinIn, coinOut types.PrecDecCoin) {
 	tradePairID := types.MustNewTradePairID(tokenIn, tokenOut)
 	maxAmountOutInt := sdkmath.NewInt(maxAmountOut).Mul(denomMultiple)
 	coinIn, coinOut, _, err := s.App.DexKeeper.Swap(

@@ -89,8 +89,9 @@ func CreateDepositEvent(
 	fee uint64,
 	depositAmountReserve0 math.Int,
 	depositAmountReserve1 math.Int,
-	amountIn0 math.Int,
-	amountIn1 math.Int,
+	// TODO: check switching these to precDec doesn't break anything
+	amountIn0 math_utils.PrecDec,
+	amountIn1 math_utils.PrecDec,
 	poolID uint64,
 	sharesMinted math.Int,
 ) sdk.Event {
@@ -174,6 +175,7 @@ func CreateMultihopSwapEvent(
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
 }
 
+// TODO: confirm switching to PrecDec amounts is safe
 func CreatePlaceLimitOrderEvent(
 	creator sdk.AccAddress,
 	receiver sdk.AccAddress,
@@ -181,7 +183,7 @@ func CreatePlaceLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountIn math.Int,
+	amountIn math_utils.PrecDec,
 	requestAmountIn math.Int,
 	limitTick int64,
 	orderType string,
@@ -189,8 +191,8 @@ func CreatePlaceLimitOrderEvent(
 	minAvgSellPrice math_utils.PrecDec,
 	shares math.Int,
 	trancheKey string,
-	swapAmountIn math.Int,
-	swapAmountOut math.Int,
+	swapAmountIn math_utils.PrecDec,
+	swapAmountOut math_utils.PrecDec,
 ) sdk.Event {
 	maxAmountOutStr := ""
 	if maxAmountOut != nil {
