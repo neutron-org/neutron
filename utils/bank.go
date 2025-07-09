@@ -122,7 +122,7 @@ func SanitizeCoins(coins []sdk.Coin) sdk.Coins {
 		if lastDenom != coin.Denom {
 			cleanCoins = append(cleanCoins, coin)
 		} else {
-			cleanCoins[len(cleanCoins)-1].Add(coin)
+			cleanCoins[len(cleanCoins)-1] = cleanCoins[len(cleanCoins)-1].Add(coin)
 		}
 		lastDenom = coin.Denom
 	}
