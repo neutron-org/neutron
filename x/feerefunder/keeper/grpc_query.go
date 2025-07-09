@@ -16,8 +16,8 @@ var _ types.QueryServer = Keeper{}
 func (k Keeper) FeeInfo(goCtx context.Context, request *types.FeeInfoRequest) (*types.FeeInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	feeInfo, err := k.GetFeeInfo(ctx, types.NewPacketID(request.PortId, request.ChannelId, request.Sequence))
-	if err != nil {
+	feeInfo, found := k.GetFeeInfo(ctx, types.NewPacketID(request.PortId, request.ChannelId, request.Sequence))
+	if !found {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "no fee info found for port_id = %s, channel_id=%s, sequence=%d", request.PortId, request.ChannelId, request.Sequence)
 	}
 
