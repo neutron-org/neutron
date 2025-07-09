@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	v800 "github.com/neutron-org/neutron/v7/app/upgrades/v8.0.0"
-
 	v700 "github.com/neutron-org/neutron/v7/app/upgrades/v7.0.0"
 	dynamicfeestypes "github.com/neutron-org/neutron/v7/x/dynamicfees/types"
 	stateverifier "github.com/neutron-org/neutron/v7/x/state-verifier"
@@ -237,7 +235,6 @@ var (
 	Upgrades = []upgrades.Upgrade{
 		v601.Upgrade,
 		v700.Upgrade,
-		v800.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
