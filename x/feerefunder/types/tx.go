@@ -36,5 +36,9 @@ func (msg *MsgUpdateParams) Validate() error {
 		return err
 	}
 
+	if err := msg.Params.MinFee.ValidateFeePresent(); err != nil {
+		return err
+	}
+
 	return nil
 }

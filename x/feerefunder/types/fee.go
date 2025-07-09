@@ -55,3 +55,12 @@ func (m Fee) Validate() error {
 
 	return nil
 }
+
+func (m Fee) ValidateFeePresent() error {
+	// if ack or timeout fees are zero or empty return an error
+	if m.AckFee.IsZero() || m.TimeoutFee.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")
+	}
+
+	return nil
+}
