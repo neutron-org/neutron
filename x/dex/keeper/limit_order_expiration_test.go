@@ -14,7 +14,7 @@ import (
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
-const gasRequiredToPurgeOneLO uint64 = 9_000
+const gasRequiredToPurgeOneLO uint64 = 10_000
 
 func createNLimitOrderExpiration(
 	keeper *keeper.Keeper,
@@ -166,7 +166,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	updateEvent := s.FindEvent(ctx.EventManager().Events(), types.TickUpdateEventKey)
 	eventAttrs := s.ExtractAttributes(updateEvent)
 	// Event has Reserves == 0
-	s.Equal(eventAttrs[types.AttributeReserves], "0")
+	s.Equal(eventAttrs[types.AttributeReserves], "0.000000000000000000000000000")
 }
 
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {

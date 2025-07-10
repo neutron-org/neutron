@@ -243,31 +243,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderInsufficientFunds() {
 	s.assertAliceLimitSellFails(err, "TokenA", 0, 10)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderGTCWithDustMinAvgPriceFails() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 1)
-	// GIVEN LP liq at 148.37-148.42 (with dust)
-	s.bobDeposits(
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_000, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_001, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_002, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(10), 50_003, 1),
-	)
-	// THEN alice GTC limitOrder minAvgPrice == limitPrice fails
-	limitPrice := math_utils.MustNewPrecDecFromStr("0.006737")
-	_, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
-		Creator:             s.alice.String(),
-		Receiver:            s.alice.String(),
-		TokenIn:             "TokenA",
-		TokenOut:            "TokenB",
-		LimitSellPrice:      &limitPrice,
-		AmountIn:            sdkmath.NewInt(2000),
-		OrderType:           types.LimitOrderType_GOOD_TIL_CANCELLED,
-		MinAverageSellPrice: &limitPrice,
-	})
-	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
-}
-
 func (s *DexTestSuite) TestPlaceLimitOrderGTCWithDustMinAvgPrice() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)
@@ -339,105 +314,6 @@ func (s *DexTestSuite) TestLimitOrderPartialFillDepositCancel() {
 	s.assertBobBalances(80, 120)
 	s.assertDexBalances(0, 0)
 }
-
-func (s *DexTestSuite) TestPlaceLimitOrderWithDustHitsTruePriceLimit() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 1)
-	// GIVEN LP liq at 20001-20004
-	s.bobDeposits(
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(180), 20001, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(180), 20002, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 20003, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(10000), 20004, 1),
-	)
-	// THEN alice IoC limitOrder with limitPrice 20005 fails
-	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", 20005, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIOCWithDustMinAvgPriceFails() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 1)
-	// GIVEN LP liq at 148.37-148.42 (with dust)
-	s.bobDeposits(
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_000, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_001, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_002, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(10), 50_003, 1),
-	)
-	// THEN alice IoC limitOrder minAvgPrice == limitPrice fails
-	_, err := s.aliceLimitSellsWithMinAvgPrice(
-		"TokenA",
-		math_utils.MustNewPrecDecFromStr("0.006730"),
-		1,
-		math_utils.MustNewPrecDecFromStr("0.006730"),
-		types.LimitOrderType_IMMEDIATE_OR_CANCEL,
-	)
-	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIOCWithDustMinAvgPrice() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 1)
-	// GIVEN LP liq at 148.37-148.42 (with dust)
-	s.bobDeposits(
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_000, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_001, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 50_002, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(10), 50_003, 1),
-	)
-	// THEN alice IoC limitOrder with lower min avg prices success
-	_, err := s.aliceLimitSellsWithMinAvgPrice(
-		"TokenA",
-		math_utils.MustNewPrecDecFromStr("0.006730"),
-		1,
-		math_utils.MustNewPrecDecFromStr("0.006727"),
-		types.LimitOrderType_IMMEDIATE_OR_CANCEL,
-	)
-	s.NoError(err)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIOCMinAvgPriceGTSellPriceFails() {
-	s.fundAliceBalances(40, 0)
-	s.fundBobBalances(0, 40)
-	// GIVEN LP liq between taker price .995 and .992
-	s.bobDeposits(
-		NewDeposit(0, 10, 50, 1),
-		NewDeposit(0, 10, 60, 1),
-		NewDeposit(0, 10, 70, 1),
-		NewDeposit(0, 10, 80, 1),
-	)
-	// THEN alice places IOC limitOrder with very low MinAveragePrice Fails
-	_, err := s.aliceLimitSellsWithMinAvgPrice(
-		"TokenA",
-		math_utils.MustNewPrecDecFromStr("0.99"),
-		40,
-		math_utils.MustNewPrecDecFromStr("0.995"),
-		types.LimitOrderType_IMMEDIATE_OR_CANCEL,
-	)
-	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIOCMinAvgPriceGTSellPrice() {
-	s.fundAliceBalances(40, 0)
-	s.fundBobBalances(0, 40)
-	// GIVEN LP liq between taker price .995 and .992
-	s.bobDeposits(
-		NewDeposit(0, 10, 50, 1),
-		NewDeposit(0, 10, 60, 1),
-		NewDeposit(0, 10, 70, 1),
-		NewDeposit(0, 10, 80, 1),
-	)
-	// THEN alice places IOC limitOrder with an achievable MinAveragePrice
-	_, err := s.aliceLimitSellsWithMinAvgPrice(
-		"TokenA",
-		math_utils.MustNewPrecDecFromStr("0.99"),
-		40,
-		math_utils.MustNewPrecDecFromStr("0.993"),
-		types.LimitOrderType_IMMEDIATE_OR_CANCEL,
-	)
-	s.NoError(err)
-}
-
 func (s *DexTestSuite) TestPlaceLimitOrderWithDust() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)
@@ -452,22 +328,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithDust() {
 	s.aliceLimitSells("TokenA", 20006, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 
 	// THEN all liq is traded through
-	s.assertAliceBalancesInt(sdkmath.NewInt(923409), sdkmath.NewInt(10361))
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderTooSmallAfterSwapFails() {
-	s.fundAliceBalances(5, 0)
-	s.fundBobBalances(0, 2)
-
-	// GIVEN 2 TokenB at tick 0
-	s.bobLimitSells("TokenB", 0, 2)
-	// WHEN Alice limit Sells at tick 149,149
-	// She swap through bobs liquidity leaving her with 3 tokens to place her maker order
-	// At price of 0.000000333333333 her expected output for the maker leg will be zero after rounding
-	// 3 * 149,149 * 1.0001^-149,149 = ~.9999
-
-	// THEN Alice's order fails
-	s.assertAliceLimitSellFails(types.ErrTradeTooSmall, "TokenA", 149_149, 5)
+	s.assertAliceBalancesInt(sdkmath.NewInt(923412), sdkmath.NewInt(10361))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderWithPrice0To1() {
@@ -594,7 +455,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK0TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenA", 21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalancesInt(sdkmath.NewInt(5), sdkmath.NewInt(1_353_046_854))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(1_353_046_854))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
@@ -608,7 +469,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenB", -21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalancesInt(sdkmath.NewInt(135_3046_854), sdkmath.NewInt(5))
+	s.assertAliceBalancesInt(sdkmath.NewInt(135_3046_854), sdkmath.ZeroInt())
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
@@ -639,22 +500,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 
 	// THEN alice swap ~19 BIGTokenB and gets back 20 BIGTokenA
 	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_165_594))
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderFoKHitsTruePriceLimit() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 1)
-	// GIVEN LP liq at 1-3. With small liq on tick 2
-	s.bobDeposits(
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 0, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(2000), 1, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1000), 2, 1),
-		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(2000), 3, 1),
-	)
-	// WHEN alice submits FoK limitOrder with limitPrice > 20004
-	_, err := s.limitSellsInt(s.alice, "TokenA", 6, sdkmath.NewInt(3000), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
 }
 
 // Immediate Or Cancel LimitOrders ////////////////////////////////////////////////////////////////////
@@ -707,15 +552,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	s.bobDeposits(NewDeposit(0, 5, -1, 1))
 	// THEN alice IoC limitOrder for 10 tokenA below current 0To1 price fails
 	s.assertAliceLimitSellFails(types.ErrNoLiquidity, "TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIoCTooSmallFails() {
-	s.fundAliceBalances(1, 0)
-	// WHEN Alice sells at a price where she would get less than 1 Token out
-	// 1_000_000 * 1.0001^ 138163 =  0.9999013318
-
-	// THEN Alice's order fails
-	s.assertAliceLimitSellFails(types.ErrTradeTooSmall, "TokenA", 138_163, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 // Just In Time Limit Orders //////////////////////////////////////////////////

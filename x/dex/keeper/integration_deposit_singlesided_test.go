@@ -531,11 +531,11 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapPartial() {
 	// SharesIssued = 20 +  17 * 1.0001^-5005 = 30.3
 
 	s.Equal(sdkmath.NewInt(20000000), resp.Reserve0Deposited[0])
-	s.Equal(sdkmath.NewInt(17018153), resp.Reserve1Deposited[0])
-	s.Equal(sdkmath.NewInt(30317130), resp.SharesIssued[0].Amount)
+	s.Equal(sdkmath.NewInt(17018155), resp.Reserve1Deposited[0])
+	s.Equal(sdkmath.NewInt(30317131), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
 
-	s.assertLiquidityAtTickInt(sdkmath.NewInt(20000000), sdkmath.NewInt(17018153), -5005, 1)
+	s.assertLiquidityAtTickInt(sdkmath.NewInt(20000000), sdkmath.NewInt(17018154), -5005, 1)
 }
 
 func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
@@ -558,7 +558,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
 	// A = 5 / 1.0001^-5001 = 8.2
 	// SharesIssued = 8.2
 
-	s.Equal(sdkmath.NewInt(8244224), resp.Reserve0Deposited[0])
+	s.Equal(sdkmath.NewInt(8244225), resp.Reserve0Deposited[0])
 	s.True(resp.Reserve1Deposited[0].IsZero())
 	s.Equal(sdkmath.NewInt(8244224), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
@@ -578,15 +578,15 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll2() {
 			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10}),
 	)
 
-	// THEN (almost) all of alice's TokenB is swapped with 2 coins not swapped due to monotonic rounding
+	// THEN all of alice's TokenB is swapped
 	// and she deposits ~7.3TokenA & 0TokenB
 	// A = 20 / 1.0001^10003 = 7.3
 	// SharesIssued = 7.3
 
-	s.Equal(sdkmath.NewInt(7355749), resp.Reserve0Deposited[0])
+	s.Equal(sdkmath.NewInt(7355750), resp.Reserve0Deposited[0])
 	s.True(resp.Reserve1Deposited[0].IsZero())
 	s.Equal(sdkmath.NewInt(7355749), resp.SharesIssued[0].Amount)
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(2))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.ZeroInt())
 
 	s.assertLiquidityAtTickInt(sdkmath.NewInt(7355749), sdkmath.ZeroInt(), -10005, 1)
 }

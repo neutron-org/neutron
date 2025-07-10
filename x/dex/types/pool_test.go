@@ -3,7 +3,6 @@ package types_test
 import (
 	"testing"
 
-	"cosmossdk.io/math"
 	"github.com/stretchr/testify/assert"
 
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
@@ -17,8 +16,8 @@ func TestCalcGreatestMatchingRatioBothReservesNonZero(t *testing.T) {
 		math_utils.NewPrecDec(100),
 		math_utils.NewPrecDec(100),
 	)
-	assert.Equal(t, math.NewInt(25), trueAmount0)
-	assert.Equal(t, math.NewInt(100), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(25), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(100), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatioBothReservesZero(t *testing.T) {
@@ -28,8 +27,8 @@ func TestCalcGreatestMatchingRatioBothReservesZero(t *testing.T) {
 		math_utils.NewPrecDec(100),
 		math_utils.NewPrecDec(100),
 	)
-	assert.Equal(t, math.NewInt(100), trueAmount0)
-	assert.Equal(t, math.NewInt(100), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(100), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(100), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatioWrongCoinDeposited(t *testing.T) {
@@ -39,8 +38,8 @@ func TestCalcGreatestMatchingRatioWrongCoinDeposited(t *testing.T) {
 		math_utils.NewPrecDec(0),
 		math_utils.NewPrecDec(100),
 	)
-	assert.Equal(t, math.NewInt(0), trueAmount0)
-	assert.Equal(t, math.NewInt(0), trueAmount1)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount0)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount1)
 
 	trueAmount0, trueAmount1 = dextypes.CalcGreatestMatchingRatio(
 		math_utils.NewPrecDec(0),
@@ -48,8 +47,8 @@ func TestCalcGreatestMatchingRatioWrongCoinDeposited(t *testing.T) {
 		math_utils.NewPrecDec(100),
 		math_utils.NewPrecDec(0),
 	)
-	assert.Equal(t, math.NewInt(0), trueAmount0)
-	assert.Equal(t, math.NewInt(0), trueAmount1)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount0)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatioOneReserveZero(t *testing.T) {
@@ -59,8 +58,8 @@ func TestCalcGreatestMatchingRatioOneReserveZero(t *testing.T) {
 		math_utils.NewPrecDec(100),
 		math_utils.NewPrecDec(100),
 	)
-	assert.Equal(t, math.NewInt(100), trueAmount0)
-	assert.Equal(t, math.NewInt(0), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(100), trueAmount0)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount1)
 
 	trueAmount0, trueAmount1 = dextypes.CalcGreatestMatchingRatio(
 		math_utils.NewPrecDec(0),
@@ -68,8 +67,8 @@ func TestCalcGreatestMatchingRatioOneReserveZero(t *testing.T) {
 		math_utils.NewPrecDec(100),
 		math_utils.NewPrecDec(100),
 	)
-	assert.Equal(t, math.NewInt(0), trueAmount0)
-	assert.Equal(t, math.NewInt(100), trueAmount1)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(100), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio2SidedPoolBothSidesRightRatio(t *testing.T) {
@@ -83,8 +82,8 @@ func TestCalcGreatestMatchingRatio2SidedPoolBothSidesRightRatio(t *testing.T) {
 
 	// THEN both amounts are fully user
 
-	assert.Equal(t, math.NewInt(4), trueAmount0)
-	assert.Equal(t, math.NewInt(10), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(4), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(10), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio2SidedPoolBothSidesWrongRatio(t *testing.T) {
@@ -98,8 +97,8 @@ func TestCalcGreatestMatchingRatio2SidedPoolBothSidesWrongRatio(t *testing.T) {
 
 	// THEN all of Token1 is used and 3/4 of token0 is used
 
-	assert.Equal(t, math.NewInt(15), trueAmount0)
-	assert.Equal(t, math.NewInt(10), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(15), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(10), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio2SidedPoolBothSidesWrongRatio2(t *testing.T) {
@@ -113,8 +112,8 @@ func TestCalcGreatestMatchingRatio2SidedPoolBothSidesWrongRatio2(t *testing.T) {
 
 	// THEN all of Token0 is used and 3/4 of token1 is used
 
-	assert.Equal(t, math.NewInt(10), trueAmount0)
-	assert.Equal(t, math.NewInt(15), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(10), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(15), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio1SidedPoolBothSides(t *testing.T) {
@@ -128,8 +127,8 @@ func TestCalcGreatestMatchingRatio1SidedPoolBothSides(t *testing.T) {
 
 	// THEN only Token0 is used
 
-	assert.Equal(t, math.NewInt(10), trueAmount0)
-	assert.Equal(t, math.NewInt(0), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(10), trueAmount0)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio1SidedPoolBothSides2(t *testing.T) {
@@ -144,8 +143,8 @@ func TestCalcGreatestMatchingRatio1SidedPoolBothSides2(t *testing.T) {
 
 	// THEN only Token1 is used
 
-	assert.Equal(t, math.NewInt(0), trueAmount0)
-	assert.Equal(t, math.NewInt(10), trueAmount1)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(10), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio1SidedPool1SidedToken0(t *testing.T) {
@@ -160,8 +159,8 @@ func TestCalcGreatestMatchingRatio1SidedPool1SidedToken0(t *testing.T) {
 
 	// THEN no amounts are used
 
-	assert.Equal(t, math.NewInt(0), trueAmount0)
-	assert.Equal(t, math.NewInt(0), trueAmount1)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount0)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio1SidedPool1SidedToken0B(t *testing.T) {
@@ -175,8 +174,8 @@ func TestCalcGreatestMatchingRatio1SidedPool1SidedToken0B(t *testing.T) {
 
 	// THEN all of Token0 is used
 
-	assert.Equal(t, math.NewInt(10), trueAmount0)
-	assert.Equal(t, math.NewInt(0), trueAmount1)
+	assert.Equal(t, math_utils.NewPrecDec(10), trueAmount0)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio1SidedPool1SidedToken1(t *testing.T) {
@@ -190,8 +189,8 @@ func TestCalcGreatestMatchingRatio1SidedPool1SidedToken1(t *testing.T) {
 
 	// THEN no amounts are used
 
-	assert.Equal(t, math.NewInt(0), trueAmount0)
-	assert.Equal(t, math.NewInt(0), trueAmount1)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount0)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount1)
 }
 
 func TestCalcGreatestMatchingRatio1SidedPool1SidedToken1B(t *testing.T) {
@@ -205,6 +204,6 @@ func TestCalcGreatestMatchingRatio1SidedPool1SidedToken1B(t *testing.T) {
 
 	// THEN all of Token1 is used
 
-	assert.Equal(t, math.NewInt(0), trueAmount0)
-	assert.Equal(t, math.NewInt(10), trueAmount1)
+	assert.Equal(t, math_utils.ZeroPrecDec(), trueAmount0)
+	assert.Equal(t, math_utils.NewPrecDec(10), trueAmount1)
 }

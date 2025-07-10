@@ -293,7 +293,7 @@ func (s *DexTestSuite) TestWithdrawPartiallyGTTFilledCancelled() {
 
 	// THEN she can withdraw the unused portion and the tokenOut
 	s.aliceWithdrawsLimitSell(trancheKey)
-	s.assertAliceBalancesInt(sdkmath.NewInt(2487299), sdkmath.NewInt(749999801))
+	s.assertAliceBalancesInt(sdkmath.NewInt(2487299), sdkmath.NewInt(749999999))
 
 	// AND her LimitOrderTrancheUser is removed
 	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)

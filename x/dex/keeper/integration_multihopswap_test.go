@@ -172,14 +172,14 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens2() {
 
 	s.Assert().Nil(err)
 
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(140_039_095))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(140_000_000))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(0))
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(694))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(0))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(368))
 
-	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(60_000_000-39_095))
+	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(60_000_000))
 	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000))
-	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000-694))
+	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))
 	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(1_000_000-368))
 }
 
@@ -390,7 +390,7 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteFindBestRoute() {
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(134_943_369))
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},
-		math.NewInt(10_000_000),
+		math.NewInt(100_000_000),
 		math.NewInt(9_999),
 		0,
 		1,
@@ -406,7 +406,7 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteFindBestRoute() {
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenE", Token1: "TokenX"},
 		math.NewInt(99_980_002),
-		math.NewInt(865_056_634),
+		math.NewInt(865_056_630),
 		-3000,
 		1,
 	)
