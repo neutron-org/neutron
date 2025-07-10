@@ -216,16 +216,20 @@ func (k Keeper) SwapOnDeposit(
 		limitPrice0 := types.MustCalcPrice(-depositTickToken0 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token0, pairID.Token1)
 
-		swapAmountIn0, swapAmountOut1, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount0, limitPrice0)
+		swapAmountIn0, swapAmountOut1, orderFilled, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount0, limitPrice0)
 		if err != nil {
 			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), err
 		}
 
 		if swapAmountIn0.IsPositive() {
+			if orderFilled {
+				// due to decimal imprecision, we may have tiny remainder
+				// but we can't deposit the remainder because it's still behind enemy lines so we don't use it
+				inAmount0 = swapAmountIn0
+			} // else inAmount = amountIn  we have swapped through all opposing BEL liquidity, so we can safely deposit the full amount
 
 			depositAmount0 = inAmount0.Sub(swapAmountIn0)
-			depositAmount1 = inAmount1.Add(swapAmountOut1)
-			inAmount0 = swapAmountIn0.Add(depositAmount0)
+			depositAmount1 = amount1.Add(swapAmountOut1)
 			inAmount1 = amount1
 			swappedToken0 = true
 		}
@@ -237,7 +241,7 @@ func (k Keeper) SwapOnDeposit(
 		limitPrice1 := types.MustCalcPrice(-depositTickToken1 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token1, pairID.Token0)
 
-		swapAmountIn1, swapAmountOut0, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount1, limitPrice1)
+		swapAmountIn1, swapAmountOut0, orderFilled, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount1, limitPrice1)
 		if err != nil {
 			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), err
 		}
@@ -248,10 +252,13 @@ func (k Keeper) SwapOnDeposit(
 				return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), types.ErrDoubleSidedSwapOnDeposit
 			}
 
-			depositAmount0 = inAmount0.Add(swapAmountOut0)
+			if orderFilled { // see note above on monotonic rounding logic
+				inAmount1 = swapAmountIn1
+			} // else inAmount1 = amount1
+			depositAmount0 = amount0.Add(swapAmountOut0)
 			depositAmount1 = inAmount1.Sub(swapAmountIn1)
 			inAmount0 = amount0
-			inAmount1 = swapAmountIn1.Add(depositAmount1)
+
 		}
 	}
 
