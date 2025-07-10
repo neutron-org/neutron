@@ -244,6 +244,7 @@ var (
 		1168,
 		"Swap on deposit true price is less than minimum allowed price",
 	)
+	// Error no longer used
 	ErrInvalidSlopTolerance = sdkerrors.Register(
 		ModuleName,
 		1169,

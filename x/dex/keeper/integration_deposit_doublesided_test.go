@@ -173,7 +173,7 @@ func (s *DexTestSuite) TestDepositDoubleSidedExistingSharesMintedUser() {
 func (s *DexTestSuite) TestDepositValueAccural() {
 	s.fundAliceBalances(100, 0)
 	s.fundBobBalances(1000, 1000)
-	s.fundCarolBalances(100, 1)
+	s.fundCarolBalances(100, 0)
 
 	// Alice deposits 100TokenA @ tick0 => 100 shares
 	s.aliceDeposits(NewDeposit(100, 0, 0, 10))
@@ -189,21 +189,21 @@ func (s *DexTestSuite) TestDepositValueAccural() {
 			s.bobLimitSells("TokenA", 11, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		}
 	}
-	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
-	s.assertDexBalancesInt(math.NewInt(110516593), math.ZeroInt())
+	s.assertLiquidityAtTickInt(math.NewInt(110516539), math.ZeroInt(), 0, 10)
+	s.assertDexBalancesInt(math.NewInt(110516540), math.ZeroInt())
 
-	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
+	s.assertLiquidityAtTickInt(math.NewInt(110516539), math.ZeroInt(), 0, 10)
 	// Carol deposits 100TokenA @tick0
 	s.carolDeposits(NewDeposit(100, 0, 0, 10))
-	s.assertLiquidityAtTickInt(math.NewInt(210516593), math.ZeroInt(), 0, 10)
-	s.assertAccountSharesInt(s.carol, 0, 10, math.NewInt(90484150))
+	s.assertLiquidityAtTickInt(math.NewInt(210516539), math.ZeroInt(), 0, 10)
+	s.assertAccountSharesInt(s.carol, 0, 10, math.NewInt(90484194))
 
 	// Alice gets back 100% of the accrued trade value
 	s.aliceWithdraws(NewWithdrawal(100, 0, 10))
-	s.assertAliceBalancesInt(math.NewInt(110516593), math.NewInt(0))
+	s.assertAliceBalancesInt(math.NewInt(110516539), math.NewInt(0))
 	// AND carol get's back only what she put in
-	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484150), 0, 10))
-	s.assertCarolBalances(100, 1)
+	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484194), 0, 10))
+	s.assertCarolBalancesInt(math.NewInt(99999999), math.ZeroInt())
 }
 
 func (s *DexTestSuite) TestDepositToken0BELWithSwapPartial() {
@@ -225,9 +225,9 @@ func (s *DexTestSuite) TestDepositToken0BELWithSwapPartial() {
 	// B = 30(from swap) + 10 (initial deposit) = 40
 	// SharesIssued = 13.3 + 40 * 1.0001^2006 = 62
 
-	s.Equal(math.NewInt(13347289), resp.Reserve0Deposited[0])
+	s.Equal(math.NewInt(13347290), resp.Reserve0Deposited[0])
 	s.Equal(math.NewInt(40000000), resp.Reserve1Deposited[0])
-	s.Equal(math.NewInt(62232231), resp.SharesIssued[0].Amount)
+	s.Equal(math.NewInt(62232232), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
 
 	s.assertLiquidityAtTickInt(math.NewInt(13347289), math.NewInt(40000000), 2006, 1)
@@ -246,15 +246,15 @@ func (s *DexTestSuite) TestDepositToken0BELWithSwapAll() {
 		),
 	)
 
-	// THEN all of alice's token0 is swapped with 2 coins not swapped due to rounding
+	// THEN all of alice's token0 is swapped
 	// and she deposits 0TokenA & ~17.3TokenB
 	// B = 10 + 20 / 1.0001^100001 = 17.3
 	// SharesIssued = 17.3 * 1.0001^10003 = 47
 
 	s.True(resp.Reserve0Deposited[0].IsZero())
-	s.Equal(math.NewInt(17357220), resp.Reserve1Deposited[0])
-	s.Equal(math.NewInt(47193612), resp.SharesIssued[0].Amount)
-	s.assertAliceBalancesInt(math.NewInt(2), math.ZeroInt())
+	s.Equal(math.NewInt(17357221), resp.Reserve1Deposited[0])
+	s.Equal(math.NewInt(47193614), resp.SharesIssued[0].Amount)
+	s.assertAliceBalances(0, 0)
 
 	s.assertLiquidityAtTickInt(math.ZeroInt(), math.NewInt(17357220), 10003, 1)
 }
@@ -280,11 +280,11 @@ func (s *DexTestSuite) TestDepositToken1BELWithSwapPartial() {
 	// SharesIssued = 40 + 25.4 * 1.0001^1998 = ~71
 
 	s.Equal(math.NewInt(40000000), resp.Reserve0Deposited[0])
-	s.Equal(math.NewInt(25440286), resp.Reserve1Deposited[0])
-	s.Equal(math.NewInt(71066311), resp.SharesIssued[0].Amount)
+	s.Equal(math.NewInt(25440288), resp.Reserve1Deposited[0])
+	s.Equal(math.NewInt(71066313), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
 
-	s.assertLiquidityAtTickInt(math.NewInt(40000000), math.NewInt(25440286), 1998, 1)
+	s.assertLiquidityAtTickInt(math.NewInt(40000000), math.NewInt(25440287), 1998, 1)
 }
 
 func (s *DexTestSuite) TestDepositToken1BELWithSwapAll() {
@@ -305,7 +305,7 @@ func (s *DexTestSuite) TestDepositToken1BELWithSwapAll() {
 	// A = 10 + 20 / 1.0001^10002 = 17.3
 	// SharesIssued = 17.3
 
-	s.Equal(math.NewInt(17356485), resp.Reserve0Deposited[0])
+	s.Equal(math.NewInt(17356486), resp.Reserve0Deposited[0])
 	s.True(resp.Reserve1Deposited[0].IsZero())
 	s.Equal(math.NewInt(17356485), resp.SharesIssued[0].Amount)
 	s.assertAliceBalancesInt(math.NewInt(0), math.ZeroInt())
