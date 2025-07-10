@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	sdkerrors "cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
@@ -115,7 +114,7 @@ func (k Keeper) IsBehindEnemyLines(ctx sdk.Context, tradePairID *types.TradePair
 	return false
 }
 
-func (k Keeper) IsPoolBehindEnemyLines(ctx sdk.Context, pairID *types.PairID, tickIndex int64, fee uint64, amount0, amount1 math.Int) bool {
+func (k Keeper) IsPoolBehindEnemyLines(ctx sdk.Context, pairID *types.PairID, tickIndex int64, fee uint64, amount0, amount1 math_utils.PrecDec) bool {
 	if amount0.IsPositive() {
 		tradePairID0 := types.NewTradePairIDFromMaker(pairID, pairID.Token0)
 		tick0 := tickIndex*-1 + utils.MustSafeUint64ToInt64(fee)

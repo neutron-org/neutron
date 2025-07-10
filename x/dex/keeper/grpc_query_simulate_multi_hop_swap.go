@@ -36,8 +36,8 @@ func (k Keeper) SimulateMultiHopSwap(
 
 	return &types.QuerySimulateMultiHopSwapResponse{
 		Resp: &types.MsgMultiHopSwapResponse{
-			CoinOut: bestRoute.coinOut,
-			Dust:    bestRoute.dust,
+			CoinOut: bestRoute.coinOut.TruncateToCoin(),
+			Dust:    bestRoute.dust.TruncateToCoins(),
 			Route:   &types.MultiHopRoute{Hops: bestRoute.route},
 		},
 	}, nil

@@ -87,8 +87,8 @@ func CreateDepositEvent(
 	token1 string,
 	tickIndex int64,
 	fee uint64,
-	depositAmountReserve0 math.Int,
-	depositAmountReserve1 math.Int,
+	depositAmountReserve0 math_utils.PrecDec,
+	depositAmountReserve1 math_utils.PrecDec,
 	// TODO: check switching these to precDec doesn't break anything
 	amountIn0 math_utils.PrecDec,
 	amountIn1 math_utils.PrecDec,
@@ -122,8 +122,8 @@ func CreateWithdrawEvent(
 	token1 string,
 	tickIndex int64,
 	fee uint64,
-	withdrawAmountReserve0 math.Int,
-	withdrawAmountReserve1 math.Int,
+	withdrawAmountReserve0 math_utils.PrecDec,
+	withdrawAmountReserve1 math_utils.PrecDec,
 	poolID uint64,
 	sharesRemoved math.Int,
 ) sdk.Event {
@@ -150,10 +150,10 @@ func CreateMultihopSwapEvent(
 	receiver sdk.AccAddress,
 	makerDenom string,
 	tokenOut string,
-	amountIn math.Int,
-	amountOut math.Int,
+	amountIn math_utils.PrecDec,
+	amountOut math_utils.PrecDec,
 	route []string,
-	dust sdk.Coins,
+	dust PrecDecCoins,
 ) sdk.Event {
 	dustStrings := make([]string, 0, dust.Len())
 	for _, item := range dust {
@@ -228,8 +228,8 @@ func WithdrawFilledLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOutTaker math.Int,
-	amountOutMaker math.Int,
+	amountOutTaker math_utils.PrecDec,
+	amountOutMaker math_utils.PrecDec,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -257,16 +257,16 @@ func CancelLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOutTaker math.Int,
-	amountOutMaker math.Int,
+	amountOutTaker math_utils.PrecDec,
+	amountOutMaker math_utils.PrecDec,
 	trancheKey string,
 ) sdk.Event {
 	pairID := PairID{Token0: token0, Token1: token1}
 	takerDenom := pairID.MustOppositeToken(makerDenom)
-	coinsOut := sdk.NewCoins(
-		sdk.NewCoin(makerDenom, amountOutMaker),
-		sdk.NewCoin(takerDenom, amountOutTaker),
-	)
+	coinsOut := PrecDecCoins{
+		NewPrecDecCoin(makerDenom, amountOutMaker),
+		NewPrecDecCoin(takerDenom, amountOutTaker),
+	}
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, CancelLimitOrderEventKey),
@@ -306,7 +306,7 @@ func TickUpdateEvent(
 	token1 string,
 	makerDenom string,
 	tickIndex int64,
-	reserves math.Int,
+	reserves math_utils.PrecDec,
 	otherAttrs ...sdk.Attribute,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -331,7 +331,7 @@ func CreateTickUpdatePoolReserves(tick PoolReserves, swapMetadata ...SwapMetadat
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tick.Key.TickIndexTakerToMaker,
-		tick.ReservesMakerDenom,
+		tick.DecReservesMakerDenom,
 		sdk.NewAttribute(AttributeFee, strconv.FormatUint(tick.Key.Fee, 10)),
 	)
 	if len(swapMetadata) == 1 {
@@ -349,7 +349,7 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche, swapMetadata 
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tranche.Key.TickIndexTakerToMaker,
-		tranche.ReservesMakerDenom,
+		tranche.DecReservesMakerDenom,
 		sdk.NewAttribute(AttributeTrancheKey, tranche.Key.TrancheKey),
 	)
 
@@ -368,7 +368,7 @@ func CreateTickUpdateLimitOrderTranchePurge(tranche *LimitOrderTranche) sdk.Even
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tranche.Key.TickIndexTakerToMaker,
-		math.ZeroInt(),
+		math_utils.ZeroPrecDec(),
 		sdk.NewAttribute(AttributeTrancheKey, tranche.Key.TrancheKey),
 	)
 }

@@ -15,23 +15,23 @@ func (k Keeper) CancelLimitOrderCore(
 	goCtx context.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (makerCoinOut, takerCoinOut sdk.Coin, err error) {
+) (makerCoinOut, takerCoinOut types.PrecDecCoin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	makerCoinOut, takerCoinOut, err = k.ExecuteCancelLimitOrder(ctx, trancheKey, callerAddr)
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, err
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 
-	coinsOut := sdk.NewCoins(makerCoinOut, takerCoinOut)
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(
+	coinsOut := types.PrecDecCoins{makerCoinOut, takerCoinOut}
+	err = k.fractionalBanker.SendFractionalCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,
 		callerAddr,
 		coinsOut,
 	)
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, err
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 
 	makerDenom := makerCoinOut.Denom
@@ -59,10 +59,10 @@ func (k Keeper) ExecuteCancelLimitOrder(
 	ctx sdk.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (makerCoinOut, takerCoinOut sdk.Coin, err error) {
+) (makerCoinOut, takerCoinOut types.PrecDecCoin, err error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(ctx, callerAddr.String(), trancheKey)
 	if !found {
-		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
 	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
@@ -75,7 +75,7 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		},
 	)
 	if !found {
-		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
 	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
@@ -86,20 +86,19 @@ func (k Keeper) ExecuteCancelLimitOrder(
 
 	// Calculate total number of shares removed previously withdrawn by the user (denominated in takerDenom)
 	sharesWithdrawnTakerDenom := math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn).
-		Quo(tranche.PriceTakerToMaker).
-		TruncateInt()
+		Quo(tranche.PriceTakerToMaker)
 
 	// Calculate the total amount removed including prior withdrawals (denominated in takerDenom)
 	totalAmountOutTakerDenom := sharesWithdrawnTakerDenom.Add(takerAmountOut)
 
 	// Decrease the tranche TotalTakerDenom by the amount being removed
-	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(totalAmountOutTakerDenom)
+	tranche.SetTotalTakerDenom(tranche.DecTotalTakerDenom.Sub(totalAmountOutTakerDenom))
 
 	// Set TrancheUser to 100% shares withdrawn
 	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
 	if !makerAmountToReturn.IsPositive() && !takerAmountOut.IsPositive() {
-		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
 	}
 
 	// This will ALWAYS result in a deletion of the TrancheUser, but we still use UpdateTranche user so that the relevant events will be emitted
@@ -119,8 +118,14 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())
 	}
 
-	makerCoinOut = sdk.NewCoin(tradePairID.MakerDenom, makerAmountToReturn)
-	takerCoinOut = sdk.NewCoin(tradePairID.TakerDenom, takerAmountOut)
+	makerCoinOut = types.PrecDecCoin{
+		Denom:  tradePairID.MakerDenom,
+		Amount: makerAmountToReturn,
+	}
+	takerCoinOut = types.PrecDecCoin{
+		Denom:  tradePairID.TakerDenom,
+		Amount: takerAmountOut,
+	}
 
 	return makerCoinOut, takerCoinOut, nil
 }

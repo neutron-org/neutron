@@ -8,6 +8,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 import "neutron/dex/params.proto";
+import "neutron/dex/precdec_coin.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
@@ -83,6 +84,18 @@ message MsgDepositResponse {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_issued"
   ];
+  repeated string dec_reserve0_deposited = 5 [
+    (gogoproto.moretags) = "dec_reserve0_deposited\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve0_deposited"
+  ];
+  repeated string dec_reserve1_deposited = 6 [
+    (gogoproto.moretags) = "dec_reserve1_deposited\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve1_deposited"
+  ];
 }
 
 message MsgWithdrawal {
@@ -121,6 +134,18 @@ message MsgWithdrawalResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_burned"
+  ];
+  string dec_reserve0_withdrawn = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_reserve0_withdrawn\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve0_withdrawn"
+  ];
+  string dec_reserve1_withdrawn = 5 [
+    (gogoproto.moretags) = "yaml:\"dec_reserve1_withdrawn\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve1_withdrawn"
   ];
 }
 
@@ -205,6 +230,16 @@ message MsgPlaceLimitOrderResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_in"
   ];
+   PrecDecCoin dec_taker_coin_out = 5 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_out"
+  ];
+  PrecDecCoin dec_taker_coin_in = 6 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_in\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_in"
+  ];
 }
 
 message MsgWithdrawFilledLimitOrder {
@@ -229,6 +264,16 @@ message MsgWithdrawFilledLimitOrderResponse {
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "maker_coin_out"
+  ];
+  PrecDecCoin dec_taker_coin_out = 3 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_out"
+  ];
+  PrecDecCoin dec_maker_coin_out = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_maker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_maker_coin_out"
   ];
 }
 
@@ -255,6 +300,19 @@ message MsgCancelLimitOrderResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "maker_coin_out"
   ];
+   
+  PrecDecCoin dec_taker_coin_out = 3 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_out"
+  ];
+  PrecDecCoin dec_maker_coin_out = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_maker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_maker_coin_out"
+  ];
+  
+  
 }
 
 message MultiHopRoute {
@@ -299,6 +357,17 @@ message MsgMultiHopSwapResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "dust"
   ];
+  PrecDecCoin dec_coin_out = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_coin_out"
+  ];
+  repeated PrecDecCoin dec_dust = 5 [
+    (gogoproto.moretags) = "yaml:\"dec_dust\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_dust"
+  ];
+  
 }
 
 message MsgUpdateParams {

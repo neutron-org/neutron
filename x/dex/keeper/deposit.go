@@ -24,7 +24,7 @@ func (k Keeper) DepositCore(
 	tickIndices []int64,
 	fees []uint64,
 	options []*types.DepositOptions,
-) (amounts0Deposit, amounts1Deposit []math.Int, sharesIssued sdk.Coins, failedDeposits []*types.FailedDeposit, err error) {
+) (amounts0Deposit, amounts1Deposit []math_utils.PrecDec, sharesIssued sdk.Coins, failedDeposits []*types.FailedDeposit, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	amounts0Deposited,
@@ -77,7 +77,7 @@ func (k Keeper) ExecuteDeposit(
 	tickIndices []int64,
 	fees []uint64,
 	options []*types.DepositOptions) (
-	amounts0Deposited, amounts1Deposited []math.Int,
+	amounts0Deposited, amounts1Deposited []math_utils.PrecDec,
 	totalInAmount0, totalInAmount1 math_utils.PrecDec,
 	sharesIssued sdk.Coins,
 	events sdk.Events,
@@ -86,22 +86,23 @@ func (k Keeper) ExecuteDeposit(
 ) {
 	totalInAmount0 = math_utils.ZeroPrecDec()
 	totalInAmount1 = math_utils.ZeroPrecDec()
-	amounts0Deposited = make([]math.Int, len(amounts0))
-	amounts1Deposited = make([]math.Int, len(amounts1))
+	amounts0Deposited = make([]math_utils.PrecDec, len(amounts0))
+	amounts1Deposited = make([]math_utils.PrecDec, len(amounts1))
 	sharesIssued = sdk.Coins{}
 
 	for i := 0; i < len(amounts0); i++ {
-		amounts0Deposited[i] = math.ZeroInt()
-		amounts1Deposited[i] = math.ZeroInt()
+		amounts0Deposited[i] = math_utils.ZeroPrecDec()
+		amounts1Deposited[i] = math_utils.ZeroPrecDec()
 	}
 	isWhitelistedLP := k.IsWhitelistedLP(ctx, callerAddr)
 
-	for i, depositAmount0 := range amounts0 {
-		depositAmount1 := amounts1[i]
+	for i, depositAmount0Int := range amounts0 {
+		depositAmount0 := math_utils.NewPrecDecFromInt(depositAmount0Int)
+		depositAmount1 := math_utils.NewPrecDecFromInt(amounts1[i])
 		tickIndex := tickIndices[i]
 		fee := fees[i]
 		option := options[i]
-		inAmount0, inAmount1 := math_utils.NewPrecDecFromInt(depositAmount0), math_utils.NewPrecDecFromInt(depositAmount1)
+		inAmount0, inAmount1 := depositAmount0, depositAmount1
 		if option == nil {
 			option = &types.DepositOptions{}
 		}
@@ -113,6 +114,7 @@ func (k Keeper) ExecuteDeposit(
 				return nil, nil, math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, nil, err
 			}
 		}
+
 		if option.SwapOnDeposit {
 			inAmount0, inAmount1, depositAmount0, depositAmount1, err = k.SwapOnDeposit(ctx, pairID, tickIndex, fee, depositAmount0, depositAmount1, option.SwapOnDepositSlopToleranceBps)
 			if err != nil {
@@ -147,7 +149,7 @@ func (k Keeper) ExecuteDeposit(
 		if option.DisableAutoswap {
 			// If autoswap is disabled inAmount might change.
 			// SwapOnDeposit cannot be used without autoswap, so nothing is affected here.
-			inAmount0, inAmount1 = math_utils.NewPrecDecFromInt(depositAmount0), math_utils.NewPrecDecFromInt(depositAmount1)
+			inAmount0, inAmount1 = depositAmount0, depositAmount1
 		}
 
 		// Save updates to both sides of the pool
@@ -191,7 +193,7 @@ func (k Keeper) ExecuteDeposit(
 	return amounts0Deposited, amounts1Deposited, totalInAmount0, totalInAmount1, sharesIssued, events, failedDeposits, nil
 }
 
-func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.TradePairID, amountIn math.Int, limitPrice math_utils.PrecDec, slopToleranceBPs uint64) (inAmount, outAmount math_utils.PrecDec, orderFilled bool, err error) {
+func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.TradePairID, amountIn math_utils.PrecDec, limitPrice math_utils.PrecDec, slopToleranceBPs uint64) (inAmount, outAmount math_utils.PrecDec, orderFilled bool, err error) {
 	swapTokenIn, swapTokenOut, orderFilled, err := k.Swap(ctx, tradePairID, amountIn, nil, &limitPrice)
 	if err != nil {
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), false, err
@@ -209,11 +211,11 @@ func (k Keeper) SwapOnDeposit(
 	pairID *types.PairID,
 	tickIndex int64,
 	fee uint64,
-	amount0, amount1 math.Int,
+	amount0, amount1 math_utils.PrecDec,
 	slopToleranceBPs uint64,
-) (inAmount0, inAmount1 math_utils.PrecDec, depositAmount0, depositAmount1 math.Int, err error) {
+) (inAmount0, inAmount1, depositAmount0, depositAmount1 math_utils.PrecDec, err error) {
 	feeInt64 := dexutils.MustSafeUint64ToInt64(fee)
-	inAmount0, inAmount1 = math_utils.NewPrecDecFromInt(amount0), math_utils.NewPrecDecFromInt(amount1)
+	inAmount0, inAmount1 = amount0, amount1
 	depositAmount0, depositAmount1 = amount0, amount1
 	swappedToken0 := false
 	if amount0.IsPositive() {
@@ -226,15 +228,15 @@ func (k Keeper) SwapOnDeposit(
 
 		swapAmountIn0, swapAmountOut1, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount0, limitPrice0, slopToleranceBPs)
 		if err != nil {
-			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math.ZeroInt(), math.ZeroInt(), err
+			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), err
 		}
 
 		if swapAmountIn0.IsPositive() {
 
-			depositAmount0 = inAmount0.Sub(swapAmountIn0).TruncateInt()
-			depositAmount1 = inAmount1.Add(swapAmountOut1).TruncateInt()
-			inAmount0 = swapAmountIn0.Add(math_utils.NewPrecDecFromInt(depositAmount0))
-			inAmount1 = math_utils.NewPrecDecFromInt(amount1)
+			depositAmount0 = inAmount0.Sub(swapAmountIn0)
+			depositAmount1 = inAmount1.Add(swapAmountOut1)
+			inAmount0 = swapAmountIn0.Add(depositAmount0)
+			inAmount1 = amount1
 			swappedToken0 = true
 		}
 	}
@@ -247,22 +249,20 @@ func (k Keeper) SwapOnDeposit(
 
 		swapAmountIn1, swapAmountOut0, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount1, limitPrice1, slopToleranceBPs)
 		if err != nil {
-			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math.ZeroInt(), math.ZeroInt(), err
+			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), err
 		}
 
 		if swapAmountIn1.IsPositive() {
 			if swappedToken0 {
 				// This should be impossible, but leaving this as an extra precaution
-				return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math.ZeroInt(), math.ZeroInt(), types.ErrDoubleSidedSwapOnDeposit
+				return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), types.ErrDoubleSidedSwapOnDeposit
 			}
 
-			depositAmount0 = inAmount0.Add(swapAmountOut0).TruncateInt()
-			depositAmount1 = inAmount1.Sub(swapAmountIn1).TruncateInt()
-			inAmount0 = math_utils.NewPrecDecFromInt(amount0)
-			inAmount1 = swapAmountIn1.Add(math_utils.NewPrecDecFromInt(depositAmount1))
-
+			depositAmount0 = inAmount0.Add(swapAmountOut0)
+			depositAmount1 = inAmount1.Sub(swapAmountIn1)
+			inAmount0 = amount0
+			inAmount1 = swapAmountIn1.Add(depositAmount1)
 		}
-
 	}
 
 	return inAmount0, inAmount1, depositAmount0, depositAmount1, nil

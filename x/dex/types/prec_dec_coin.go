@@ -4,6 +4,7 @@ import (
 	"errors"
 	fmt "fmt"
 	"sort"
+	"strings"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -34,6 +35,23 @@ func NewPrecDecCoinFromInt(denom string, amount math.Int) PrecDecCoin {
 	}
 
 	return coin
+}
+
+func NewPrecDecCoinFromCoin(coin sdk.Coin) PrecDecCoin {
+	precDecCoin := PrecDecCoin{
+		Denom:  coin.Denom,
+		Amount: math_utils.NewPrecDecFromInt(coin.Amount),
+	}
+
+	if err := coin.Validate(); err != nil {
+		panic(err)
+	}
+
+	return precDecCoin
+}
+
+func (coin PrecDecCoin) String() string {
+	return fmt.Sprintf("%s%s", coin.Amount.String(), coin.Denom)
 }
 
 func (coin PrecDecCoin) TruncateToCoin() sdk.Coin {
@@ -166,4 +184,65 @@ func (coins PrecDecCoins) safeAdd(coinsB PrecDecCoins) (coalesced PrecDecCoins) 
 // Empty returns true if there are no coins and false otherwise.
 func (coins PrecDecCoins) Empty() bool {
 	return len(coins) == 0
+}
+
+func (coins PrecDecCoins) TruncateToCoins() sdk.Coins {
+	truncatedCoins := make(sdk.Coins, len(coins))
+	for i, coin := range coins {
+		truncatedCoins[i] = coin.TruncateToCoin()
+	}
+	return truncatedCoins
+}
+
+func (coins PrecDecCoins) String() string {
+	if len(coins) == 0 {
+		return ""
+	} else if len(coins) == 1 {
+		return coins[0].String()
+	}
+
+	// Build the string with a string builder
+	var out strings.Builder
+	for _, coin := range coins[:len(coins)-1] {
+		out.WriteString(coin.String())
+		out.WriteByte(',')
+	}
+	out.WriteString(coins[len(coins)-1].String())
+	return out.String()
+}
+
+func (coins PrecDecCoins) AmountOf(denom string) math_utils.PrecDec {
+	if ok, c := coins.Find(denom); ok {
+		return c.Amount
+	}
+	return math_utils.ZeroPrecDec()
+}
+
+// Find returns true and coin if the denom exists in coins. Otherwise it returns false
+// and a zero coin. Uses binary search.
+// CONTRACT: coins must be valid (sorted).
+func (coins PrecDecCoins) Find(denom string) (bool, PrecDecCoin) {
+	switch len(coins) {
+	case 0:
+		return false, PrecDecCoin{}
+
+	case 1:
+		coin := coins[0]
+		if coin.Denom == denom {
+			return true, coin
+		}
+		return false, PrecDecCoin{}
+
+	default:
+		midIdx := len(coins) / 2 // 2:1, 3:1, 4:2
+		coin := coins[midIdx]
+		switch {
+		case denom < coin.Denom:
+			return coins[:midIdx].Find(denom)
+		case denom == coin.Denom:
+			return true, coin
+		default:
+			return coins[midIdx+1:].Find(denom)
+		}
+	}
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func (p PoolReserves) HasToken() bool {
-	return p.ReservesMakerDenom.GT(math.ZeroInt())
+	return p.DecReservesMakerDenom.IsPositive()
 }
 
 func NewPoolReservesFromCounterpart(

@@ -11,11 +11,10 @@ import (
 func (k Keeper) Swap(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	maxAmountTakerDenom math.Int,
+	maxAmountTakerDenom math_utils.PrecDec,
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalTakerCoin, totalMakerCoin types.PrecDecCoin, orderFilled bool, err error) {
-	maxAmountTakerDenomDec := math_utils.NewPrecDecFromInt(maxAmountTakerDenom)
 	gasBefore := ctx.GasMeter().GasConsumed()
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math_utils.PrecDec
@@ -24,7 +23,7 @@ func (k Keeper) Swap(
 		remainingMakerDenom = &temp
 	}
 
-	remainingTakerDenom := maxAmountTakerDenomDec
+	remainingTakerDenom := maxAmountTakerDenom
 	totalMakerDenom := math_utils.ZeroPrecDec()
 	orderFilled = false
 
@@ -77,7 +76,7 @@ func (k Keeper) Swap(
 			}
 		}
 	}
-	totalTakerDenom := maxAmountTakerDenomDec.Sub(remainingTakerDenom)
+	totalTakerDenom := maxAmountTakerDenom.Sub(remainingTakerDenom)
 
 	gasAfter := ctx.GasMeter().GasConsumed()
 	ctx.EventManager().EmitEvents(types.GetEventsGasConsumed(gasBefore, gasAfter))
@@ -94,7 +93,7 @@ func (k Keeper) Swap(
 func (k Keeper) SwapWithCache(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	maxAmountIn math.Int,
+	maxAmountIn math_utils.PrecDec,
 	maxAmountOut *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalIn, totalOut types.PrecDecCoin, orderFilled bool, err error) {
@@ -130,7 +129,7 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity, sw
 func (k Keeper) TakerLimitOrderSwap(
 	ctx sdk.Context,
 	tradePairID types.TradePairID,
-	amountIn math.Int,
+	amountIn math_utils.PrecDec,
 	maxAmountOut *math.Int,
 	limitPrice math_utils.PrecDec,
 	minAvgSellPrice math_utils.PrecDec,
@@ -169,7 +168,7 @@ func (k Keeper) TakerLimitOrderSwap(
 func (k Keeper) MakerLimitOrderSwap(
 	ctx sdk.Context,
 	tradePairID types.TradePairID,
-	amountIn math.Int,
+	amountIn math_utils.PrecDec,
 	limitPrice math_utils.PrecDec,
 	minAvgSellPrice math_utils.PrecDec,
 ) (totalInCoin, totalOutCoin types.PrecDecCoin, filled bool, err error) {
@@ -185,10 +184,10 @@ func (k Keeper) MakerLimitOrderSwap(
 	}
 
 	if totalInCoin.Amount.IsPositive() {
-		remainingIn := math_utils.NewPrecDecFromInt(amountIn).Sub(totalInCoin.Amount)
+		remainingIn := amountIn.Sub(totalInCoin.Amount)
 		expectedOutMakerPortion := remainingIn.Quo(limitPrice)
 		totalExpectedOut := expectedOutMakerPortion.Add(totalOutCoin.Amount)
-		truePrice := totalExpectedOut.Quo(math_utils.NewPrecDecFromInt(amountIn))
+		truePrice := totalExpectedOut.Quo(amountIn)
 
 		if truePrice.LT(minAvgSellPrice) {
 			return types.PrecDecCoin{}, types.PrecDecCoin{}, false, types.ErrLimitPriceNotSatisfied

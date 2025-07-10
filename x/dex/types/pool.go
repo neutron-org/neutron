@@ -112,11 +112,11 @@ func (p *Pool) Swap(
 // Mutates the Pool object and returns relevant change variables. Deposit is not committed until
 // pool.save() is called or the underlying ticks are saved; this method does not use any keeper methods.
 func (p *Pool) Deposit(
-	maxAmount0,
-	maxAmount1,
+	maxAmount0 math_utils.PrecDec,
+	maxAmount1 math_utils.PrecDec,
 	existingShares math.Int,
 	autoswap bool,
-) (inAmount0, inAmount1 math.Int, outShares sdk.Coin) {
+) (inAmount0, inAmount1 math_utils.PrecDec, outShares sdk.Coin) {
 	lowerReserve0 := &p.LowerTick0.DecReservesMakerDenom
 	upperReserve1 := &p.UpperTick1.DecReservesMakerDenom
 
@@ -151,8 +151,8 @@ func (p *Pool) Deposit(
 	}
 
 	outShares = p.CalcSharesMinted(depositValueAsToken0, existingShares, autoswapFee)
-	p.LowerTick0.SetMakerReserves(lowerReserve0.Add(math_utils.NewPrecDecFromInt(inAmount0)))
-	p.UpperTick1.SetMakerReserves(upperReserve1.Add(math_utils.NewPrecDecFromInt(inAmount1)))
+	p.LowerTick0.SetMakerReserves(lowerReserve0.Add(inAmount0))
+	p.UpperTick1.SetMakerReserves(upperReserve1.Add(inAmount1))
 
 	return inAmount0, inAmount1, outShares
 }
@@ -201,27 +201,26 @@ func (p *Pool) CalcSharesMinted(
 	return sdk.Coin{Denom: p.GetPoolDenom(), Amount: sharesMintedAmount}
 }
 
-func (p *Pool) RedeemValue(sharesToRemove, totalShares math.Int) (outAmount0, outAmount1 math.Int) {
+func (p *Pool) RedeemValue(sharesToRemove, totalShares math.Int) (outAmount0, outAmount1 math_utils.PrecDec) {
 	reserves0 := p.LowerTick0.DecReservesMakerDenom
 	reserves1 := p.UpperTick1.DecReservesMakerDenom
 	// outAmount1 = ownershipRatio * reserves1
 	//            = (sharesToRemove / totalShares) * reserves1
 	//            = (reserves1 * sharesToRemove ) / totalShares
-	outAmount1 = reserves1.MulInt(sharesToRemove).QuoInt(totalShares).TruncateInt()
+	outAmount1 = reserves1.MulInt(sharesToRemove).QuoInt(totalShares)
 	// outAmount0 = ownershipRatio * reserves1
 	//            = (sharesToRemove / totalShares) * reserves1
 	//            = (reserves1 * sharesToRemove ) / totalShares
-	outAmount0 = reserves0.MulInt(sharesToRemove).QuoInt(totalShares).TruncateInt()
+	outAmount0 = reserves0.MulInt(sharesToRemove).QuoInt(totalShares)
 
 	return outAmount0, outAmount1
 }
 
-func (p *Pool) Withdraw(sharesToRemove, totalShares math.Int) (outAmount0, outAmount1 math.Int) {
-	reserves0 := &p.LowerTick0.ReservesMakerDenom
-	reserves1 := &p.UpperTick1.ReservesMakerDenom
+func (p *Pool) Withdraw(sharesToRemove, totalShares math.Int) (outAmount0, outAmount1 math_utils.PrecDec) {
+
 	outAmount0, outAmount1 = p.RedeemValue(sharesToRemove, totalShares)
-	*reserves0 = reserves0.Sub(outAmount0)
-	*reserves1 = reserves1.Sub(outAmount1)
+	p.LowerTick0.SetMakerReserves(p.LowerTick0.DecReservesMakerDenom.Sub(outAmount0))
+	p.UpperTick1.SetMakerReserves(p.UpperTick1.DecReservesMakerDenom.Sub(outAmount1))
 
 	return outAmount0, outAmount1
 }
@@ -230,22 +229,24 @@ func (p *Pool) Withdraw(sharesToRemove, totalShares math.Int) (outAmount0, outAm
 func CalcGreatestMatchingRatio(
 	targetAmount0 math_utils.PrecDec,
 	targetAmount1 math_utils.PrecDec,
-	amount0 math.Int,
-	amount1 math.Int,
-) (resultAmount0, resultAmount1 math.Int) {
+	amount0 math_utils.PrecDec,
+	amount1 math_utils.PrecDec,
+) (resultAmount0, resultAmount1 math_utils.PrecDec) {
 
 	if targetAmount1.IsPositive() {
-		resultAmount0 = math.MinInt(
+		resultAmount0 = math_utils.MinPrecDec(
 			amount0,
-			math_utils.NewPrecDecFromInt(amount1).Mul(targetAmount0).Quo(targetAmount1).TruncateInt())
+			amount1.Mul(targetAmount0).Quo(targetAmount1),
+		)
 	} else {
 		resultAmount0 = amount0
 	}
 
 	if targetAmount0.IsPositive() {
-		resultAmount1 = math.MinInt(
+		resultAmount1 = math_utils.MinPrecDec(
 			amount1,
-			math_utils.NewPrecDecFromInt(amount0).Mul(targetAmount1).Quo(targetAmount0).TruncateInt())
+			amount0.Mul(targetAmount1).Quo(targetAmount0),
+		)
 	} else {
 		resultAmount1 = amount1
 	}
@@ -258,31 +259,31 @@ func CalcGreatestMatchingRatio(
 func CalcAutoswapAmount(
 	reserves0 math_utils.PrecDec,
 	reserves1 math_utils.PrecDec,
-	depositAmount0 math.Int,
-	depositAmount1 math.Int,
+	depositAmount0 math_utils.PrecDec,
+	depositAmount1 math_utils.PrecDec,
 	price1To0 math_utils.PrecDec,
-) (resultAmount0, resultAmount1 math.Int) {
+) (resultAmount0, resultAmount1 math_utils.PrecDec) {
 	if reserves0.IsZero() && reserves1.IsZero() {
 		// The pool is empty, any deposit amount is allowed. Nothing to be swapped
-		return math.ZeroInt(), math.ZeroInt()
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec()
 	}
 
 	// swapAmount = (reserves0*depositAmount1 - reserves1*depositAmount0) / (price * reserves1  + reserves0)
-	swapAmount := reserves0.MulInt(depositAmount1).Sub(reserves1.MulInt(depositAmount0)).
+	swapAmount := reserves0.Mul(depositAmount1).Sub(reserves1.Mul(depositAmount0)).
 		Quo(reserves0.Add(reserves1.Quo(price1To0)))
 
 	switch {
 	case swapAmount.IsZero(): // nothing to be swapped
-		return math.ZeroInt(), math.ZeroInt()
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec()
 
 	case swapAmount.IsPositive(): // Token1 needs to be swapped
-		return math.ZeroInt(), swapAmount.Ceil().TruncateInt()
+		return math_utils.ZeroPrecDec(), swapAmount.Ceil()
 
 	default: // Token0 needs to be swapped
 		amountSwappedAs1 := swapAmount.Neg()
 
 		amountSwapped0 := amountSwappedAs1.Quo(price1To0)
-		return amountSwapped0.Ceil().TruncateInt(), math.ZeroInt()
+		return amountSwapped0, math_utils.ZeroPrecDec()
 	}
 }
 
@@ -295,11 +296,8 @@ func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_uti
 	return autoSwapFee.Mul(depositValueAsToken0)
 }
 
-func CalcAmountAsToken0(amount0, amount1 math.Int, price1To0 math_utils.PrecDec) math_utils.PrecDec {
-	amount0Dec := math_utils.NewPrecDecFromInt(amount0)
-	amount1Dec := math_utils.NewPrecDecFromInt(amount1)
-
-	return amount0Dec.Add(amount1Dec.Quo(price1To0))
+func CalcAmountAsToken0(amount0, amount1 math_utils.PrecDec, price1To0 math_utils.PrecDec) math_utils.PrecDec {
+	return amount0.Add(amount1.Quo(price1To0))
 }
 
 func CalcDecAmountAsToken0(amount0, amount1 math_utils.PrecDec, price1To0 math_utils.PrecDec) math_utils.PrecDec {

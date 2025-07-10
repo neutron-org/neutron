@@ -117,7 +117,8 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	minAvgSellPrice math_utils.PrecDec,
 	err error,
 ) {
-	amountLeft := math_utils.NewPrecDecFromInt(amountIn)
+	amountInDec := math_utils.NewPrecDecFromInt(amountIn)
+	amountLeft := amountInDec
 
 	limitBuyPrice, err := types.CalcPrice(tickIndexInToOut)
 	if err != nil {
@@ -139,9 +140,9 @@ func (k Keeper) ExecutePlaceLimitOrder(
 
 	var orderFilled bool
 	if orderType.IsTakerOnly() {
-		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountInDec, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
 	} else {
-		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitBuyPrice, minAvgSellPrice)
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountInDec, limitBuyPrice, minAvgSellPrice)
 	}
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
@@ -201,7 +202,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		// But we use the general updateTranche function so the correct events are emitted
 		k.UpdateTranche(ctx, placeTranche)
 
-		totalIn = totalIn.Add(amountLeft)
+		totalIn = totalIn.Add(math_utils.NewPrecDecFromInt(amountToPlace))
 		sharesIssued = amountToPlace
 	}
 

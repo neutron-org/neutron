@@ -114,7 +114,7 @@ func (t LimitOrderTranche) Price() math_utils.PrecDec {
 }
 
 func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
-	amountFilled := math_utils.NewPrecDecFromInt(t.TotalTakerDenom).Quo(t.MakerPrice)
+	amountFilled := t.DecTotalTakerDenom.Quo(t.MakerPrice)
 	ratioFilled := amountFilled.QuoInt(t.TotalMakerDenom)
 
 	// Cap ratio filled at 100% so that makers cannot over withdraw
@@ -122,7 +122,7 @@ func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
 }
 
 func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
-	amountFilled := math_utils.NewPrecDecFromInt(t.TotalTakerDenom).Quo(t.MakerPrice)
+	amountFilled := t.DecTotalTakerDenom.Quo(t.MakerPrice)
 	trueAmountUnfilled := math_utils.NewPrecDecFromInt(t.TotalMakerDenom).Sub(amountFilled)
 
 	// It is possible for a tranche to be overfilled due to rounding. Thus we cap the unfilled amount at 0
@@ -132,34 +132,32 @@ func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
 
 func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
-) (amountToRemove math.Int) {
+) (amountToRemove math_utils.PrecDec) {
 	amountUnfilled := t.AmountUnfilled()
-	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).
-		QuoInt(t.TotalMakerDenom).
-		TruncateInt()
-	t.SetMakerReserves(t.DecReservesMakerDenom.Sub(math_utils.NewPrecDecFromInt(amountToRemove)))
+	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).QuoInt(t.TotalMakerDenom)
+	t.SetMakerReserves(t.DecReservesMakerDenom.Sub(amountToRemove))
 
 	return amountToRemove
 }
 
-func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (sharesToWithdraw, tokenOut math.Int) {
+func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (sharesToWithdraw math.Int, tokenOut math_utils.PrecDec) {
 	ratioFilled := t.RatioFilled()
 	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned)
 	sharesToWithdrawDec := maxAllowedToWithdraw.Sub(math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn))
 
 	// Given rounding it is possible for sharesToWithdrawn > maxAllowedToWithdraw. In this case we just exit.
 	if !sharesToWithdrawDec.IsPositive() {
-		return math.ZeroInt(), math.ZeroInt()
+		return math.ZeroInt(), math_utils.ZeroPrecDec()
 	}
 	amountOutTokenOutDec := sharesToWithdrawDec.Mul(t.MakerPrice)
 
-	// Round shares withdrawn up and amountOut down to ensure math favors dex
-	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec.TruncateInt()
+	// Round shares withdrawn up to ensure math favors dex
+	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec
 }
 
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn, tokenOut math.Int) {
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn math.Int, tokenOut math_utils.PrecDec) {
 	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
-	t.SetTakerReserves(t.DecReservesTakerDenom.Sub(math_utils.NewPrecDecFromInt(amountOutTokenOut)))
+	t.SetTakerReserves(t.DecReservesTakerDenom.Sub(amountOutTokenOut))
 
 	return amountOutTokenIn, amountOutTokenOut
 }
@@ -188,7 +186,7 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *m
 }
 
 func (t *LimitOrderTranche) PlaceMakerLimitOrder(amountIn math.Int) {
-	t.ReservesMakerDenom = t.ReservesMakerDenom.Add(amountIn)
+	t.SetMakerReserves(t.DecReservesMakerDenom.Add(math_utils.NewPrecDecFromInt(amountIn)))
 	t.TotalMakerDenom = t.TotalMakerDenom.Add(amountIn)
 }
 

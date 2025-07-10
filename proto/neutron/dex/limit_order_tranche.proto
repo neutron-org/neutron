@@ -87,7 +87,7 @@ message LimitOrderTranche {
     (gogoproto.moretags) = "yaml:\"dec_total_taker_denom\"",
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
     (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "total_taker_denom"
+    (gogoproto.jsontag) = "dec_total_taker_denom"
   ];
   
   

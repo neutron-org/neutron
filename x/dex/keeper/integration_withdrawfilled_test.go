@@ -6,6 +6,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
@@ -259,9 +260,9 @@ func (s *DexTestSuite) TestWithdrawOverfilled() {
 
 	s.True(found, "Limit order not found")
 	s.True(filled, "Limit order not filled")
-	s.Equal(sdkmath.ZeroInt(), tranche.ReservesMakerDenom)
+	s.Equal(math_utils.ZeroPrecDec(), tranche.DecReservesMakerDenom)
 	// Tranche holds remaining Taker denom
-	s.Equal(sdkmath.NewInt(26), tranche.ReservesTakerDenom)
+	s.Equal(math_utils.NewPrecDec(26), tranche.DecReservesTakerDenom)
 	// Alice cannot withdraw again
 	s.aliceWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
 }
@@ -293,7 +294,7 @@ func (s *DexTestSuite) TestWithdrawFilledOverfilledMulti() {
 	})
 
 	s.True(filled)
-	s.Equal(sdkmath.NewInt(7_754_884_880_411_835), tranche.ReservesTakerDenom)
+	s.Equal(math_utils.NewPrecDec(7_754_884_880_411_835), tranche.DecReservesTakerDenom)
 	// AND everyone withdraws the expected amount
 	s.aliceWithdrawsLimitSell(trancheKey)
 	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(484_680_305_025_733))
@@ -311,7 +312,7 @@ func (s *DexTestSuite) TestWithdrawFilledOverfilledMulti() {
 	s.True(found, "tranche not removed")
 
 	// Tranche holds remaining taker denom
-	s.Equal(sdkmath.NewInt(100), tranche.ReservesTakerDenom)
+	s.Equal(math_utils.NewPrecDec(100), tranche.DecReservesTakerDenom)
 
 	// Alice cannot withdraw again
 	s.bobWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
