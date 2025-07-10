@@ -148,6 +148,82 @@ func (coins PrecDecCoins) Sort() PrecDecCoins {
 
 //-----------------------------------------------------------------------------
 
+func sanitizeCoins(coins []PrecDecCoin) PrecDecCoins {
+	newCoins := removeZeroCoins(coins)
+	if len(newCoins) == 0 {
+		return PrecDecCoins{}
+	}
+
+	return newCoins.Sort()
+}
+
+// removeZeroCoins removes all zero coins from the given coin set in-place.
+func removeZeroCoins(coins PrecDecCoins) PrecDecCoins {
+	nonZeros := make([]PrecDecCoin, 0, len(coins))
+
+	for _, coin := range coins {
+		if !coin.IsZero() {
+			nonZeros = append(nonZeros, coin)
+		}
+	}
+
+	return nonZeros
+}
+
+func NewPrecDecCoins(coins ...PrecDecCoin) PrecDecCoins {
+	newCoins := sanitizeCoins(coins)
+	if err := newCoins.Validate(); err != nil {
+		panic(fmt.Errorf("invalid coin set %s: %w", newCoins, err))
+	}
+
+	return newCoins
+}
+
+// Validate checks that the Coins are sorted, have positive amount, with a valid and unique
+// denomination (i.e no duplicates). Otherwise, it returns an error.
+func (coins PrecDecCoins) Validate() error {
+	switch len(coins) {
+	case 0:
+		return nil
+
+	case 1:
+		if err := sdk.ValidateDenom(coins[0].Denom); err != nil {
+			return err
+		}
+		if !coins[0].IsPositive() {
+			return fmt.Errorf("coin %s amount is not positive", coins[0])
+		}
+		return nil
+
+	default:
+		// check single coin case
+		if err := (PrecDecCoins{coins[0]}).Validate(); err != nil {
+			return err
+		}
+
+		lowDenom := coins[0].Denom
+
+		for _, coin := range coins[1:] {
+			if err := sdk.ValidateDenom(coin.Denom); err != nil {
+				return err
+			}
+			if coin.Denom < lowDenom {
+				return fmt.Errorf("denomination %s is not sorted", coin.Denom)
+			}
+			if coin.Denom == lowDenom {
+				return fmt.Errorf("duplicate denomination %s", coin.Denom)
+			}
+			if !coin.IsPositive() {
+				return fmt.Errorf("coin %s amount is not positive", coin.Denom)
+			}
+
+			// we compare each coin against the last denom
+			lowDenom = coin.Denom
+		}
+
+		return nil
+	}
+}
 func (coins PrecDecCoins) safeAdd(coinsB PrecDecCoins) (coalesced PrecDecCoins) {
 	// probably the best way will be to make Coins and interface and hide the structure
 	// definition (type alias)

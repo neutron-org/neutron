@@ -26,8 +26,8 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 
 	// NOTE: it is possible for coinTakerDenomOut xor coinMakerDenomOut to be zero. These are removed by the sanitize call in sdk.NewCoins
 	// ExecuteWithdrawFilledLimitOrder ensures that at least one of these has am amount > 0.
-	coins := types.PrecDecCoins{takerCoinOut, makerCoinOut}
-	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(coins.TruncateToCoins()))
+	coins := types.NewPrecDecCoins(takerCoinOut, makerCoinOut)
+	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(takerCoinOut.TruncateToCoin())))
 	if err := k.fractionalBanker.SendFractionalCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
 		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}

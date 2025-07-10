@@ -97,10 +97,10 @@ func RoundDownToWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Co
 		wholeAmount := token.Amount.TruncateInt()
 		fractionalRemainder := token.Amount.Sub(math_utils.NewPrecDecFromInt(wholeAmount))
 		if !wholeAmount.IsZero() {
-			wholeTokens = append(wholeTokens, sdk.Coin{Denom: token.Denom, Amount: wholeAmount})
+			wholeTokens = wholeTokens.Add(sdk.Coin{Denom: token.Denom, Amount: wholeAmount})
 		}
 		if !fractionalRemainder.IsZero() {
-			fractionalTokens = append(fractionalTokens, types.PrecDecCoin{Denom: token.Denom, Amount: fractionalRemainder})
+			fractionalTokens = fractionalTokens.Add(types.NewPrecDecCoin(token.Denom, fractionalRemainder))
 		}
 	}
 

@@ -42,21 +42,19 @@ func (k Keeper) WithdrawCore(
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
 	}
 
-	coinsToRemove := types.PrecDecCoins{}
-
+	coin0 := types.NewPrecDecCoin(pairID.Token0, totalReserve0ToRemove)
 	if totalReserve0ToRemove.IsPositive() {
-		coin0 := types.NewPrecDecCoin(pairID.Token0, totalReserve0ToRemove)
-		coinsToRemove = append(coinsToRemove, coin0)
 		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin0.TruncateToCoin()}))
 	}
 
+	coin1 := types.NewPrecDecCoin(pairID.Token1, totalReserve1ToRemove)
 	if totalReserve1ToRemove.IsPositive() {
-		coin1 := types.NewPrecDecCoin(pairID.Token1, totalReserve1ToRemove)
-		coinsToRemove = append(coinsToRemove, coin1)
-
 		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin1.TruncateToCoin()}))
-
 	}
+
+	// NewPrecDecCoins will remove zero amounts
+	coinsToRemove := types.NewPrecDecCoins(coin0, coin1)
+
 	err = k.fractionalBanker.SendFractionalCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,

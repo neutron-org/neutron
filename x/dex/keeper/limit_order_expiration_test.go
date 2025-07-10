@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 	"github.com/neutron-org/neutron/v7/x/dex/keeper"
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
@@ -47,11 +48,13 @@ func createLimitOrderExpirationAndTranches(
 				TickIndexTakerToMaker: 0,
 				TrancheKey:            strconv.Itoa(i),
 			},
-			ReservesMakerDenom: math.NewInt(10),
-			ReservesTakerDenom: math.NewInt(10),
-			TotalMakerDenom:    math.NewInt(10),
-			TotalTakerDenom:    math.NewInt(10),
-			ExpirationTime:     &expTimes[i],
+			ReservesMakerDenom:    math.NewInt(10),
+			ReservesTakerDenom:    math.NewInt(10),
+			DecReservesMakerDenom: math_utils.NewPrecDec(10),
+			DecReservesTakerDenom: math_utils.NewPrecDec(10),
+			TotalMakerDenom:       math.NewInt(10),
+			TotalTakerDenom:       math.NewInt(10),
+			ExpirationTime:        &expTimes[i],
 		}
 		items[i].ExpirationTime = expTimes[i]
 		items[i].TrancheRef = tranche.Key.KeyMarshal()

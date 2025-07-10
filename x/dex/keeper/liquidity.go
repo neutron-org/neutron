@@ -41,8 +41,7 @@ func (k Keeper) Swap(
 			break
 		}
 
-		remainingMakerDenomInt := remainingMakerDenom.TruncateInt()
-		inAmount, outAmount := liq.Swap(remainingTakerDenom.TruncateInt(), &remainingMakerDenomInt)
+		inAmount, outAmount := liq.Swap(remainingTakerDenom, remainingMakerDenom)
 
 		swapMetadata := types.SwapMetadata{
 			AmountIn:  inAmount,

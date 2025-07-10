@@ -40,6 +40,7 @@ func NewLimitOrderTranche(
 		DecReservesTakerDenom: math_utils.NewPrecDecFromInt(reservesTakerDenom),
 		TotalMakerDenom:       totalMakerDenom,
 		TotalTakerDenom:       totalTakerDenom,
+		DecTotalTakerDenom:    math_utils.NewPrecDecFromInt(totalTakerDenom),
 		MakerPrice:            makerPrice,
 		PriceTakerToMaker:     math_utils.OnePrecDec().Quo(makerPrice),
 	}, nil
@@ -162,17 +163,17 @@ func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (shares
 	return amountOutTokenIn, amountOutTokenOut
 }
 
-func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *math.Int) (
+func (t *LimitOrderTranche) Swap(maxAmountTakerIn math_utils.PrecDec, maxAmountMakerOut *math_utils.PrecDec) (
 	inAmount math_utils.PrecDec,
 	outAmount math_utils.PrecDec,
 ) {
 	reservesTokenOut := t.DecReservesMakerDenom
 	fillTokenIn := t.DecReservesTakerDenom
 
-	maxOutGivenIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(t.MakerPrice)
+	maxOutGivenIn := maxAmountTakerIn.Quo(t.MakerPrice)
 	possibleOutAmounts := []math_utils.PrecDec{reservesTokenOut, maxOutGivenIn}
 	if maxAmountMakerOut != nil {
-		possibleOutAmounts = append(possibleOutAmounts, math_utils.NewPrecDecFromInt(*maxAmountMakerOut))
+		possibleOutAmounts = append(possibleOutAmounts, *maxAmountMakerOut)
 	}
 	outAmount = utils.MinPrecDecArr(possibleOutAmounts)
 

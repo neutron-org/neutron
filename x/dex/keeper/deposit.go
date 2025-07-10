@@ -41,19 +41,14 @@ func (k Keeper) DepositCore(
 
 	ctx.EventManager().EmitEvents(events)
 
-	cointsToSend := types.PrecDecCoins{}
+	coin0 := types.NewPrecDecCoin(pairID.Token0, totalInAmount0)
+	coin1 := types.NewPrecDecCoin(pairID.Token1, totalInAmount1)
 
-	if totalInAmount0.IsPositive() {
-		coin0 := types.NewPrecDecCoin(pairID.Token0, totalInAmount0)
-		cointsToSend = append(cointsToSend, coin0)
-	}
-	if totalInAmount1.IsPositive() {
-		coin1 := types.NewPrecDecCoin(pairID.Token1, totalInAmount1)
-		cointsToSend = append(cointsToSend, coin1)
-	}
+	// NewPrecDecCoins will remove zero amounts
+	coinsToSend := types.NewPrecDecCoins(coin0, coin1)
 
-	if !cointsToSend.Empty() {
-		if err := k.fractionalBanker.SendFractionalCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, cointsToSend); err != nil {
+	if !coinsToSend.Empty() {
+		if err := k.fractionalBanker.SendFractionalCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, coinsToSend); err != nil {
 			return nil, nil, nil, nil, err
 		}
 	}

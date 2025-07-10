@@ -3,7 +3,6 @@ package types_test
 import (
 	"testing"
 
-	"cosmossdk.io/math"
 	"github.com/stretchr/testify/assert"
 
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
@@ -12,7 +11,7 @@ import (
 
 func TestHasTokenEmptyReserves(t *testing.T) {
 	// WHEN has no reserves
-	tick := &types.PoolReserves{ReservesMakerDenom: math.ZeroInt()}
+	tick := &types.PoolReserves{DecReservesMakerDenom: math_utils.ZeroPrecDec()}
 	assert.False(t, tick.HasToken())
 }
 

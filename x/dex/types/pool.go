@@ -73,8 +73,8 @@ func (p *Pool) GetUpperReserve1() math_utils.PrecDec {
 
 func (p *Pool) Swap(
 	tradePairID *TradePairID,
-	maxAmountTakerIn math.Int,
-	maxAmountMakerOut *math.Int,
+	maxAmountTakerIn math_utils.PrecDec,
+	maxAmountMakerOut *math_utils.PrecDec,
 ) (amountTakerIn, amountMakerOut math_utils.PrecDec) {
 	var takerReserves, makerReserves *PoolReserves
 	if tradePairID.IsMakerDenomToken0() {
@@ -85,15 +85,15 @@ func (p *Pool) Swap(
 		takerReserves = p.LowerTick0
 	}
 
-	if maxAmountTakerIn.Equal(math.ZeroInt()) ||
+	if maxAmountTakerIn.IsZero() ||
 		makerReserves.DecReservesMakerDenom.IsZero() {
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec()
 	}
 
-	maxOutGivenTakerIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(makerReserves.MakerPrice)
+	maxOutGivenTakerIn := maxAmountTakerIn.Quo(makerReserves.MakerPrice)
 	possibleAmountsMakerOut := []math_utils.PrecDec{makerReserves.DecReservesMakerDenom, maxOutGivenTakerIn}
 	if maxAmountMakerOut != nil {
-		possibleAmountsMakerOut = append(possibleAmountsMakerOut, math_utils.NewPrecDecFromInt(*maxAmountMakerOut))
+		possibleAmountsMakerOut = append(possibleAmountsMakerOut, *maxAmountMakerOut)
 	}
 
 	// outAmount will be the smallest value of:
