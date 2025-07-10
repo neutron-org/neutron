@@ -135,7 +135,13 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
 ) (amountToRemove math_utils.PrecDec) {
 	amountUnfilled := t.AmountUnfilled()
-	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).QuoInt(t.TotalMakerDenom)
+	// Cap the amount out at the reserves of the tranche
+	// Due to decimal limitations its possible amountToRemove > t.DecReservesMakerDenom
+	amountToRemove = math_utils.MinPrecDec(
+		amountUnfilled.MulInt(trancheUser.SharesOwned).QuoInt(t.TotalMakerDenom),
+		t.DecReservesMakerDenom,
+	)
+
 	t.SetMakerReserves(t.DecReservesMakerDenom.Sub(amountToRemove))
 
 	return amountToRemove
@@ -150,7 +156,10 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 	if !sharesToWithdrawDec.IsPositive() {
 		return math.ZeroInt(), math_utils.ZeroPrecDec()
 	}
-	amountOutTokenOutDec := sharesToWithdrawDec.Mul(t.MakerPrice)
+
+	// Cap the amount out at the reserves of the tranche
+	// Due to decimal limitations its possible amountOutTokenOutDec > t.DecReservesTakerDenom
+	amountOutTokenOutDec := math_utils.MinPrecDec(sharesToWithdrawDec.Mul(t.MakerPrice), t.DecReservesTakerDenom)
 
 	// Round shares withdrawn up to ensure math favors dex
 	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec
@@ -197,11 +206,19 @@ func (t *LimitOrderTranche) PlaceMakerLimitOrder(amountIn math.Int) {
 }
 
 func (t *LimitOrderTranche) SetMakerReserves(reserves math_utils.PrecDec) {
+	// TODO: remove this panic once we have a way to handle negative reserves
+	if reserves.IsNegative() {
+		panic("reserves cannot be negative")
+	}
 	t.ReservesMakerDenom = reserves.TruncateInt()
 	t.DecReservesMakerDenom = reserves
 }
 
 func (t *LimitOrderTranche) SetTakerReserves(reserves math_utils.PrecDec) {
+	// TODO: remove this panic once we have a way to handle negative reserves
+	if reserves.IsNegative() {
+		panic("reserves cannot be negative")
+	}
 	t.ReservesTakerDenom = reserves.TruncateInt()
 	t.DecReservesTakerDenom = reserves
 }

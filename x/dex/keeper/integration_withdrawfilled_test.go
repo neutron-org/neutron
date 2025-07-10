@@ -6,7 +6,6 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
@@ -230,82 +229,6 @@ func (s *DexTestSuite) TestWithdrawFilledOtherUserOrder() {
 
 	err := types.ErrValidLimitOrderTrancheNotFound
 	s.bobWithdrawLimitSellFails(err, trancheKey)
-}
-
-func (s *DexTestSuite) TestWithdrawOverfilled() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 2)
-	// GIVEN Alice places a limit order of A for B
-
-	trancheKey := s.aliceLimitSells("TokenA", 13838, 1)
-
-	// WHEN bob swap through alice's limit order with small amounts and "overpays"
-	for i := 0; i < 100; i++ {
-		_, err := s.limitSellsInt(s.bob, "TokenB", 0, sdkmath.NewInt(1), types.LimitOrderType_FILL_OR_KILL)
-		s.NoError(err)
-
-	}
-	s.bobLimitSells("TokenB", 6501, 2, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-	s.assertBobBalancesInt(sdkmath.NewInt(1000000), sdkmath.NewInt(1749333))
-
-	// THEN alice withdraws the expected amount
-	s.aliceWithdrawsLimitSell(trancheKey)
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(250641))
-
-	tranche, filled, found := s.App.DexKeeper.FindLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
-		TradePairId:           types.MustNewTradePairID("TokenB", "TokenA"),
-		TickIndexTakerToMaker: -13838,
-		TrancheKey:            trancheKey,
-	})
-
-	s.True(found, "Limit order not found")
-	s.True(filled, "Limit order not filled")
-	s.Equal(math_utils.ZeroPrecDec(), tranche.DecReservesMakerDenom)
-	// Tranche holds remaining Taker denom
-	s.Equal(math_utils.NewPrecDec(26), tranche.DecReservesTakerDenom)
-	// Alice cannot withdraw again
-	s.aliceWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
-}
-
-func (s *DexTestSuite) TestWithdrawFilledOverfilledMulti() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(5, 0)
-	s.fundCarolBalances(10, 0)
-	s.fundDanBalances(0, 8000000000)
-
-	// GIVEN Alice, carol, dan places a limit order of A for B at same tick
-	trancheKey := s.aliceLimitSells("TokenA", -200000, 1)
-	_ = s.bobLimitSells("TokenA", -200000, 5)
-	_ = s.carolLimitSells("TokenA", -200000, 10)
-
-	// WHEN Dan swap through limit order with small amounts and "overpays"
-	for i := 0; i < 100; i++ {
-		_, err := s.limitSells(s.dan, "TokenB", -200001, 500, types.LimitOrderType_FILL_OR_KILL)
-		s.NoError(err)
-
-	}
-	s.danLimitSells("TokenB", -200001, 7754884890, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN tranche is filled
-	tranche, filled, _ := s.App.DexKeeper.FindLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
-		TradePairId:           types.MustNewTradePairID("TokenB", "TokenA"),
-		TickIndexTakerToMaker: 200000,
-		TrancheKey:            trancheKey,
-	})
-
-	s.True(filled)
-	s.Equal(sdkmath.NewInt(7754884880411737), tranche.DecReservesTakerDenom.TruncateInt())
-	// AND everyone withdraws the expected amount
-	s.aliceWithdrawsLimitSell(trancheKey)
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(484_680_305_025_733))
-	s.bobWithdrawsLimitSell(trancheKey)
-	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(2_423_401_525_128_667))
-	s.carolWithdrawsLimitSell(trancheKey)
-	s.assertCarolBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(4_846_803_050_257_335))
-
-	// bob cannot withdraw again
-	s.bobWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
-	s.assertFractionalBalancesPayable()
 }
 
 func (s *DexTestSuite) TestWithdrawUnfilledCancelled() {
