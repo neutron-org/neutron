@@ -1397,6 +1397,29 @@ func (s *DexTestSuite) assertLimitLiquidityAtTickInt(
 		True(amount.Equal(liquidity.TruncateInt()), "Incorrect liquidity: expected %s, have %s", amount.String(), liquidity.TruncateInt().String())
 }
 
+func (s *DexTestSuite) assertLimitLiquidityAtTickDec(
+	selling string,
+	tickIndexNormalized int64,
+	amount math_utils.PrecDec,
+) {
+	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
+	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
+	tranches := s.App.DexKeeper.GetAllLimitOrderTrancheAtIndex(
+		s.Ctx,
+		tradePairID,
+		tickIndexTakerToMaker,
+	)
+	liquidity := math_utils.ZeroPrecDec()
+	for _, t := range tranches {
+		if !t.IsExpired(s.Ctx) {
+			liquidity = liquidity.Add(t.DecReservesMakerDenom)
+		}
+	}
+
+	s.Assert().
+		True(amount.Equal(liquidity), "Incorrect liquidity: expected %s, have %s", amount.String(), liquidity.String())
+}
+
 func (s *DexTestSuite) assertFillAndPlaceTrancheKeys(
 	selling string,
 	tickIndexNormalized int64,
@@ -1540,6 +1563,25 @@ func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
 	}))
 	_, err := s.App.BeginBlocker(s.Ctx)
 	s.NoError(err)
+}
+
+func (s *DexTestSuite) assertFractionalBalancesPayable() {
+	fractionalBalances := s.App.DexKeeper.GetAllFractionalBalances(s.Ctx)
+	dexAddr := s.App.AccountKeeper.GetModuleAccount(s.Ctx, "dex").GetAddress()
+	dexBalA := s.App.BankKeeper.GetBalance(s.Ctx, dexAddr, "TokenA")
+	dexBalB := s.App.BankKeeper.GetBalance(s.Ctx, dexAddr, "TokenB")
+	_, fractionalBalA := fractionalBalances.Find("TokenA")
+	_, fractionalBalB := fractionalBalances.Find("TokenB")
+	s.Assert().Greater(
+		math_utils.NewPrecDecFromInt(dexBalA.Amount),
+		fractionalBalA.Amount,
+		"Dex owes %v, but has only %v", fractionalBalA, dexBalA,
+	)
+	s.Assert().Greater(
+		math_utils.NewPrecDecFromInt(dexBalB.Amount),
+		fractionalBalB.Amount,
+		"Dex owes %v, but has only %v", fractionalBalB, dexBalB,
+	)
 }
 
 func TestMsgDepositValidate(t *testing.T) {
@@ -1805,21 +1847,6 @@ func TestMsgDepositValidate(t *testing.T) {
 				Options:         []*types.DepositOptions{{DisableAutoswap: true, SwapOnDeposit: true}},
 			},
 			types.ErrSwapOnDepositWithoutAutoswap,
-		},
-		{
-			"invalid slop tolerance",
-			types.MsgDeposit{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{1},
-				TickIndexesAToB: []int64{0},
-				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
-				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
-				Options:         []*types.DepositOptions{{DisableAutoswap: false, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10001}},
-			},
-			types.ErrInvalidSlopTolerance,
 		},
 	}
 

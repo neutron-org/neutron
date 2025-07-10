@@ -55,7 +55,7 @@ func (k Keeper) WithdrawCore(
 	// NewPrecDecCoins will remove zero amounts
 	coinsToRemove := types.NewPrecDecCoins(coin0, coin1)
 
-	err = k.fractionalBanker.SendFractionalCoinsFromModuleToAccount(
+	err = k.FractionalBanker.SendFractionalCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,
 		receiverAddr,

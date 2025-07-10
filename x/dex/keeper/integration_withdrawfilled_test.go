@@ -294,7 +294,7 @@ func (s *DexTestSuite) TestWithdrawFilledOverfilledMulti() {
 	})
 
 	s.True(filled)
-	s.Equal(math_utils.NewPrecDec(7_754_884_880_411_835), tranche.DecReservesTakerDenom)
+	s.Equal(sdkmath.NewInt(7754884880411737), tranche.DecReservesTakerDenom.TruncateInt())
 	// AND everyone withdraws the expected amount
 	s.aliceWithdrawsLimitSell(trancheKey)
 	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(484_680_305_025_733))
@@ -303,19 +303,9 @@ func (s *DexTestSuite) TestWithdrawFilledOverfilledMulti() {
 	s.carolWithdrawsLimitSell(trancheKey)
 	s.assertCarolBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(4_846_803_050_257_335))
 
-	// Then tranche is removed
-	tranche, _, found := s.App.DexKeeper.FindLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
-		TradePairId:           types.MustNewTradePairID("TokenB", "TokenA"),
-		TickIndexTakerToMaker: 200000,
-		TrancheKey:            trancheKey,
-	})
-	s.True(found, "tranche not removed")
-
-	// Tranche holds remaining taker denom
-	s.Equal(math_utils.NewPrecDec(100), tranche.DecReservesTakerDenom)
-
-	// Alice cannot withdraw again
+	// bob cannot withdraw again
 	s.bobWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
+	s.assertFractionalBalancesPayable()
 }
 
 func (s *DexTestSuite) TestWithdrawUnfilledCancelled() {

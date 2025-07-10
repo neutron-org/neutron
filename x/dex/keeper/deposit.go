@@ -48,7 +48,7 @@ func (k Keeper) DepositCore(
 	coinsToSend := types.NewPrecDecCoins(coin0, coin1)
 
 	if !coinsToSend.Empty() {
-		if err := k.fractionalBanker.SendFractionalCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, coinsToSend); err != nil {
+		if err := k.FractionalBanker.SendFractionalCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, coinsToSend); err != nil {
 			return nil, nil, nil, nil, err
 		}
 	}
@@ -111,7 +111,7 @@ func (k Keeper) ExecuteDeposit(
 		}
 
 		if option.SwapOnDeposit {
-			inAmount0, inAmount1, depositAmount0, depositAmount1, err = k.SwapOnDeposit(ctx, pairID, tickIndex, fee, depositAmount0, depositAmount1, option.SwapOnDepositSlopToleranceBps)
+			inAmount0, inAmount1, depositAmount0, depositAmount1, err = k.SwapOnDeposit(ctx, pairID, tickIndex, fee, depositAmount0, depositAmount1)
 			if err != nil {
 				return nil, nil, math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, nil, err
 			}
@@ -188,13 +188,9 @@ func (k Keeper) ExecuteDeposit(
 	return amounts0Deposited, amounts1Deposited, totalInAmount0, totalInAmount1, sharesIssued, events, failedDeposits, nil
 }
 
-func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.TradePairID, amountIn math_utils.PrecDec, limitPrice math_utils.PrecDec, slopToleranceBPs uint64) (inAmount, outAmount math_utils.PrecDec, orderFilled bool, err error) {
+func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.TradePairID, amountIn math_utils.PrecDec, limitPrice math_utils.PrecDec) (inAmount, outAmount math_utils.PrecDec, orderFilled bool, err error) {
 	swapTokenIn, swapTokenOut, orderFilled, err := k.Swap(ctx, tradePairID, amountIn, nil, &limitPrice)
 	if err != nil {
-		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), false, err
-	}
-
-	if err := CheckSwapOnDepositSlopTolerance(swapTokenIn.Amount, swapTokenOut.Amount, limitPrice, slopToleranceBPs); err != nil {
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), false, err
 	}
 
@@ -207,7 +203,6 @@ func (k Keeper) SwapOnDeposit(
 	tickIndex int64,
 	fee uint64,
 	amount0, amount1 math_utils.PrecDec,
-	slopToleranceBPs uint64,
 ) (inAmount0, inAmount1, depositAmount0, depositAmount1 math_utils.PrecDec, err error) {
 	feeInt64 := dexutils.MustSafeUint64ToInt64(fee)
 	inAmount0, inAmount1 = amount0, amount1
@@ -221,7 +216,7 @@ func (k Keeper) SwapOnDeposit(
 		limitPrice0 := types.MustCalcPrice(-depositTickToken0 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token0, pairID.Token1)
 
-		swapAmountIn0, swapAmountOut1, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount0, limitPrice0, slopToleranceBPs)
+		swapAmountIn0, swapAmountOut1, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount0, limitPrice0)
 		if err != nil {
 			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), err
 		}
@@ -242,7 +237,7 @@ func (k Keeper) SwapOnDeposit(
 		limitPrice1 := types.MustCalcPrice(-depositTickToken1 - 1)
 		tradePairID := types.MustNewTradePairID(pairID.Token1, pairID.Token0)
 
-		swapAmountIn1, swapAmountOut0, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount1, limitPrice1, slopToleranceBPs)
+		swapAmountIn1, swapAmountOut0, _, err := k.PerformSwapOnDepositSwap(ctx, tradePairID, amount1, limitPrice1)
 		if err != nil {
 			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), err
 		}
@@ -261,18 +256,4 @@ func (k Keeper) SwapOnDeposit(
 	}
 
 	return inAmount0, inAmount1, depositAmount0, depositAmount1, nil
-}
-
-func CheckSwapOnDepositSlopTolerance(swapAmountIn, swapAmountOut math_utils.PrecDec, limitPrice math_utils.PrecDec, slopToleranceBPs uint64) error {
-	if swapAmountIn.IsPositive() {
-		trueTakerPrice := swapAmountIn.Quo(swapAmountOut)
-		// slopToleranceBPs has already been validated so no risk of overflow
-		slopToleranceInt64 := dexutils.MustSafeUint64ToInt64(slopToleranceBPs)
-		slopToleranceDec := math_utils.NewPrecDec(slopToleranceInt64).Quo(math_utils.NewPrecDecFromInt(math.NewInt(10000)))
-		maxAllowedTakerPrice := limitPrice.Mul(math_utils.OnePrecDec().Add(slopToleranceDec))
-		if trueTakerPrice.GTE(maxAllowedTakerPrice) {
-			return types.ErrSwapOnDepositSlopToleranceNotSatisfied
-		}
-	}
-	return nil
 }

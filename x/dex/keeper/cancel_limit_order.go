@@ -24,7 +24,8 @@ func (k Keeper) CancelLimitOrderCore(
 	}
 
 	coinsOut := types.NewPrecDecCoins(makerCoinOut, takerCoinOut)
-	err = k.fractionalBanker.SendFractionalCoinsFromModuleToAccount(
+
+	err = k.FractionalBanker.SendFractionalCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,
 		callerAddr,

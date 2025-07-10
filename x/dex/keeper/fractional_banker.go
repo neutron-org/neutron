@@ -38,6 +38,22 @@ func (k *FractionalBanker) GetFractionalBalance(ctx sdk.Context, address sdk.Acc
 	return balance.Balance
 }
 
+func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) types.PrecDecCoins {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	balances := types.PrecDecCoins{}
+
+	for ; iterator.Valid(); iterator.Next() {
+		var balance types.FractionalBalance
+		k.cdc.MustUnmarshal(iterator.Value(), &balance)
+		balances = balances.Add(balance.Balance...)
+	}
+
+	return balances
+}
+
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, coins types.PrecDecCoins) {
 
 	balance := types.FractionalBalance{

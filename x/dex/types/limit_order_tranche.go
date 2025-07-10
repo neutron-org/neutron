@@ -177,7 +177,12 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math_utils.PrecDec, maxAmountM
 	}
 	outAmount = utils.MinPrecDecArr(possibleOutAmounts)
 
-	inAmount = t.MakerPrice.Mul(outAmount)
+	// Due to precision loss when when doing division before multipliation the amountIn can be greater than maxAmountTakerIn
+	// so we need to cap it at maxAmountTakerIn
+	inAmount = math_utils.MinPrecDec(
+		t.MakerPrice.Mul(outAmount),
+		maxAmountTakerIn,
+	)
 
 	t.SetTakerReserves(fillTokenIn.Add(inAmount))
 	t.SetMakerReserves(reservesTokenOut.Sub(outAmount))

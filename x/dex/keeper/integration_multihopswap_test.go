@@ -97,18 +97,18 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
 	// THEN alice gets out 1 TokenD
 
 	// 200_000_000 - 60_000 (swap in) + 159 (dust)
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(199_940_158)) // alice balance - spent + received dust
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(199_940_000)) // alice balance - spent + received dust
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(0))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(0))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(1)) // received TokenD after swap
 
-	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(59_842))
+	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(60_000))
 	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000))
 	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))
 	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(999_999))
 }
 
-// same test for receiving dust, but this time should receive multiple dust tokens
+// TODO: Can probably remove this test since MHS no longer accumulates dust
 func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens() {
 	s.fundAliceBalances(2_000, 0) // 2_000_000_000 TokenA
 
@@ -129,22 +129,23 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens() {
 		math.NewInt(int64(600_000_000)),
 		math_utils.MustNewPrecDecFromStr("0.00000000013"),
 		false,
-	) // 600_000_000A (599968093 real, 31907 dust) -> 10_026B (9679 real, 347 dust) -> 24C -> 24D
+	)
 	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 	s.Assert().Nil(err)
 
 	// THEN alice gets out 1 TokenD
 
 	// 2_000_000_000 - 600_000_000 (swap in) + 1_468_096 (dust)
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(1_400_031_906)) // alice balance - spent + received dust
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(346))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(1_400_000_000)) // alice balance - spent + received dust
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(0))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(0))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(24)) // received TokenD after swap
 
-	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(600_000_000-31906)) // send - dust
-	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000-346))     // dex_balance - dust
-	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))         // dex_balance
-	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(1_000_000-24))      // dex_balance - swap_output
+	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(600_000_000))
+	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(1_000_000-24)) // dex_balance - swap_output
+
 }
 
 func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens2() {
@@ -385,26 +386,26 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteFindBestRoute() {
 
 	// THEN swap succeeds through route A<>B, B<>E, E<>X
 
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(1)) // dust left
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(134_943_366))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(0)) // no dust left
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(134_943_369))
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},
-		math.NewInt(99_999_999),
-		math.NewInt(10000),
+		math.NewInt(10_000_000),
+		math.NewInt(9_999),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenB", Token1: "TokenE"},
 		math.NewInt(99_990_000),
-		math.NewInt(19_999),
+		math.NewInt(19_997),
 		0,
 		1,
 	)
 
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenE", Token1: "TokenX"},
-		math.NewInt(99_980_001),
+		math.NewInt(99_980_002),
 		math.NewInt(865_056_634),
 		-3000,
 		1,
@@ -477,12 +478,12 @@ func (s *DexTestSuite) TestMultiHopSwapLongRouteWithCache() {
 	}
 	s.aliceMultiHopSwaps(routes, 100, math_utils.MustNewPrecDecFromStr("0.8"), true)
 	// THEN swap succeeds with second route
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(1)) // dust left
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(99_880_066))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(0)) // dust left
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(99_880_077))
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenM", Token1: "TokenX"},
-		math.NewInt(99_890_055),
-		math.NewInt(119_934),
+		math.NewInt(99_890_065),
+		math.NewInt(119_922),
 		0,
 		1,
 	)
