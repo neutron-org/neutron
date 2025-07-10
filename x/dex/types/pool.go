@@ -228,7 +228,6 @@ func (p *Pool) RedeemValue(sharesToRemove, totalShares math.Int) (outAmount0, ou
 }
 
 func (p *Pool) Withdraw(sharesToRemove, totalShares math.Int) (outAmount0, outAmount1 math_utils.PrecDec) {
-
 	outAmount0, outAmount1 = p.RedeemValue(sharesToRemove, totalShares)
 	p.LowerTick0.SetMakerReserves(p.LowerTick0.DecReservesMakerDenom.Sub(outAmount0))
 	p.UpperTick1.SetMakerReserves(p.UpperTick1.DecReservesMakerDenom.Sub(outAmount1))
@@ -243,7 +242,6 @@ func CalcGreatestMatchingRatio(
 	amount0 math_utils.PrecDec,
 	amount1 math_utils.PrecDec,
 ) (resultAmount0, resultAmount1 math_utils.PrecDec) {
-
 	if targetAmount1.IsPositive() {
 		resultAmount0 = math_utils.MinPrecDec(
 			amount0,
@@ -307,10 +305,10 @@ func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_uti
 	return autoSwapFee.Mul(depositValueAsToken0)
 }
 
-func CalcAmountAsToken0(amount0, amount1 math_utils.PrecDec, price1To0 math_utils.PrecDec) math_utils.PrecDec {
+func CalcAmountAsToken0(amount0, amount1, price1To0 math_utils.PrecDec) math_utils.PrecDec {
 	return amount0.Add(amount1.Quo(price1To0))
 }
 
-func CalcDecAmountAsToken0(amount0, amount1 math_utils.PrecDec, price1To0 math_utils.PrecDec) math_utils.PrecDec {
+func CalcDecAmountAsToken0(amount0, amount1, price1To0 math_utils.PrecDec) math_utils.PrecDec {
 	return amount0.Add(amount1.Quo(price1To0))
 }

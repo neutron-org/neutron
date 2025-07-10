@@ -193,7 +193,7 @@ message MsgPlaceLimitOrder {
     (gogoproto.jsontag) = "limit_sell_price"
   ];
 
-  // min_average_sell_price is DEPRECATED    
+  // min_average_sell_price is DEPRECATED
   string min_average_sell_price = 12 [
     deprecated = true,
     (gogoproto.moretags) = "yaml:\"min_average_sell_price\"",
@@ -230,7 +230,7 @@ message MsgPlaceLimitOrderResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_in"
   ];
-   PrecDecCoin dec_taker_coin_out = 5 [
+  PrecDecCoin dec_taker_coin_out = 5 [
     (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_taker_coin_out"
@@ -300,7 +300,7 @@ message MsgCancelLimitOrderResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "maker_coin_out"
   ];
-   
+
   PrecDecCoin dec_taker_coin_out = 3 [
     (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
     (gogoproto.nullable) = false,
@@ -311,8 +311,6 @@ message MsgCancelLimitOrderResponse {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_maker_coin_out"
   ];
-  
-  
 }
 
 message MultiHopRoute {
@@ -367,7 +365,6 @@ message MsgMultiHopSwapResponse {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_dust"
   ];
-  
 }
 
 message MsgUpdateParams {

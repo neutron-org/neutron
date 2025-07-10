@@ -188,7 +188,7 @@ func (k Keeper) ExecuteDeposit(
 	return amounts0Deposited, amounts1Deposited, totalInAmount0, totalInAmount1, sharesIssued, events, failedDeposits, nil
 }
 
-func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.TradePairID, amountIn math_utils.PrecDec, limitPrice math_utils.PrecDec) (inAmount, outAmount math_utils.PrecDec, orderFilled bool, err error) {
+func (k Keeper) PerformSwapOnDepositSwap(ctx sdk.Context, tradePairID *types.TradePairID, amountIn, limitPrice math_utils.PrecDec) (inAmount, outAmount math_utils.PrecDec, orderFilled bool, err error) {
 	swapTokenIn, swapTokenOut, orderFilled, err := k.Swap(ctx, tradePairID, amountIn, nil, &limitPrice)
 	if err != nil {
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), false, err

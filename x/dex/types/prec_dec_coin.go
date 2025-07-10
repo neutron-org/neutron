@@ -8,6 +8,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 )
 
@@ -224,6 +225,7 @@ func (coins PrecDecCoins) Validate() error {
 		return nil
 	}
 }
+
 func (coins PrecDecCoins) safeAdd(coinsB PrecDecCoins) (coalesced PrecDecCoins) {
 	// probably the best way will be to make Coins and interface and hide the structure
 	// definition (type alias)

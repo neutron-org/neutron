@@ -24,7 +24,7 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserves_maker_denom"
   ];
-    // DEPRECATED: reserves_taker_denom will be removed in future release, `dec_reserves_taker_denom` should always be used.
+  // DEPRECATED: reserves_taker_denom will be removed in future release, `dec_reserves_taker_denom` should always be used.
   string reserves_taker_denom = 3 [
     deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserves_taker_denom\"",
@@ -89,6 +89,4 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_total_taker_denom"
   ];
-  
-  
 }

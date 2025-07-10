@@ -1,8 +1,8 @@
 syntax = "proto3";
 package neutron.dex;
 
-import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v7/x/dex/types";
 
@@ -10,9 +10,9 @@ message PrecDecCoin {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 
-  string denom  = 1;
+  string denom = 1;
   string amount = 2 [
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
-    (gogoproto.nullable)   = false
+    (gogoproto.nullable) = false
   ];
 }

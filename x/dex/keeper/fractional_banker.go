@@ -5,6 +5,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
@@ -16,7 +17,6 @@ type FractionalBanker struct {
 }
 
 func NewFractionalBanker(storeKey storetypes.StoreKey, bankKeeper types.BankKeeper, cdc codec.BinaryCodec) *FractionalBanker {
-
 	return &FractionalBanker{
 		BankKeeper: bankKeeper,
 		storeKey:   storeKey,
@@ -55,7 +55,6 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) types.PrecD
 }
 
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, coins types.PrecDecCoins) {
-
 	balance := types.FractionalBalance{
 		Balance: coins,
 	}
@@ -67,7 +66,7 @@ func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.Acc
 
 // TODO: rename me
 func (k *FractionalBanker) SendFractionalCoinsFromModuleToAccount(ctx sdk.Context, moduleName string, address sdk.AccAddress, tokens []types.PrecDecCoin) error {
-	var balance types.PrecDecCoins = k.GetFractionalBalance(ctx, address)
+	balance := k.GetFractionalBalance(ctx, address)
 
 	newBalance := balance.Add(tokens...)
 
@@ -87,7 +86,7 @@ func (k *FractionalBanker) SendFractionalCoinsFromModuleToAccount(ctx sdk.Contex
 
 // TODO: rename me
 func (k *FractionalBanker) SendFractionalCoinsFromAccountToModule(ctx sdk.Context, address sdk.AccAddress, moduleName string, tokens []types.PrecDecCoin) error {
-	var balance types.PrecDecCoins = k.GetFractionalBalance(ctx, address)
+	balance := k.GetFractionalBalance(ctx, address)
 
 	wholeTokens, fractionalTokens := RoundUpToWholeTokenAmounts(tokens)
 

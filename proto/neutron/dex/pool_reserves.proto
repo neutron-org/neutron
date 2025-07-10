@@ -53,6 +53,4 @@ message PoolReserves {
     (gogoproto.jsontag) = "dec_reserves_maker_denom",
     (gogoproto.nullable) = false
   ];
-
-  
 }

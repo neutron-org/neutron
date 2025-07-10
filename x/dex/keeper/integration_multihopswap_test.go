@@ -145,7 +145,6 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens() {
 	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000))
 	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))
 	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(1_000_000-24)) // dex_balance - swap_output
-
 }
 
 func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens2() {

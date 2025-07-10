@@ -314,6 +314,7 @@ func (s *DexTestSuite) TestLimitOrderPartialFillDepositCancel() {
 	s.assertBobBalances(80, 120)
 	s.assertDexBalances(0, 0)
 }
+
 func (s *DexTestSuite) TestPlaceLimitOrderWithDust() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)

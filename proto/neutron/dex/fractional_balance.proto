@@ -1,12 +1,11 @@
 syntax = "proto3";
 package neutron.dex;
-import "neutron/dex/precdec_coin.proto";
 
 import "gogoproto/gogo.proto";
+import "neutron/dex/precdec_coin.proto";
 
 option go_package = "github.com/neutron-org/neutron/v7/x/dex/types";
 
 message FractionalBalance {
   repeated PrecDecCoin balance = 1 [(gogoproto.nullable) = false];
-
 }
