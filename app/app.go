@@ -1180,7 +1180,7 @@ func New(
 	oracleProposalHandler := slinkyproposals.NewProposalHandler(
 		app.Logger(),
 		blockSdkProposalHandler.PrepareProposalHandler(),
-		baseapp.NoOpProcessProposal(),
+		blockSdkProposalHandler.ProcessProposalHandler(),
 		ve.NewDefaultValidateVoteExtensionsFn(app.StakingKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
