@@ -132,12 +132,6 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		minAvgSellPrice = *minAvgSellPriceP
 	}
 
-	// Ensure user will get at least 1 token out.
-	err = types.ValidateFairOutput(math_utils.NewPrecDecFromInt(amountIn), limitBuyPrice)
-	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
-	}
-
 	var orderFilled bool
 	if orderType.IsTakerOnly() {
 		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountInDec, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
@@ -178,15 +172,6 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
 	if amountLeft.IsPositive() && !orderFilled &&
 		(orderType.IsGTC() || orderType.IsJIT() || orderType.IsGoodTil()) {
-
-		// Ensure that the maker portion will generate at least 1 token of output
-		// NOTE: This does mean that a successful taker leg of the trade will be thrown away since the entire tx will fail.
-		// In most circumstances this seems preferable to executing the taker leg and exiting early before placing a maker
-		// order with the remaining liquidity.
-		err = types.ValidateFairOutput(amountLeft, limitBuyPrice)
-		if err != nil {
-			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
-		}
 
 		amountToPlace := amountLeft.TruncateInt()
 		placeTranche.PlaceMakerLimitOrder(amountToPlace)

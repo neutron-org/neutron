@@ -6,8 +6,6 @@ import (
 	"encoding/gob"
 	fmt "fmt"
 
-	"cosmossdk.io/errors"
-
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 	"github.com/neutron-org/neutron/v7/x/dex/utils"
 )
@@ -135,14 +133,6 @@ func ValidateTickFee(tick int64, fee uint64) error {
 	// NOTE: Ugly arithmetic is to ensure that we don't overflow uint64
 	if utils.Abs(tick) > MaxTickExp-fee {
 		return ErrTickOutsideRange
-	}
-	return nil
-}
-
-func ValidateFairOutput(amountIn math_utils.PrecDec, price math_utils.PrecDec) error {
-	amountOut := amountIn.Quo(price)
-	if amountOut.LT(math_utils.OnePrecDec()) {
-		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}
 	return nil
 }
