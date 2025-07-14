@@ -18,6 +18,8 @@ import (
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
+	feerefunderkeeper "github.com/neutron-org/neutron/v7/x/feerefunder/keeper"
+
 	harpoonkeeper "github.com/neutron-org/neutron/v7/x/harpoon/keeper"
 	revenuekeeper "github.com/neutron-org/neutron/v7/x/revenue/keeper"
 
@@ -76,6 +78,7 @@ type UpgradeKeepers struct {
 	WasmKeeper         *wasmkeeper.Keeper
 	HarpoonKeeper      *harpoonkeeper.Keeper
 	RevenueKeeper      *revenuekeeper.Keeper
+	FeerefunderKeeper  *feerefunderkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace
