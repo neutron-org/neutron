@@ -84,7 +84,6 @@ func (k *FractionalBanker) SendFractionalCoinsFromModuleToAccount(ctx sdk.Contex
 	return nil
 }
 
-// TODO: rename me
 func (k *FractionalBanker) SendFractionalCoinsFromAccountToModule(ctx sdk.Context, address sdk.AccAddress, moduleName string, tokens []types.PrecDecCoin) error {
 	balance := k.GetFractionalBalance(ctx, address)
 
