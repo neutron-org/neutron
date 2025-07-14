@@ -47,9 +47,8 @@ func (k Keeper) PlaceLimitOrderCore(
 	}
 
 	if swapOutCoin.IsPositive() {
-		err = k.FractionalBanker.SendFractionalCoinsFromModuleToAccount(
+		err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
 			ctx,
-			types.ModuleName,
 			receiverAddr,
 			[]types.PrecDecCoin{swapOutCoin},
 		)
@@ -61,10 +60,9 @@ func (k Keeper) PlaceLimitOrderCore(
 	if totalIn.IsPositive() {
 		totalInCoin = types.NewPrecDecCoin(tokenIn, totalIn)
 
-		err = k.FractionalBanker.SendFractionalCoinsFromAccountToModule(
+		err = k.FractionalBanker.SendFractionalCoinsFromAccountToDex(
 			ctx,
 			callerAddr,
-			types.ModuleName,
 			[]types.PrecDecCoin{totalInCoin},
 		)
 		if err != nil {

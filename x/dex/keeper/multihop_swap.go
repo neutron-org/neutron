@@ -44,10 +44,9 @@ func (k Keeper) MultiHopSwapCore(
 	}
 
 	bestRoute.write()
-	err = k.FractionalBanker.SendFractionalCoinsFromAccountToModule(
+	err = k.FractionalBanker.SendFractionalCoinsFromAccountToDex(
 		ctx,
 		callerAddr,
-		types.ModuleName,
 		types.PrecDecCoins{initialInCoin},
 	)
 	if err != nil {
@@ -56,9 +55,8 @@ func (k Keeper) MultiHopSwapCore(
 
 	// send both dust and coinOut to receiver
 	// note that dust can be multiple coins collected from multiple hops.
-	err = k.FractionalBanker.SendFractionalCoinsFromModuleToAccount(
+	err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
 		ctx,
-		types.ModuleName,
 		receiverAddr,
 		bestRoute.dust.Add(bestRoute.coinOut),
 	)

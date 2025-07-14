@@ -65,7 +65,7 @@ func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.Acc
 }
 
 // TODO: rename me
-func (k *FractionalBanker) SendFractionalCoinsFromModuleToAccount(ctx sdk.Context, moduleName string, address sdk.AccAddress, tokens []types.PrecDecCoin) error {
+func (k *FractionalBanker) SendFractionalCoinsFromDexToAccount(ctx sdk.Context, address sdk.AccAddress, tokens []types.PrecDecCoin) error {
 	balance := k.GetFractionalBalance(ctx, address)
 
 	newBalance := balance.Add(tokens...)
@@ -73,7 +73,7 @@ func (k *FractionalBanker) SendFractionalCoinsFromModuleToAccount(ctx sdk.Contex
 	wholeTokens, fractionalTokens := RoundDownToWholeTokenAmounts(newBalance)
 
 	if !wholeTokens.Empty() {
-		err := k.BankKeeper.SendCoinsFromModuleToAccount(ctx, moduleName, address, wholeTokens)
+		err := k.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, address, wholeTokens)
 		if err != nil {
 			return err
 		}
@@ -84,13 +84,13 @@ func (k *FractionalBanker) SendFractionalCoinsFromModuleToAccount(ctx sdk.Contex
 	return nil
 }
 
-func (k *FractionalBanker) SendFractionalCoinsFromAccountToModule(ctx sdk.Context, address sdk.AccAddress, moduleName string, tokens []types.PrecDecCoin) error {
+func (k *FractionalBanker) SendFractionalCoinsFromAccountToDex(ctx sdk.Context, address sdk.AccAddress, tokens []types.PrecDecCoin) error {
 	balance := k.GetFractionalBalance(ctx, address)
 
 	wholeTokens, fractionalTokens := RoundUpToWholeTokenAmounts(tokens)
 
 	if !wholeTokens.Empty() {
-		err := k.BankKeeper.SendCoinsFromAccountToModule(ctx, address, moduleName, wholeTokens)
+		err := k.BankKeeper.SendCoinsFromAccountToModule(ctx, address, types.ModuleName, wholeTokens)
 		if err != nil {
 			return err
 		}

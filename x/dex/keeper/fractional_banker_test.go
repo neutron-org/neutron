@@ -64,9 +64,8 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToModul
 }
 
 func (s *DexTestSuite) SendFractionalAmountToAccount(amount string, account sdk.AccAddress) {
-	s.App.DexKeeper.SendFractionalCoinsFromModuleToAccount(
+	s.App.DexKeeper.SendFractionalCoinsFromDexToAccount(
 		s.Ctx,
-		types.ModuleName,
 		account,
 		[]types.PrecDecCoin{types.NewPrecDecCoin("TokenA", math_utils.MustNewPrecDecFromStr(amount))},
 	)
@@ -74,10 +73,9 @@ func (s *DexTestSuite) SendFractionalAmountToAccount(amount string, account sdk.
 }
 
 func (s *DexTestSuite) SendFractionalAmountFromAccount(amount string, account sdk.AccAddress) {
-	s.App.DexKeeper.SendFractionalCoinsFromAccountToModule(
+	s.App.DexKeeper.SendFractionalCoinsFromAccountToDex(
 		s.Ctx,
 		account,
-		types.ModuleName,
 		[]types.PrecDecCoin{types.NewPrecDecCoin("TokenA", math_utils.MustNewPrecDecFromStr(amount))},
 	)
 

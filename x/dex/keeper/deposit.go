@@ -48,7 +48,7 @@ func (k Keeper) DepositCore(
 	coinsToSend := types.NewPrecDecCoins(coin0, coin1)
 
 	if !coinsToSend.Empty() {
-		if err := k.FractionalBanker.SendFractionalCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, coinsToSend); err != nil {
+		if err := k.FractionalBanker.SendFractionalCoinsFromAccountToDex(ctx, callerAddr, coinsToSend); err != nil {
 			return nil, nil, nil, nil, err
 		}
 	}

@@ -28,7 +28,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	// ExecuteWithdrawFilledLimitOrder ensures that at least one of these has am amount > 0.
 	coins := types.NewPrecDecCoins(takerCoinOut, makerCoinOut)
 	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(takerCoinOut.TruncateToCoin())))
-	if err := k.FractionalBanker.SendFractionalCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
+	if err := k.FractionalBanker.SendFractionalCoinsFromDexToAccount(ctx, callerAddr, coins); err != nil {
 		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 
