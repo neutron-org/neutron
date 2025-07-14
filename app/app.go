@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"cosmossdk.io/math"
+
 	v602 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.2"
 	v603 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.3"
 	"github.com/neutron-org/neutron/v6/x/harpoon"
@@ -1291,7 +1293,7 @@ func New(
 	aggregatorFn := voteweighted.MedianFromContext(
 		app.Logger(),
 		app.StakingKeeper,
-		voteweighted.DefaultPowerThreshold,
+		math.LegacyNewDecWithPrec(20, 3), // a temporary hack to make slinky work on the mainnet fork TODO:fix
 	)
 
 	// Create a pre-finalize block hook that will be used to apply oracle data
