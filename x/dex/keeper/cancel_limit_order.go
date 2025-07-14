@@ -78,8 +78,14 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
-	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
-	_, takerAmountOut := tranche.Withdraw(trancheUser)
+	makerAmountToReturn, err := tranche.RemoveTokenIn(trancheUser)
+	if err != nil {
+		return sdk.Coin{}, sdk.Coin{}, err
+	}
+	_, takerAmountOut, err := tranche.Withdraw(trancheUser)
+	if err != nil {
+		return sdk.Coin{}, sdk.Coin{}, err
+	}
 
 	// Remove the canceled shares from the maker side of the limitOrder
 	tranche.TotalMakerDenom = tranche.TotalMakerDenom.Sub(trancheUser.SharesOwned)
