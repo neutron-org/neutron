@@ -107,6 +107,10 @@ func TestPoolMetadataQueryPaginated(t *testing.T) {
 			nullify.Fill(resp.PoolMetadata),
 		)
 	})
+	t.Run("Limit too big", func(t *testing.T) {
+		_, err := keeper.PoolMetadataAll(ctx, request(nil, 0, 200, true))
+		require.Error(t, err, status.Errorf(codes.ResourceExhausted, "requested page size > 200, too large"))
+	})
 	t.Run("InvalidRequest", func(t *testing.T) {
 		_, err := keeper.PoolMetadataAll(ctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))

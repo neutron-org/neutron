@@ -12,9 +12,15 @@ import (
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
+const maxPageLimit uint64 = 100
+
 func (k Keeper) PoolMetadataAll(goCtx context.Context, req *types.QueryAllPoolMetadataRequest) (*types.QueryAllPoolMetadataResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	if req.Pagination != nil && req.Pagination.Limit > maxPageLimit {
+		return nil, status.Errorf(codes.ResourceExhausted, "requested page size > %d, too large", maxPageLimit)
 	}
 
 	var poolMetadatas []types.PoolMetadata

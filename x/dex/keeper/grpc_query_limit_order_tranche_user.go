@@ -21,6 +21,10 @@ func (k Keeper) LimitOrderTrancheUserAll(
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
+	if req.Pagination != nil && req.Pagination.Limit > maxPageLimit {
+		return nil, status.Errorf(codes.ResourceExhausted, "requested page size > %d, too large", maxPageLimit)
+	}
+
 	var limitOrderTrancheUsers []*types.LimitOrderTrancheUser
 	ctx := sdk.UnwrapSDKContext(c)
 
