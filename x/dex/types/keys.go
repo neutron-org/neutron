@@ -181,11 +181,15 @@ func PoolIDKey(
 	return key
 }
 
-func FractionalBalanceKey(address sdk.AccAddress) []byte {
+func FractionalBalanceKey(address sdk.AccAddress, denom string) []byte {
 	var key []byte
 
 	addressBytes := []byte(address.String())
 	key = append(key, addressBytes...)
+	key = append(key, []byte("/")...)
+
+	denomBytes := []byte(denom)
+	key = append(key, denomBytes...)
 	key = append(key, []byte("/")...)
 
 	return key

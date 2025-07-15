@@ -1,15 +1,14 @@
 package keeper_test
 
 import (
-	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/v7/utils/math"
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
-func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromModuleToAccount() {
-	s.App.BankKeeper.MintCoins(s.Ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin("TokenA", math.NewInt(1000000000000))))
+func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromDexToAccount() {
+	s.App.BankKeeper.MintCoins(s.Ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin("TokenA", sdkmath.NewInt(1000000000000))))
 
 	// send 10.1 => alice gets 10; owed 0.1
 	s.SendFractionalAmountToAccount("10.1", s.alice)
@@ -33,7 +32,7 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromModuleToAccoun
 
 }
 
-func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToModule() {
+func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToDex() {
 	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(100), sdkmath.NewInt(0))
 
 	// send 5 => alice pays 5; dex gets 5; alice owed 0
@@ -93,18 +92,10 @@ func (s *DexTestSuite) SendFractionalAmountFromAccount(amount string, account sd
 }
 
 func (s *DexTestSuite) assertFractionalBalance(account sdk.AccAddress, expectedAmountA, expectedAmountB string) {
-	balance := s.App.DexKeeper.GetFractionalBalance(s.Ctx, account)
-	tokenABalance, tokenBBalance := math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec()
-	found, tokenACoin := balance.Find("TokenA")
+	balance := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, "TokenA", "TokenB")
+	tokenABalance := balance.AmountOf("TokenA")
+	tokenBBalance := balance.AmountOf("TokenB")
 
-	if found {
-		tokenABalance = tokenACoin.Amount
-	}
-	found, tokenBCoin := balance.Find("TokenB")
-
-	if found {
-		tokenBBalance = tokenBCoin.Amount
-	}
 	s.Require().Equal(math_utils.MustNewPrecDecFromStr(expectedAmountA), tokenABalance, "Expected balance A %v != %v", expectedAmountA, tokenABalance.String())
 	s.Require().Equal(math_utils.MustNewPrecDecFromStr(expectedAmountB), tokenBBalance, "Expected balance B %v != %v", expectedAmountB, tokenBBalance.String())
 }
