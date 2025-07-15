@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	math "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -29,7 +30,7 @@ func (k *FractionalBanker) GetFractionalBalance(ctx sdk.Context, address sdk.Acc
 	b := store.Get(types.FractionalBalanceKey(address))
 
 	if b == nil {
-		return []types.PrecDecCoin{}
+		return types.NewPrecDecCoins()
 	}
 
 	var balance types.FractionalBalance
@@ -64,7 +65,6 @@ func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.Acc
 	store.Set(types.FractionalBalanceKey(address), b)
 }
 
-// TODO: rename me
 func (k *FractionalBanker) SendFractionalCoinsFromDexToAccount(ctx sdk.Context, address sdk.AccAddress, tokens []types.PrecDecCoin) error {
 	balance := k.GetFractionalBalance(ctx, address)
 
@@ -87,18 +87,16 @@ func (k *FractionalBanker) SendFractionalCoinsFromDexToAccount(ctx sdk.Context, 
 func (k *FractionalBanker) SendFractionalCoinsFromAccountToDex(ctx sdk.Context, address sdk.AccAddress, tokens []types.PrecDecCoin) error {
 	balance := k.GetFractionalBalance(ctx, address)
 
-	wholeTokens, fractionalTokens := RoundUpToWholeTokenAmounts(tokens)
+	coinsToSend, newDebts := CalcUserSendMinusDebts(tokens, balance)
 
-	if !wholeTokens.Empty() {
-		err := k.BankKeeper.SendCoinsFromAccountToModule(ctx, address, types.ModuleName, wholeTokens)
+	if !coinsToSend.Empty() {
+		err := k.BankKeeper.SendCoinsFromAccountToModule(ctx, address, types.ModuleName, coinsToSend)
 		if err != nil {
 			return err
 		}
 	}
 
-	newBalance := balance.Add(fractionalTokens...)
-
-	k.SetFractionalBalance(ctx, address, newBalance)
+	k.SetFractionalBalance(ctx, address, newDebts)
 
 	return nil
 }
@@ -119,6 +117,31 @@ func RoundDownToWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Co
 	}
 
 	return wholeTokens, fractionalTokens
+}
+
+func CalcUserSendMinusDebts(amountToSend types.PrecDecCoins, debts types.PrecDecCoins) (sdk.Coins, types.PrecDecCoins) {
+	coinsToSend := sdk.NewCoins()
+	for _, coinToPay := range amountToSend {
+		var userPays math.Int
+		var remainingDebt math_utils.PrecDec
+		debtAmount := debts.AmountOf(coinToPay.Denom)
+		if coinToPay.Amount.LTE(debtAmount) {
+			// Use outstanding debt to cover the amount the user is paying
+			userPays = math.ZeroInt()
+			// reduce debt by the amount applied to the balance
+			remainingDebt = debtAmount.Sub(coinToPay.Amount)
+		} else {
+			// Subtract debt from the amount the user is paying
+			userPaysRaw := coinToPay.Amount.Sub(debtAmount)
+			// round up to the nearest whole number
+			userPays = userPaysRaw.Ceil().TruncateInt()
+			// remaining debt is the difference between the rounded up amount and the original amount
+			remainingDebt = userPaysRaw.Ceil().Sub(userPaysRaw)
+		}
+		coinsToSend = coinsToSend.Add(sdk.NewCoin(coinToPay.Denom, userPays))
+		debts = debts.SetAmountOf(types.NewPrecDecCoin(coinToPay.Denom, remainingDebt))
+	}
+	return coinsToSend, debts
 }
 
 func RoundUpToWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Coins, fractionalTokens types.PrecDecCoins) {

@@ -259,6 +259,54 @@ func (coins PrecDecCoins) safeAdd(coinsB PrecDecCoins) (coalesced PrecDecCoins) 
 	return coalesced.Sort()
 }
 
+func (coins PrecDecCoins) Sub(coinsB ...PrecDecCoin) PrecDecCoins {
+	diff, hasNeg := coins.SafeSub(coinsB...)
+	if hasNeg {
+		panic("negative coin amount")
+	}
+
+	return diff
+}
+
+// SafeSub performs the same arithmetic as Sub but returns a boolean if any
+// negative coin amount was returned.
+// The function panics if `coins` or  `coinsB` are not sorted (ascending).
+func (coins PrecDecCoins) SafeSub(coinsB ...PrecDecCoin) (PrecDecCoins, bool) {
+	diff := coins.safeAdd(NewPrecDecCoins(coinsB...).negative())
+	return diff, diff.IsAnyNegative()
+}
+
+// IsAnyNegative returns true if there is at least one coin whose amount
+// is negative; returns false otherwise. It returns false if the coin set
+// is empty too.
+//
+// TODO: Remove once unsigned integers are used.
+func (coins PrecDecCoins) IsAnyNegative() bool {
+	for _, coin := range coins {
+		if coin.IsNegative() {
+			return true
+		}
+	}
+
+	return false
+}
+
+// negative returns a set of coins with all amount negative.
+//
+// TODO: Remove once unsigned integers are used.
+func (coins PrecDecCoins) negative() PrecDecCoins {
+	res := make([]PrecDecCoin, 0, len(coins))
+
+	for _, coin := range coins {
+		res = append(res, PrecDecCoin{
+			Denom:  coin.Denom,
+			Amount: coin.Amount.Neg(),
+		})
+	}
+
+	return res
+}
+
 // Empty returns true if there are no coins and false otherwise.
 func (coins PrecDecCoins) Empty() bool {
 	return len(coins) == 0
@@ -294,6 +342,15 @@ func (coins PrecDecCoins) AmountOf(denom string) math_utils.PrecDec {
 		return c.Amount
 	}
 	return math_utils.ZeroPrecDec()
+}
+
+func (coins PrecDecCoins) SetAmountOf(newCoin PrecDecCoin) PrecDecCoins {
+	found, existingCoin := coins.Find(newCoin.Denom)
+	if found {
+		coins = coins.Sub(existingCoin)
+	}
+	coins = coins.Add(newCoin)
+	return coins
 }
 
 // Find returns true and coin if the denom exists in coins. Otherwise it returns false

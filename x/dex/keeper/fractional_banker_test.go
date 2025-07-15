@@ -34,32 +34,43 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromModuleToAccoun
 }
 
 func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToModule() {
-	s.fundAliceBalances(100, 0)
+	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(100), sdkmath.NewInt(0))
 
-	// send 5 => dex gets 5; alice owed 0
+	// send 5 => alice pays 5; dex gets 5; alice owed 0
 	s.SendFractionalAmountFromAccount("5", s.alice)
 	s.assertDexBalancesInt(sdkmath.NewInt(5), sdkmath.NewInt(0))
 	s.assertFractionalBalance(s.alice, "0", "0")
+	s.assertAliceBalancesInt(sdkmath.NewInt(95), sdkmath.NewInt(0))
 
-	// send 5.99 => dex gets 6; alice owed 0.01
+	// send 5.99 => alice pays 6; dex gets 6; alice owed 0.01
 	s.SendFractionalAmountFromAccount("5.99", s.alice)
 	s.assertDexBalancesInt(sdkmath.NewInt(11), sdkmath.NewInt(0))
 	s.assertFractionalBalance(s.alice, "0.01", "0")
+	s.assertAliceBalancesInt(sdkmath.NewInt(89), sdkmath.NewInt(0))
 
-	// send 0.3 => dex gets 1; alice owed 0.31
+	// send 0.3 => alice pays 1; dex gets 1; alice owed 0.31
 	s.SendFractionalAmountFromAccount("0.3", s.alice)
 	s.assertDexBalancesInt(sdkmath.NewInt(12), sdkmath.NewInt(0))
 	s.assertFractionalBalance(s.alice, "0.71", "0")
+	s.assertAliceBalancesInt(sdkmath.NewInt(88), sdkmath.NewInt(0))
 
-	// send 0.1 => dex gets 0; alice owed 1.61
+	// send 0.1 => alice pays 0; dex gets 0; alice owed 0.61
 	s.SendFractionalAmountFromAccount("0.1", s.alice)
-	s.assertDexBalancesInt(sdkmath.NewInt(13), sdkmath.NewInt(0))
-	s.assertFractionalBalance(s.alice, "1.61", "0")
+	s.assertDexBalancesInt(sdkmath.NewInt(12), sdkmath.NewInt(0))
+	s.assertFractionalBalance(s.alice, "0.61", "0")
+	s.assertAliceBalancesInt(sdkmath.NewInt(88), sdkmath.NewInt(0))
 
-	// send 10.2 => dex gets 11; alice owed 2.41
+	// send 10.2 => alice pays 10; dex gets 10; alice owed 0.41
 	s.SendFractionalAmountFromAccount("10.2", s.alice)
-	s.assertDexBalancesInt(sdkmath.NewInt(24), sdkmath.NewInt(0))
-	s.assertFractionalBalance(s.alice, "2.41", "0")
+	s.assertDexBalancesInt(sdkmath.NewInt(22), sdkmath.NewInt(0))
+	s.assertFractionalBalance(s.alice, "0.41", "0")
+	s.assertAliceBalancesInt(sdkmath.NewInt(78), sdkmath.NewInt(0))
+
+	// send 0.41 => alice pays 0; dex gets 0; alice owed 0
+	s.SendFractionalAmountFromAccount("0.41", s.alice)
+	s.assertDexBalancesInt(sdkmath.NewInt(22), sdkmath.NewInt(0))
+	s.assertFractionalBalance(s.alice, "0", "0")
+	s.assertAliceBalancesInt(sdkmath.NewInt(78), sdkmath.NewInt(0))
 
 }
 
