@@ -12,9 +12,15 @@ import (
 	"github.com/neutron-org/neutron/v7/x/cron/types"
 )
 
+const maxPageLimit uint64 = 100
+
 func (k Keeper) Schedules(c context.Context, req *types.QuerySchedulesRequest) (*types.QuerySchedulesResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	if req.Pagination != nil && req.Pagination.Limit > maxPageLimit {
+		return nil, status.Errorf(codes.ResourceExhausted, "requested page size > %d, too large", maxPageLimit)
 	}
 
 	var schedules []types.Schedule

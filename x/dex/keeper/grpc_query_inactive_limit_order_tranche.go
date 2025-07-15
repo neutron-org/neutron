@@ -20,6 +20,10 @@ func (k Keeper) InactiveLimitOrderTrancheAll(
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
+	if req.Pagination != nil && req.Pagination.Limit > maxPageLimit {
+		return nil, status.Errorf(codes.ResourceExhausted, "requested page size > %d, too large", maxPageLimit)
+	}
+
 	var inactiveLimitOrderTranches []*types.LimitOrderTranche
 	ctx := sdk.UnwrapSDKContext(c)
 

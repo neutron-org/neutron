@@ -174,6 +174,10 @@ func TestLimitOrderTrancheUserQueryPaginated(t *testing.T) {
 			resp.LimitOrderTrancheUser,
 		)
 	})
+	t.Run("Limit too big", func(t *testing.T) {
+		_, err := keeper.LimitOrderTrancheUserAll(ctx, request(nil, 0, 200, true))
+		require.Error(t, err, status.Errorf(codes.ResourceExhausted, "requested page size > 200, too large"))
+	})
 	t.Run("InvalidRequest", func(t *testing.T) {
 		_, err := keeper.LimitOrderTrancheUserAll(ctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
