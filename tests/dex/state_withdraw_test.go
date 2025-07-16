@@ -152,13 +152,15 @@ func TestWithdraw(t *testing.T) {
 			newExistingSharesOwned := balancesAfter.Creator.AmountOf(poolDenom)
 			// Assertion 2
 			// exact amount of shares burned from a `creator` account
-			s.intsApproxEqual("New shares owned", newExistingSharesOwned, existingSharesOwned.Sub(toWithdraw), 1)
+			expectedSharesOwned := existingSharesOwned.Sub(toWithdraw)
+			s.True(expectedSharesOwned.Equal(newExistingSharesOwned), "Expected New shares owned %v != Actual %v", expectedSharesOwned, newExistingSharesOwned)
 
 			// Assertion 3
 			// exact amount of shares burned not just moved
 			newExistingSharesTotal := balancesAfter.Total.AmountOf(poolDenom)
 			existingSharesTotal := balancesBefore.Total.AmountOf(poolDenom)
-			s.intsApproxEqual("New total shares supply", newExistingSharesTotal, existingSharesTotal.Sub(toWithdraw), 1)
+			expectedSharesTotal := existingSharesTotal.Sub(toWithdraw)
+			s.True(expectedSharesTotal.Equal(newExistingSharesTotal), "Expected New total shares supply %v != Actual %v", expectedSharesTotal, newExistingSharesTotal)
 
 			// Assertion 4
 			// Withdrawn ratio equals pool liquidity ratio (dex balance of the tokens)
