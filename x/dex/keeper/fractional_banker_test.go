@@ -8,8 +8,14 @@ import (
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
+const (
+	TokenA = "TokenA"
+	TokenB = "TokenB"
+	TokenC = "TokenC"
+)
+
 func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromDexToAccount() {
-	err := s.App.BankKeeper.MintCoins(s.Ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin("TokenA", sdkmath.NewInt(100))))
+	err := s.App.BankKeeper.MintCoins(s.Ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(TokenA, sdkmath.NewInt(100))))
 	s.NoError(err)
 
 	// send 10.1 => alice gets 10; owed 0.1
@@ -76,18 +82,18 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToDex()
 func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromDexToAccountMultipleDenoms() {
 	err := s.App.BankKeeper.MintCoins(s.Ctx, types.ModuleName,
 		sdk.NewCoins(
-			sdk.NewCoin("TokenA", sdkmath.NewInt(100)),
-			sdk.NewCoin("TokenB", sdkmath.NewInt(100)),
+			sdk.NewCoin(TokenA, sdkmath.NewInt(100)),
+			sdk.NewCoin(TokenB, sdkmath.NewInt(100)),
 			sdk.NewCoin("TokenC", sdkmath.NewInt(100)),
 		))
 	s.NoError(err)
 
-	s.SendFractionalAmountToAccount("10.1", s.alice, "TokenA")
+	s.SendFractionalAmountToAccount("10.1", s.alice, TokenA)
 	s.assertDexBalancesInt(sdkmath.NewInt(90), sdkmath.NewInt(100))
 	s.assertAliceBalancesInt(sdkmath.NewInt(10), sdkmath.NewInt(0))
 	s.assertFractionalBalance(s.alice, "0.1", "0")
 
-	s.SendFractionalAmountToAccount("5.3", s.alice, "TokenB")
+	s.SendFractionalAmountToAccount("5.3", s.alice, TokenB)
 	s.assertDexBalancesInt(sdkmath.NewInt(90), sdkmath.NewInt(95))
 	s.assertAliceBalancesInt(sdkmath.NewInt(10), sdkmath.NewInt(5))
 	s.assertFractionalBalance(s.alice, "0.1", "0.3")
@@ -99,8 +105,8 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromDexToAccountMu
 
 	s.SendFractionalAmountsToAccount(
 		[]types.PrecDecCoin{
-			types.NewPrecDecCoin("TokenA", math_utils.MustNewPrecDecFromStr("1.1")),
-			types.NewPrecDecCoin("TokenB", math_utils.MustNewPrecDecFromStr("1.1")),
+			types.NewPrecDecCoin(TokenA, math_utils.MustNewPrecDecFromStr("1.1")),
+			types.NewPrecDecCoin(TokenB, math_utils.MustNewPrecDecFromStr("1.1")),
 			types.NewPrecDecCoin("TokenC", math_utils.MustNewPrecDecFromStr("1.1")),
 		},
 		s.alice,
@@ -115,38 +121,38 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToDexMu
 	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(100), sdkmath.NewInt(100))
 	s.fundAccountBalancesWithDenom(s.alice, sdk.NewCoins(sdk.NewCoin("TokenC", sdkmath.NewInt(100))))
 
-	s.SendFractionalAmountFromAccount("10.1", s.alice, "TokenA")
+	s.SendFractionalAmountFromAccount("10.1", s.alice, TokenA)
 	s.assertDexBalancesInt(sdkmath.NewInt(11), sdkmath.NewInt(0))
 	s.assertAliceBalancesInt(sdkmath.NewInt(89), sdkmath.NewInt(100))
 	s.assertFractionalBalance(s.alice, "0.9", "0")
 
-	s.SendFractionalAmountFromAccount("5.3", s.alice, "TokenB")
+	s.SendFractionalAmountFromAccount("5.3", s.alice, TokenB)
 	s.assertDexBalancesInt(sdkmath.NewInt(11), sdkmath.NewInt(6))
 	s.assertAliceBalancesInt(sdkmath.NewInt(89), sdkmath.NewInt(94))
 	s.assertFractionalBalance(s.alice, "0.9", "0.7")
 
 	s.SendFractionalAmountFromAccount("0.7", s.alice, "TokenC")
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", sdkmath.NewInt(99))
+	s.assertAccountBalanceWithDenomInt(s.alice, TokenC, sdkmath.NewInt(99))
 	s.assertFractionalBalance(s.alice, "0.9", "0.7")
-	s.assertFractionalBalanceCustomDenom(s.alice, "TokenC", "0.3")
+	s.assertFractionalBalanceCustomDenom(s.alice, TokenC, "0.3")
 
 	s.SendFractionalAmountsFromAccount(
 		[]types.PrecDecCoin{
-			types.NewPrecDecCoin("TokenA", math_utils.MustNewPrecDecFromStr("1.1")),
-			types.NewPrecDecCoin("TokenB", math_utils.MustNewPrecDecFromStr("1.8")),
-			types.NewPrecDecCoin("TokenC", math_utils.MustNewPrecDecFromStr("1.1")),
+			types.NewPrecDecCoin(TokenA, math_utils.MustNewPrecDecFromStr("1.1")),
+			types.NewPrecDecCoin(TokenB, math_utils.MustNewPrecDecFromStr("1.8")),
+			types.NewPrecDecCoin(TokenC, math_utils.MustNewPrecDecFromStr("1.1")),
 		},
 		s.alice,
 	)
 	s.assertDexBalancesInt(sdkmath.NewInt(12), sdkmath.NewInt(8))
 	s.assertAliceBalancesInt(sdkmath.NewInt(88), sdkmath.NewInt(92))
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", sdkmath.NewInt(98))
+	s.assertAccountBalanceWithDenomInt(s.alice, TokenC, sdkmath.NewInt(98))
 	s.assertFractionalBalance(s.alice, "0.8", "0.9")
-	s.assertFractionalBalanceCustomDenom(s.alice, "TokenC", "0.2")
+	s.assertFractionalBalanceCustomDenom(s.alice, TokenC, "0.2")
 }
 
 func (s *DexTestSuite) SendFractionalAmountToAccount(amount string, account sdk.AccAddress, denom ...string) {
-	sendDenom := "TokenA"
+	sendDenom := TokenA
 	if len(denom) > 0 {
 		sendDenom = denom[0]
 	}
@@ -167,7 +173,7 @@ func (s *DexTestSuite) SendFractionalAmountsFromAccount(amounts types.PrecDecCoi
 }
 
 func (s *DexTestSuite) SendFractionalAmountFromAccount(amount string, account sdk.AccAddress, denom ...string) {
-	sendDenom := "TokenA"
+	sendDenom := TokenA
 	if len(denom) > 0 {
 		sendDenom = denom[0]
 	}
@@ -188,14 +194,15 @@ func (s *DexTestSuite) SendFractionalAmountsToAccount(amounts types.PrecDecCoins
 }
 
 func (s *DexTestSuite) assertFractionalBalance(account sdk.AccAddress, expectedAmountA, expectedAmountB string) {
-	balance := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, "TokenA", "TokenB")
-	tokenABalance := balance.AmountOf("TokenA")
-	tokenBBalance := balance.AmountOf("TokenB")
+	balance := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, TokenA, TokenB)
+	tokenABalance := balance.AmountOf(TokenA)
+	tokenBBalance := balance.AmountOf(TokenB)
 
 	s.Require().Equal(math_utils.MustNewPrecDecFromStr(expectedAmountA), tokenABalance, "Expected balance A %v != %v", expectedAmountA, tokenABalance.String())
 	s.Require().Equal(math_utils.MustNewPrecDecFromStr(expectedAmountB), tokenBBalance, "Expected balance B %v != %v", expectedAmountB, tokenBBalance.String())
 }
 
+// nolint: unparam
 func (s *DexTestSuite) assertFractionalBalanceCustomDenom(account sdk.AccAddress, denom, expectedAmount string) {
 	balance := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, denom)
 	tokenABalance := balance.AmountOf(denom)

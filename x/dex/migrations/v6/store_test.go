@@ -85,5 +85,4 @@ func (suite *V6DexMigrationTestSuite) TestFieldUpdates() {
 
 	suite.Equal(math_utils.MustNewPrecDecFromStr("10"), migratedPool0.DecReservesMakerDenom)
 	suite.Equal(math_utils.MustNewPrecDecFromStr("10000"), migratedPool1.DecReservesMakerDenom)
-
 }
