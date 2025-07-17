@@ -160,6 +160,10 @@ func (k Keeper) TakerLimitOrderSwap(
 		return types.PrecDecCoin{}, types.PrecDecCoin{}, types.ErrLimitPriceNotSatisfied
 	}
 
+	if totalOutCoin.Amount.IsZero() {
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, types.ErrTradeTooSmall
+	}
+
 	return totalInCoin, totalOutCoin, nil
 }
 

@@ -197,7 +197,7 @@ var (
 	ErrTradeTooSmall = sdkerrors.Register(
 		ModuleName,
 		1159,
-		"Specified trade will result in a rounded output of 0",
+		"Specified trade will result in a output of 0",
 	)
 	ErrPriceOutsideRange = sdkerrors.Register(
 		ModuleName,
