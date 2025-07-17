@@ -202,8 +202,10 @@ func (s *DexTestSuite) assertFractionalBalance(account sdk.AccAddress, expectedA
 	s.Require().Equal(math_utils.MustNewPrecDecFromStr(expectedAmountB), tokenBBalance, "Expected balance B %v != %v", expectedAmountB, tokenBBalance.String())
 }
 
-// nolint: unparam
-func (s *DexTestSuite) assertFractionalBalanceCustomDenom(account sdk.AccAddress, denom, expectedAmount string) {
+func (s *DexTestSuite) assertFractionalBalanceCustomDenom(
+	account sdk.AccAddress,
+	denom, expectedAmount string, //nolint:unparam
+) {
 	balance := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, denom)
 	tokenABalance := balance.AmountOf(denom)
 
