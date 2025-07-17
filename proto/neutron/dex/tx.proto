@@ -85,13 +85,13 @@ message MsgDepositResponse {
     (gogoproto.jsontag) = "shares_issued"
   ];
   repeated string dec_reserve0_deposited = 5 [
-    (gogoproto.moretags) = "dec_reserve0_deposited\"",
+    (gogoproto.moretags) = "yaml:\"dec_reserve0_deposited\"",
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_reserve0_deposited"
   ];
   repeated string dec_reserve1_deposited = 6 [
-    (gogoproto.moretags) = "dec_reserve1_deposited\"",
+    (gogoproto.moretags) = "yaml:\"dec_reserve1_deposited\"",
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_reserve1_deposited"
