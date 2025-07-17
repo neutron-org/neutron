@@ -11,12 +11,14 @@ import (
 	"github.com/neutron-org/neutron/v7/x/dex/types"
 )
 
-type DebtMap map[string]math_utils.PrecDec
-type FractionalBanker struct {
-	BankKeeper types.BankKeeper
-	storeKey   storetypes.StoreKey
-	cdc        codec.BinaryCodec
-}
+type (
+	DebtMap          map[string]math_utils.PrecDec
+	FractionalBanker struct {
+		BankKeeper types.BankKeeper
+		storeKey   storetypes.StoreKey
+		cdc        codec.BinaryCodec
+	}
+)
 
 func NewFractionalBanker(storeKey storetypes.StoreKey, bankKeeper types.BankKeeper, cdc codec.BinaryCodec) *FractionalBanker {
 	return &FractionalBanker{
@@ -71,7 +73,6 @@ func (k *FractionalBanker) SetFractionalBalanceFromMap(ctx sdk.Context, address 
 }
 
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, coins types.PrecDecCoins) {
-
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	for _, coin := range coins {
 		b := []byte(coin.Amount.String())
@@ -146,7 +147,7 @@ func RoundDownToWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Co
 	return wholeTokens, fractionalDebts
 }
 
-func CalcUserSendMinusDebts(amountToSend types.PrecDecCoins, debts types.PrecDecCoins) (sdk.Coins, DebtMap) {
+func CalcUserSendMinusDebts(amountToSend, debts types.PrecDecCoins) (sdk.Coins, DebtMap) {
 	coinsToSend := sdk.NewCoins()
 	debtMap := make(DebtMap)
 	for _, coinToPay := range amountToSend {

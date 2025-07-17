@@ -165,7 +165,7 @@ func (s *DexStateTestSuite) setupLoTakerState(params placeLimitOrderTakerTestPar
 	}
 }
 
-func ExpectedInOut(params placeLimitOrderTakerTestParams) (totalIn math_utils.PrecDec, totalOut math_utils.PrecDec) {
+func ExpectedInOut(params placeLimitOrderTakerTestParams) (totalIn, totalOut math_utils.PrecDec) {
 	maxAmountOutDec := math_utils.ZeroPrecDec()
 	if params.MaxAmountOut != nil {
 		maxAmountOutDec = math_utils.NewPrecDecFromInt(*params.MaxAmountOut)
