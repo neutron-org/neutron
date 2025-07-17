@@ -197,7 +197,7 @@ var (
 	ErrTradeTooSmall = sdkerrors.Register(
 		ModuleName,
 		1159,
-		"Specified trade will result in a rounded output of 0",
+		"Specified trade will result in a output of 0",
 	)
 	ErrPriceOutsideRange = sdkerrors.Register(
 		ModuleName,
@@ -244,6 +244,7 @@ var (
 		1168,
 		"Swap on deposit true price is less than minimum allowed price",
 	)
+	// Error no longer used
 	ErrInvalidSlopTolerance = sdkerrors.Register(
 		ModuleName,
 		1169,

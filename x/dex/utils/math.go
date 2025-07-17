@@ -46,6 +46,17 @@ func MaxIntArr(vals []sdkmath.Int) sdkmath.Int {
 	return maxInt
 }
 
+func MinPrecDecArr(vals []math_utils.PrecDec) math_utils.PrecDec {
+	minVal := vals[0]
+	for _, val := range vals {
+		if val.LT(minVal) {
+			minVal = val
+		}
+	}
+
+	return minVal
+}
+
 func Uint64ToSortableString(i uint64) string {
 	// Converts a Uint to a string that sorts lexogrpahically in integer order
 	intStr := strconv.FormatUint(i, 36)

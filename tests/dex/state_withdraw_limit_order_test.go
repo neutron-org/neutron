@@ -171,10 +171,10 @@ func (s *DexStateTestSuite) assertWithdrawFilledAmount(params withdrawLimitOrder
 	// pre-withdrawn (filled/2 or 0) + withdrawn (filled/2 or filled) === filled
 	// converted to TokenB
 	price := dextypes.MustCalcPrice(params.Tick)
-	expectedBalanceB := price.MulInt(depositSize.MulRaw(int64(params.Filled)).QuoRaw(100)).Ceil().TruncateInt()
+	expectedBalanceB := price.MulInt(depositSize.MulRaw(int64(params.Filled)).QuoRaw(100)).TruncateInt()
 	expectedBalanceA := depositSize.Sub(depositSize.MulRaw(int64(params.Filled)).QuoRaw(100))
 	// 1 - withdrawn amount
-	s.assertBalanceWithPrecision(s.creator, params.PairID.Token1, expectedBalanceB, 3)
+	s.assertBalance(s.creator, params.PairID.Token1, expectedBalanceB)
 
 	ut, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.creator.String(), trancheKey)
 	if params.Expired {
@@ -187,7 +187,8 @@ func (s *DexStateTestSuite) assertWithdrawFilledAmount(params withdrawLimitOrder
 			s.False(found)
 		} else {
 			s.True(found)
-			s.intsApproxEqual("", expectedBalanceA, ut.SharesOwned.Sub(ut.SharesWithdrawn), 1)
+			remainingShares := ut.SharesOwned.Sub(ut.SharesWithdrawn)
+			s.True(expectedBalanceA.Equal(remainingShares), "Expected Balance A %v != Actual %v", expectedBalanceA, remainingShares)
 		}
 	}
 }

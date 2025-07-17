@@ -33,8 +33,10 @@ func (k Keeper) SimulateWithdrawFilledLimitOrder(
 
 	return &types.QuerySimulateWithdrawFilledLimitOrderResponse{
 		Resp: &types.MsgWithdrawFilledLimitOrderResponse{
-			TakerCoinOut: takerCoinOut,
-			MakerCoinOut: makerCoinOut,
+			TakerCoinOut:    takerCoinOut.TruncateToCoin(),
+			MakerCoinOut:    makerCoinOut.TruncateToCoin(),
+			DecTakerCoinOut: takerCoinOut,
+			DecMakerCoinOut: makerCoinOut,
 		},
 	}, nil
 }
