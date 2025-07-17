@@ -2,7 +2,7 @@
 
 Taken from [osmosis](https://github.com/osmosis-labs/osmosis) `v14.0.0-rc1` (commit `26e2fad8e7b3eb7c33965360b31a593b392d7d75`)
 
-Removed `ibc_callback` functionality since we already have similar [sudo callback mechanism](https://docs.neutron.org/neutron/transfer/overview#ibc-transfer-results-handover) in Transfer module.
+Removed `ibc_callback` functionality since we already have similar [sudo callback mechanism](https://docs.neutron.org/neutron/modules/transfer/overview/#ibc-transfer-results-handover) in Transfer module.
 
 Module https://github.com/osmosis-labs/osmosis/tree/v14.0.0-rc1/x/ibc-hooks
 
