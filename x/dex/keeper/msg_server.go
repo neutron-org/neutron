@@ -171,7 +171,6 @@ func (k MsgServer) PlaceLimitOrder(
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
 
-	// TODO: maybe change this response to use PrecDecCoins
 	return &types.MsgPlaceLimitOrderResponse{
 		TrancheKey:      trancheKey,
 		CoinIn:          coinIn.CeilToCoin(),

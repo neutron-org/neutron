@@ -60,7 +60,8 @@ func MustNewPoolReserves(
 }
 
 func (p *PoolReserves) SetMakerReserves(reserves math_utils.PrecDec) {
-	// TODO: remove this panic once we have a way to handle negative reserves
+	// It should be impossible for reserves to be negative.
+	// This check provides an extra safegaurd against possible exploits or bugs.
 	if reserves.IsNegative() {
 		panic("reserves cannot be negative")
 	}

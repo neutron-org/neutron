@@ -58,14 +58,14 @@ func (coin PrecDecCoin) String() string {
 func (coin PrecDecCoin) TruncateToCoin() sdk.Coin {
 	return sdk.Coin{
 		Denom:  coin.Denom,
-		Amount: coin.Amount.TruncateInt(), // TODO: check if this is correct
+		Amount: coin.Amount.TruncateInt(),
 	}
 }
 
 func (coin PrecDecCoin) CeilToCoin() sdk.Coin {
 	return sdk.Coin{
 		Denom:  coin.Denom,
-		Amount: coin.Amount.Ceil().TruncateInt(), // TODO: check if this is correct
+		Amount: coin.Amount.Ceil().TruncateInt(),
 	}
 }
 

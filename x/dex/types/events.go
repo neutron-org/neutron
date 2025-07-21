@@ -100,7 +100,6 @@ func CreateDepositEvent(
 	fee uint64,
 	depositAmountReserve0 math_utils.PrecDec,
 	depositAmountReserve1 math_utils.PrecDec,
-	// TODO: check switching these to precDec doesn't break anything
 	amountIn0 math_utils.PrecDec,
 	amountIn1 math_utils.PrecDec,
 	poolID uint64,

@@ -550,7 +550,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
 	// WHEN alice deposits TokenB at tick 5000 (BEL)
 	resp := s.aliceDeposits(
 		NewDepositWithOptions(0, 5, 4999, 1,
-			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true},
 		),
 	)
 
@@ -575,7 +575,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll2() {
 	// WHEN alice deposits TokenB at tick -10,004 (BEL)
 	resp := s.aliceDeposits(
 		NewDepositWithOptions(0, 20, -10005, 1,
-			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10}),
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
 	// THEN all of alice's TokenB is swapped

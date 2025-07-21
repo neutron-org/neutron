@@ -58,7 +58,6 @@ func (k Keeper) SimulatePlaceLimitOrder(
 		return nil, err
 	}
 
-	// TODO: add precdec fields
 	coinIn := sdk.NewCoin(msg.TokenIn, totalIn.Ceil().TruncateInt())
 	return &types.QuerySimulatePlaceLimitOrderResponse{
 		Resp: &types.MsgPlaceLimitOrderResponse{

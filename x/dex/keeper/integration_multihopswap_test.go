@@ -108,8 +108,7 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
 	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(999_999))
 }
 
-// TODO: Can probably remove this test since MHS no longer accumulates dust
-func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens() {
+func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithHighTicks() {
 	s.fundAliceBalances(2_000, 0) // 2_000_000_000 TokenA
 
 	// GIVEN liquidity in pools A<>B, B<>C, C<>D,

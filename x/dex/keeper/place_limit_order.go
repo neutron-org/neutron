@@ -115,8 +115,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	minAvgSellPrice math_utils.PrecDec,
 	err error,
 ) {
-	amountInDec := math_utils.NewPrecDecFromInt(amountIn)
-	amountLeft := amountInDec
+	amountLeft := math_utils.NewPrecDecFromInt(amountIn)
 
 	limitBuyPrice, err := types.CalcPrice(tickIndexInToOut)
 	if err != nil {
@@ -132,9 +131,9 @@ func (k Keeper) ExecutePlaceLimitOrder(
 
 	var orderFilled bool
 	if orderType.IsTakerOnly() {
-		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountInDec, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountLeft, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
 	} else {
-		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountInDec, limitBuyPrice, minAvgSellPrice)
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountLeft, limitBuyPrice, minAvgSellPrice)
 	}
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err

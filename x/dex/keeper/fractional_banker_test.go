@@ -54,7 +54,7 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToDex()
 	s.assertFractionalBalance(s.alice, "0.01", "0")
 	s.assertAliceBalancesInt(sdkmath.NewInt(89), sdkmath.NewInt(0))
 
-	// send 0.3 => alice pays 1; dex gets 1; alice owed 0.31
+	// send 0.3 => alice pays 1; dex gets 1; alice owed 0.71 (0.01 + 0.7)
 	s.SendFractionalAmountFromAccount("0.3", s.alice)
 	s.assertDexBalancesInt(sdkmath.NewInt(12), sdkmath.NewInt(0))
 	s.assertFractionalBalance(s.alice, "0.71", "0")

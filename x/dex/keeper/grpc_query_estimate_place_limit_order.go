@@ -63,10 +63,9 @@ func (k Keeper) EstimatePlaceLimitOrder(
 
 	// NB: We're only using a cache context so we don't expect any writes to happen.
 
-	// TODO: ideally we remove this query entirely since the truncation here is not correct
 	return &types.QueryEstimatePlaceLimitOrderResponse{
-		TotalInCoin: totalInCoin.TruncateToCoin(),
-		SwapInCoin:  swapInCoin.TruncateToCoin(),
+		TotalInCoin: totalInCoin.CeilToCoin(),
+		SwapInCoin:  swapInCoin.CeilToCoin(),
 		SwapOutCoin: swapOutCoin.TruncateToCoin(),
 	}, nil
 }

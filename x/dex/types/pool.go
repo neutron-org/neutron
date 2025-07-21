@@ -216,9 +216,9 @@ func (p *Pool) RedeemValue(sharesToRemove, totalShares math.Int) (outAmount0, ou
 		reserves1.MulInt(sharesToRemove).QuoInt(totalShares),
 		reserves1,
 	)
-	// outAmount0 = ownershipRatio * reserves1
-	//            = (sharesToRemove / totalShares) * reserves1
-	//            = (reserves1 * sharesToRemove ) / totalShares
+	// outAmount0 = ownershipRatio * reserves0
+	//            = (sharesToRemove / totalShares) * reserves0
+	//            = (reserves0 * sharesToRemove ) / totalShares
 	outAmount0 = math_utils.MinPrecDec(
 		reserves0.MulInt(sharesToRemove).QuoInt(totalShares),
 		reserves0,
