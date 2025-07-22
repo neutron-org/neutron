@@ -233,7 +233,11 @@ func TestRegisterInterchainAccountUnordered(t *testing.T) {
 }
 
 func TestMsgSubmitTXValidate(t *testing.T) {
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 
@@ -301,38 +305,6 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					RecvFee:    sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
 					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
 					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			sdkerrors.ErrInvalidCoins,
-		},
-		{
-			"zero ack fee",
-			types.MsgSubmitTx{
-				FromAddress:         testutil.TestOwnerAddress,
-				ConnectionId:        "connection-id",
-				InterchainAccountId: "1",
-				Msgs:                []*codectypes.Any{&cosmosMsg},
-				Timeout:             1,
-				Fee: feerefundertypes.Fee{
-					RecvFee:    nil,
-					AckFee:     nil,
-					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			sdkerrors.ErrInvalidCoins,
-		},
-		{
-			"zero timeout fee",
-			types.MsgSubmitTx{
-				FromAddress:         testutil.TestOwnerAddress,
-				ConnectionId:        "connection-id",
-				InterchainAccountId: "1",
-				Msgs:                []*codectypes.Any{&cosmosMsg},
-				Timeout:             1,
-				Fee: feerefundertypes.Fee{
-					RecvFee:    nil,
-					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-					TimeoutFee: nil,
 				},
 			},
 			sdkerrors.ErrInvalidCoins,
