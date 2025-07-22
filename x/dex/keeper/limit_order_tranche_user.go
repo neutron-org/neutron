@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -16,22 +17,26 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 	trancheKey string,
 	orderType types.LimitOrderType,
 	receiver string,
-) *types.LimitOrderTrancheUser {
+) (*types.LimitOrderTrancheUser, error) {
 	userShareData, found := k.GetLimitOrderTrancheUser(ctx, receiver, trancheKey)
 
-	if !found {
-		return &types.LimitOrderTrancheUser{
-			TrancheKey:            trancheKey,
-			Address:               receiver,
-			SharesOwned:           math.ZeroInt(),
-			SharesWithdrawn:       math.ZeroInt(),
-			TickIndexTakerToMaker: tickIndex,
-			TradePairId:           tradePairID,
-			OrderType:             orderType,
-		}
+	if found {
+		if userShareData.TradePairId.Equal(*tradePairID) && userShareData.TickIndexTakerToMaker == tickIndex {
+			return userShareData, nil
+		} // else
+		// This case should never happen, but it's here for extra safety
+		return nil, sdkerrors.Wrapf(types.ErrDuplicateTrancheKey, "tranche key already exists for different trade pair id or tick index")
 	}
 
-	return userShareData
+	return &types.LimitOrderTrancheUser{
+		TrancheKey:            trancheKey,
+		Address:               receiver,
+		SharesOwned:           math.ZeroInt(),
+		SharesWithdrawn:       math.ZeroInt(),
+		TickIndexTakerToMaker: tickIndex,
+		TradePairId:           tradePairID,
+		OrderType:             orderType,
+	}, nil
 }
 
 // SetLimitOrderTrancheUser set a specific LimitOrderTrancheUser in the store from its index
