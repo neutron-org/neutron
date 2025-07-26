@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"strings"
+
 	math "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -56,7 +58,7 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.Prec
 	balances := types.PrecDecCoins{}
 
 	for ; iterator.Valid(); iterator.Next() {
-		denom := string(iterator.Key()[len(types.FractionalBalanceKeyPrefix):])
+		denom := strings.Split(string(iterator.Key()), "/")[1]
 		var amount math_utils.PrecDec
 		err := amount.Unmarshal(iterator.Value())
 		if err != nil {
