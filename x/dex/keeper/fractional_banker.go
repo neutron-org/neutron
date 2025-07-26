@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	DebtMap map[string]math_utils.PrecDec
+	BalanceMap map[string]math_utils.PrecDec
 )
 
 type FractionalBanker struct {
@@ -70,9 +70,9 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.Prec
 	return balances, nil
 }
 
-func (k *FractionalBanker) SetFractionalBalanceFromMap(ctx sdk.Context, address sdk.AccAddress, debtMap DebtMap) {
+func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, balances BalanceMap) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
-	for denom, amount := range debtMap {
+	for denom, amount := range balances {
 		if amount.IsPositive() {
 			bz, err := amount.Marshal()
 			// Marshal will NEVER actually return an error unless there are downstream code changes
@@ -83,22 +83,6 @@ func (k *FractionalBanker) SetFractionalBalanceFromMap(ctx sdk.Context, address 
 		} else {
 			store.Delete(types.FractionalBalanceKey(address, denom))
 		}
-	}
-}
-
-func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, coins types.PrecDecCoins) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
-	for _, coin := range coins {
-		b, err := coin.Amount.Marshal()
-		// Marshal will NEVER actually return an error unless there are downstream code changes
-		if err != nil {
-			panic(err)
-		}
-		if coin.Amount.IsZero() {
-			store.Delete(types.FractionalBalanceKey(address, coin.Denom))
-			continue
-		} // else
-		store.Set(types.FractionalBalanceKey(address, coin.Denom), b)
 	}
 }
 
@@ -123,7 +107,7 @@ func (k *FractionalBanker) SendFractionalCoinsFromDexToAccount(ctx sdk.Context, 
 		}
 	}
 
-	k.SetFractionalBalanceFromMap(ctx, address, fractionalDebts)
+	k.SetFractionalBalance(ctx, address, fractionalDebts)
 
 	return nil
 }
@@ -138,7 +122,7 @@ func (k *FractionalBanker) SendFractionalCoinsFromAccountToDex(ctx sdk.Context, 
 		return err
 	}
 
-	coinsToSend, debtMap := CalcUserSendMinusDebts(tokens, balances)
+	coinsToSend, newBalance := CalcUserSendMinusDebts(tokens, balances)
 
 	if !coinsToSend.Empty() {
 		err := k.BankKeeper.SendCoinsFromAccountToModule(ctx, address, types.ModuleName, coinsToSend)
@@ -147,14 +131,14 @@ func (k *FractionalBanker) SendFractionalCoinsFromAccountToDex(ctx sdk.Context, 
 		}
 	}
 
-	k.SetFractionalBalanceFromMap(ctx, address, debtMap)
+	k.SetFractionalBalance(ctx, address, newBalance)
 
 	return nil
 }
 
-func RoundDownToWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Coins, fractionalDebts DebtMap) {
+func RoundDownToWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Coins, fractionalDebts BalanceMap) {
 	wholeTokens = sdk.Coins{}
-	fractionalDebts = make(DebtMap)
+	fractionalDebts = make(BalanceMap)
 
 	for _, token := range tokens {
 		wholeAmount := token.Amount.TruncateInt()
@@ -171,9 +155,9 @@ func RoundDownToWholeTokenAmounts(tokens types.PrecDecCoins) (wholeTokens sdk.Co
 	return wholeTokens, fractionalDebts
 }
 
-func CalcUserSendMinusDebts(amountToSend, debts types.PrecDecCoins) (sdk.Coins, DebtMap) {
+func CalcUserSendMinusDebts(amountToSend, debts types.PrecDecCoins) (sdk.Coins, BalanceMap) {
 	coinsToSend := sdk.NewCoins()
-	debtMap := make(DebtMap)
+	debtMap := make(BalanceMap)
 	for _, coinToPay := range amountToSend {
 		var userPays math.Int
 		debtAmount := debts.AmountOf(coinToPay.Denom)
