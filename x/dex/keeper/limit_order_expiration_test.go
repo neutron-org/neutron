@@ -166,7 +166,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	updateEvent := s.FindEvent(ctx.EventManager().Events(), types.TickUpdateEventKey)
 	eventAttrs := s.ExtractAttributes(updateEvent)
 	// Event has Reserves == 0
-	s.Equal(eventAttrs[types.AttributeReserves], "0.000000000000000000000000000")
+	s.Equal(eventAttrs[types.AttributeReservesDec], "0.000000000000000000000000000")
 }
 
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {

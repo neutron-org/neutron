@@ -553,15 +553,15 @@ func (s *DexTestSuite) TestSwapExhaustsLOAndLP() {
 
 	// LimitOrder TickUpdate has correct SwapMetadatrra
 	loTickUpdate := tickUpdates[3]
-	loSwapIn, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountIn)
-	loSwapOut, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountOut)
+	loSwapIn, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountInDec)
+	loSwapOut, _ := loTickUpdate.GetAttribute(types.AttributeSwapAmountOutDec)
 	s.Equal("10000000.000000000000000000000000000", loSwapIn.Value)
 	s.Equal("10000000.000000000000000000000000000", loSwapOut.Value)
 
 	// LP TickUpdate has correct SwapMetadata
 	lpTickUpdate := tickUpdates[5]
-	lpSwapIn, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountIn)
-	lpSwapOut, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountOut)
+	lpSwapIn, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountInDec)
+	lpSwapOut, _ := lpTickUpdate.GetAttribute(types.AttributeSwapAmountOutDec)
 	s.Equal("9000000.000000000000000000000000000", lpSwapIn.Value)
 	s.Equal("8999100.089991000899910008999100090", lpSwapOut.Value)
 
