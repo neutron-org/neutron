@@ -289,4 +289,6 @@ func TestPlaceLimitOrderTaker(t *testing.T) {
 			}
 		})
 	}
+
+	s.TearDownTest()
 }

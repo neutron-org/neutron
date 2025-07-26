@@ -302,6 +302,8 @@ func TestPlaceLimitOrderMaker(t *testing.T) {
 			s.assertExpectedTrancheKey(initialTrancheKey, resp.TrancheKey, tc)
 		})
 	}
+
+	s.TearDownTest()
 	s.SetT(t)
 	// sanity check: at least one `expectedSwapTakerDenom` > 0
 	s.True(totalExpectedToSwap.IsPositive())

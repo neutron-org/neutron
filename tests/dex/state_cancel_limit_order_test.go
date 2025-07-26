@@ -210,4 +210,5 @@ func TestCancel(t *testing.T) {
 			s.assertCancelAmount(tc)
 		})
 	}
+	s.TearDownTest()
 }

@@ -392,6 +392,24 @@ func (s *DexStateTestSuite) assertPoolBalance(pairID *dextypes.PairID, tick int6
 	s.Equal(expectedB, reservesB, "Pool ReservesB")
 }
 
+func (s *DexStateTestSuite) assertFractionalBalancesPayable() {
+	fractionalBalances, err := s.App.DexKeeper.GetAllFractionalBalances(s.Ctx)
+	s.NoError(err)
+	dexAddr := s.App.AccountKeeper.GetModuleAccount(s.Ctx, "dex").GetAddress()
+	dexBal := s.App.BankKeeper.GetAllBalances(s.Ctx, dexAddr)
+
+	for _, fractionalBal := range fractionalBalances {
+		denom := fractionalBal.Denom
+		dexBalDec := math_utils.NewPrecDecFromInt(dexBal.AmountOf(denom))
+		s.NoError(err)
+		fractionalBal := fractionalBal.Amount
+		s.Assert().True(
+			dexBalDec.GTE(fractionalBal),
+			"Dex owes %v, but has only %v for denom %s", fractionalBal, dexBal, denom,
+		)
+	}
+}
+
 // Core Test Setup ////////////////////////////////////////////////////////////
 
 type DexStateTestSuite struct {
@@ -409,6 +427,10 @@ func (s *DexStateTestSuite) SetupTest() {
 	s.bob = sdk.MustAccAddressFromBech32(sample.AccAddress())
 
 	s.msgServer = dexkeeper.NewMsgServerImpl(s.App.DexKeeper)
+}
+
+func (s *DexStateTestSuite) TearDownTest() {
+	s.assertFractionalBalancesPayable()
 }
 
 type testParams struct {

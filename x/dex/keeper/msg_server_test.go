@@ -1568,26 +1568,6 @@ func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
 	s.NoError(err)
 }
 
-func (s *DexTestSuite) assertFractionalBalancesPayable() {
-	fractionalBalances, err := s.App.DexKeeper.GetAllFractionalBalances(s.Ctx)
-	s.NoError(err)
-	dexAddr := s.App.AccountKeeper.GetModuleAccount(s.Ctx, "dex").GetAddress()
-	dexBalA := s.App.BankKeeper.GetBalance(s.Ctx, dexAddr, "TokenA")
-	dexBalB := s.App.BankKeeper.GetBalance(s.Ctx, dexAddr, "TokenB")
-	_, fractionalBalA := fractionalBalances.Find("TokenA")
-	_, fractionalBalB := fractionalBalances.Find("TokenB")
-	s.Assert().Greater(
-		math_utils.NewPrecDecFromInt(dexBalA.Amount),
-		fractionalBalA.Amount,
-		"Dex owes %v, but has only %v", fractionalBalA, dexBalA,
-	)
-	s.Assert().Greater(
-		math_utils.NewPrecDecFromInt(dexBalB.Amount),
-		fractionalBalB.Amount,
-		"Dex owes %v, but has only %v", fractionalBalB, dexBalB,
-	)
-}
-
 func TestMsgDepositValidate(t *testing.T) {
 	k, ctx := testkeeper.DexKeeper(t)
 	msgServer := dexkeeper.NewMsgServerImpl(*k)

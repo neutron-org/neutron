@@ -352,4 +352,6 @@ func TestDeposit(t *testing.T) {
 			s.assertDexBalance(tc.PairID.Token1, expectedDexBalanceB.Ceil().TruncateInt())
 		})
 	}
+
+	s.TearDownTest()
 }

@@ -236,4 +236,6 @@ func TestWithdrawLimitOrder(t *testing.T) {
 			*/
 		})
 	}
+
+	s.TearDownTest()
 }

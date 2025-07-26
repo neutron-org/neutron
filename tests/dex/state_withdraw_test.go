@@ -174,4 +174,6 @@ func TestWithdraw(t *testing.T) {
 			)
 		})
 	}
+
+	s.TearDownTest()
 }
