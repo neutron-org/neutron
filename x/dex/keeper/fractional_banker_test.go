@@ -194,7 +194,8 @@ func (s *DexTestSuite) SendFractionalAmountsToAccount(amounts types.PrecDecCoins
 }
 
 func (s *DexTestSuite) assertFractionalBalance(account sdk.AccAddress, expectedAmountA, expectedAmountB string) {
-	balance := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, TokenA, TokenB)
+	balance, err := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, TokenA, TokenB)
+	s.NoError(err)
 	tokenABalance := balance.AmountOf(TokenA)
 	tokenBBalance := balance.AmountOf(TokenB)
 
@@ -206,7 +207,8 @@ func (s *DexTestSuite) assertFractionalBalanceCustomDenom(
 	account sdk.AccAddress,
 	denom, expectedAmount string, //nolint:unparam
 ) {
-	balance := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, denom)
+	balance, err := s.App.DexKeeper.GetFractionalBalances(s.Ctx, account, denom)
+	s.NoError(err)
 	tokenABalance := balance.AmountOf(denom)
 
 	s.Require().Equal(math_utils.MustNewPrecDecFromStr(expectedAmount), tokenABalance, "Expected balance A %v != %v", expectedAmount, tokenABalance.String())

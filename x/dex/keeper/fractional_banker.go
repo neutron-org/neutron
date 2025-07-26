@@ -12,13 +12,14 @@ import (
 )
 
 type (
-	DebtMap          map[string]math_utils.PrecDec
-	FractionalBanker struct {
-		BankKeeper types.BankKeeper
-		storeKey   storetypes.StoreKey
-		cdc        codec.BinaryCodec
-	}
+	DebtMap map[string]math_utils.PrecDec
 )
+
+type FractionalBanker struct {
+	BankKeeper types.BankKeeper
+	storeKey   storetypes.StoreKey
+	cdc        codec.BinaryCodec
+}
 
 func NewFractionalBanker(storeKey storetypes.StoreKey, bankKeeper types.BankKeeper, cdc codec.BinaryCodec) *FractionalBanker {
 	return &FractionalBanker{
@@ -28,24 +29,26 @@ func NewFractionalBanker(storeKey storetypes.StoreKey, bankKeeper types.BankKeep
 	}
 }
 
-func (k *FractionalBanker) GetFractionalBalances(ctx sdk.Context, address sdk.AccAddress, denoms ...string) types.PrecDecCoins {
+func (k *FractionalBanker) GetFractionalBalances(ctx sdk.Context, address sdk.AccAddress, denoms ...string) (types.PrecDecCoins, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	balance := types.PrecDecCoins{}
 	for _, denom := range denoms {
 		b := store.Get(types.FractionalBalanceKey(address, denom))
 
-		if b == nil {
-			balance = balance.Add(types.NewPrecDecCoin(denom, math_utils.ZeroPrecDec()))
-		} else {
-			amount := math_utils.MustNewPrecDecFromStr(string(b))
+		if b != nil {
+			var amount math_utils.PrecDec
+			err := amount.Unmarshal(b)
+			if err != nil {
+				return nil, err
+			}
 			balance = balance.Add(types.NewPrecDecCoin(denom, amount))
 		}
 	}
 
-	return balance
+	return balance, nil
 }
 
-func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) types.PrecDecCoins {
+func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.PrecDecCoins, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
@@ -54,18 +57,27 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) types.PrecD
 
 	for ; iterator.Valid(); iterator.Next() {
 		denom := string(iterator.Key()[len(types.FractionalBalanceKeyPrefix):])
-		amount := math_utils.MustNewPrecDecFromStr(string(iterator.Value()))
+		var amount math_utils.PrecDec
+		err := amount.Unmarshal(iterator.Value())
+		if err != nil {
+			return nil, err
+		}
 		balances = balances.Add(types.NewPrecDecCoin(denom, amount))
 	}
 
-	return balances
+	return balances, nil
 }
 
 func (k *FractionalBanker) SetFractionalBalanceFromMap(ctx sdk.Context, address sdk.AccAddress, debtMap DebtMap) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	for denom, amount := range debtMap {
 		if amount.IsPositive() {
-			store.Set(types.FractionalBalanceKey(address, denom), []byte(amount.String()))
+			bz, err := amount.Marshal()
+			// Marshal will NEVER actually return an error unless there are downstream code changes
+			if err != nil {
+				panic(err)
+			}
+			store.Set(types.FractionalBalanceKey(address, denom), bz)
 		} else {
 			store.Delete(types.FractionalBalanceKey(address, denom))
 		}
@@ -75,7 +87,11 @@ func (k *FractionalBanker) SetFractionalBalanceFromMap(ctx sdk.Context, address 
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, coins types.PrecDecCoins) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	for _, coin := range coins {
-		b := []byte(coin.Amount.String())
+		b, err := coin.Amount.Marshal()
+		// Marshal will NEVER actually return an error unless there are downstream code changes
+		if err != nil {
+			panic(err)
+		}
 		if coin.Amount.IsZero() {
 			store.Delete(types.FractionalBalanceKey(address, coin.Denom))
 			continue
@@ -89,7 +105,10 @@ func (k *FractionalBanker) SendFractionalCoinsFromDexToAccount(ctx sdk.Context, 
 	for _, coin := range tokens {
 		relevantDenoms = append(relevantDenoms, coin.Denom)
 	}
-	balance := k.GetFractionalBalances(ctx, address, relevantDenoms...)
+	balance, err := k.GetFractionalBalances(ctx, address, relevantDenoms...)
+	if err != nil {
+		return err
+	}
 
 	newBalance := balance.Add(tokens...)
 
@@ -112,7 +131,10 @@ func (k *FractionalBanker) SendFractionalCoinsFromAccountToDex(ctx sdk.Context, 
 	for _, coin := range tokens {
 		relevantDenoms = append(relevantDenoms, coin.Denom)
 	}
-	balances := k.GetFractionalBalances(ctx, address, relevantDenoms...)
+	balances, err := k.GetFractionalBalances(ctx, address, relevantDenoms...)
+	if err != nil {
+		return err
+	}
 
 	coinsToSend, debtMap := CalcUserSendMinusDebts(tokens, balances)
 

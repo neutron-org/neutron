@@ -1569,7 +1569,8 @@ func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
 }
 
 func (s *DexTestSuite) assertFractionalBalancesPayable() {
-	fractionalBalances := s.App.DexKeeper.GetAllFractionalBalances(s.Ctx)
+	fractionalBalances, err := s.App.DexKeeper.GetAllFractionalBalances(s.Ctx)
+	s.NoError(err)
 	dexAddr := s.App.AccountKeeper.GetModuleAccount(s.Ctx, "dex").GetAddress()
 	dexBalA := s.App.BankKeeper.GetBalance(s.Ctx, dexAddr, "TokenA")
 	dexBalB := s.App.BankKeeper.GetBalance(s.Ctx, dexAddr, "TokenB")
