@@ -250,4 +250,16 @@ var (
 		1169,
 		"Slop tolerance must be between 0 and 10000",
 	)
+	// Should never be possible to hit this error
+	ErrInsufficientReserves = sdkerrors.Register(
+		ModuleName,
+		1170,
+		"Insufficient reserves for limit order tranche:", // "%s", tranche.TrancheKey
+	)
+	// Should never be possible to hit this error
+	ErrDuplicateTrancheKey = sdkerrors.Register(
+		ModuleName,
+		1171,
+		"Tranche key already exists for different trade pair id or tick index",
+	)
 )

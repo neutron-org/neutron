@@ -32,10 +32,10 @@ func (m Fee) Total() sdk.Coins {
 }
 
 // Validate asserts that each Fee is valid:
-// * RecvFee must be zero;
-// * AckFee and TimeoutFee must be non-zero
+// * RecvFee must be zero
 func (m Fee) Validate() error {
 	var errFees []string
+
 	if !m.AckFee.IsValid() {
 		errFees = append(errFees, "ack fee is invalid")
 	}
@@ -47,10 +47,15 @@ func (m Fee) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "contains invalid fees: %s", strings.Join(errFees, " , "))
 	}
 
+	// we don't allow users to set recv fees, because we can't refund relayers for such messages
 	if !m.RecvFee.IsZero() {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
 	}
 
+	return nil
+}
+
+func (m Fee) ValidateFeePresent() error {
 	// if ack or timeout fees are zero or empty return an error
 	if m.AckFee.IsZero() || m.TimeoutFee.IsZero() {
 		return errors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")

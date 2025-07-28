@@ -83,11 +83,17 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 	// It's possible that a TrancheUser exists but tranche does not if LO was filled entirely through a swap
 	if found {
 		var amountOutTokenIn math.Int
-		amountOutTokenIn, amountOutTokenOut = tranche.Withdraw(trancheUser)
+		amountOutTokenIn, amountOutTokenOut, err = tranche.Withdraw(trancheUser)
+		if err != nil {
+			return types.PrecDecCoin{}, types.PrecDecCoin{}, err
+		}
 
 		if wasFilled {
 			// This is only relevant for inactive JIT and GoodTil limit orders
-			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
+			remainingTokenIn, err = tranche.RemoveTokenIn(trancheUser)
+			if err != nil {
+				return types.PrecDecCoin{}, types.PrecDecCoin{}, err
+			}
 			k.UpdateInactiveTranche(ctx, tranche)
 
 			// Since the order has already been filled we treat this as a complete withdrawal

@@ -58,6 +58,9 @@ const (
 
 	// FractionalBalanceKey is the prefix to retrieve a user's fractional balance
 	FractionalBalanceKeyPrefix = "FractionalBalance/value/"
+
+	// TrancheCountKey provides a unique identifier for each tranche
+	TrancheCountKey = "Tranche/count/"
 )
 
 func KeyPrefix(p string) []byte {

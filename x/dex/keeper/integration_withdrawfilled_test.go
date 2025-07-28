@@ -324,3 +324,21 @@ func (s *DexTestSuite) TestWithdrawInactive() {
 	s.aliceWithdrawsLimitSell(trancheKey)
 	s.assertAliceBalances(1, 9)
 }
+
+func (s *DexTestSuite) TestWrongSharesProtectionWithdraw() {
+	s.fundAliceBalances(1, 0)
+	s.fundBobBalances(0, 1)
+
+	trancheKey := s.aliceLimitSells("TokenA", 0, 1)
+	s.bobLimitSells("TokenB", -1, 1)
+
+	trancheUser, _ := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
+
+	// This should be impossible, but we still want to check that if there is a bug with the share calculation the user cannot withdraw more than the balance of the tranche
+	trancheUser.SharesOwned = sdkmath.NewInt(1_000_000_000_000_000_000)
+
+	s.App.DexKeeper.SetLimitOrderTrancheUser(s.Ctx, trancheUser)
+
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.assertAliceBalances(0, 1)
+}

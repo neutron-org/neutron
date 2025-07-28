@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -133,7 +134,7 @@ func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
 
 func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
-) (amountToRemove math_utils.PrecDec) {
+) (amountToRemove math_utils.PrecDec, err error) {
 	amountUnfilled := t.AmountUnfilled()
 	// Cap the amount out at the reserves of the tranche
 	// Due to decimal limitations its possible amountToRemove > t.DecReservesMakerDenom
@@ -144,7 +145,12 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 
 	t.SetMakerReserves(t.DecReservesMakerDenom.Sub(amountToRemove))
 
-	return amountToRemove
+	// This error should be impossible, but we check it for safety
+	if t.DecReservesMakerDenom.IsNegative() {
+		return math_utils.ZeroPrecDec(), sdkerrors.Wrapf(ErrInsufficientReserves, "%s", t.Key.TrancheKey)
+	}
+
+	return amountToRemove, nil
 }
 
 func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (sharesToWithdraw math.Int, tokenOut math_utils.PrecDec) {
@@ -165,11 +171,15 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec
 }
 
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn math.Int, tokenOut math_utils.PrecDec) {
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn math.Int, tokenOut math_utils.PrecDec, err error) {
 	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
 	t.SetTakerReserves(t.DecReservesTakerDenom.Sub(amountOutTokenOut))
 
-	return amountOutTokenIn, amountOutTokenOut
+	// This error should be impossible, but we check it for safety
+	if t.DecReservesTakerDenom.IsNegative() {
+		return math.ZeroInt(), math_utils.ZeroPrecDec(), sdkerrors.Wrapf(ErrInsufficientReserves, "%s", t.Key.TrancheKey)
+	}
+	return amountOutTokenIn, amountOutTokenOut, nil
 }
 
 func (t *LimitOrderTranche) Swap(maxAmountTakerIn math_utils.PrecDec, maxAmountMakerOut *math_utils.PrecDec) (
