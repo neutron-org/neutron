@@ -53,13 +53,10 @@ func (k Keeper) Swap(
 		remainingTakerDenom = remainingTakerDenom.Sub(inAmount)
 		totalMakerDenom = totalMakerDenom.Add(outAmount)
 
-		// TODO: can probably remove this in the future, but there is no issue with keeping it for now
 		// break if remainingTakerDenom will yield less than 1 tokenOut at current price
-		// this avoids unnecessary iteration since outAmount will always be 0 going forward
+		// this avoids unnecessary iteration for marginal return.
 		// this also catches the normal exit case where remainingTakerDenom == 0
 
-		// This also allows us to handle a corner case where totalTakerCoin < maxAmountAmountTakerDenom
-		// and there is still valid tradeable liquidity but the order cannot be filled any further due to monotonic rounding.
 		if remainingTakerDenom.Quo(liq.Price()).LT(math_utils.OnePrecDec()) {
 			orderFilled = true
 			break
