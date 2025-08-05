@@ -11,7 +11,7 @@ This is done in exchange for a potential (one-way) bridge liveness tradeoff, in 
 
 The architecture of this package is a minimal go package which implements an [IBC Middleware](https://github.com/cosmos/ibc-go/blob/f57170b1d4dd202a3c6c1c61dcf302b6a9546405/docs/ibc/middleware/develop.md) that wraps the [ICS20 transfer](https://ibc.cosmos.network/main/apps/transfer/overview.html) app, and calls into a cosmwasm contract.
 The cosmwasm contract then has all of the actual IBC rate limiting logic.
-The Cosmwasm code can be found in the [`contracts`](./contracts/) package, with bytecode findable in the [`bytecode`](./bytecode/) folder. The cosmwasm VM usage allows Neutron chain governance (Security SubDAI) to choose to change this safety control with no hard forks, via a parameter change proposal, a great mitigation for faster threat adaptavity.
+The Cosmwasm code can be found in the [`contracts`](../../contracts/) package, with bytecode findable in the [`bytecode`](./bytecode/) folder. The cosmwasm VM usage allows Neutron chain governance (Security SubDAI) to choose to change this safety control with no hard forks, via a parameter change proposal, a great mitigation for faster threat adaptavity.
 
 The status of the module is being in a state suitable for some initial governance settable rate limits for high value bridged assets.
 Its not in its long term / end state for all channels by any means, but does act as a strong protection we
