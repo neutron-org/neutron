@@ -144,6 +144,12 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, from, to sdk.AccAddress, coin sdk.Coin, cwAddr sdk.AccAddress) (gasConsumed storetypes.Gas, err error) {
 	// this types.BeforeSendHookGasLimit limit needed in case trackBeforeSend is called from begin/endblocker and does not have an outer gas limit.
 	// because contract code can be added by anybody, it can be a security issue
+	limit := types.BeforeSendHookGasLimit
+	// ensure that limit is not more then current gas context gas remaining
+	// to avoid recursive gas consumption without gas consume
+	if limit > ctx.GasMeter().GasRemaining() {
+		limit = ctx.GasMeter().GasRemaining()
+	}
 	cacheCtx, writeFn := createCachedContext(ctx, types.BeforeSendHookGasLimit)
 
 	// get msgBz, either BlockBeforeSend or TrackBeforeSend
