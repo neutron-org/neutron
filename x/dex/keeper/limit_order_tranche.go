@@ -23,14 +23,17 @@ func NewLimitOrderTranche(
 		return nil, err
 	}
 	return &types.LimitOrderTranche{
-		Key:                limitOrderTrancheKey,
-		ReservesMakerDenom: math.ZeroInt(),
-		ReservesTakerDenom: math.ZeroInt(),
-		TotalMakerDenom:    math.ZeroInt(),
-		TotalTakerDenom:    math.ZeroInt(),
-		ExpirationTime:     goodTil,
-		MakerPrice:         price,
-		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(price),
+		Key:                   limitOrderTrancheKey,
+		ReservesMakerDenom:    math.ZeroInt(),
+		ReservesTakerDenom:    math.ZeroInt(),
+		DecReservesMakerDenom: math_utils.ZeroPrecDec(),
+		DecReservesTakerDenom: math_utils.ZeroPrecDec(),
+		TotalMakerDenom:       math.ZeroInt(),
+		TotalTakerDenom:       math.ZeroInt(),
+		DecTotalTakerDenom:    math_utils.ZeroPrecDec(),
+		ExpirationTime:        goodTil,
+		MakerPrice:            price,
+		PriceTakerToMaker:     math_utils.OnePrecDec().Quo(price),
 	}, nil
 }
 

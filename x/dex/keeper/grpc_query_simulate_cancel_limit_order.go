@@ -33,8 +33,10 @@ func (k Keeper) SimulateCancelLimitOrder(
 
 	return &types.QuerySimulateCancelLimitOrderResponse{
 		Resp: &types.MsgCancelLimitOrderResponse{
-			TakerCoinOut: takerCoinOut,
-			MakerCoinOut: makerCoinOut,
+			TakerCoinOut:    takerCoinOut.TruncateToCoin(),
+			MakerCoinOut:    makerCoinOut.TruncateToCoin(),
+			DecTakerCoinOut: takerCoinOut,
+			DecMakerCoinOut: makerCoinOut,
 		},
 	}, nil
 }
