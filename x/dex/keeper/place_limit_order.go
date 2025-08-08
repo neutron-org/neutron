@@ -165,7 +165,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	}
 
 	trancheKey = placeTranche.Key.TrancheKey
-	trancheUser := k.GetOrInitLimitOrderTrancheUser(
+	trancheUser, err := k.GetOrInitLimitOrderTrancheUser(
 		ctx,
 		makerTradePairID,
 		tickIndexTakerToMaker,
@@ -173,6 +173,9 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		orderType,
 		receiverAddr.String(),
 	)
+	if err != nil {
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
+	}
 
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
 	if amountLeft.IsPositive() && !orderFilled &&

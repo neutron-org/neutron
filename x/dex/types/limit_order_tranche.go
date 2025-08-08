@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -134,14 +135,19 @@ func (t LimitOrderTranche) HasLiquidity() bool {
 
 func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
-) (amountToRemove math.Int) {
+) (amountToRemove math.Int, err error) {
 	amountUnfilled := t.AmountUnfilled()
 	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).
 		QuoInt(t.TotalMakerDenom).
 		TruncateInt()
+
 	t.ReservesMakerDenom = t.ReservesMakerDenom.Sub(amountToRemove)
 
-	return amountToRemove
+	if t.ReservesMakerDenom.IsNegative() {
+		return math.ZeroInt(), sdkerrors.Wrapf(ErrInsufficientReserves, "%s", t.Key.TrancheKey)
+	}
+
+	return amountToRemove, nil
 }
 
 func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (sharesToWithdraw, tokenOut math.Int) {
@@ -159,11 +165,14 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec.TruncateInt()
 }
 
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn, tokenOut math.Int) {
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn, tokenOut math.Int, err error) {
 	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
 	t.ReservesTakerDenom = t.ReservesTakerDenom.Sub(amountOutTokenOut)
 
-	return amountOutTokenIn, amountOutTokenOut
+	if t.ReservesTakerDenom.IsNegative() {
+		return math.ZeroInt(), math.ZeroInt(), sdkerrors.Wrapf(ErrInsufficientReserves, "%s", t.Key.TrancheKey)
+	}
+	return amountOutTokenIn, amountOutTokenOut, nil
 }
 
 func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *math.Int) (

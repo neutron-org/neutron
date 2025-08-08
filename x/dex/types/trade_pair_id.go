@@ -102,3 +102,7 @@ func (p TradePairID) MustMakerPrice(tickIndexNormalized int64) (priceTakerToMake
 	}
 	return price
 }
+
+func (p TradePairID) Equal(other TradePairID) bool {
+	return p.TakerDenom == other.TakerDenom && p.MakerDenom == other.MakerDenom
+}

@@ -1371,6 +1371,7 @@ func (app *App) setupUpgradeHandlers() {
 					WasmKeeper:         &app.WasmKeeper,
 					HarpoonKeeper:      app.HarpoonKeeper,
 					RevenueKeeper:      app.RevenueKeeper,
+					FeerefunderKeeper:  app.FeeKeeper,
 					GlobalFeeSubspace:  app.GetSubspace(globalfee.ModuleName),
 				},
 				app,

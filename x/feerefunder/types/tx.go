@@ -32,7 +32,11 @@ func (msg *MsgUpdateParams) Validate() error {
 		return errorsmod.Wrap(err, "authority is invalid")
 	}
 
-	if err := msg.Params.MinFee.Validate(); err != nil {
+	if err := msg.Params.Validate(); err != nil {
+		return err
+	}
+
+	if err := msg.Params.MinFee.ValidateFeePresent(); err != nil {
 		return err
 	}
 
