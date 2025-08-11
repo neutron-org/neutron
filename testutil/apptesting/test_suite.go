@@ -17,9 +17,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v7/app"
-	"github.com/neutron-org/neutron/v7/testutil"
-	dexmoduletypes "github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/app"
+	"github.com/neutron-org/neutron/v8/testutil"
+	dexmoduletypes "github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 type KeeperTestHelper struct {

@@ -9,7 +9,7 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
-	revenuetypes "github.com/neutron-org/neutron/v7/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v8/x/revenue/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

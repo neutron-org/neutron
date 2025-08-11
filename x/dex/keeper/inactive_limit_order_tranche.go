@@ -5,7 +5,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // SetInactiveLimitOrderTranche set a specific inactiveLimitOrderTranche in the store from its index

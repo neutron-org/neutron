@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 
-	"github.com/neutron-org/neutron/v7/x/crypto/ethsecp256k1"
+	"github.com/neutron-org/neutron/v8/x/crypto/ethsecp256k1"
 )
 
 // RegisterLegacyAminoCodec registers all crypto dependency types with the provided Amino

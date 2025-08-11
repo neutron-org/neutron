@@ -16,8 +16,8 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	feetypes "github.com/neutron-org/neutron/v7/x/feerefunder/types"
-	ictxtypes "github.com/neutron-org/neutron/v7/x/interchaintxs/types"
+	feetypes "github.com/neutron-org/neutron/v8/x/feerefunder/types"
+	ictxtypes "github.com/neutron-org/neutron/v8/x/interchaintxs/types"
 )
 
 type msgServer struct {

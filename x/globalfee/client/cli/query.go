@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"github.com/neutron-org/neutron/v7/x/globalfee/types"
+	"github.com/neutron-org/neutron/v8/x/globalfee/types"
 )
 
 func GetQueryCmd() *cobra.Command {

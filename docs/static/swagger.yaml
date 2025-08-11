@@ -20368,6 +20368,8 @@ definitions:
   neutron.feerefunder.Params:
     description: Params defines the parameters for the module.
     properties:
+      fee_enabled:
+        type: boolean
       min_fee:
         properties:
           ack_fee:
@@ -20433,6 +20435,8 @@ definitions:
       params:
         description: params holds all the parameters of this module.
         properties:
+          fee_enabled:
+            type: boolean
           min_fee:
             properties:
               ack_fee:
@@ -27092,7 +27096,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v7
+  version: v8
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -45218,6 +45222,8 @@ paths:
               params:
                 description: params holds all the parameters of this module.
                 properties:
+                  fee_enabled:
+                    type: boolean
                   min_fee:
                     properties:
                       ack_fee:

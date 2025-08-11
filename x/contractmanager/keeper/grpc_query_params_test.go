@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/v7/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v7/x/contractmanager/types"
+	testkeeper "github.com/neutron-org/neutron/v8/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v8/x/contractmanager/types"
 )
 
 func TestParamsQuery(t *testing.T) {

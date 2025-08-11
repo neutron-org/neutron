@@ -6,9 +6,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v8/x/ibc-rate-limit/types"
 
-	"github.com/neutron-org/neutron/v7/testutil/apptesting"
+	"github.com/neutron-org/neutron/v8/testutil/apptesting"
 )
 
 type GenesisTestSuite struct {

@@ -12,11 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v7/testutil/apptesting"
-	"github.com/neutron-org/neutron/v7/testutil/common/sample"
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v7/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/testutil/apptesting"
+	"github.com/neutron-org/neutron/v8/testutil/common/sample"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // Constants //////////////////////////////////////////////////////////////////

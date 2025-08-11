@@ -8,12 +8,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	appconfig "github.com/neutron-org/neutron/v7/app/config"
-	"github.com/neutron-org/neutron/v7/app/params"
-	mock_types "github.com/neutron-org/neutron/v7/testutil/mocks/revenue/types"
-	testutil_keeper "github.com/neutron-org/neutron/v7/testutil/revenue/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v7/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v7/x/revenue/types"
+	appconfig "github.com/neutron-org/neutron/v8/app/config"
+	"github.com/neutron-org/neutron/v8/app/params"
+	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/revenue/types"
+	testutil_keeper "github.com/neutron-org/neutron/v8/testutil/revenue/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v8/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v8/x/revenue/types"
 )
 
 func TestUpdateParams(t *testing.T) {
