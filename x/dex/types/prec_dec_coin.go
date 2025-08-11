@@ -26,16 +26,7 @@ func NewPrecDecCoin(denom string, amount math_utils.PrecDec) PrecDecCoin {
 }
 
 func NewPrecDecCoinFromInt(denom string, amount math.Int) PrecDecCoin {
-	coin := PrecDecCoin{
-		Denom:  denom,
-		Amount: math_utils.NewPrecDecFromInt(amount),
-	}
-
-	if err := coin.Validate(); err != nil {
-		panic(err)
-	}
-
-	return coin
+	return NewPrecDecCoin(denom, math_utils.NewPrecDecFromInt(amount))
 }
 
 func NewPrecDecCoinFromCoin(coin sdk.Coin) PrecDecCoin {
