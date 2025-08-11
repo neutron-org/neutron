@@ -65,13 +65,17 @@ message FailedDeposit {
   string error = 2;
 }
 message MsgDepositResponse {
+  // reserve0_deposited is DEPRECATED
   repeated string reserve0_deposited = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve0_deposited\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve0_deposited"
   ];
+  // reserve0_deposited is DEPRECATED
   repeated string reserve1_deposited = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve1_deposited\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -117,13 +121,17 @@ message MsgWithdrawal {
 }
 
 message MsgWithdrawalResponse {
+  // reserve0_withdrawn is DEPRECATED
   string reserve0_withdrawn = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve0_withdrawn\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve0_withdrawn"
   ];
+  // reserve1_withdrawn is DEPRECATED
   string reserve1_withdrawn = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve1_withdrawn\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -212,29 +220,34 @@ message MsgPlaceLimitOrderResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "coin_in"
   ];
-  // Total amount of coin received from the taker portion of the limit order
-  // This is the amount of coin immediately available in the users account after
-  // executing the limit order. It does not include any future proceeds from the
-  // maker portion which will have withdrawn in the future
+
+  // taker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_out = 3 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_out"
   ];
 
-  // Total amount of the token in that was immediately swapped for takerOutCoin
+  // taker_coin_in is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_in = 4 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_in\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_in"
   ];
+  // Total amount of coin received from the taker portion of the limit order
+  // This is the amount of coin immediately available in the users account after
+  // executing the limit order. It does not include any future proceeds from the
+  // maker portion which will have withdrawn in the future
   PrecDecCoin dec_taker_coin_out = 5 [
     (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_taker_coin_out"
   ];
+  // Total amount of the token in that was immediately swapped for takerOutCoin
   PrecDecCoin dec_taker_coin_in = 6 [
     (gogoproto.moretags) = "yaml:\"dec_taker_coin_in\"",
     (gogoproto.nullable) = false,
@@ -251,25 +264,30 @@ message MsgWithdrawFilledLimitOrder {
 }
 
 message MsgWithdrawFilledLimitOrderResponse {
-  // Total amount of taker reserves that were withdrawn
+  // taker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_out = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_out"
   ];
-  // Total amount of maker reserves that were withdrawn --only applies to inactive LimitOrders
+
+  //maker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin maker_coin_out = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"maker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "maker_coin_out"
   ];
+  // Total amount of taker reserves that were withdrawn
   PrecDecCoin dec_taker_coin_out = 3 [
     (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_taker_coin_out"
   ];
+  // Total amount of maker reserves that were withdrawn --only applies to inactive LimitOrders
   PrecDecCoin dec_maker_coin_out = 4 [
     (gogoproto.moretags) = "yaml:\"dec_maker_coin_out\"",
     (gogoproto.nullable) = false,
@@ -286,26 +304,30 @@ message MsgCancelLimitOrder {
 }
 
 message MsgCancelLimitOrderResponse {
-  // Total amount of taker reserves that were withdrawn
+  // taker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_out = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_out"
   ];
-  // Total amount of maker reserves that were canceled
+
+  // maker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin maker_coin_out = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"maker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "maker_coin_out"
   ];
-
+  // Total amount of taker reserves that were withdrawn
   PrecDecCoin dec_taker_coin_out = 3 [
     (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_taker_coin_out"
   ];
+  // Total amount of maker reserves that were canceled
   PrecDecCoin dec_maker_coin_out = 4 [
     (gogoproto.moretags) = "yaml:\"dec_maker_coin_out\"",
     (gogoproto.nullable) = false,

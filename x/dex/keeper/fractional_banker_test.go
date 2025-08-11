@@ -84,7 +84,7 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromDexToAccountMu
 		sdk.NewCoins(
 			sdk.NewCoin(TokenA, sdkmath.NewInt(100)),
 			sdk.NewCoin(TokenB, sdkmath.NewInt(100)),
-			sdk.NewCoin("TokenC", sdkmath.NewInt(100)),
+			sdk.NewCoin(TokenC, sdkmath.NewInt(100)),
 		))
 	s.NoError(err)
 
@@ -98,28 +98,31 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromDexToAccountMu
 	s.assertAliceBalancesInt(sdkmath.NewInt(10), sdkmath.NewInt(5))
 	s.assertFractionalBalance(s.alice, "0.1", "0.3")
 
-	s.SendFractionalAmountToAccount("0.7", s.alice, "TokenC")
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", sdkmath.NewInt(0))
+	s.SendFractionalAmountToAccount("0.7", s.alice, TokenC)
+	s.assertAccountBalanceWithDenomInt(s.alice, TokenC, sdkmath.NewInt(0))
 	s.assertFractionalBalance(s.alice, "0.1", "0.3")
-	s.assertFractionalBalanceCustomDenom(s.alice, "TokenC", "0.7")
+	s.assertFractionalBalanceCustomDenom(s.alice, TokenC, "0.7")
 
 	s.SendFractionalAmountsToAccount(
 		[]types.PrecDecCoin{
 			types.NewPrecDecCoin(TokenA, math_utils.MustNewPrecDecFromStr("1.1")),
 			types.NewPrecDecCoin(TokenB, math_utils.MustNewPrecDecFromStr("1.1")),
-			types.NewPrecDecCoin("TokenC", math_utils.MustNewPrecDecFromStr("1.1")),
+			types.NewPrecDecCoin(TokenC, math_utils.MustNewPrecDecFromStr("1.1")),
 		},
 		s.alice,
 	)
+
 	s.assertDexBalancesInt(sdkmath.NewInt(89), sdkmath.NewInt(94))
+	s.assertDexBalanceWithDenomInt(TokenC, sdkmath.NewInt(99))
 	s.assertAliceBalancesInt(sdkmath.NewInt(11), sdkmath.NewInt(6))
+	s.assertAccountBalanceWithDenomInt(s.alice, TokenC, sdkmath.NewInt(1))
 	s.assertFractionalBalance(s.alice, "0.2", "0.4")
-	s.assertFractionalBalanceCustomDenom(s.alice, "TokenC", "0.8")
+	s.assertFractionalBalanceCustomDenom(s.alice, TokenC, "0.8")
 }
 
 func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToDexMultipleDenoms() {
 	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(100), sdkmath.NewInt(100))
-	s.fundAccountBalancesWithDenom(s.alice, sdk.NewCoins(sdk.NewCoin("TokenC", sdkmath.NewInt(100))))
+	s.fundAccountBalancesWithDenom(s.alice, sdk.NewCoins(sdk.NewCoin(TokenC, sdkmath.NewInt(100))))
 
 	s.SendFractionalAmountFromAccount("10.1", s.alice, TokenA)
 	s.assertDexBalancesInt(sdkmath.NewInt(11), sdkmath.NewInt(0))
@@ -131,7 +134,7 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToDexMu
 	s.assertAliceBalancesInt(sdkmath.NewInt(89), sdkmath.NewInt(94))
 	s.assertFractionalBalance(s.alice, "0.9", "0.7")
 
-	s.SendFractionalAmountFromAccount("0.7", s.alice, "TokenC")
+	s.SendFractionalAmountFromAccount("0.7", s.alice, TokenC)
 	s.assertAccountBalanceWithDenomInt(s.alice, TokenC, sdkmath.NewInt(99))
 	s.assertFractionalBalance(s.alice, "0.9", "0.7")
 	s.assertFractionalBalanceCustomDenom(s.alice, TokenC, "0.3")
@@ -145,6 +148,7 @@ func (s *DexTestSuite) TestFractionalBankerSendFractionalCoinsFromAccountToDexMu
 		s.alice,
 	)
 	s.assertDexBalancesInt(sdkmath.NewInt(12), sdkmath.NewInt(8))
+	s.assertDexBalanceWithDenomInt(TokenC, sdkmath.NewInt(2))
 	s.assertAliceBalancesInt(sdkmath.NewInt(88), sdkmath.NewInt(92))
 	s.assertAccountBalanceWithDenomInt(s.alice, TokenC, sdkmath.NewInt(98))
 	s.assertFractionalBalance(s.alice, "0.8", "0.9")

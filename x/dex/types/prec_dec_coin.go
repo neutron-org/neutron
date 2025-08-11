@@ -1,3 +1,4 @@
+// Mostly copied from https://github.com/neutron-org/cosmos-sdk/blob/neutron/types/coin.go
 package types
 
 import (
