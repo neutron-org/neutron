@@ -187,7 +187,7 @@ func (p *Pool) CalcSharesMinted(
 ) (sharesMinted sdk.Coin) {
 	price1To0Center := p.MustCalcPrice1To0Center()
 
-	valueExistingToken0 := CalcDecAmountAsToken0(
+	valueExistingToken0 := CalcAmountAsToken0(
 		p.LowerTick0.DecReservesMakerDenom,
 		p.UpperTick1.DecReservesMakerDenom,
 		price1To0Center,
@@ -306,9 +306,5 @@ func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_uti
 }
 
 func CalcAmountAsToken0(amount0, amount1, price1To0 math_utils.PrecDec) math_utils.PrecDec {
-	return amount0.Add(amount1.Quo(price1To0))
-}
-
-func CalcDecAmountAsToken0(amount0, amount1, price1To0 math_utils.PrecDec) math_utils.PrecDec {
 	return amount0.Add(amount1.Quo(price1To0))
 }
