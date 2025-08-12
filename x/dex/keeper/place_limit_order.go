@@ -170,7 +170,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	}
 
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
-	if amountLeft.IsPositive() && !orderFilled &&
+	if amountLeft.TruncateInt().IsPositive() && !orderFilled &&
 		(orderType.IsGTC() || orderType.IsJIT() || orderType.IsGoodTil()) {
 
 		amountToPlace := amountLeft.TruncateInt()

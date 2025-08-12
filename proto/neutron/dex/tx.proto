@@ -364,14 +364,18 @@ message MsgMultiHopSwap {
 }
 
 message MsgMultiHopSwapResponse {
+  // coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin coin_out = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "coin_out"
   ];
   MultiHopRoute route = 2;
+  // dust is DEPRECATED
   repeated cosmos.base.v1beta1.Coin dust = 3 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"dust\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
