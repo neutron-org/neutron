@@ -7,7 +7,7 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"github.com/neutron-org/neutron/v8/app/upgrades/v8.0.0-rc0"
+	v800rc0 "github.com/neutron-org/neutron/v8/app/upgrades/v8.0.0-rc0"
 	"github.com/neutron-org/neutron/v8/testutil"
 )
 

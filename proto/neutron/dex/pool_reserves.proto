@@ -14,7 +14,9 @@ message PoolReservesKey {
 
 message PoolReserves {
   PoolReservesKey key = 1;
+  // DEPRECATED: reserves_maker_denom will be removed in future release, `dec_reserves_maker_denom` should always be used.
   string reserves_maker_denom = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserves_maker_denom\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.jsontag) = "reserves_maker_denom",
@@ -43,5 +45,12 @@ message PoolReserves {
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "maker_price"
+  ];
+
+  string dec_reserves_maker_denom = 6 [
+    (gogoproto.moretags) = "yaml:\"dec_reserves_maker_denom\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.jsontag) = "dec_reserves_maker_denom",
+    (gogoproto.nullable) = false
   ];
 }

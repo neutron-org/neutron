@@ -64,8 +64,8 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	// NB: We're only using a cache context so we don't expect any writes to happen.
 
 	return &types.QueryEstimatePlaceLimitOrderResponse{
-		TotalInCoin: totalInCoin,
-		SwapInCoin:  swapInCoin,
-		SwapOutCoin: swapOutCoin,
+		TotalInCoin: totalInCoin.CeilToCoin(),
+		SwapInCoin:  swapInCoin.CeilToCoin(),
+		SwapOutCoin: swapOutCoin.TruncateToCoin(),
 	}, nil
 }

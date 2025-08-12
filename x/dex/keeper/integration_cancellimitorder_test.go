@@ -227,7 +227,7 @@ func (s *DexTestSuite) TestCancelWithdrawThenCancel() {
 
 	// THEN Alice cancel still works
 	s.aliceCancelsLimitSell(trancheKey)
-	s.assertAliceBalancesInt(sdkmath.NewInt(4999999), sdkmath.NewInt(9999181))
+	s.assertAliceBalancesInt(sdkmath.NewInt(5000000), sdkmath.NewInt(9999181))
 }
 
 func (s *DexTestSuite) TestCancelPartiallyFilledWithdrawFails() {
@@ -279,8 +279,8 @@ func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
 	s.assertAliceBalancesInt(sdkmath.NewInt(41_666_666), sdkmath.NewInt(8333333))
 
 	// Carol gets back 83 TokenA (125 * 2/3) & ~16.6 BIGTokenB Taker tokens (25 * 2/3)
-	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.NewInt(16666667))
-	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.ZeroInt())
+	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.NewInt(16666666))
+	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.OneInt())
 
 	// Assert that the LimitOrderTrancheUsers has been deleted
 	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
@@ -312,7 +312,7 @@ func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser2() {
 
 	// And bob can withdraw his portion
 	s.bobWithdrawsLimitSell(trancheKey)
-	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(30000000))
+	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(29999999))
 }
 
 func (s *DexTestSuite) TestCancelFirstMultiCancel() {
@@ -537,29 +537,6 @@ func (s *DexTestSuite) TestWithdrawThenCancelLowTick() {
 	s.assertBobBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
 }
 
-func (s *DexTestSuite) TestCancelExpiringLimitOrderWithDust() {
-	s.fundAliceBalances(50, 0)
-	s.fundBobBalances(0, 50)
-
-	// GIVEN alice places a GTC limit order
-	trancheKey := s.aliceLimitSellsGoodTil("TokenA", -66671, 1, time.Now().Add(time.Second))
-
-	// AND bob trades through alice's order
-	s.bobLimitSells("TokenB", -66672, 50, types.LimitOrderType_FILL_OR_KILL)
-
-	// WHEN alice cancels her limit order
-	s.aliceCancelsLimitSell(trancheKey)
-
-	// THEN A small amount of tokenA remains in the tranche
-	s.assertLimitLiquidityAtTickInt("TokenA", -66671, sdkmath.NewInt(1))
-
-	// The tranche is purged after the expiration time
-	s.App.DexKeeper.PurgeExpiredLimitOrders(s.Ctx, time.Now().Add(time.Second*3))
-
-	// THEN the tranche is deleted
-	s.assertLimitLiquidityAtTick("TokenA", -66671, 0)
-}
-
 func (s *DexTestSuite) TestWrongSharesProtectionCancel() {
 	s.fundAliceBalances(1, 0)
 
@@ -572,5 +549,7 @@ func (s *DexTestSuite) TestWrongSharesProtectionCancel() {
 
 	s.App.DexKeeper.SetLimitOrderTrancheUser(s.Ctx, trancheUser)
 
-	s.aliceCancelsLimitSellFails(trancheKey, types.ErrInsufficientReserves)
+	s.aliceCancelsLimitSell(trancheKey)
+
+	s.assertAliceBalances(1, 0)
 }

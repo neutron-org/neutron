@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/math"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
@@ -62,19 +61,19 @@ func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB
 		panic(err)
 	}
 	lowerTick, upperTick := pool.LowerTick0, pool.UpperTick1
-	amountAInt := math.NewInt(int64(amountA))
-	amountBInt := math.NewInt(int64(amountB))
+	amountADec := math_utils.NewPrecDec(int64(amountA))
+	amountBDec := math_utils.NewPrecDec(int64(amountB))
 
 	existingShares := s.app.BankKeeper.GetSupply(s.ctx, pool.GetPoolDenom()).Amount
 
-	depositAmountAsToken0 := types.CalcAmountAsToken0(amountAInt, amountBInt, pool.MustCalcPrice1To0Center())
+	depositAmountAsToken0 := types.CalcAmountAsToken0(amountADec, amountBDec, pool.MustCalcPrice1To0Center())
 	totalShares := pool.CalcSharesMinted(depositAmountAsToken0, existingShares, math_utils.ZeroPrecDec())
 
 	err = s.app.DexKeeper.MintShares(s.ctx, s.alice, sdk.NewCoins(totalShares))
 	s.Require().NoError(err)
 
-	lowerTick.ReservesMakerDenom = amountAInt
-	upperTick.ReservesMakerDenom = amountBInt
+	lowerTick.DecReservesMakerDenom = amountADec
+	upperTick.DecReservesMakerDenom = amountBDec
 	s.app.DexKeeper.UpdatePool(s.ctx, pool)
 }
 
@@ -215,7 +214,7 @@ func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken0BEL() {
 	s.setLPAtFee1Pool(-20, 0, 10)
 
 	// WHEN create pool with token0 at 18
-	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -17, 1, math.OneInt(), math.ZeroInt())
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -17, 1, math_utils.OnePrecDec(), math_utils.ZeroPrecDec())
 
 	// THEN pool is BEL
 	s.True(isBEL)
@@ -226,7 +225,7 @@ func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken0Valid() {
 	s.setLPAtFee1Pool(-20, 0, 10)
 
 	// WHEN create pool with token0 at 19
-	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -18, 1, math.OneInt(), math.ZeroInt())
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -18, 1, math_utils.OnePrecDec(), math_utils.ZeroPrecDec())
 	// THEN pool is not BEL
 	s.False(isBEL)
 }
@@ -236,7 +235,7 @@ func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken1BEL() {
 	s.setLPAtFee1Pool(20, 10, 0)
 
 	// WHEN create pool with Token1 at 18
-	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, 17, 1, math.ZeroInt(), math.OneInt())
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, 17, 1, math_utils.ZeroPrecDec(), math_utils.OnePrecDec())
 
 	// THEN pool is BEL
 	s.True(isBEL)
@@ -247,7 +246,7 @@ func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken1Valid() {
 	s.setLPAtFee1Pool(20, 10, 0)
 
 	// WHEN create pool with Token1 at 19
-	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, 18, 1, math.ZeroInt(), math.OneInt())
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, 18, 1, math_utils.ZeroPrecDec(), math_utils.OnePrecDec())
 
 	// THEN pool is BEL
 	s.False(isBEL)
@@ -263,19 +262,19 @@ func (s *CoreHelpersTestSuite) TestExpiredLimitOrderNotCountedForBEL() {
 			TrancheKey:            "1",
 			TickIndexTakerToMaker: 0,
 		},
-		ExpirationTime:     &expTime,
-		ReservesMakerDenom: math.NewInt(1000000),
+		ExpirationTime:        &expTime,
+		DecReservesMakerDenom: math_utils.NewPrecDec(1000000),
 	}
 
 	s.app.DexKeeper.SetLimitOrderTranche(s.ctx, tranche)
 	// Pool is behind enemy lines
-	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math_utils.ZeroPrecDec(), math_utils.OnePrecDec())
 	s.True(isBEL)
 
 	// When tranche is  expired
 	expTime = s.ctx.BlockTime().Add(-time.Hour * 24)
 	tranche.ExpirationTime = &expTime
 	s.app.DexKeeper.UpdateTranche(s.ctx, tranche)
-	isBEL = s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math.ZeroInt(), math.OneInt())
+	isBEL = s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -5, 1, math_utils.ZeroPrecDec(), math_utils.OnePrecDec())
 	s.False(isBEL)
 }

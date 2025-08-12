@@ -1,8 +1,6 @@
 package types
 
 import (
-	"cosmossdk.io/math"
-
 	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 )
 
@@ -12,9 +10,9 @@ type PoolLiquidity struct {
 }
 
 func (pl *PoolLiquidity) Swap(
-	maxAmountTakerDenomIn math.Int,
-	maxAmountMakerDenomOut *math.Int,
-) (inAmount, outAmount math.Int) {
+	maxAmountTakerDenomIn math_utils.PrecDec,
+	maxAmountMakerDenomOut *math_utils.PrecDec,
+) (inAmount, outAmount math_utils.PrecDec) {
 	return pl.Pool.Swap(
 		pl.TradePairID,
 		maxAmountTakerDenomIn,
