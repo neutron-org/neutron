@@ -13,7 +13,7 @@ import (
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v7/testutil"
+	"github.com/neutron-org/neutron/v8/testutil"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -24,7 +24,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v8/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {

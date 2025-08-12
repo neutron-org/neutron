@@ -7,9 +7,9 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
-	"github.com/neutron-org/neutron/v7/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/utils"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

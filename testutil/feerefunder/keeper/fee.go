@@ -16,8 +16,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v7/x/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v7/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/types"
 )
 
 func FeeKeeper(t testing.TB, channelKeeper types.ChannelKeeper, bankKeeper types.BankKeeper) (*keeper.Keeper, sdk.Context) {

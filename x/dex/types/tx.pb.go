@@ -16,7 +16,7 @@ import (
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
-	github_com_neutron_org_neutron_v7_utils_math "github.com/neutron-org/neutron/v7/utils/math"
+	github_com_neutron_org_neutron_v8_utils_math "github.com/neutron-org/neutron/v8/utils/math"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -470,11 +470,11 @@ type MsgPlaceLimitOrder struct {
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *time.Time                                            `protobuf:"bytes,9,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
 	MaxAmountOut   *cosmossdk_io_math.Int                                `protobuf:"bytes,10,opt,name=max_amount_out,json=maxAmountOut,proto3,customtype=cosmossdk.io/math.Int" json:"max_amount_out" yaml:"max_amount_out"`
-	LimitSellPrice *github_com_neutron_org_neutron_v7_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v7/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
+	LimitSellPrice *github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
 	// min_average_sell_price is an optional parameter that sets a required minimum average price for the entire trade.
 	// if the min_average_sell_price is not met the trade will fail.
 	// If min_average_sell_price is omitted limit_sell_price will be used instead
-	MinAverageSellPrice *github_com_neutron_org_neutron_v7_utils_math.PrecDec `protobuf:"bytes,12,opt,name=min_average_sell_price,json=minAverageSellPrice,proto3,customtype=github.com/neutron-org/neutron/v7/utils/math.PrecDec" json:"min_average_sell_price" yaml:"min_average_sell_price"`
+	MinAverageSellPrice *github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,12,opt,name=min_average_sell_price,json=minAverageSellPrice,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"min_average_sell_price" yaml:"min_average_sell_price"`
 }
 
 func (m *MsgPlaceLimitOrder) Reset()         { *m = MsgPlaceLimitOrder{} }
@@ -846,7 +846,7 @@ type MsgMultiHopSwap struct {
 	Receiver       string                                               `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
 	Routes         []*MultiHopRoute                                     `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes,omitempty"`
 	AmountIn       cosmossdk_io_math.Int                                `protobuf:"bytes,4,opt,name=amount_in,json=amountIn,proto3,customtype=cosmossdk.io/math.Int" json:"amount_in" yaml:"amount_in"`
-	ExitLimitPrice github_com_neutron_org_neutron_v7_utils_math.PrecDec `protobuf:"bytes,5,opt,name=exit_limit_price,json=exitLimitPrice,proto3,customtype=github.com/neutron-org/neutron/v7/utils/math.PrecDec" json:"exit_limit_price" yaml:"exit_limit_price"`
+	ExitLimitPrice github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,5,opt,name=exit_limit_price,json=exitLimitPrice,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"exit_limit_price" yaml:"exit_limit_price"`
 	// If pickBestRoute == true then all routes are run and the route with the
 	// best price is chosen otherwise, the first successful route is used.
 	PickBestRoute bool `protobuf:"varint,6,opt,name=pick_best_route,json=pickBestRoute,proto3" json:"pick_best_route,omitempty"`
@@ -1080,7 +1080,7 @@ var fileDescriptor_a489f6e187d5e074 = []byte{
 	// 1992 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x59, 0xcb, 0x6f, 0x23, 0x49,
 	0x19, 0x4f, 0xdb, 0xce, 0xc3, 0x95, 0xc4, 0xf1, 0x74, 0xb2, 0x93, 0x1e, 0x0f, 0x9b, 0xb6, 0x7a,
-	0x56, 0x33, 0x66, 0xc4, 0xd8, 0xe3, 0x01, 0x16, 0x29, 0x07, 0xa4, 0x38, 0x99, 0xec, 0x9a, 0xb5,
+	0x56, 0x33, 0x66, 0xc4, 0xd8, 0xe3, 0x01, 0x56, 0x28, 0x07, 0xa4, 0x38, 0x99, 0xec, 0x9a, 0xb5,
 	0x27, 0x51, 0xc7, 0x2b, 0xd0, 0xae, 0x44, 0xab, 0xed, 0xae, 0x38, 0xad, 0x74, 0x77, 0xb5, 0xba,
 	0xca, 0x89, 0xc3, 0x85, 0x15, 0xe2, 0xb4, 0xa7, 0xbd, 0x20, 0x90, 0xf8, 0x07, 0x40, 0xe2, 0x30,
 	0x87, 0x3d, 0x73, 0x1e, 0x6e, 0x2b, 0x10, 0x12, 0x70, 0x30, 0x30, 0x73, 0x18, 0x69, 0x8f, 0x39,
@@ -1202,7 +1202,7 @@ var fileDescriptor_a489f6e187d5e074 = []byte{
 	0x7b, 0xbe, 0x26, 0x7d, 0xf6, 0x7c, 0x4d, 0xfa, 0xdb, 0xf3, 0x35, 0xe9, 0x93, 0x17, 0x6b, 0x53,
 	0x9f, 0xbd, 0x58, 0x9b, 0xfa, 0xd3, 0x8b, 0xb5, 0xa9, 0x0f, 0x1e, 0x5c, 0x5d, 0xe8, 0xc7, 0xfc,
 	0xff, 0x26, 0xb4, 0x54, 0xf4, 0x67, 0xd8, 0xbb, 0xf0, 0x37, 0xff, 0x13, 0x00, 0x00, 0xff, 0xff,
-	0xa0, 0x4c, 0xdd, 0xd5, 0x53, 0x19, 0x00, 0x00,
+	0x0d, 0x68, 0xa5, 0x5f, 0x53, 0x19, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -4665,7 +4665,7 @@ func (m *MsgPlaceLimitOrder) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v github_com_neutron_org_neutron_v7_utils_math.PrecDec
+			var v github_com_neutron_org_neutron_v8_utils_math.PrecDec
 			m.LimitSellPrice = &v
 			if err := m.LimitSellPrice.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -4701,7 +4701,7 @@ func (m *MsgPlaceLimitOrder) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v github_com_neutron_org_neutron_v7_utils_math.PrecDec
+			var v github_com_neutron_org_neutron_v8_utils_math.PrecDec
 			m.MinAverageSellPrice = &v
 			if err := m.MinAverageSellPrice.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err

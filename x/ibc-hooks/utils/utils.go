@@ -6,7 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/address"
 
-	"github.com/neutron-org/neutron/v7/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v8/x/ibc-hooks/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"

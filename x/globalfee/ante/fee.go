@@ -3,14 +3,14 @@ package ante
 import (
 	"fmt"
 
-	gaiaerrors "github.com/neutron-org/neutron/v7/x/globalfee/types"
+	gaiaerrors "github.com/neutron-org/neutron/v8/x/globalfee/types"
 
 	"cosmossdk.io/math"
 
 	tmstrings "github.com/cometbft/cometbft/libs/strings"
 
-	"github.com/neutron-org/neutron/v7/app/params"
-	globalfeekeeper "github.com/neutron-org/neutron/v7/x/globalfee/keeper"
+	"github.com/neutron-org/neutron/v8/app/params"
+	globalfeekeeper "github.com/neutron-org/neutron/v8/x/globalfee/keeper"
 
 	errorsmod "cosmossdk.io/errors"
 

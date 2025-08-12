@@ -4,7 +4,7 @@ package neutron.crypto.v1beta1.ethsecp256k1;
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/crypto/ethsecp256k1";
+option go_package = "github.com/neutron-org/neutron/v8/x/crypto/ethsecp256k1";
 
 // PubKey defines a type alias for an ecdsa.PublicKey that implements
 // Tendermint's PubKey interface. It represents the 33-byte compressed public
