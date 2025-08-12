@@ -3,7 +3,7 @@ package neutron.state_verifier.v1;
 
 import "ibc/lightclients/tendermint/v1/tendermint.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/state-verifier/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/state-verifier/types";
 
 // Describes a "light" consensus state of the chain at a particular height
 message ConsensusState {

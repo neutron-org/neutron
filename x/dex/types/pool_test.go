@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	dextypes "github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func TestCalcGreatestMatchingRatioBothReservesNonZero(t *testing.T) {

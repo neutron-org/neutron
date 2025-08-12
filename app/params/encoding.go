@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/gogoproto/proto"
 
-	neutrontx "github.com/neutron-org/neutron/v7/tx"
+	neutrontx "github.com/neutron-org/neutron/v8/tx"
 )
 
 // EncodingConfig specifies the concrete encoding types to use for a given app.

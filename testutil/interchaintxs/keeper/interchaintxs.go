@@ -17,8 +17,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v7/x/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/v7/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v8/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v8/x/interchaintxs/types"
 )
 
 func InterchainTxsKeeper(

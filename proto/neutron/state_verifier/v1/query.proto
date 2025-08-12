@@ -5,7 +5,7 @@ import "google/api/annotations.proto";
 import "neutron/interchainqueries/tx.proto";
 import "neutron/state_verifier/v1/genesis.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/state-verifier/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/state-verifier/types";
 
 service Query {
   // Verifies the values and returns an error if values cannot be verified. The query returns `QueryVerifyStateValuesResponse` response.

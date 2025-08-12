@@ -10,7 +10,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 )
 
 func NewPrecDecCoin(denom string, amount math_utils.PrecDec) PrecDecCoin {

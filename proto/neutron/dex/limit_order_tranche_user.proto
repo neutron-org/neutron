@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "neutron/dex/trade_pair_id.proto";
 import "neutron/dex/tx.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
 
 message LimitOrderTrancheUser {
   TradePairID trade_pair_id = 1;

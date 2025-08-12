@@ -6,7 +6,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "neutron/revenue/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/revenue/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/revenue/types";
 
 // Defines the revenue module's genesis state.
 message GenesisState {

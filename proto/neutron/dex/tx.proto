@@ -12,7 +12,7 @@ import "neutron/dex/precdec_coin.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/neutron-org/neutron/v7/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
 
 // Msg defines the Msg service.
 service Msg {
@@ -90,13 +90,13 @@ message MsgDepositResponse {
   ];
   repeated string dec_reserve0_deposited = 5 [
     (gogoproto.moretags) = "yaml:\"dec_reserve0_deposited\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_reserve0_deposited"
   ];
   repeated string dec_reserve1_deposited = 6 [
     (gogoproto.moretags) = "yaml:\"dec_reserve1_deposited\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_reserve1_deposited"
   ];
@@ -145,13 +145,13 @@ message MsgWithdrawalResponse {
   ];
   string dec_reserve0_withdrawn = 4 [
     (gogoproto.moretags) = "yaml:\"dec_reserve0_withdrawn\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_reserve0_withdrawn"
   ];
   string dec_reserve1_withdrawn = 5 [
     (gogoproto.moretags) = "yaml:\"dec_reserve1_withdrawn\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_reserve1_withdrawn"
   ];
@@ -196,7 +196,7 @@ message MsgPlaceLimitOrder {
   ];
   string limit_sell_price = 11 [
     (gogoproto.moretags) = "yaml:\"limit_sell_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "limit_sell_price"
   ];
@@ -205,7 +205,7 @@ message MsgPlaceLimitOrder {
   string min_average_sell_price = 12 [
     deprecated = true,
     (gogoproto.moretags) = "yaml:\"min_average_sell_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "min_average_sell_price"
   ];
@@ -354,7 +354,7 @@ message MsgMultiHopSwap {
   ];
   string exit_limit_price = 5 [
     (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "exit_limit_price"
   ];

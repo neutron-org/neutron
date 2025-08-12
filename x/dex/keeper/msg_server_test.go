@@ -14,13 +14,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v7/testutil/apptesting"
-	"github.com/neutron-org/neutron/v7/testutil/common/sample"
-	testkeeper "github.com/neutron-org/neutron/v7/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v7/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v7/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/testutil/apptesting"
+	"github.com/neutron-org/neutron/v8/testutil/common/sample"
+	testkeeper "github.com/neutron-org/neutron/v8/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v8/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // Test suite

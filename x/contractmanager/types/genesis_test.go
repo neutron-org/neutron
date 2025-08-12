@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v7/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v8/x/contractmanager/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

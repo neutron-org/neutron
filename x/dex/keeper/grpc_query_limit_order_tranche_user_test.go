@@ -10,11 +10,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v7/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v7/testutil/common/sample"
-	keepertest "github.com/neutron-org/neutron/v7/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v8/testutil/common/sample"
+	keepertest "github.com/neutron-org/neutron/v8/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {

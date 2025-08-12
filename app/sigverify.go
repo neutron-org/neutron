@@ -11,7 +11,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	"github.com/neutron-org/neutron/v7/x/crypto/ethsecp256k1"
+	"github.com/neutron-org/neutron/v8/x/crypto/ethsecp256k1"
 
 	"google.golang.org/protobuf/types/known/anypb"
 
