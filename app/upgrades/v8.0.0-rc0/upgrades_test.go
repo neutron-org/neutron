@@ -1,4 +1,4 @@
-package v800_rc0_test
+package v800rc0_test
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	ctx := suite.ChainA.GetContext()
 
 	upgrade := upgradetypes.Plan{
-		Name:   v800_rc0.UpgradeName,
+		Name:   v800rc0.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}

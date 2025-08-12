@@ -1,4 +1,4 @@
-package v800_rc0
+package v800rc0
 
 import (
 	"context"
