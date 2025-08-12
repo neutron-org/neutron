@@ -4,7 +4,6 @@ import (
 	storetypes "cosmossdk.io/store/types"
 
 	"github.com/neutron-org/neutron/v8/app/upgrades"
-	stateverifier "github.com/neutron-org/neutron/v8/x/state-verifier/types"
 )
 
 // This v8.0.0-rc0 upgrade is only for pion-1 chain, since it was already migrated to v7.0.0, thus
@@ -19,9 +18,7 @@ var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: storetypes.StoreUpgrades{
-		Added: []string{
-			stateverifier.ModuleName,
-		},
+		Added:   []string{},
 		Deleted: []string{},
 	},
 }
