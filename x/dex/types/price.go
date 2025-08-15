@@ -66,7 +66,7 @@ func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 
 func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 	if price.LT(math_utils.OnePrecDec()) {
-		panic("Can only lookup prices <= 1")
+		panic("Can only lookup prices >= 1")
 	}
 	var left uint64 // = 0
 	right := MaxTickExp
