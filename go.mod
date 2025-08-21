@@ -52,7 +52,7 @@ require (
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a
 	google.golang.org/grpc v1.74.2
-	google.golang.org/protobuf v1.36.6
+	google.golang.org/protobuf v1.36.8
 	gopkg.in/yaml.v2 v2.4.0
 )
 
