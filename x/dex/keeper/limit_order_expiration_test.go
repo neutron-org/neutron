@@ -9,11 +9,12 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/keeper"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/keeper"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
-const gasRequiredToPurgeOneLO uint64 = 9_000
+const gasRequiredToPurgeOneLO uint64 = 10_000
 
 func createNLimitOrderExpiration(
 	keeper *keeper.Keeper,
@@ -47,11 +48,13 @@ func createLimitOrderExpirationAndTranches(
 				TickIndexTakerToMaker: 0,
 				TrancheKey:            strconv.Itoa(i),
 			},
-			ReservesMakerDenom: math.NewInt(10),
-			ReservesTakerDenom: math.NewInt(10),
-			TotalMakerDenom:    math.NewInt(10),
-			TotalTakerDenom:    math.NewInt(10),
-			ExpirationTime:     &expTimes[i],
+			ReservesMakerDenom:    math.NewInt(10),
+			ReservesTakerDenom:    math.NewInt(10),
+			DecReservesMakerDenom: math_utils.NewPrecDec(10),
+			DecReservesTakerDenom: math_utils.NewPrecDec(10),
+			TotalMakerDenom:       math.NewInt(10),
+			TotalTakerDenom:       math.NewInt(10),
+			ExpirationTime:        &expTimes[i],
 		}
 		items[i].ExpirationTime = expTimes[i]
 		items[i].TrancheRef = tranche.Key.KeyMarshal()
@@ -163,7 +166,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	updateEvent := s.FindEvent(ctx.EventManager().Events(), types.TickUpdateEventKey)
 	eventAttrs := s.ExtractAttributes(updateEvent)
 	// Event has Reserves == 0
-	s.Equal(eventAttrs[types.AttributeReserves], "0")
+	s.Equal(eventAttrs[types.AttributeReservesDec], "0.000000000000000000000000000")
 }
 
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {

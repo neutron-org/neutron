@@ -3,7 +3,7 @@ package types
 import (
 	sdkerrors "cosmossdk.io/errors"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 )
 
 func NewTradePairID(takerDenom, makerDenom string) (*TradePairID, error) {
@@ -101,4 +101,8 @@ func (p TradePairID) MustMakerPrice(tickIndexNormalized int64) (priceTakerToMake
 		panic(err)
 	}
 	return price
+}
+
+func (p TradePairID) Equal(other TradePairID) bool {
+	return p.TakerDenom == other.TakerDenom && p.MakerDenom == other.MakerDenom
 }

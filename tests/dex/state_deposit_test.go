@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	dextypes "github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 type DepositState struct {
@@ -54,22 +54,22 @@ func (s *DexStateTestSuite) setupDepositState(params DepositState) {
 	case None:
 		break
 	case Creator:
-		coins := sdk.NewCoins(liquidityDistr.TokenA, liquidityDistr.TokenB)
+		coins := sdk.NewCoins(liquidityDistr.TokenA.CeilToCoin(), liquidityDistr.TokenB.CeilToCoin())
 		s.FundAcc(s.creator, coins)
 
 		s.makeDepositSuccess(s.creator, liquidityDistr, false)
 	case OneOther:
-		coins := sdk.NewCoins(liquidityDistr.TokenA, liquidityDistr.TokenB)
+		coins := sdk.NewCoins(liquidityDistr.TokenA.CeilToCoin(), liquidityDistr.TokenB.CeilToCoin())
 		s.FundAcc(s.alice, coins)
 
 		s.makeDepositSuccess(s.alice, liquidityDistr, false)
 	case OneOtherAndCreator:
 		splitLiqDistrArr := splitLiquidityDistribution(liquidityDistr, 2)
 
-		coins := sdk.NewCoins(splitLiqDistrArr.TokenA, splitLiqDistrArr.TokenB)
+		coins := sdk.NewCoins(splitLiqDistrArr.TokenA.CeilToCoin(), splitLiqDistrArr.TokenB.CeilToCoin())
 		s.FundAcc(s.creator, coins)
 
-		coins = sdk.NewCoins(splitLiqDistrArr.TokenA, splitLiqDistrArr.TokenB)
+		coins = sdk.NewCoins(splitLiqDistrArr.TokenA.CeilToCoin(), splitLiqDistrArr.TokenB.CeilToCoin())
 		s.FundAcc(s.alice, coins)
 
 		s.makeDepositSuccess(s.creator, splitLiqDistrArr, false)
@@ -83,12 +83,12 @@ func (s *DexStateTestSuite) setupDepositState(params DepositState) {
 		pool, found := s.App.DexKeeper.GetPool(s.Ctx, params.PairID, params.Tick, params.Fee)
 		s.True(found, "Pool not found")
 
-		pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(params.PoolValueIncrease.TokenA.Amount)
-		pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(params.PoolValueIncrease.TokenB.Amount)
+		pool.LowerTick0.DecReservesMakerDenom = pool.LowerTick0.DecReservesMakerDenom.Add(params.PoolValueIncrease.TokenA.Amount)
+		pool.UpperTick1.DecReservesMakerDenom = pool.UpperTick1.DecReservesMakerDenom.Add(params.PoolValueIncrease.TokenB.Amount)
 		s.App.DexKeeper.UpdatePool(s.Ctx, pool)
 
 		// Add fund dex with the additional balance
-		err := s.App.BankKeeper.MintCoins(s.Ctx, dextypes.ModuleName, sdk.NewCoins(params.PoolValueIncrease.TokenA, params.PoolValueIncrease.TokenB))
+		err := s.App.BankKeeper.MintCoins(s.Ctx, dextypes.ModuleName, sdk.NewCoins(params.PoolValueIncrease.TokenA.CeilToCoin(), params.PoolValueIncrease.TokenB.CeilToCoin()))
 		s.NoError(err)
 	}
 }
@@ -100,7 +100,7 @@ func CalcTotalPreDepositLiquidity(params depositTestParams) LiquidityDistributio
 	}
 }
 
-func CalcDepositAmountNoAutoswap(params depositTestParams) (resultAmountA, resultAmountB math.Int) {
+func CalcDepositAmountNoAutoswap(params depositTestParams) (resultAmountA, resultAmountB math_utils.PrecDec) {
 	depositA := params.DepositAmounts.TokenA.Amount
 	depositB := params.DepositAmounts.TokenB.Amount
 
@@ -114,16 +114,16 @@ func CalcDepositAmountNoAutoswap(params depositTestParams) (resultAmountA, resul
 		return depositA, depositB
 	// Pool only has TokenB, can deposit all of depositB
 	case existingA.IsZero():
-		return math.ZeroInt(), depositB
+		return math_utils.ZeroPrecDec(), depositB
 	// Pool only has TokenA, can deposit all of depositA
 	case existingB.IsZero():
-		return depositA, math.ZeroInt()
+		return depositA, math_utils.ZeroPrecDec()
 	// Pool has a ratio of A and B, deposit must match this ratio
 	case existingA.IsPositive() && existingB.IsPositive():
-		maxAmountA := math.LegacyNewDecFromInt(depositB).MulInt(existingA).QuoInt(existingB).TruncateInt()
-		resultAmountA = math.MinInt(depositA, maxAmountA)
-		maxAmountB := math.LegacyNewDecFromInt(depositA).MulInt(existingB).QuoInt(existingA).TruncateInt()
-		resultAmountB = math.MinInt(depositB, maxAmountB)
+		maxAmountA := depositB.Mul(existingA).Quo(existingB)
+		resultAmountA = math_utils.MinPrecDec(depositA, maxAmountA)
+		maxAmountB := depositA.Mul(existingB).Quo(existingA)
+		resultAmountB = math_utils.MinPrecDec(depositB, maxAmountB)
 
 		return resultAmountA, resultAmountB
 	default:
@@ -135,17 +135,17 @@ func calcCurrentShareValue(params depositTestParams, existingValue math_utils.Pr
 	initialValueA := params.ExistingLiquidityDistribution.TokenA.Amount
 	initialValueB := params.ExistingLiquidityDistribution.TokenB.Amount
 
-	existingShares := calcDepositValueAsToken0(params.Tick, initialValueA, initialValueB).TruncateInt()
+	existingShares := calcDepositValueAsToken0(params.Tick, initialValueA, initialValueB)
 	if existingShares.IsZero() {
 		return math_utils.OnePrecDec()
 	}
 
-	currentShareValue := math_utils.NewPrecDecFromInt(existingShares).Quo(existingValue)
+	currentShareValue := existingShares.Quo(existingValue)
 
 	return currentShareValue
 }
 
-func calcAutoswapAmount(params depositTestParams) (swapAmountA, swapAmountB math.Int) {
+func calcAutoswapAmount(params depositTestParams) (swapAmountA, swapAmountB math_utils.PrecDec) {
 	existingLiquidity := CalcTotalPreDepositLiquidity(params)
 	existingA := existingLiquidity.TokenA.Amount
 	existingB := existingLiquidity.TokenB.Amount
@@ -153,34 +153,34 @@ func calcAutoswapAmount(params depositTestParams) (swapAmountA, swapAmountB math
 	depositAmountB := params.DepositAmounts.TokenB.Amount
 	price1To0 := dextypes.MustCalcPrice(-params.Tick)
 	if existingA.IsZero() && existingB.IsZero() {
-		return math.ZeroInt(), math.ZeroInt()
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec()
 	}
 
-	existingADec := math_utils.NewPrecDecFromInt(existingA)
-	existingBDec := math_utils.NewPrecDecFromInt(existingB)
+	existingADec := existingA
+	existingBDec := existingB
 	// swapAmount = (reserves0*depositAmount1 - reserves1*depositAmount0) / (price * reserves1  + reserves0)
-	swapAmount := existingADec.MulInt(depositAmountB).Sub(existingBDec.MulInt(depositAmountA)).
+	swapAmount := existingADec.Mul(depositAmountB).Sub(existingBDec.Mul(depositAmountA)).
 		Quo(existingADec.Add(existingBDec.Quo(price1To0)))
 
 	switch {
 	case swapAmount.IsZero(): // nothing to be swapped
-		return math.ZeroInt(), math.ZeroInt()
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec()
 
 	case swapAmount.IsPositive(): // Token1 needs to be swapped
-		return math.ZeroInt(), swapAmount.Ceil().TruncateInt()
+		return math_utils.ZeroPrecDec(), swapAmount
 
 	default: // Token0 needs to be swapped
 		amountSwappedAs1 := swapAmount.Neg()
 
 		amountSwapped0 := amountSwappedAs1.Quo(price1To0)
-		return amountSwapped0.Ceil().TruncateInt(), math.ZeroInt()
+		return amountSwapped0, math_utils.ZeroPrecDec()
 	}
 }
 
-func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBAmount, sharesIssued math.Int) {
+func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBAmount math_utils.PrecDec, sharesIssued math.Int) {
 	var depositValueAsToken0 math_utils.PrecDec
-	var inAmountA math.Int
-	var inAmountB math.Int
+	var inAmountA math_utils.PrecDec
+	var inAmountB math_utils.PrecDec
 
 	existingLiquidity := CalcTotalPreDepositLiquidity(params)
 	existingA := existingLiquidity.TokenA.Amount
@@ -330,15 +330,16 @@ func TestDeposit(t *testing.T) {
 			expectedDepositA, expectedDepositB, expectedShares := calcExpectedDepositAmounts(tc)
 
 			// Check that response is correct
-			s.intsApproxEqual("Response Deposit0", expectedDepositA, resp.Reserve0Deposited[0], 1)
-			s.intsApproxEqual("Response Deposit1", expectedDepositB, resp.Reserve1Deposited[0], 1)
+			s.Equal(expectedDepositA, resp.DecReserve0Deposited[0], "Response Deposit0")
+			s.Equal(expectedDepositB, resp.DecReserve1Deposited[0], "Response Deposit1")
 
 			expectedTotalShares := existingSharesOwned.Amount.Add(expectedShares)
-			s.assertCreatorBalance(poolDenom, expectedTotalShares)
+			// For sanity check we use a slightly different share calculation. This can result in off by 1 error
+			s.assertApproxCreatorBalance(poolDenom, expectedTotalShares)
 
 			// Assert Creator Balance is correct
-			expectedBalanceA := DefaultStartingBalanceInt.Sub(expectedDepositA)
-			expectedBalanceB := DefaultStartingBalanceInt.Sub(expectedDepositB)
+			expectedBalanceA := DefaultStartingBalanceInt.Sub(expectedDepositA.Ceil().TruncateInt())
+			expectedBalanceB := DefaultStartingBalanceInt.Sub(expectedDepositB.Ceil().TruncateInt())
 			s.assertCreatorBalance(tc.PairID.Token0, expectedBalanceA)
 			s.assertCreatorBalance(tc.PairID.Token1, expectedBalanceB)
 
@@ -347,8 +348,10 @@ func TestDeposit(t *testing.T) {
 			expectedDexBalanceA := dexBalanceBeforeDeposit.TokenA.Amount.Add(expectedDepositA)
 			expectedDexBalanceB := dexBalanceBeforeDeposit.TokenB.Amount.Add(expectedDepositB)
 			s.assertPoolBalance(tc.PairID, tc.Tick, tc.Fee, expectedDexBalanceA, expectedDexBalanceB)
-			s.assertDexBalance(tc.PairID.Token0, expectedDexBalanceA)
-			s.assertDexBalance(tc.PairID.Token1, expectedDexBalanceB)
+			s.assertDexBalance(tc.PairID.Token0, expectedDexBalanceA.Ceil().TruncateInt())
+			s.assertDexBalance(tc.PairID.Token1, expectedDexBalanceB.Ceil().TruncateInt())
 		})
 	}
+
+	s.TearDownTest()
 }

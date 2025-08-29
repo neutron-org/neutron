@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -8,17 +9,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v7/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v7/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v7/x/dex/keeper"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v8/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v8/x/dex/keeper"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int) []*types.LimitOrderTrancheUser {
 	items := make([]*types.LimitOrderTrancheUser, n)
 	for i := range items {
 		val := &types.LimitOrderTrancheUser{
-			TrancheKey:            strconv.Itoa(i),
+			TrancheKey:            fmt.Sprintf("tk-%d", i),
 			Address:               strconv.Itoa(i),
 			TradePairId:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
 			TickIndexTakerToMaker: int64(i),

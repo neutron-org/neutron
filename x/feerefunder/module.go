@@ -21,9 +21,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v7/x/feerefunder/client/cli"
-	"github.com/neutron-org/neutron/v7/x/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v7/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/client/cli"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/types"
 )
 
 var (
@@ -135,6 +135,11 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+
+	m := keeper.NewMigrator(am.keeper)
+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/feerefunder from version 1 to 2: %v", err))
+	}
 }
 
 // RegisterInvariants registers the invariants of the module. If an invariant deviates from its predicted value, the InvariantRegistry triggers appropriate logic (most often the chain will be halted)

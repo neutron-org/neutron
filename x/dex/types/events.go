@@ -8,59 +8,70 @@ import (
 	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 )
 
 // Shared Attributes
 const (
-	AttributeCreator              = "Creator"
-	AttributeReceiver             = "Receiver"
-	AttributeToken0               = "TokenZero"
-	AttributeToken1               = "TokenOne"
-	AttributeTokenIn              = "TokenIn"
-	AttributeTokenOut             = "TokenOut"
-	AttributeAmountIn             = "AmountIn"
-	AttributeAmountIn0            = "AmountInTokenZero"
-	AttributeAmountIn1            = "AmountInTokenOne"
-	AttributeAmountOut            = "AmountOut"
-	AttributeSwapAmountIn         = "SwapAmountIn"
-	AttributeSwapAmountOut        = "SwapAmountOut"
-	AttributeTokenInAmountOut     = "TokenInAmountOut"
-	AttributeTokenOutAmountOut    = "TokenOutAmountOut"
-	AttributeTickIndex            = "TickIndex"
-	AttributeFee                  = "Fee"
-	AttributeTrancheKey           = "TrancheKey"
-	AttributePoolID               = "PoolID"
-	AttributeSharesMinted         = "SharesMinted"
-	AttributeReserves0Deposited   = "ReservesZeroDeposited"
-	AttributeReserves1Deposited   = "ReservesOneDeposited"
-	AttributeReserves0Withdrawn   = "ReservesZeroWithdrawn"
-	AttributeReserves1Withdrawn   = "ReservesOneWithdrawn"
-	AttributeSharesRemoved        = "SharesRemoved"
-	AttributeRoute                = "Route"
-	AttributeDust                 = "Dust"
-	AttributeLimitTick            = "LimitTick"
-	AttributeOrderType            = "OrderType"
-	AttributeShares               = "Shares"
-	AttributeReserves             = "Reserves"
-	AttributeGas                  = "Gas"
-	AttributeDenom                = "denom"
-	AttributeWithdrawn            = "total_withdrawn"
-	AttributeGasConsumed          = "gas_consumed"
-	AttributeLiquidityTickType    = "liquidity_tick_type"
-	AttributeLp                   = "lp"
-	AttributeLimitOrder           = "limit_order"
-	AttributeIsExpiringLimitOrder = "is_expiring_limit_order"
-	AttributeInc                  = "inc"
-	AttributeDec                  = "dec"
-	AttributePairID               = "pair_id"
-	AttributeMakerDenom           = "MakerDenom"
-	AttributeTakerDenom           = "TakerDenom"
-	AttributeSharesOwned          = "SharesOwned"
-	AttributeSharesWithdrawn      = "SharesWithdrawn"
-	AttributeMinAvgSellPrice      = "MinAvgSellPrice"
-	AttributeMaxAmountOut         = "MaxAmountOut"
-	AttributeRequestAmountIn      = "RequestAmountIn"
+	AttributeCreator               = "Creator"
+	AttributeReceiver              = "Receiver"
+	AttributeToken0                = "TokenZero"
+	AttributeToken1                = "TokenOne"
+	AttributeTokenIn               = "TokenIn"
+	AttributeTokenOut              = "TokenOut"
+	AttributeAmountIn              = "AmountIn"
+	AttributeAmountInDec           = "AmountInDec"
+	AttributeAmountIn0             = "AmountInTokenZero"
+	AttributeAmountIn1             = "AmountInTokenOne"
+	AttributeAmountOut             = "AmountOut"
+	AttributeAmountOutDec          = "AmountOutDec"
+	AttributeSwapAmountIn          = "SwapAmountIn"
+	AttributeSwapAmountOut         = "SwapAmountOut"
+	AttributeSwapAmountInDec       = "SwapAmountInDec"
+	AttributeSwapAmountOutDec      = "SwapAmountOutDec"
+	AttributeTokenInAmountOut      = "TokenInAmountOut"
+	AttributeTokenOutAmountOut     = "TokenOutAmountOut"
+	AttributeTokenInAmountOutDec   = "TokenInAmountOutDec"
+	AttributeTokenOutAmountOutDec  = "TokenOutAmountOutDec"
+	AttributeTickIndex             = "TickIndex"
+	AttributeFee                   = "Fee"
+	AttributeTrancheKey            = "TrancheKey"
+	AttributePoolID                = "PoolID"
+	AttributeSharesMinted          = "SharesMinted"
+	AttributeReserves0Deposited    = "ReservesZeroDeposited"
+	AttributeReserves1Deposited    = "ReservesOneDeposited"
+	AttributeReserves0DepositedDec = "ReservesZeroDepositedDec"
+	AttributeReserves1DepositedDec = "ReservesOneDepositedDec"
+	AttributeReserves0Withdrawn    = "ReservesZeroWithdrawn"
+	AttributeReserves1Withdrawn    = "ReservesOneWithdrawn"
+	AttributeReserves0WithdrawnDec = "ReservesZeroWithdrawnDec"
+	AttributeReserves1WithdrawnDec = "ReservesOneWithdrawnDec"
+	AttributeSharesRemoved         = "SharesRemoved"
+	AttributeRoute                 = "Route"
+	AttributeDust                  = "Dust"
+	AttributeLimitTick             = "LimitTick"
+	AttributeOrderType             = "OrderType"
+	AttributeShares                = "Shares"
+	AttributeReserves              = "Reserves"
+	AttributeReservesDec           = "ReservesDec"
+	AttributeGas                   = "Gas"
+	AttributeDenom                 = "denom"
+	AttributeWithdrawn             = "total_withdrawn"
+	AttributeGasConsumed           = "gas_consumed"
+	AttributeLiquidityTickType     = "liquidity_tick_type"
+	AttributeLp                    = "lp"
+	AttributeLimitOrder            = "limit_order"
+	AttributeIsExpiringLimitOrder  = "is_expiring_limit_order"
+	AttributeInc                   = "inc"
+	AttributeDec                   = "dec"
+	AttributePairID                = "pair_id"
+	AttributeMakerDenom            = "MakerDenom"
+	AttributeTakerDenom            = "TakerDenom"
+	AttributeSharesOwned           = "SharesOwned"
+	AttributeSharesWithdrawn       = "SharesWithdrawn"
+	AttributeMinAvgSellPrice       = "MinAvgSellPrice"
+	AttributeMaxAmountOut          = "MaxAmountOut"
+	AttributeRequestAmountIn       = "RequestAmountIn"
 )
 
 // Event Keys
@@ -87,10 +98,10 @@ func CreateDepositEvent(
 	token1 string,
 	tickIndex int64,
 	fee uint64,
-	depositAmountReserve0 math.Int,
-	depositAmountReserve1 math.Int,
-	amountIn0 math.Int,
-	amountIn1 math.Int,
+	depositAmountReserve0 math_utils.PrecDec,
+	depositAmountReserve1 math_utils.PrecDec,
+	amountIn0 math_utils.PrecDec,
+	amountIn1 math_utils.PrecDec,
 	poolID uint64,
 	sharesMinted math.Int,
 ) sdk.Event {
@@ -103,8 +114,10 @@ func CreateDepositEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTickIndex, strconv.FormatInt(tickIndex, 10)),
 		sdk.NewAttribute(AttributeFee, strconv.FormatUint(fee, 10)),
-		sdk.NewAttribute(AttributeReserves0Deposited, depositAmountReserve0.String()),
-		sdk.NewAttribute(AttributeReserves1Deposited, depositAmountReserve1.String()),
+		sdk.NewAttribute(AttributeReserves0Deposited, depositAmountReserve0.TruncateInt().String()),
+		sdk.NewAttribute(AttributeReserves1Deposited, depositAmountReserve1.TruncateInt().String()),
+		sdk.NewAttribute(AttributeReserves0DepositedDec, depositAmountReserve0.String()),
+		sdk.NewAttribute(AttributeReserves1DepositedDec, depositAmountReserve1.String()),
 		sdk.NewAttribute(AttributePoolID, strconv.FormatUint(poolID, 10)),
 		sdk.NewAttribute(AttributeSharesMinted, sharesMinted.String()),
 		sdk.NewAttribute(AttributeAmountIn0, amountIn0.String()),
@@ -121,8 +134,8 @@ func CreateWithdrawEvent(
 	token1 string,
 	tickIndex int64,
 	fee uint64,
-	withdrawAmountReserve0 math.Int,
-	withdrawAmountReserve1 math.Int,
+	withdrawAmountReserve0 math_utils.PrecDec,
+	withdrawAmountReserve1 math_utils.PrecDec,
 	poolID uint64,
 	sharesRemoved math.Int,
 ) sdk.Event {
@@ -135,8 +148,10 @@ func CreateWithdrawEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTickIndex, strconv.FormatInt(tickIndex, 10)),
 		sdk.NewAttribute(AttributeFee, strconv.FormatUint(fee, 10)),
-		sdk.NewAttribute(AttributeReserves0Withdrawn, withdrawAmountReserve0.String()),
-		sdk.NewAttribute(AttributeReserves1Withdrawn, withdrawAmountReserve1.String()),
+		sdk.NewAttribute(AttributeReserves0Withdrawn, withdrawAmountReserve0.TruncateInt().String()),
+		sdk.NewAttribute(AttributeReserves1Withdrawn, withdrawAmountReserve1.TruncateInt().String()),
+		sdk.NewAttribute(AttributeReserves0WithdrawnDec, withdrawAmountReserve0.String()),
+		sdk.NewAttribute(AttributeReserves1WithdrawnDec, withdrawAmountReserve1.String()),
 		sdk.NewAttribute(AttributePoolID, strconv.FormatUint(poolID, 10)),
 		sdk.NewAttribute(AttributeSharesRemoved, sharesRemoved.String()),
 	}
@@ -149,10 +164,10 @@ func CreateMultihopSwapEvent(
 	receiver sdk.AccAddress,
 	makerDenom string,
 	tokenOut string,
-	amountIn math.Int,
-	amountOut math.Int,
+	amountIn math_utils.PrecDec,
+	amountOut math_utils.PrecDec,
 	route []string,
-	dust sdk.Coins,
+	dust PrecDecCoins,
 ) sdk.Event {
 	dustStrings := make([]string, 0, dust.Len())
 	for _, item := range dust {
@@ -165,8 +180,10 @@ func CreateMultihopSwapEvent(
 		sdk.NewAttribute(AttributeReceiver, receiver.String()),
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
-		sdk.NewAttribute(AttributeAmountIn, amountIn.String()),
-		sdk.NewAttribute(AttributeAmountOut, amountOut.String()),
+		sdk.NewAttribute(AttributeAmountIn, amountIn.TruncateInt().String()),
+		sdk.NewAttribute(AttributeAmountOut, amountOut.TruncateInt().String()),
+		sdk.NewAttribute(AttributeAmountInDec, amountIn.String()),
+		sdk.NewAttribute(AttributeAmountOutDec, amountOut.String()),
 		sdk.NewAttribute(AttributeRoute, strings.Join(route, ",")),
 		sdk.NewAttribute(AttributeDust, strings.Join(dustStrings, ",")),
 	}
@@ -181,7 +198,7 @@ func CreatePlaceLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountIn math.Int,
+	amountIn math_utils.PrecDec,
 	requestAmountIn math.Int,
 	limitTick int64,
 	orderType string,
@@ -189,8 +206,8 @@ func CreatePlaceLimitOrderEvent(
 	minAvgSellPrice math_utils.PrecDec,
 	shares math.Int,
 	trancheKey string,
-	swapAmountIn math.Int,
-	swapAmountOut math.Int,
+	swapAmountIn math_utils.PrecDec,
+	swapAmountOut math_utils.PrecDec,
 ) sdk.Event {
 	maxAmountOutStr := ""
 	if maxAmountOut != nil {
@@ -210,8 +227,10 @@ func CreatePlaceLimitOrderEvent(
 		sdk.NewAttribute(AttributeOrderType, orderType),
 		sdk.NewAttribute(AttributeShares, shares.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
-		sdk.NewAttribute(AttributeSwapAmountIn, swapAmountIn.String()),
-		sdk.NewAttribute(AttributeSwapAmountOut, swapAmountOut.String()),
+		sdk.NewAttribute(AttributeSwapAmountIn, swapAmountIn.TruncateInt().String()),
+		sdk.NewAttribute(AttributeSwapAmountOut, swapAmountOut.TruncateInt().String()),
+		sdk.NewAttribute(AttributeSwapAmountInDec, swapAmountIn.String()),
+		sdk.NewAttribute(AttributeSwapAmountOutDec, swapAmountOut.String()),
 		sdk.NewAttribute(AttributeMinAvgSellPrice, minAvgSellPrice.String()),
 		sdk.NewAttribute(AttributeMaxAmountOut, maxAmountOutStr),
 		sdk.NewAttribute(AttributeRequestAmountIn, requestAmountIn.String()),
@@ -226,8 +245,8 @@ func WithdrawFilledLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOutTaker math.Int,
-	amountOutMaker math.Int,
+	amountOutTaker math_utils.PrecDec,
+	amountOutMaker math_utils.PrecDec,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -241,9 +260,11 @@ func WithdrawFilledLimitOrderEvent(
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
 		// DEPRECATED: `AmountOut` will be removed in the next release
-		sdk.NewAttribute(AttributeAmountOut, amountOutTaker.String()),
-		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
-		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
+		sdk.NewAttribute(AttributeAmountOut, amountOutTaker.TruncateInt().String()),
+		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.TruncateInt().String()),
+		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.TruncateInt().String()),
+		sdk.NewAttribute(AttributeTokenOutAmountOutDec, amountOutTaker.String()),
+		sdk.NewAttribute(AttributeTokenInAmountOutDec, amountOutMaker.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
@@ -255,16 +276,16 @@ func CancelLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOutTaker math.Int,
-	amountOutMaker math.Int,
+	amountOutTaker math_utils.PrecDec,
+	amountOutMaker math_utils.PrecDec,
 	trancheKey string,
 ) sdk.Event {
 	pairID := PairID{Token0: token0, Token1: token1}
 	takerDenom := pairID.MustOppositeToken(makerDenom)
-	coinsOut := sdk.NewCoins(
-		sdk.NewCoin(makerDenom, amountOutMaker),
-		sdk.NewCoin(takerDenom, amountOutTaker),
-	)
+	coinsOut := PrecDecCoins{
+		NewPrecDecCoin(makerDenom, amountOutMaker),
+		NewPrecDecCoin(takerDenom, amountOutTaker),
+	}
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, CancelLimitOrderEventKey),
@@ -276,8 +297,10 @@ func CancelLimitOrderEvent(
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
 		// DEPRECATED: `AmountOut` will be removed in the next release
 		sdk.NewAttribute(AttributeAmountOut, coinsOut.String()),
-		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
-		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
+		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.TruncateInt().String()),
+		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.TruncateInt().String()),
+		sdk.NewAttribute(AttributeTokenInAmountOutDec, amountOutMaker.String()),
+		sdk.NewAttribute(AttributeTokenOutAmountOutDec, amountOutTaker.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
 	}
 
@@ -285,15 +308,17 @@ func CancelLimitOrderEvent(
 }
 
 type SwapMetadata struct {
-	AmountIn  math.Int
-	AmountOut math.Int
+	AmountIn  math_utils.PrecDec
+	AmountOut math_utils.PrecDec
 	TokenIn   string
 }
 
 func addSwapMetadata(event sdk.Event, swapMetadata SwapMetadata) sdk.Event {
 	swapAttrs := []sdk.Attribute{
-		sdk.NewAttribute(AttributeSwapAmountIn, swapMetadata.AmountIn.String()),
-		sdk.NewAttribute(AttributeSwapAmountOut, swapMetadata.AmountOut.String()),
+		sdk.NewAttribute(AttributeSwapAmountIn, swapMetadata.AmountIn.TruncateInt().String()),
+		sdk.NewAttribute(AttributeSwapAmountOut, swapMetadata.AmountOut.TruncateInt().String()),
+		sdk.NewAttribute(AttributeSwapAmountInDec, swapMetadata.AmountIn.String()),
+		sdk.NewAttribute(AttributeSwapAmountOutDec, swapMetadata.AmountOut.String()),
 	}
 
 	return event.AppendAttributes(swapAttrs...)
@@ -304,7 +329,7 @@ func TickUpdateEvent(
 	token1 string,
 	makerDenom string,
 	tickIndex int64,
-	reserves math.Int,
+	reserves math_utils.PrecDec,
 	otherAttrs ...sdk.Attribute,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -314,7 +339,8 @@ func TickUpdateEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTickIndex, strconv.FormatInt(tickIndex, 10)),
-		sdk.NewAttribute(AttributeReserves, reserves.String()),
+		sdk.NewAttribute(AttributeReserves, reserves.TruncateInt().String()),
+		sdk.NewAttribute(AttributeReservesDec, reserves.String()),
 	}
 	attrs = append(attrs, otherAttrs...)
 
@@ -329,7 +355,7 @@ func CreateTickUpdatePoolReserves(tick PoolReserves, swapMetadata ...SwapMetadat
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tick.Key.TickIndexTakerToMaker,
-		tick.ReservesMakerDenom,
+		tick.DecReservesMakerDenom,
 		sdk.NewAttribute(AttributeFee, strconv.FormatUint(tick.Key.Fee, 10)),
 	)
 	if len(swapMetadata) == 1 {
@@ -347,7 +373,7 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche, swapMetadata 
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tranche.Key.TickIndexTakerToMaker,
-		tranche.ReservesMakerDenom,
+		tranche.DecReservesMakerDenom,
 		sdk.NewAttribute(AttributeTrancheKey, tranche.Key.TrancheKey),
 	)
 
@@ -366,7 +392,7 @@ func CreateTickUpdateLimitOrderTranchePurge(tranche *LimitOrderTranche) sdk.Even
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tranche.Key.TickIndexTakerToMaker,
-		math.ZeroInt(),
+		math_utils.ZeroPrecDec(),
 		sdk.NewAttribute(AttributeTrancheKey, tranche.Key.TrancheKey),
 	)
 }

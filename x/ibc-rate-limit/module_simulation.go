@@ -7,9 +7,9 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/neutron-org/neutron/v7/testutil/common/sample"
-	ibcratelimitsimulation "github.com/neutron-org/neutron/v7/x/ibc-rate-limit/simulation"
-	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v8/testutil/common/sample"
+	ibcratelimitsimulation "github.com/neutron-org/neutron/v8/x/ibc-rate-limit/simulation"
+	"github.com/neutron-org/neutron/v8/x/ibc-rate-limit/types"
 )
 
 // avoid unused import issue

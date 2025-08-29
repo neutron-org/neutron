@@ -3,8 +3,8 @@ package cron
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/cron/keeper"
-	"github.com/neutron-org/neutron/v7/x/cron/types"
+	"github.com/neutron-org/neutron/v8/x/cron/keeper"
+	"github.com/neutron-org/neutron/v8/x/cron/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

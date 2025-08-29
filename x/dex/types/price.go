@@ -6,11 +6,8 @@ import (
 	"encoding/gob"
 	fmt "fmt"
 
-	"cosmossdk.io/errors"
-	"cosmossdk.io/math"
-
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/utils"
 )
 
 const (
@@ -69,7 +66,7 @@ func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 
 func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 	if price.LT(math_utils.OnePrecDec()) {
-		panic("Can only lookup prices <= 1")
+		panic("Can only lookup prices >= 1")
 	}
 	var left uint64 // = 0
 	right := MaxTickExp
@@ -136,14 +133,6 @@ func ValidateTickFee(tick int64, fee uint64) error {
 	// NOTE: Ugly arithmetic is to ensure that we don't overflow uint64
 	if utils.Abs(tick) > MaxTickExp-fee {
 		return ErrTickOutsideRange
-	}
-	return nil
-}
-
-func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
-	amountOut := math_utils.NewPrecDecFromInt(amountIn).Quo(price)
-	if amountOut.LT(math_utils.OnePrecDec()) {
-		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}
 	return nil
 }

@@ -14,8 +14,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	icqtypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v7/x/state-verifier/types"
+	icqtypes "github.com/neutron-org/neutron/v8/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v8/x/state-verifier/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

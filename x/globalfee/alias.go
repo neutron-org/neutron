@@ -1,7 +1,7 @@
 package globalfee
 
 import (
-	"github.com/neutron-org/neutron/v7/x/globalfee/types"
+	"github.com/neutron-org/neutron/v8/x/globalfee/types"
 )
 
 const (
