@@ -8,10 +8,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v7/app/params"
-	"github.com/neutron-org/neutron/v7/testutil"
-	"github.com/neutron-org/neutron/v7/testutil/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v7/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/app/params"
+	"github.com/neutron-org/neutron/v8/testutil"
+	"github.com/neutron-org/neutron/v8/testutil/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {

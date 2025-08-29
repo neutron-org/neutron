@@ -6,9 +6,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	v3 "github.com/neutron-org/neutron/v7/x/globalfee/migrations/v3"
+	v3 "github.com/neutron-org/neutron/v8/x/globalfee/migrations/v3"
 
-	v2 "github.com/neutron-org/neutron/v7/x/globalfee/migrations/v2"
+	v2 "github.com/neutron-org/neutron/v8/x/globalfee/migrations/v2"
 )
 
 // Migrator is a struct for handling in-place store migrations.

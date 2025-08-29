@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (k Keeper) SimulatePlaceLimitOrder(
@@ -58,13 +58,13 @@ func (k Keeper) SimulatePlaceLimitOrder(
 		return nil, err
 	}
 
-	coinIn := sdk.NewCoin(msg.TokenIn, totalIn)
+	coinIn := sdk.NewCoin(msg.TokenIn, totalIn.Ceil().TruncateInt())
 	return &types.QuerySimulatePlaceLimitOrderResponse{
 		Resp: &types.MsgPlaceLimitOrderResponse{
 			TrancheKey:   trancheKey,
 			CoinIn:       coinIn,
-			TakerCoinIn:  takerCoinIn,
-			TakerCoinOut: takerCoinOut,
+			TakerCoinIn:  takerCoinIn.CeilToCoin(),
+			TakerCoinOut: takerCoinOut.TruncateToCoin(),
 		},
 	}, nil
 }

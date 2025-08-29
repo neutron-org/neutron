@@ -14,9 +14,9 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v7/app/params"
-	"github.com/neutron-org/neutron/v7/testutil"
-	iqtypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v8/app/params"
+	"github.com/neutron-org/neutron/v8/testutil"
+	iqtypes "github.com/neutron-org/neutron/v8/x/interchainqueries/types"
 )
 
 var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"

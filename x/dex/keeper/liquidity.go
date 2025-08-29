@@ -4,27 +4,27 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (k Keeper) Swap(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	maxAmountTakerDenom math.Int,
+	maxAmountTakerDenom math_utils.PrecDec,
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
-) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
+) (totalTakerCoin, totalMakerCoin types.PrecDecCoin, orderFilled bool, err error) {
 	gasBefore := ctx.GasMeter().GasConsumed()
 	useMaxOut := maxAmountMakerDenom != nil
-	var remainingMakerDenom *math.Int
+	var remainingMakerDenom *math_utils.PrecDec
 	if useMaxOut {
-		temp := *maxAmountMakerDenom
+		temp := math_utils.NewPrecDecFromInt(*maxAmountMakerDenom)
 		remainingMakerDenom = &temp
 	}
 
 	remainingTakerDenom := maxAmountTakerDenom
-	totalMakerDenom := math.ZeroInt()
+	totalMakerDenom := math_utils.ZeroPrecDec()
 	orderFilled = false
 
 	// verify that amount left is not zero and that there are additional valid ticks to check
@@ -54,12 +54,10 @@ func (k Keeper) Swap(
 		totalMakerDenom = totalMakerDenom.Add(outAmount)
 
 		// break if remainingTakerDenom will yield less than 1 tokenOut at current price
-		// this avoids unnecessary iteration since outAmount will always be 0 going forward
+		// this avoids unnecessary iteration for marginal return.
 		// this also catches the normal exit case where remainingTakerDenom == 0
 
-		// This also allows us to handle a corner case where totalTakerCoin < maxAmountAmountTakerDenom
-		// and there is still valid tradeable liquidity but the order cannot be filled any further due to monotonic rounding.
-		if math_utils.NewPrecDecFromInt(remainingTakerDenom).Quo(liq.Price()).LT(math_utils.OnePrecDec()) {
+		if remainingTakerDenom.Quo(liq.Price()).LT(math_utils.OnePrecDec()) {
 			orderFilled = true
 			break
 		}
@@ -69,7 +67,7 @@ func (k Keeper) Swap(
 			remainingMakerDenom = &temp
 
 			// if maxAmountOut has been used up then exit
-			if remainingMakerDenom.LTE(math.ZeroInt()) {
+			if !remainingMakerDenom.IsPositive() {
 				orderFilled = true
 				break
 			}
@@ -80,10 +78,10 @@ func (k Keeper) Swap(
 	gasAfter := ctx.GasMeter().GasConsumed()
 	ctx.EventManager().EmitEvents(types.GetEventsGasConsumed(gasBefore, gasAfter))
 
-	return sdk.NewCoin(
+	return types.NewPrecDecCoin(
 			tradePairID.TakerDenom,
 			totalTakerDenom,
-		), sdk.NewCoin(
+		), types.NewPrecDecCoin(
 			tradePairID.MakerDenom,
 			totalMakerDenom,
 		), orderFilled, nil
@@ -92,10 +90,10 @@ func (k Keeper) Swap(
 func (k Keeper) SwapWithCache(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	maxAmountIn math.Int,
+	maxAmountIn math_utils.PrecDec,
 	maxAmountOut *math.Int,
 	limitPrice *math_utils.PrecDec,
-) (totalIn, totalOut sdk.Coin, orderFilled bool, err error) {
+) (totalIn, totalOut types.PrecDecCoin, orderFilled bool, err error) {
 	cacheCtx, writeCache := ctx.CacheContext()
 	totalIn, totalOut, orderFilled, err = k.Swap(
 		cacheCtx,
@@ -128,12 +126,12 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity, sw
 func (k Keeper) TakerLimitOrderSwap(
 	ctx sdk.Context,
 	tradePairID types.TradePairID,
-	amountIn math.Int,
+	amountIn math_utils.PrecDec,
 	maxAmountOut *math.Int,
 	limitPrice math_utils.PrecDec,
 	minAvgSellPrice math_utils.PrecDec,
 	orderType types.LimitOrderType,
-) (totalInCoin, totalOutCoin sdk.Coin, err error) {
+) (totalInCoin, totalOutCoin types.PrecDecCoin, err error) {
 	totalInCoin, totalOutCoin, orderFilled, err := k.SwapWithCache(
 		ctx,
 		&tradePairID,
@@ -142,21 +140,25 @@ func (k Keeper) TakerLimitOrderSwap(
 		&limitPrice,
 	)
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, err
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 
 	if orderType.IsFoK() && !orderFilled {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrFoKLimitOrderNotFilled
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, types.ErrFoKLimitOrderNotFilled
 	}
 
 	if totalInCoin.Amount.IsZero() {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrNoLiquidity
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, types.ErrNoLiquidity
 	}
 
-	truePrice := math_utils.NewPrecDecFromInt(totalOutCoin.Amount).QuoInt(totalInCoin.Amount)
+	truePrice := totalOutCoin.Amount.Quo(totalInCoin.Amount)
 
 	if truePrice.LT(minAvgSellPrice) {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, types.ErrLimitPriceNotSatisfied
+	}
+
+	if totalOutCoin.Amount.IsZero() {
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, types.ErrTradeTooSmall
 	}
 
 	return totalInCoin, totalOutCoin, nil
@@ -167,10 +169,10 @@ func (k Keeper) TakerLimitOrderSwap(
 func (k Keeper) MakerLimitOrderSwap(
 	ctx sdk.Context,
 	tradePairID types.TradePairID,
-	amountIn math.Int,
+	amountIn math_utils.PrecDec,
 	limitPrice math_utils.PrecDec,
 	minAvgSellPrice math_utils.PrecDec,
-) (totalInCoin, totalOutCoin sdk.Coin, filled bool, err error) {
+) (totalInCoin, totalOutCoin types.PrecDecCoin, filled bool, err error) {
 	totalInCoin, totalOutCoin, filled, err = k.SwapWithCache(
 		ctx,
 		&tradePairID,
@@ -179,17 +181,17 @@ func (k Keeper) MakerLimitOrderSwap(
 		&limitPrice,
 	)
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, filled, err
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, filled, err
 	}
 
 	if totalInCoin.Amount.IsPositive() {
 		remainingIn := amountIn.Sub(totalInCoin.Amount)
-		expectedOutMakerPortion := math_utils.NewPrecDecFromInt(remainingIn).Quo(limitPrice)
-		totalExpectedOut := expectedOutMakerPortion.Add(math_utils.NewPrecDecFromInt(totalOutCoin.Amount))
-		truePrice := totalExpectedOut.QuoInt(amountIn)
+		expectedOutMakerPortion := remainingIn.Quo(limitPrice)
+		totalExpectedOut := expectedOutMakerPortion.Add(totalOutCoin.Amount)
+		truePrice := totalExpectedOut.Quo(amountIn)
 
 		if truePrice.LT(minAvgSellPrice) {
-			return sdk.Coin{}, sdk.Coin{}, false, types.ErrLimitPriceNotSatisfied
+			return types.PrecDecCoin{}, types.PrecDecCoin{}, false, types.ErrLimitPriceNotSatisfied
 		}
 	}
 

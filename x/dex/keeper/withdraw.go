@@ -7,7 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // WithdrawCore handles logic for MsgWithdrawal including bank operations and event emissions.
@@ -19,7 +20,7 @@ func (k Keeper) WithdrawCore(
 	sharesToRemoveList []math.Int,
 	tickIndicesNormalized []int64,
 	fees []uint64,
-) (reserves0ToRemoved, reserves1ToRemoved math.Int, sharesBurned sdk.Coins, err error) {
+) (reserves0ToRemoved, reserves1ToRemoved math_utils.PrecDec, sharesBurned sdk.Coins, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, err := k.ExecuteWithdraw(
@@ -32,42 +33,35 @@ func (k Keeper) WithdrawCore(
 		fees,
 	)
 	if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), nil, err
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
 	}
 
 	ctx.EventManager().EmitEvents(events)
 
 	if err := k.BurnShares(ctx, callerAddr, coinsToBurn); err != nil {
-		return math.ZeroInt(), math.ZeroInt(), nil, err
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
 	}
 
+	coin0 := types.NewPrecDecCoin(pairID.Token0, totalReserve0ToRemove)
 	if totalReserve0ToRemove.IsPositive() {
-		coin0 := sdk.NewCoin(pairID.Token0, totalReserve0ToRemove)
-
-		err := k.bankKeeper.SendCoinsFromModuleToAccount(
-			ctx,
-			types.ModuleName,
-			receiverAddr,
-			sdk.Coins{coin0},
-		)
-		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin0}))
-		if err != nil {
-			return math.ZeroInt(), math.ZeroInt(), nil, err
-		}
+		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin0.TruncateToCoin()}))
 	}
 
+	coin1 := types.NewPrecDecCoin(pairID.Token1, totalReserve1ToRemove)
 	if totalReserve1ToRemove.IsPositive() {
-		coin1 := sdk.NewCoin(pairID.Token1, totalReserve1ToRemove)
-		err := k.bankKeeper.SendCoinsFromModuleToAccount(
-			ctx,
-			types.ModuleName,
-			receiverAddr,
-			sdk.Coins{coin1},
-		)
-		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin1}))
-		if err != nil {
-			return math.ZeroInt(), math.ZeroInt(), nil, err
-		}
+		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin1.TruncateToCoin()}))
+	}
+
+	// NewPrecDecCoins will remove zero amounts
+	coinsToRemove := types.NewPrecDecCoins(coin0, coin1)
+
+	err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
+		ctx,
+		receiverAddr,
+		coinsToRemove,
+	)
+	if err != nil {
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
 	}
 
 	return totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, nil
@@ -86,9 +80,9 @@ func (k Keeper) ExecuteWithdraw(
 	sharesToRemoveList []math.Int,
 	tickIndicesNormalized []int64,
 	fees []uint64,
-) (totalReserves0ToRemove, totalReserves1ToRemove math.Int, coinsToBurn sdk.Coins, events sdk.Events, err error) {
-	totalReserve0ToRemove := math.ZeroInt()
-	totalReserve1ToRemove := math.ZeroInt()
+) (totalReserves0ToRemove, totalReserves1ToRemove math_utils.PrecDec, coinsToBurn sdk.Coins, events sdk.Events, err error) {
+	totalReserve0ToRemove := math_utils.ZeroPrecDec()
+	totalReserve1ToRemove := math_utils.ZeroPrecDec()
 
 	for i, fee := range fees {
 		sharesToRemove := sharesToRemoveList[i]
@@ -96,7 +90,7 @@ func (k Keeper) ExecuteWithdraw(
 
 		pool, err := k.GetOrInitPool(ctx, pairID, tickIndex, fee)
 		if err != nil {
-			return math.ZeroInt(), math.ZeroInt(), nil, nil, err
+			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, err
 		}
 
 		poolDenom := pool.GetPoolDenom()
@@ -106,7 +100,7 @@ func (k Keeper) ExecuteWithdraw(
 		alreadyWithdrawnOfDenom := coinsToBurn.AmountOf(poolDenom)
 		sharesOwned := k.bankKeeper.GetBalance(ctx, callerAddr, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
 		if sharesOwned.LT(sharesToRemove) {
-			return math.ZeroInt(), math.ZeroInt(), nil, nil, sdkerrors.Wrapf(
+			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, sdkerrors.Wrapf(
 				types.ErrInsufficientShares,
 				"%s does not have %s shares of type %s",
 				callerAddr,

@@ -14,7 +14,7 @@ import (
 	types1 "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	gomock "github.com/golang/mock/gomock"
 
-	types2 "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
+	types2 "github.com/neutron-org/neutron/v8/x/interchainqueries/types"
 )
 
 // MockHeaderVerifier is a mock of HeaderVerifier interface.

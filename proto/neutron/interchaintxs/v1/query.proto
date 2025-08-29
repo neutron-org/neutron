@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "neutron/interchaintxs/v1/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/interchaintxs/types";
 
 // Query defines the gRPC querier service.
 service Query {

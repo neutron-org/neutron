@@ -10,8 +10,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func NewLimitOrderTranche(
@@ -23,14 +23,17 @@ func NewLimitOrderTranche(
 		return nil, err
 	}
 	return &types.LimitOrderTranche{
-		Key:                limitOrderTrancheKey,
-		ReservesMakerDenom: math.ZeroInt(),
-		ReservesTakerDenom: math.ZeroInt(),
-		TotalMakerDenom:    math.ZeroInt(),
-		TotalTakerDenom:    math.ZeroInt(),
-		ExpirationTime:     goodTil,
-		MakerPrice:         price,
-		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(price),
+		Key:                   limitOrderTrancheKey,
+		ReservesMakerDenom:    math.ZeroInt(),
+		ReservesTakerDenom:    math.ZeroInt(),
+		DecReservesMakerDenom: math_utils.ZeroPrecDec(),
+		DecReservesTakerDenom: math_utils.ZeroPrecDec(),
+		TotalMakerDenom:       math.ZeroInt(),
+		TotalTakerDenom:       math.ZeroInt(),
+		DecTotalTakerDenom:    math_utils.ZeroPrecDec(),
+		ExpirationTime:        goodTil,
+		MakerPrice:            price,
+		PriceTakerToMaker:     math_utils.OnePrecDec().Quo(price),
 	}, nil
 }
 

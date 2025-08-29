@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (k Keeper) SimulateWithdrawal(
@@ -45,9 +45,11 @@ func (k Keeper) SimulateWithdrawal(
 
 	return &types.QuerySimulateWithdrawalResponse{
 		Resp: &types.MsgWithdrawalResponse{
-			Reserve0Withdrawn: reserve0Withdrawn,
-			Reserve1Withdrawn: reserve1Withdrawn,
-			SharesBurned:      sharesBurned,
+			Reserve0Withdrawn:    reserve0Withdrawn.TruncateInt(),
+			Reserve1Withdrawn:    reserve1Withdrawn.TruncateInt(),
+			DecReserve0Withdrawn: reserve0Withdrawn,
+			DecReserve1Withdrawn: reserve1Withdrawn,
+			SharesBurned:         sharesBurned,
 		},
 	}, nil
 }

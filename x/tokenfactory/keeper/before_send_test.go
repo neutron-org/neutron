@@ -11,9 +11,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	dextypes "github.com/neutron-org/neutron/v7/x/dex/types"
-	icqtypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v7/x/tokenfactory/types"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
+	icqtypes "github.com/neutron-org/neutron/v8/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v8/x/tokenfactory/types"
 )
 
 const (

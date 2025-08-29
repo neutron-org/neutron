@@ -7,7 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // WithdrawFilledLimitOrderCore handles MsgWithdrawFilledLimitOrder including bank operations and event emissions.
@@ -15,20 +16,20 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	goCtx context.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (takerCoinOut, makerCoinOut sdk.Coin, err error) {
+) (takerCoinOut, makerCoinOut types.PrecDecCoin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	takerCoinOut, makerCoinOut, err = k.ExecuteWithdrawFilledLimitOrder(ctx, trancheKey, callerAddr)
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, err
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 
 	// NOTE: it is possible for coinTakerDenomOut xor coinMakerDenomOut to be zero. These are removed by the sanitize call in sdk.NewCoins
 	// ExecuteWithdrawFilledLimitOrder ensures that at least one of these has am amount > 0.
-	coins := sdk.NewCoins(takerCoinOut, makerCoinOut)
-	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(takerCoinOut)))
-	if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
-		return sdk.Coin{}, sdk.Coin{}, err
+	coins := types.NewPrecDecCoins(takerCoinOut, makerCoinOut)
+	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(takerCoinOut.TruncateToCoin())))
+	if err := k.FractionalBanker.SendFractionalCoinsFromDexToAccount(ctx, callerAddr, coins); err != nil {
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 
 	makerDenom := makerCoinOut.Denom
@@ -56,7 +57,7 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 	ctx sdk.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (takerCoinOut, makerCoinOut sdk.Coin, err error) {
+) (takerCoinOut, makerCoinOut types.PrecDecCoin, err error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(
 		ctx,
 		callerAddr.String(),
@@ -77,21 +78,21 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 		},
 	)
 
-	amountOutTokenOut := math.ZeroInt()
-	remainingTokenIn := math.ZeroInt()
+	amountOutTokenOut := math_utils.ZeroPrecDec()
+	remainingTokenIn := math_utils.ZeroPrecDec()
 	// It's possible that a TrancheUser exists but tranche does not if LO was filled entirely through a swap
 	if found {
 		var amountOutTokenIn math.Int
 		amountOutTokenIn, amountOutTokenOut, err = tranche.Withdraw(trancheUser)
 		if err != nil {
-			return sdk.Coin{}, sdk.Coin{}, err
+			return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 		}
 
 		if wasFilled {
 			// This is only relevant for inactive JIT and GoodTil limit orders
 			remainingTokenIn, err = tranche.RemoveTokenIn(trancheUser)
 			if err != nil {
-				return sdk.Coin{}, sdk.Coin{}, err
+				return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 			}
 			k.UpdateInactiveTranche(ctx, tranche)
 
@@ -112,8 +113,8 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 		return takerCoinOut, makerCoinOut, types.ErrWithdrawEmptyLimitOrder
 	}
 
-	takerCoinOut = sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
-	makerCoinOut = sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
+	takerCoinOut = types.NewPrecDecCoin(tradePairID.TakerDenom, amountOutTokenOut)
+	makerCoinOut = types.NewPrecDecCoin(tradePairID.MakerDenom, remainingTokenIn)
 
 	return takerCoinOut, makerCoinOut, nil
 }

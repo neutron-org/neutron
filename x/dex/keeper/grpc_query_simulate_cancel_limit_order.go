@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (k Keeper) SimulateCancelLimitOrder(
@@ -33,8 +33,10 @@ func (k Keeper) SimulateCancelLimitOrder(
 
 	return &types.QuerySimulateCancelLimitOrderResponse{
 		Resp: &types.MsgCancelLimitOrderResponse{
-			TakerCoinOut: takerCoinOut,
-			MakerCoinOut: makerCoinOut,
+			TakerCoinOut:    takerCoinOut.TruncateToCoin(),
+			MakerCoinOut:    makerCoinOut.TruncateToCoin(),
+			DecTakerCoinOut: takerCoinOut,
+			DecMakerCoinOut: makerCoinOut,
 		},
 	}, nil
 }

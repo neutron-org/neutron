@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
 
-	v3 "github.com/neutron-org/neutron/v7/x/globalfee/migrations/v3"
+	v3 "github.com/neutron-org/neutron/v8/x/globalfee/migrations/v3"
 
 	"github.com/stretchr/testify/require"
 
@@ -21,7 +21,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	globalfeetypes "github.com/neutron-org/neutron/v7/x/globalfee/types"
+	globalfeetypes "github.com/neutron-org/neutron/v8/x/globalfee/types"
 )
 
 func TestMigrateStore(t *testing.T) {

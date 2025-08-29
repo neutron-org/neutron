@@ -8,10 +8,11 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 import "neutron/dex/params.proto";
+import "neutron/dex/precdec_coin.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/neutron-org/neutron/v7/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
 
 // Msg defines the Msg service.
 service Msg {
@@ -31,7 +32,7 @@ message DepositOptions {
   bool disable_autoswap = 1;
   bool fail_tx_on_bel = 2;
   bool swap_on_deposit = 3;
-  uint64 swap_on_deposit_slop_tolerance_bps = 4;
+  uint64 swap_on_deposit_slop_tolerance_bps = 4 [deprecated = true];
 }
 
 message MsgDeposit {
@@ -64,13 +65,17 @@ message FailedDeposit {
   string error = 2;
 }
 message MsgDepositResponse {
+  // reserve0_deposited is DEPRECATED
   repeated string reserve0_deposited = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve0_deposited\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve0_deposited"
   ];
+  // reserve0_deposited is DEPRECATED
   repeated string reserve1_deposited = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve1_deposited\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -82,6 +87,18 @@ message MsgDepositResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_issued"
+  ];
+  repeated string dec_reserve0_deposited = 5 [
+    (gogoproto.moretags) = "yaml:\"dec_reserve0_deposited\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve0_deposited"
+  ];
+  repeated string dec_reserve1_deposited = 6 [
+    (gogoproto.moretags) = "yaml:\"dec_reserve1_deposited\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve1_deposited"
   ];
 }
 
@@ -104,13 +121,17 @@ message MsgWithdrawal {
 }
 
 message MsgWithdrawalResponse {
+  // reserve0_withdrawn is DEPRECATED
   string reserve0_withdrawn = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve0_withdrawn\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve0_withdrawn"
   ];
+  // reserve1_withdrawn is DEPRECATED
   string reserve1_withdrawn = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserve1_withdrawn\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -121,6 +142,18 @@ message MsgWithdrawalResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_burned"
+  ];
+  string dec_reserve0_withdrawn = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_reserve0_withdrawn\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve0_withdrawn"
+  ];
+  string dec_reserve1_withdrawn = 5 [
+    (gogoproto.moretags) = "yaml:\"dec_reserve1_withdrawn\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserve1_withdrawn"
   ];
 }
 
@@ -163,16 +196,16 @@ message MsgPlaceLimitOrder {
   ];
   string limit_sell_price = 11 [
     (gogoproto.moretags) = "yaml:\"limit_sell_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "limit_sell_price"
   ];
-  // min_average_sell_price is an optional parameter that sets a required minimum average price for the entire trade.
-  // if the min_average_sell_price is not met the trade will fail.
-  // If min_average_sell_price is omitted limit_sell_price will be used instead
+
+  // min_average_sell_price is DEPRECATED
   string min_average_sell_price = 12 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"min_average_sell_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "min_average_sell_price"
   ];
@@ -187,23 +220,38 @@ message MsgPlaceLimitOrderResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "coin_in"
   ];
-  // Total amount of coin received from the taker portion of the limit order
-  // This is the amount of coin immediately available in the users account after
-  // executing the limit order. It does not include any future proceeds from the
-  // maker portion which will have withdrawn in the future
+
+  // taker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_out = 3 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_out"
   ];
 
-  // Total amount of the token in that was immediately swapped for takerOutCoin
+  // taker_coin_in is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_in = 4 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_in\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_in"
+  ];
+  // Total amount of coin received from the taker portion of the limit order
+  // This is the amount of coin immediately available in the users account after
+  // executing the limit order. It does not include any future proceeds from the
+  // maker portion which will have withdrawn in the future
+  PrecDecCoin dec_taker_coin_out = 5 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_out"
+  ];
+  // Total amount of the token in that was immediately swapped for takerOutCoin
+  PrecDecCoin dec_taker_coin_in = 6 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_in\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_in"
   ];
 }
 
@@ -216,19 +264,34 @@ message MsgWithdrawFilledLimitOrder {
 }
 
 message MsgWithdrawFilledLimitOrderResponse {
-  // Total amount of taker reserves that were withdrawn
+  // taker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_out = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_out"
   ];
-  // Total amount of maker reserves that were withdrawn --only applies to inactive LimitOrders
+
+  //maker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin maker_coin_out = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"maker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "maker_coin_out"
+  ];
+  // Total amount of taker reserves that were withdrawn
+  PrecDecCoin dec_taker_coin_out = 3 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_out"
+  ];
+  // Total amount of maker reserves that were withdrawn --only applies to inactive LimitOrders
+  PrecDecCoin dec_maker_coin_out = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_maker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_maker_coin_out"
   ];
 }
 
@@ -241,19 +304,34 @@ message MsgCancelLimitOrder {
 }
 
 message MsgCancelLimitOrderResponse {
-  // Total amount of taker reserves that were withdrawn
+  // taker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin taker_coin_out = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_out"
   ];
-  // Total amount of maker reserves that were canceled
+
+  // maker_coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin maker_coin_out = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"maker_coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "maker_coin_out"
+  ];
+  // Total amount of taker reserves that were withdrawn
+  PrecDecCoin dec_taker_coin_out = 3 [
+    (gogoproto.moretags) = "yaml:\"dec_taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_taker_coin_out"
+  ];
+  // Total amount of maker reserves that were canceled
+  PrecDecCoin dec_maker_coin_out = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_maker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_maker_coin_out"
   ];
 }
 
@@ -276,7 +354,7 @@ message MsgMultiHopSwap {
   ];
   string exit_limit_price = 5 [
     (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "exit_limit_price"
   ];
@@ -286,18 +364,32 @@ message MsgMultiHopSwap {
 }
 
 message MsgMultiHopSwapResponse {
+  // coin_out is DEPRECATED
   cosmos.base.v1beta1.Coin coin_out = 1 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "coin_out"
   ];
   MultiHopRoute route = 2;
+  // dust is DEPRECATED
   repeated cosmos.base.v1beta1.Coin dust = 3 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"dust\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "dust"
+  ];
+  PrecDecCoin dec_coin_out = 4 [
+    (gogoproto.moretags) = "yaml:\"dec_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_coin_out"
+  ];
+  repeated PrecDecCoin dec_dust = 5 [
+    (gogoproto.moretags) = "yaml:\"dec_dust\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_dust"
   ];
 }
 

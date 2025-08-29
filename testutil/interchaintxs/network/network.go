@@ -19,10 +19,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/neutron-org/neutron/v7/app/params"
-	"github.com/neutron-org/neutron/v7/testutil/apptesting"
+	"github.com/neutron-org/neutron/v8/app/params"
+	"github.com/neutron-org/neutron/v8/testutil/apptesting"
 
-	"github.com/neutron-org/neutron/v7/app"
+	"github.com/neutron-org/neutron/v8/app"
 )
 
 type (

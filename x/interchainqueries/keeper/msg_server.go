@@ -18,8 +18,8 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
-	"github.com/neutron-org/neutron/v7/utils/stateverification"
-	"github.com/neutron-org/neutron/v7/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v8/utils/stateverification"
+	"github.com/neutron-org/neutron/v8/x/interchainqueries/types"
 )
 
 var _ types.MsgServer = msgServer{}

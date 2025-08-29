@@ -9,9 +9,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/neutron-org/neutron/v7/testutil"
-	testutil_keeper "github.com/neutron-org/neutron/v7/testutil/feerefunder/keeper"
-	mock_types "github.com/neutron-org/neutron/v7/testutil/mocks/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/testutil"
+	testutil_keeper "github.com/neutron-org/neutron/v8/testutil/feerefunder/keeper"
+	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/feerefunder/types"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
@@ -19,7 +19,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v7/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/types"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )

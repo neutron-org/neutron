@@ -8,9 +8,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	mock_types "github.com/neutron-org/neutron/v7/testutil/mocks/revenue/types"
-	testkeeper "github.com/neutron-org/neutron/v7/testutil/revenue/keeper"
-	"github.com/neutron-org/neutron/v7/x/revenue/types"
+	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/revenue/types"
+	testkeeper "github.com/neutron-org/neutron/v8/testutil/revenue/keeper"
+	"github.com/neutron-org/neutron/v8/x/revenue/types"
 )
 
 func TestTWAP(t *testing.T) {
