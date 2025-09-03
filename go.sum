@@ -839,8 +839,8 @@ github.com/nats-io/nkeys v0.1.3/go.mod h1:xpnFELMwJABBLVhffcfd1MZx6VsNRFpEugbxzi
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/neutron-org/admin-module/v2 v2.0.3 h1:zTME5kRRMB4uE/DbCEU84mGn3EKDNXZEw5+XMO8+Q7A=
 github.com/neutron-org/admin-module/v2 v2.0.3/go.mod h1:RfOyabXsdJ5btcOKyKPZDYiZhtuKFubbJMOb8EJZtvA=
-github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250512094026-b5afd837c4de h1:WDOQ4cvcF99BY2O1c6UYvnY2Y+Bd31kJf5abFQCuMGA=
-github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250512094026-b5afd837c4de/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
+github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250808012539-4561deb913c6 h1:kg5up1YNO/0UwPvfJw6Lzd1DhC6Gz41H4ej1jjgh7Bk=
+github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250808012539-4561deb913c6/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464 h1:5mbzd7sqp8pPYWzIhIYKFovMRBL0ru24N2E6dIWjL0o=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464/go.mod h1:DUa6djUsTeMOrbrcIZqWSVxU9IZNCXp96ruaojyBNpc=
 github.com/neutron-org/wasmd v0.54.1-neutron h1:aIEOBz00VJmt49azOobu/OnKeHEj/Pm6oGPnQ8Ju1LI=

@@ -227,7 +227,7 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.54.1-neutron
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3
-	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250512094026-b5afd837c4de
+	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250808012539-4561deb913c6
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
