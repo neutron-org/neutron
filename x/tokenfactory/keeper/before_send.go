@@ -150,7 +150,7 @@ func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, fro
 	if limit > ctx.GasMeter().GasRemaining() {
 		limit = ctx.GasMeter().GasRemaining()
 	}
-	cacheCtx, writeFn := createCachedContext(ctx, types.BeforeSendHookGasLimit)
+	cacheCtx, writeFn := createCachedContext(ctx, limit)
 
 	// get msgBz, either BlockBeforeSend or TrackBeforeSend
 	msgBz, err := k.constructCosmwasmMsg(blockBeforeSend, from, to, coin)
