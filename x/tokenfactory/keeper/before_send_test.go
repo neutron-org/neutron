@@ -273,7 +273,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 		// defines outer context gas limit
 		// controlled to test case when there is out of gas for outer gas limit
 		// but no out of gas for inner gas limit
-		gasLimit      uint64
+		outerGasLimit uint64
 		expectedError bool
 		expectedPanic bool
 	}{
@@ -282,7 +282,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 			wasmFile:        infiniteTrackBeforeSendContract,
 			blockBeforeSend: false,
 			useHookedDenom:  true,
-			gasLimit:        30_000_000,
+			outerGasLimit:   30_000_000,
 			expectedError:   false,
 			expectedPanic:   false,
 		},
@@ -291,7 +291,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 			wasmFile:        infiniteTrackBeforeSendContract,
 			blockBeforeSend: true,
 			useHookedDenom:  true,
-			gasLimit:        30_000_000,
+			outerGasLimit:   30_000_000,
 			expectedError:   true,
 			expectedPanic:   false,
 		},
@@ -300,25 +300,25 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 			wasmFile:        infiniteTrackBeforeSendContract,
 			blockBeforeSend: false,
 			useHookedDenom:  true,
-			gasLimit:        300_000, // lower than 500_000 inner constant, so it should trigger outer context outOfGas panic
+			outerGasLimit:   300_000, // lower than 500_000 inner constant, so it should trigger outer context outOfGas panic
 			expectedError:   false,
 			expectedPanic:   true,
 		},
 		{
-			name:            "block_before_send: sending tokenfactory denom with infinite contract should panic when outer layer gas is breached on blockBeforeSend",
+			name:            "block_before_send: sending tokenfactory denom with infinite contract should return error when outer layer gas is breached on blockBeforeSend since it will limit the inner limit as well",
 			wasmFile:        infiniteTrackBeforeSendContract,
 			blockBeforeSend: true,
 			useHookedDenom:  true,
-			gasLimit:        300_000, // lower than 500_000 inner constant, so it should trigger outer context outOfGas panic
-			expectedError:   false,
-			expectedPanic:   true,
+			outerGasLimit:   300_000, // lower than 500_000 inner constant, so it should trigger outer context outOfGas panic
+			expectedError:   true,
+			expectedPanic:   false,
 		},
 		{
 			name:            "sending non subscribed denom from module to module with infinite contract should not panic or return error",
 			wasmFile:        infiniteTrackBeforeSendContract,
 			useHookedDenom:  false,
 			blockBeforeSend: false,
-			gasLimit:        30_000_000,
+			outerGasLimit:   30_000_000,
 			expectedError:   false,
 			expectedPanic:   false,
 		},
@@ -327,7 +327,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 			wasmFile:        no100Contract,
 			useHookedDenom:  true,
 			blockBeforeSend: true,
-			gasLimit:        30_000_000,
+			outerGasLimit:   30_000_000,
 			expectedError:   true,
 			expectedPanic:   false,
 		},
@@ -376,13 +376,14 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 			_, err = suite.msgServer.SetBeforeSendHook(suite.ChainA.GetContext(), types.NewMsgSetBeforeSendHook(suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress().String(), factoryDenom, cosmwasmAddress.String()))
 			suite.Require().NoError(err, "test: %v", tc.name)
 
-			ctx := suite.ChainA.GetContext().WithGasMeter(storetypes.NewGasMeter(tc.gasLimit))
+			ctx := suite.ChainA.GetContext().WithGasMeter(storetypes.NewGasMeter(tc.outerGasLimit))
 
 			if tc.blockBeforeSend {
 				if tc.expectedPanic {
 					suite.Require().Panics(func() {
 						err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(
-							ctx, suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress(),
+							ctx,
+							suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress(),
 							suite.ChainA.SenderAccounts[1].SenderAccount.GetAddress(),
 							tokenToSend,
 						)
