@@ -4,19 +4,16 @@ set -eo pipefail
 
 protoc_install_proto_gen_doc() {
   echo "Installing protobuf protoc-gen-doc plugin"
-  (go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest 2> /dev/null)
+  go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest 2>/dev/null
 }
 
 echo "Generating gogo proto code"
-cd proto
-proto_dirs=$(find ./ -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
-for dir in $proto_dirs; do
-  for file in $(find "${dir}" -maxdepth 1 -name '*.proto'); do
-    echo $file
-    if grep "option go_package" $file &> /dev/null ; then
-      buf generate --template buf.gen.gogo.yml $file
-    fi
-  done
+cd proto || exit 1
+find . -name '*.proto' -print0 | while IFS= read -r -d '' file; do
+  echo "$file"
+  if grep -q "option go_package" "$file"; then
+    buf generate --template buf.gen.gogo.yml "$file"
+  fi
 done
 
 #protoc_install_proto_gen_doc
@@ -27,5 +24,6 @@ done
 cd ..
 
 # move proto files to the right places
+mkdir -p x
 cp -r github.com/neutron-org/neutron/v8/x/* x/
-rm -rf github.com
+rm -rf github.com/neutron-org
