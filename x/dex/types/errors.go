@@ -37,7 +37,7 @@ var (
 	ErrTickOutsideRange = sdkerrors.Register(
 		ModuleName,
 		1117,
-		"abs(tick) + fee must be < 559,680",
+		"abs(tick) + fee must be < 529,750",
 	)
 	ErrInvalidPoolDenom = sdkerrors.Register(
 		ModuleName,

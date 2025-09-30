@@ -5,18 +5,21 @@ import (
 	_ "embed"
 	"encoding/gob"
 	fmt "fmt"
+	"math/big"
+	"os"
 
 	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 	"github.com/neutron-org/neutron/v8/x/dex/utils"
 )
 
 const (
-	// NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error
+	// NOTE: 529_750 is the highest possible tick at which price can be calculated with a < 1% error and all prices are unique for negative ticks
 	// when using 27 digit decimal precision (via prec_dec).
 	// The error rate for very negative ticks approaches zero, so there is no concern there
-	MaxTickExp uint64 = 559_680
-	MinPrice   string = "0.000000000000000000000000495"
-	MaxPrice   string = "2020125331305056766452345.127500016657360222036663651"
+	MaxTickExp       uint64 = 529_750
+	MinPrice         string = "0.000000000000000000000009871"
+	MaxPrice         string = "101297777749006516066611.914775584130706898691360168"
+	PriceArrayOffset int64  = int64(MaxTickExp)
 )
 
 //go:embed precomputed_prices.gob
@@ -57,25 +60,19 @@ func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 	if IsTickOutOfRange(relativeTickIndex) {
 		return math_utils.ZeroPrecDec(), ErrTickOutsideRange
 	}
-	if relativeTickIndex < 0 {
-		return math_utils.OnePrecDec().Quo(PrecomputedPrices[-relativeTickIndex]), nil
-	}
 	// else
-	return PrecomputedPrices[relativeTickIndex], nil
+	return PrecomputedPrices[relativeTickIndex+PriceArrayOffset], nil
 }
 
-func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
-	if price.LT(math_utils.OnePrecDec()) {
-		panic("Can only lookup prices >= 1")
-	}
-	var left uint64 // = 0
-	right := MaxTickExp
+func BinarySearchPriceToTick(price math_utils.PrecDec) int64 {
+	var left int64 = 0
+	right := int64(MaxTickExp) * 2
 
 	// Binary search to find the closest precomputed value
 	for left < right {
 		switch mid := (left + right) / 2; {
 		case PrecomputedPrices[mid].Equal(price):
-			return mid
+			return mid - PriceArrayOffset
 		case PrecomputedPrices[mid].LT(price):
 			left = mid + 1
 		default:
@@ -85,7 +82,7 @@ func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 	}
 
 	// If exact match is not found, return the upper bound
-	return right
+	return right - PriceArrayOffset
 }
 
 func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
@@ -93,18 +90,9 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 		return 0, ErrPriceOutsideRange
 	}
 
-	if price.LT(math_utils.OnePrecDec()) {
-		// We only have a lookup table for prices >= 1
-		// So we invert the price for the lookup
-		invPrice := math_utils.OnePrecDec().Quo(price)
-		tick := BinarySearchPriceToTick(invPrice)
-		// flip the sign back the other direction
-		return int64(tick) * -1, nil //nolint:gosec
-	}
-
 	tick := BinarySearchPriceToTick(price)
 
-	return int64(tick), nil //nolint:gosec
+	return tick, nil
 }
 
 func MustCalcPrice(relativeTickIndex int64) math_utils.PrecDec {
@@ -137,34 +125,63 @@ func ValidateTickFee(tick int64, fee uint64) error {
 	return nil
 }
 
-// // Used for generating the precomputedPrice.gob file
-// const PrecomputedPricesFile = "../types/precomputed_prices.gob"
+// Used for generating the precomputedPrice.gob file
+const PrecomputedPricesFile = "./x/dex/types/precomputed_prices.gob"
 
-// func generatePrecomputedPrices() []math_utils.PrecDec {
-//	precomputedPowers := make([]math_utils.PrecDec, MaxTickExp+1)
-//	precomputedPowers[0] = math_utils.OnePrecDec() // 1.0001^0 = 1
-//	for i := 1; i <= int(MaxTickExp); i++ {
-//		precomputedPowers[i] = precomputedPowers[i-1].Mul(utils.BasePrice())
-//	}
-//	return precomputedPowers
-// }
+func BigFloatToPrecDec(f *big.Float) math_utils.PrecDec {
+	var tenPow27 = new(big.Int).Exp(big.NewInt(10), big.NewInt(math_utils.Precision), nil)
+	prec := f.Prec()
 
-// func WritePrecomputedPricesToFile() error {
-//	computedPrices := generatePrecomputedPrices()
-//	file, err := os.Create(PrecomputedPricesFile)
-//	if err != nil {
-//		panic(fmt.Sprintf("Error creating precomputed power file: %v", err.Error()))
-//	}
-//	defer file.Close()
-//	stringPowers := make([]string, len(computedPrices))
-//	for i, power := range computedPrices {
-//		stringPowers[i] = power.String()
-//	}
+	// scaled = f * 10^27 (exact scale), with rounding to nearest
+	scaled := new(big.Float).SetPrec(prec)
+	scaled.Mul(f, new(big.Float).SetInt(tenPow27))
+	i, _ := scaled.Int(nil)
+	return math_utils.NewPrecDecFromBigIntWithPrec(i, math_utils.Precision)
+}
 
-//	encoder := gob.NewEncoder(file)
-//	err = encoder.Encode(stringPowers)
-//	if err != nil {
-//		panic(fmt.Sprintf("Error writing precomputed powers to file: %v", err.Error()))
-//	}
-//	return nil
-// }
+// Calculate all tick prices using Big.Float with 256 precision and then convert to PrecDec
+func generatePrecomputedPrices() []math_utils.PrecDec {
+
+	precomputedPowers := make([]math_utils.PrecDec, MaxTickExp*2+1)
+	precomputedPowers[0] = math_utils.OnePrecDec() // 1.0001^0 = 1
+	base := big.NewFloat(1.0001).SetPrec(256)
+	prevVal := big.NewFloat(1).SetPrec(256)
+	// Generate all positive tick prices
+	for i := 1; i <= int(MaxTickExp); i++ {
+		nextVal := new(big.Float).Mul(prevVal, base)
+		precomputedPowers[int64(i)+PriceArrayOffset] = BigFloatToPrecDec(nextVal)
+		prevVal = nextVal
+	}
+	precomputedPowers[PriceArrayOffset] = math_utils.OnePrecDec()
+	// Generate all negative tick prices
+	prevVal = big.NewFloat(1).SetPrec(256)
+	for i := int64(-1); i >= int64(MaxTickExp)*-1; i-- {
+		nextVal := new(big.Float).Quo(prevVal, base)
+		precomputedPowers[int64(i)+PriceArrayOffset] = BigFloatToPrecDec(nextVal)
+		fmt.Println(i, BigFloatToPrecDec(nextVal))
+		prevVal = nextVal
+		fmt.Println(i, prevVal)
+
+	}
+	return precomputedPowers
+}
+
+func WritePrecomputedPricesToFile() error {
+	computedPrices := generatePrecomputedPrices()
+	file, err := os.Create(PrecomputedPricesFile)
+	if err != nil {
+		panic(fmt.Sprintf("Error creating precomputed power file: %v", err.Error()))
+	}
+	defer file.Close()
+	stringPowers := make([]string, len(computedPrices))
+	for i, power := range computedPrices {
+		stringPowers[i] = power.String()
+	}
+
+	encoder := gob.NewEncoder(file)
+	err = encoder.Encode(stringPowers)
+	if err != nil {
+		panic(fmt.Sprintf("Error writing precomputed powers to file: %v", err.Error()))
+	}
+	return nil
+}
