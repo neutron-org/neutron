@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	// NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error
+	// NOTE: 529_715 is the highest possible tick at which price can be calculated with a < 1% error and all prices are unique for negative ticks
 	// when using 27 digit decimal precision (via prec_dec).
 	// The error rate for very negative ticks approaches zero, so there is no concern there
-	MaxTickExp uint64 = 559_680
+	MaxTickExp uint64 = 529_715
 	MinPrice   string = "0.000000000000000000000000495"
 	MaxPrice   string = "2020125331305056766452345.127500016657360222036663651"
 )
