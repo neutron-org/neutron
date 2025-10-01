@@ -14,8 +14,8 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
-	globalfeeante "github.com/neutron-org/neutron/v6/x/globalfee/ante"
-	globalfeekeeper "github.com/neutron-org/neutron/v6/x/globalfee/keeper"
+	globalfeeante "github.com/neutron-org/neutron/v8/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v8/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -27,7 +27,7 @@ type HandlerOptions struct {
 	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
 	GlobalFeeKeeper       globalfeekeeper.Keeper
-	WasmConfig            *wasmTypes.WasmConfig
+	WasmConfig            *wasmTypes.NodeConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 	FeeMarketKeeper       feemarketante.FeeMarketKeeper
 }
@@ -78,7 +78,7 @@ func NewAnteHandler(options HandlerOptions, _ log.Logger) (sdk.AnteHandler, erro
 		//ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		//ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		//ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
-		//ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		//NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 	}

@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v6/x/harpoon/keeper"
-	"github.com/neutron-org/neutron/v6/x/harpoon/types"
+	"github.com/neutron-org/neutron/v8/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v8/x/harpoon/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

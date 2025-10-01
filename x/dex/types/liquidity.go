@@ -1,12 +1,10 @@
 package types
 
 import (
-	"cosmossdk.io/math"
-
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 )
 
 type Liquidity interface {
-	Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *math.Int) (inAmount, outAmount math.Int)
+	Swap(maxAmountTakerIn math_utils.PrecDec, maxAmountMakerOut *math_utils.PrecDec) (inAmount, outAmount math_utils.PrecDec)
 	Price() math_utils.PrecDec
 }

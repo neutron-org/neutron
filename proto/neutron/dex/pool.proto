@@ -4,7 +4,7 @@ package neutron.dex;
 import "gogoproto/gogo.proto";
 import "neutron/dex/pool_reserves.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
 
 // NOTE: This struct is never actually stored in the KV store. It is merely a
 // convenience wrapper for holding both sides of a pool.

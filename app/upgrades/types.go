@@ -15,24 +15,24 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
-	harpoonkeeper "github.com/neutron-org/neutron/v6/x/harpoon/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v6/x/revenue/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v8/x/feerefunder/keeper"
 
-	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
-	ibcratelimitkeeper "github.com/neutron-org/neutron/v6/x/ibc-rate-limit/keeper"
+	harpoonkeeper "github.com/neutron-org/neutron/v8/x/harpoon/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v8/x/revenue/keeper"
 
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v6/x/dynamicfees/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v8/x/ibc-rate-limit/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v6/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v6/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v6/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v6/x/tokenfactory/keeper"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v8/x/dynamicfees/keeper"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v8/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v8/x/feeburner/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v8/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v8/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
@@ -65,11 +65,9 @@ type UpgradeKeepers struct {
 	SlashingKeeper     slashingkeeper.Keeper
 	ParamsKeeper       paramskeeper.Keeper
 	CapabilityKeeper   *capabilitykeeper.Keeper
-	AuctionKeeper      auctionkeeper.Keeper
 	ContractManager    contractmanagerkeeper.Keeper
 	AdminModule        adminmodulekeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper
-	ConsumerKeeper     *ccvconsumerkeeper.Keeper
 	MarketmapKeeper    *marketmapkeeper.Keeper
 	FeeMarketKeeper    *feemarketkeeper.Keeper
 	DynamicfeesKeeper  *dynamicfeeskeeper.Keeper
@@ -80,6 +78,7 @@ type UpgradeKeepers struct {
 	WasmKeeper         *wasmkeeper.Keeper
 	HarpoonKeeper      *harpoonkeeper.Keeper
 	RevenueKeeper      *revenuekeeper.Keeper
+	FeerefunderKeeper  *feerefunderkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace

@@ -12,7 +12,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v8/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -21,9 +21,9 @@ import (
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	"github.com/neutron-org/neutron/v6/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v6/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v8/testutil"
+	"github.com/neutron-org/neutron/v8/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v8/x/interchainqueries/types"
 )
 
 var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
@@ -988,7 +988,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			iqtypes.ErrInvalidType,
+			iqtypes.ErrInvalidSubmittedResult,
 		},
 		{
 			"non-registered key in KV result",
@@ -1238,7 +1238,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			iqtypes.ErrInvalidProof,
+			iqtypes.ErrInvalidSubmittedResult,
 		},
 		{
 			"query result height is too old",

@@ -3,7 +3,7 @@ package neutron.dex;
 
 import "neutron/dex/pair_id.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
 
 message PoolMetadata {
   uint64 id = 1;

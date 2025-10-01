@@ -8,7 +8,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 )
 
 // Return the base value for price, 1.0001
@@ -44,6 +44,17 @@ func MaxIntArr(vals []sdkmath.Int) sdkmath.Int {
 	}
 
 	return maxInt
+}
+
+func MinPrecDecArr(vals []math_utils.PrecDec) math_utils.PrecDec {
+	minVal := vals[0]
+	for _, val := range vals {
+		if val.LT(minVal) {
+			minVal = val
+		}
+	}
+
+	return minVal
 }
 
 func Uint64ToSortableString(i uint64) string {

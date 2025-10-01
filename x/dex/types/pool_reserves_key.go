@@ -3,8 +3,8 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/utils"
 )
 
 var _ TickLiquidityKey = (*PoolReservesKey)(nil)

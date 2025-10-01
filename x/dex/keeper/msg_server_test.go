@@ -7,19 +7,20 @@ import (
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v6/testutil/apptesting"
-	"github.com/neutron-org/neutron/v6/testutil/common/sample"
-	testkeeper "github.com/neutron-org/neutron/v6/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v6/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v6/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v8/testutil/apptesting"
+	"github.com/neutron-org/neutron/v8/testutil/common/sample"
+	testkeeper "github.com/neutron-org/neutron/v8/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v8/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // Test suite
@@ -74,13 +75,16 @@ func (s *DexTestSuite) SetupTest() {
 
 // Fund accounts
 
+func (s *DexTestSuite) fundAccountBalancesInt(account sdk.AccAddress, aBalance, bBalance sdkmath.Int) {
+	balances := sdk.NewCoins(testutils.NewACoin(aBalance), testutils.NewBCoin(bBalance))
+	testutils.FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
+	s.assertAccountBalancesInt(account, aBalance, bBalance)
+}
+
 func (s *DexTestSuite) fundAccountBalances(account sdk.AccAddress, aBalance, bBalance int64) {
 	aBalanceInt := sdkmath.NewInt(aBalance).Mul(denomMultiple)
 	bBalanceInt := sdkmath.NewInt(bBalance).Mul(denomMultiple)
-	balances := sdk.NewCoins(testutils.NewACoin(aBalanceInt), testutils.NewBCoin(bBalanceInt))
-
-	testutils.FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
-	s.assertAccountBalances(account, aBalance, bBalance)
+	s.fundAccountBalancesInt(account, aBalanceInt, bBalanceInt)
 }
 
 func (s *DexTestSuite) fundAccountBalancesWithDenom(
@@ -646,12 +650,12 @@ func (s *DexTestSuite) deposits(
 	return s.msgServer.Deposit(s.Ctx, msg)
 }
 
-func (s *DexTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (sdkmath.Int, sdkmath.Int) {
+func (s *DexTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (math_utils.PrecDec, math_utils.PrecDec) {
 	pool, err := s.App.DexKeeper.GetOrInitPool(s.Ctx, defaultPairID, tickIndex, fee)
 	s.Assert().NoError(err)
 
-	liquidityA := pool.LowerTick0.ReservesMakerDenom
-	liquidityB := pool.UpperTick1.ReservesMakerDenom
+	liquidityA := pool.LowerTick0.DecReservesMakerDenom
+	liquidityB := pool.UpperTick1.DecReservesMakerDenom
 
 	return liquidityA, liquidityB
 }
@@ -660,12 +664,12 @@ func (s *DexTestSuite) getLiquidityAtTickWithDenom(
 	pairID *types.PairID,
 	tickIndex int64,
 	fee uint64,
-) (sdkmath.Int, sdkmath.Int) {
+) (math_utils.PrecDec, math_utils.PrecDec) {
 	pool, err := s.App.DexKeeper.GetOrInitPool(s.Ctx, pairID, tickIndex, fee)
 	s.Assert().NoError(err)
 
-	liquidityA := pool.LowerTick0.ReservesMakerDenom
-	liquidityB := pool.UpperTick1.ReservesMakerDenom
+	liquidityA := pool.LowerTick0.DecReservesMakerDenom
+	liquidityB := pool.UpperTick1.DecReservesMakerDenom
 
 	return liquidityA, liquidityB
 }
@@ -1208,9 +1212,9 @@ func (s *DexTestSuite) assertLiquidityAtTickInt(
 ) {
 	liquidityA, liquidityB := s.getLiquidityAtTick(tickIndex, fee)
 	s.Assert().
-		True(amountA.Equal(liquidityA), "liquidity A: actual %s, expected %s", liquidityA, amountA)
+		True(amountA.Equal(liquidityA.TruncateInt()), "liquidity A: actual %s, expected %s", liquidityA, amountA)
 	s.Assert().
-		True(amountB.Equal(liquidityB), "liquidity B: actual %s, expected %s", liquidityB, amountB)
+		True(amountB.Equal(liquidityB.TruncateInt()), "liquidity B: actual %s, expected %s", liquidityB, amountB)
 }
 
 func (s *DexTestSuite) assertLiquidityAtTick(
@@ -1231,9 +1235,9 @@ func (s *DexTestSuite) assertLiquidityAtTickWithDenomInt(
 ) {
 	liquidity0, liquidity1 := s.getLiquidityAtTickWithDenom(pairID, tickIndex, fee)
 	s.Assert().
-		True(expected0.Equal(liquidity0), "liquidity 0: actual %s, expected %s", liquidity0, expected0)
+		True(expected0.Equal(liquidity0.TruncateInt()), "liquidity 0: actual %s, expected %s", liquidity0, expected0)
 	s.Assert().
-		True(expected1.Equal(liquidity1), "liquidity 1: actual %s, expected %s", liquidity1, expected1)
+		True(expected1.Equal(liquidity1.TruncateInt()), "liquidity 1: actual %s, expected %s", liquidity1, expected1)
 }
 
 func (s *DexTestSuite) assertLiquidityAtTickWithDenom(
@@ -1385,10 +1389,33 @@ func (s *DexTestSuite) assertLimitLiquidityAtTickInt(
 		tradePairID,
 		tickIndexTakerToMaker,
 	)
-	liquidity := sdkmath.ZeroInt()
+	liquidity := math_utils.ZeroPrecDec()
 	for _, t := range tranches {
 		if !t.IsExpired(s.Ctx) {
-			liquidity = liquidity.Add(t.ReservesMakerDenom)
+			liquidity = liquidity.Add(t.DecReservesMakerDenom)
+		}
+	}
+
+	s.Assert().
+		True(amount.Equal(liquidity.TruncateInt()), "Incorrect liquidity: expected %s, have %s", amount.String(), liquidity.TruncateInt().String())
+}
+
+func (s *DexTestSuite) assertLimitLiquidityAtTickDec(
+	selling string,
+	tickIndexNormalized int64,
+	amount math_utils.PrecDec,
+) {
+	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
+	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
+	tranches := s.App.DexKeeper.GetAllLimitOrderTrancheAtIndex(
+		s.Ctx,
+		tradePairID,
+		tickIndexTakerToMaker,
+	)
+	liquidity := math_utils.ZeroPrecDec()
+	for _, t := range tranches {
+		if !t.IsExpired(s.Ctx) {
+			liquidity = liquidity.Add(t.DecReservesMakerDenom)
 		}
 	}
 
@@ -1493,7 +1520,7 @@ func (s *DexTestSuite) getLimitFilledLiquidityAtTickAtIndex(
 	})
 	s.Assert().True(found, "Failed to get limit order filled reserves for index %s", trancheKey)
 
-	return tranche.ReservesTakerDenom
+	return tranche.DecReservesTakerDenom.TruncateInt()
 }
 
 func (s *DexTestSuite) getLimitReservesAtTickAtKey(
@@ -1510,7 +1537,7 @@ func (s *DexTestSuite) getLimitReservesAtTickAtKey(
 	})
 	s.Assert().True(found, "Failed to get limit order reserves for index %s", trancheKey)
 
-	return tranche.ReservesMakerDenom
+	return tranche.DecReservesMakerDenom.TruncateInt()
 }
 
 func (s *DexTestSuite) assertNLimitOrderExpiration(expected int) {
@@ -1532,6 +1559,11 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 
 func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
 	s.Ctx = s.Ctx.WithBlockTime(blockTime)
+	// fill in empty CometBFT info just to avoid nil pointer panics (we don't care about validity of the info in these tests)
+	s.Ctx = s.Ctx.WithCometInfo(baseapp.NewBlockInfo(nil, nil, nil, abci.CommitInfo{
+		Round: 0,
+		Votes: nil,
+	}))
 	_, err := s.App.BeginBlocker(s.Ctx)
 	s.NoError(err)
 }
@@ -1799,21 +1831,6 @@ func TestMsgDepositValidate(t *testing.T) {
 				Options:         []*types.DepositOptions{{DisableAutoswap: true, SwapOnDeposit: true}},
 			},
 			types.ErrSwapOnDepositWithoutAutoswap,
-		},
-		{
-			"invalid slop tolerance",
-			types.MsgDeposit{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{1},
-				TickIndexesAToB: []int64{0},
-				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
-				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
-				Options:         []*types.DepositOptions{{DisableAutoswap: false, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10001}},
-			},
-			types.ErrInvalidSlopTolerance,
 		},
 	}
 

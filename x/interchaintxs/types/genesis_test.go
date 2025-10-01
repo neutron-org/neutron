@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v8/x/interchaintxs/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

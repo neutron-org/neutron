@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/testutil"
+	"github.com/neutron-org/neutron/v8/testutil"
 
-	"github.com/neutron-org/neutron/v6/x/harpoon/types"
+	"github.com/neutron-org/neutron/v8/x/harpoon/types"
 )
 
 func TestMsgManageHookSubscriptionValidate(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // ExistingTokenAHolders
@@ -66,14 +66,14 @@ func parseLOLiquidityDistribution(existingShareHolders, behindEnemyLine string, 
 	case existingShareHolders == NoneLO && behindEnemyLine == BehindEnemyLineLessLimit:
 		// half "taker" deposit. We buy all of it by placing opposite maker order
 		return LiquidityDistribution{
-			TokenA: sdk.NewCoin(tokenA, math.ZeroInt()),
-			TokenB: sdk.NewCoin(tokenB, BaseTokenAmountInt.QuoRaw(2)),
+			TokenA: dextypes.NewPrecDecCoin(tokenA, math_utils.ZeroPrecDec()),
+			TokenB: dextypes.NewPrecDecCoin(tokenB, BaseTokenAmountDec.Quo(math_utils.NewPrecDec(2))),
 		}
 	case existingShareHolders == NoneLO && behindEnemyLine == BehindEnemyLineGreaterLimit:
 		// double "taker" deposit. We spend whole limit to partially consume LO.
-		return LiquidityDistribution{TokenA: sdk.NewCoin(tokenA, math.ZeroInt()), TokenB: sdk.NewCoin(tokenB, math.NewInt(4).Mul(BaseTokenAmountInt))}
+		return LiquidityDistribution{TokenA: dextypes.NewPrecDecCoin(tokenA, math_utils.ZeroPrecDec()), TokenB: dextypes.NewPrecDecCoin(tokenB, BaseTokenAmountDec.Mul(math_utils.NewPrecDec(4)))}
 	default:
-		return LiquidityDistribution{TokenA: sdk.NewCoin(tokenA, math.NewInt(1).Mul(BaseTokenAmountInt)), TokenB: sdk.NewCoin(tokenB, math.NewInt(1).Mul(BaseTokenAmountInt))}
+		return LiquidityDistribution{TokenA: dextypes.NewPrecDecCoin(tokenA, BaseTokenAmountDec), TokenB: dextypes.NewPrecDecCoin(tokenB, BaseTokenAmountDec)}
 	}
 }
 
@@ -118,41 +118,41 @@ func hydrateAllPlaceLOMakerTestCases(paramsList []map[string]string) []placeLimi
 
 func (s *DexStateTestSuite) setupLoState(params placeLimitOrderMakerTestParams) (trancheKey string) {
 	liquidityDistr := params.ExistingLOLiquidityDistribution
-	coins := sdk.NewCoins(liquidityDistr.TokenA, liquidityDistr.TokenB)
+	coins := dextypes.NewPrecDecCoins(liquidityDistr.TokenA, liquidityDistr.TokenB)
 	switch params.BehindEnemyLine {
 	case BehindEnemyLineNo:
 		switch params.ExistingTokenAHolders {
 		case OneOtherLO:
-			s.FundAcc(s.alice, coins)
-			res := s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenA, params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
+			s.FundAcc(s.alice, coins.TruncateToCoins())
+			res := s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenA.TruncateToCoin(), params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
 			trancheKey = res.TrancheKey
 
 		case OneOtherAndCreatorLO:
-			s.FundAcc(s.alice, coins)
-			res := s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenA, params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
+			s.FundAcc(s.alice, coins.TruncateToCoins())
+			res := s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenA.TruncateToCoin(), params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
 			trancheKey = res.TrancheKey
 
-			s.FundAcc(s.creator, coins)
-			s.makePlaceLOSuccess(s.creator, params.ExistingLOLiquidityDistribution.TokenA, params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
+			s.FundAcc(s.creator, coins.TruncateToCoins())
+			s.makePlaceLOSuccess(s.creator, params.ExistingLOLiquidityDistribution.TokenA.TruncateToCoin(), params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
 
 		case CreatorLO:
-			s.FundAcc(s.creator, coins)
-			res := s.makePlaceLOSuccess(s.creator, params.ExistingLOLiquidityDistribution.TokenA, params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
+			s.FundAcc(s.creator, coins.TruncateToCoins())
+			res := s.makePlaceLOSuccess(s.creator, params.ExistingLOLiquidityDistribution.TokenA.TruncateToCoin(), params.ExistingLOLiquidityDistribution.TokenB.Denom, DefaultSellPrice, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
 			trancheKey = res.TrancheKey
 		}
 
 		if params.PreexistingTraded {
-			s.FundAcc(s.bob, coins)
+			s.FundAcc(s.bob, coins.TruncateToCoins())
 			// bob trades over the tranche
 			InTokenBAmount := sdk.NewCoin(params.ExistingLOLiquidityDistribution.TokenB.Denom, BaseTokenAmountInt.QuoRaw(2))
 			s.makePlaceLOSuccess(s.alice, InTokenBAmount, params.ExistingLOLiquidityDistribution.TokenA.Denom, DefaultBuyPriceTaker, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
 		}
 	case BehindEnemyLineLessLimit:
-		s.FundAcc(s.alice, coins)
-		s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenB, params.ExistingLOLiquidityDistribution.TokenA.Denom, DefaultBuyPriceTaker, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
+		s.FundAcc(s.alice, coins.TruncateToCoins())
+		s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenB.TruncateToCoin(), params.ExistingLOLiquidityDistribution.TokenA.Denom, DefaultBuyPriceTaker, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
 	case BehindEnemyLineGreaterLimit:
-		s.FundAcc(s.alice, coins)
-		s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenB, params.ExistingLOLiquidityDistribution.TokenA.Denom, DefaultBuyPriceTaker, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
+		s.FundAcc(s.alice, coins.TruncateToCoins())
+		s.makePlaceLOSuccess(s.alice, params.ExistingLOLiquidityDistribution.TokenB.TruncateToCoin(), params.ExistingLOLiquidityDistribution.TokenA.Denom, DefaultBuyPriceTaker, dextypes.LimitOrderType_GOOD_TIL_CANCELLED, nil)
 	}
 	return trancheKey
 }
@@ -160,8 +160,8 @@ func (s *DexStateTestSuite) setupLoState(params placeLimitOrderMakerTestParams) 
 // assertLiquidity checks the amount of tokens at dex balance exactly equals the amount in all tranches (active + inactive)
 // TODO: add AMM pools to check
 func (s *DexStateTestSuite) assertLiquidity(id dextypes.PairID) {
-	TokenAInReserves := math.ZeroInt()
-	TokenBInReserves := math.ZeroInt()
+	TokenAInReserves := math_utils.ZeroPrecDec()
+	TokenBInReserves := math_utils.ZeroPrecDec()
 
 	// Active tranches A -> B
 	tranches, err := s.App.DexKeeper.LimitOrderTrancheAll(s.Ctx, &dextypes.QueryAllLimitOrderTrancheRequest{
@@ -171,8 +171,8 @@ func (s *DexStateTestSuite) assertLiquidity(id dextypes.PairID) {
 	})
 	s.Require().NoError(err)
 	for _, t := range tranches.LimitOrderTranche {
-		TokenAInReserves = TokenAInReserves.Add(t.ReservesMakerDenom)
-		TokenBInReserves = TokenBInReserves.Add(t.ReservesTakerDenom)
+		TokenAInReserves = TokenAInReserves.Add(t.DecReservesMakerDenom)
+		TokenBInReserves = TokenBInReserves.Add(t.DecReservesTakerDenom)
 	}
 
 	// Active tranches B -> A
@@ -183,8 +183,8 @@ func (s *DexStateTestSuite) assertLiquidity(id dextypes.PairID) {
 	})
 	s.Require().NoError(err)
 	for _, t := range tranches.LimitOrderTranche {
-		TokenAInReserves = TokenAInReserves.Add(t.ReservesTakerDenom)
-		TokenBInReserves = TokenBInReserves.Add(t.ReservesMakerDenom)
+		TokenAInReserves = TokenAInReserves.Add(t.DecReservesTakerDenom)
+		TokenBInReserves = TokenBInReserves.Add(t.DecReservesMakerDenom)
 	}
 
 	// Inactive tranches (expired or filled)
@@ -196,25 +196,25 @@ func (s *DexStateTestSuite) assertLiquidity(id dextypes.PairID) {
 	for _, t := range inactiveTranches.InactiveLimitOrderTranche {
 		// A -> B
 		if t.Key.TradePairId.MakerDenom == id.Token0 || t.Key.TradePairId.TakerDenom == id.Token1 {
-			TokenAInReserves = TokenAInReserves.Add(t.ReservesMakerDenom)
-			TokenBInReserves = TokenBInReserves.Add(t.ReservesTakerDenom)
+			TokenAInReserves = TokenAInReserves.Add(t.DecReservesMakerDenom)
+			TokenBInReserves = TokenBInReserves.Add(t.DecReservesTakerDenom)
 		}
 		// B -> A
 		if t.Key.TradePairId.MakerDenom == id.Token1 || t.Key.TradePairId.TakerDenom == id.Token0 {
-			TokenAInReserves = TokenAInReserves.Add(t.ReservesTakerDenom)
-			TokenBInReserves = TokenBInReserves.Add(t.ReservesMakerDenom)
+			TokenAInReserves = TokenAInReserves.Add(t.DecReservesTakerDenom)
+			TokenBInReserves = TokenBInReserves.Add(t.DecReservesMakerDenom)
 		}
 
 	}
 
-	s.assertDexBalance(id.Token0, TokenAInReserves)
-	s.assertDexBalance(id.Token1, TokenBInReserves)
+	s.assertDexBalance(id.Token0, TokenAInReserves.Ceil().TruncateInt())
+	s.assertDexBalance(id.Token1, TokenBInReserves.Ceil().TruncateInt())
 }
 
 // We assume, if there is a TokenB tranche in dex module, it's always BEL.
-func (s *DexStateTestSuite) expectedInOutTokensAmount(tokenA sdk.Coin, denomOut string) (amountOut math.Int) {
+func (s *DexStateTestSuite) expectedInOutTokensAmount(tokenA sdk.Coin, denomOut string) (amountOut math_utils.PrecDec) {
 	pair := dextypes.MustNewPairID(tokenA.Denom, denomOut)
-	amountOut = math.ZeroInt()
+	amountOut = math_utils.ZeroPrecDec()
 	// Active tranches B -> A
 	tranches, err := s.App.DexKeeper.LimitOrderTrancheAll(s.Ctx, &dextypes.QueryAllLimitOrderTrancheRequest{
 		PairId:     pair.CanonicalString(),
@@ -229,15 +229,15 @@ func (s *DexStateTestSuite) expectedInOutTokensAmount(tokenA sdk.Coin, denomOut 
 		// t.ReservesMakerDenom - reserve TokenB we are going to get
 		// t.Price() - price taker -> maker => 1/t.Price() - maker -> taker
 		// maxSwap - max amount of tokenA (ReservesTakerDenom) tranche can consume us by changing ReservesMakerDenom -> ReservesTakerDenom
-		maxSwap := math_utils.NewPrecDecFromInt(t.ReservesMakerDenom).Mul(t.Price()).TruncateInt()
+		maxSwap := t.DecReservesMakerDenom.Mul(t.Price()).TruncateInt()
 		// we can swap full our tranche
 		if maxSwap.GTE(reserveA) {
 			// expected to get tokenB = tokenA*
-			amountOut = amountOut.Add(math_utils.NewPrecDecFromInt(reserveA).Quo(t.Price()).TruncateInt())
+			amountOut = amountOut.Add(math_utils.NewPrecDecFromInt(reserveA).Quo(t.Price()))
 			break
 		}
 		reserveA = reserveA.Sub(maxSwap)
-		amountOut = amountOut.Add(t.ReservesMakerDenom)
+		amountOut = amountOut.Add(t.DecReservesMakerDenom)
 	}
 	return amountOut
 }
@@ -270,7 +270,7 @@ func TestPlaceLimitOrderMaker(t *testing.T) {
 	s := new(DexStateTestSuite)
 	s.SetT(t)
 	s.SetupTest()
-	totalExpectedToSwap := math.ZeroInt()
+	totalExpectedToSwap := math_utils.ZeroPrecDec()
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -296,12 +296,15 @@ func TestPlaceLimitOrderMaker(t *testing.T) {
 			// 1. generic liquidity check assertion
 			s.assertLiquidity(*tc.PairID)
 			// 2. BEL assertion
-			s.intsApproxEqual("", expectedSwapTakerDenom, resp.TakerCoinOut.Amount, 1)
+			s.Equal(expectedSwapTakerDenom, resp.DecTakerCoinOut.Amount)
+			// s.intsApproxEqual("", expectedSwapTakerDenom, resp.TakerCoinOut.Amount, 1)
 			// 3. TrancheKey assertion
 			s.assertExpectedTrancheKey(initialTrancheKey, resp.TrancheKey, tc)
 		})
 	}
+
+	s.TearDownTest()
 	s.SetT(t)
 	// sanity check: at least one `expectedSwapTakerDenom` > 0
-	s.True(totalExpectedToSwap.GT(math.ZeroInt()))
+	s.True(totalExpectedToSwap.IsPositive())
 }

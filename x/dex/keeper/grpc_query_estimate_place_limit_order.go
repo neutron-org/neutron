@@ -6,7 +6,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // TODO: This doesn't run ValidateBasic() checks.
@@ -64,8 +64,8 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	// NB: We're only using a cache context so we don't expect any writes to happen.
 
 	return &types.QueryEstimatePlaceLimitOrderResponse{
-		TotalInCoin: totalInCoin,
-		SwapInCoin:  swapInCoin,
-		SwapOutCoin: swapOutCoin,
+		TotalInCoin: totalInCoin.CeilToCoin(),
+		SwapInCoin:  swapInCoin.CeilToCoin(),
+		SwapOutCoin: swapOutCoin.TruncateToCoin(),
 	}, nil
 }

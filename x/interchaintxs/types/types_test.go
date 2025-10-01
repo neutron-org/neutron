@@ -3,11 +3,11 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v6/app/config"
+	"github.com/neutron-org/neutron/v8/app/config"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v8/x/interchaintxs/types"
 )
 
 const (

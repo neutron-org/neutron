@@ -7,7 +7,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "neutron/dynamicfees/v1/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/dynamicfees/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dynamicfees/types";
 
 // Msg defines the Msg service.
 service Msg {

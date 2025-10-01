@@ -3,7 +3,7 @@ package keeper_test
 import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v6/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v8/x/tokenfactory/types"
 )
 
 func (suite *KeeperTestSuite) TestGenesis() {
@@ -37,14 +37,49 @@ func (suite *KeeperTestSuite) TestGenesis() {
 	for i, denom := range genesisState.FactoryDenoms {
 		// hacky, sets bank metadata to exist if i != 0, to cover both cases.
 		if i != 0 {
-			app.BankKeeper.SetDenomMetaData(context, banktypes.Metadata{Base: denom.GetDenom()})
+			app.BankKeeper.SetDenomMetaData(context, banktypes.Metadata{
+				DenomUnits: []*banktypes.DenomUnit{{
+					Denom:    denom.GetDenom(),
+					Exponent: 0,
+				}},
+				Base:    denom.GetDenom(),
+				Display: denom.GetDenom(),
+				Name:    denom.GetDenom(),
+				Symbol:  denom.GetDenom(),
+			})
 		}
 	}
 
 	err := app.TokenFactoryKeeper.SetParams(context, types.Params{})
 	suite.Require().NoError(err)
 	app.TokenFactoryKeeper.InitGenesis(context, genesisState)
+
 	exportedGenesis := app.TokenFactoryKeeper.ExportGenesis(context)
 	suite.Require().NotNil(exportedGenesis)
 	suite.Require().Equal(genesisState, *exportedGenesis)
+
+	// verify that the exported bank genesis is valid
+	err = app.BankKeeper.SetParams(context, banktypes.DefaultParams())
+	suite.Require().NoError(err)
+	exportedBankGenesis := app.BankKeeper.ExportGenesis(context)
+	suite.Require().NoError(exportedBankGenesis.Validate())
+
+	app.BankKeeper.InitGenesis(context, exportedBankGenesis)
+	for i, denom := range genesisState.FactoryDenoms {
+		// hacky, check whether bank metadata is not replaced if i != 0, to cover both cases.
+		if i != 0 {
+			metadata, found := app.BankKeeper.GetDenomMetaData(context, denom.GetDenom())
+			suite.Require().True(found)
+			suite.Require().EqualValues(metadata, banktypes.Metadata{
+				DenomUnits: []*banktypes.DenomUnit{{
+					Denom:    denom.GetDenom(),
+					Exponent: 0,
+				}},
+				Base:    denom.GetDenom(),
+				Display: denom.GetDenom(),
+				Name:    denom.GetDenom(),
+				Symbol:  denom.GetDenom(),
+			})
+		}
+	}
 }

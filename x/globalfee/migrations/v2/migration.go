@@ -4,7 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/neutron-org/neutron/v6/x/globalfee/types"
+	"github.com/neutron-org/neutron/v8/x/globalfee/types"
 )
 
 // MigrateStore performs in-place params migrations of

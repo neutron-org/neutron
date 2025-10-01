@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (k Keeper) SimulateMultiHopSwap(
@@ -36,8 +36,8 @@ func (k Keeper) SimulateMultiHopSwap(
 
 	return &types.QuerySimulateMultiHopSwapResponse{
 		Resp: &types.MsgMultiHopSwapResponse{
-			CoinOut: bestRoute.coinOut,
-			Dust:    bestRoute.dust,
+			CoinOut: bestRoute.coinOut.TruncateToCoin(),
+			Dust:    bestRoute.dust.TruncateToCoins(),
 			Route:   &types.MultiHopRoute{Hops: bestRoute.route},
 		},
 	}, nil

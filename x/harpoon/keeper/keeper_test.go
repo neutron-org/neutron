@@ -9,12 +9,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/harpoon/types"
+	"github.com/neutron-org/neutron/v8/x/harpoon/types"
 
 	"github.com/golang/mock/gomock"
 
-	testutil_keeper "github.com/neutron-org/neutron/v6/testutil/harpoon/keeper"
-	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/harpoon/types"
+	testutil_keeper "github.com/neutron-org/neutron/v8/testutil/harpoon/keeper"
+	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/harpoon/types"
 )
 
 func TestUpdateHookSubscription(t *testing.T) {

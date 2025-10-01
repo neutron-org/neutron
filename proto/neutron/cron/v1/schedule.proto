@@ -3,7 +3,7 @@ package neutron.cron.v1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/cron/types/v1";
+option go_package = "github.com/neutron-org/neutron/v8/x/cron/types/v1";
 
 // Defines the schedule for execution
 message Schedule {

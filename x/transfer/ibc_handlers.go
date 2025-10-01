@@ -7,9 +7,9 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v6/x/contractmanager/keeper"
-	feetypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
+	feetypes "github.com/neutron-org/neutron/v8/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/interchaintxs/types"
 )
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a sudo call.

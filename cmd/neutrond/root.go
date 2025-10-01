@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/neutron-org/neutron/v8/x/crypto/keyring"
+
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/snapshots"
@@ -39,8 +41,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/neutron-org/neutron/v6/app"
-	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v8/app"
+	"github.com/neutron-org/neutron/v8/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -82,7 +84,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(authtypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastSync).
 		WithHomeDir(app.DefaultNodeHome).
-		WithViper("")
+		WithViper("").
+		WithKeyringOptions(keyring.Option())
 
 	// Allows you to add extra params to your client.toml
 	// gas, gas-price, gas-adjustment, fees, note, etc.
@@ -288,12 +291,7 @@ func (ac appCreator) newApp(
 		chainID = appGenesis.ChainID
 	}
 
-	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
-		homeDir,
-		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
-		ac.encCfg,
-		appOpts,
-		wasmOpts,
+	baseAppOptions := []func(*baseapp.BaseApp){
 		baseapp.SetPruning(pruningOpts),
 		baseapp.SetMinGasPrices(cast.ToString(appOpts.Get(server.FlagMinGasPrices))),
 		baseapp.SetHaltHeight(cast.ToUint64(appOpts.Get(server.FlagHaltHeight))),
@@ -304,6 +302,24 @@ func (ac appCreator) newApp(
 		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
 		baseapp.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{Interval: cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval)), KeepRecent: cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))}),
 		baseapp.SetChainID(chainID),
+		baseapp.SetIAVLCacheSize(cast.ToInt(appOpts.Get(server.FlagIAVLCacheSize))),
+		baseapp.SetIAVLDisableFastNode(cast.ToBool(appOpts.Get(server.FlagDisableIAVLFastNode))),
+	}
+
+	if isEnabled := cast.ToBool(appOpts.Get(server.FlagOptimisticExecutionEnabled)); isEnabled {
+		logger.Info("Optimistic execution enabled")
+		baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution())
+	} else {
+		logger.Info("Optimistic execution disabled")
+	}
+
+	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
+		homeDir,
+		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
+		ac.encCfg,
+		appOpts,
+		wasmOpts,
+		baseAppOptions...,
 	)
 }
 

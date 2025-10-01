@@ -9,18 +9,17 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	testutil_keeper "github.com/neutron-org/neutron/v6/testutil/feerefunder/keeper"
-	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/testutil"
+	testutil_keeper "github.com/neutron-org/neutron/v8/testutil/feerefunder/keeper"
+	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/feerefunder/types"
 
-	cosmoserrors "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/types"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
@@ -38,6 +37,7 @@ func TestKeeperCheckFees(t *testing.T) {
 			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 		},
+		FeeEnabled: true,
 	})
 	require.NoError(t, err)
 
@@ -45,7 +45,7 @@ func TestKeeperCheckFees(t *testing.T) {
 		desc    string
 		fees    *types.Fee
 		minFees types.Fee
-		err     *cosmoserrors.Error
+		err     error
 	}{
 		{
 			desc: "SingleProperDenomInsufficient",
@@ -72,7 +72,7 @@ func TestKeeperCheckFees(t *testing.T) {
 				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 			},
-			err: sdkerrors.ErrInvalidCoins,
+			err: fmt.Errorf("recv fee must be zero: %w", sdkerrors.ErrInvalidCoins),
 		},
 		{
 			desc: "SingleDenomSufficient",
@@ -147,6 +147,7 @@ func TestKeeperLockFees(t *testing.T) {
 			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 		},
+		FeeEnabled: true,
 	})
 	require.NoError(t, err)
 
@@ -156,14 +157,16 @@ func TestKeeperLockFees(t *testing.T) {
 		Sequence:  111,
 	}
 
+	// channel not found
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, false)
-	err = k.LockFees(ctx, payer, packet, types.Fee{})
+	err = k.LockFees(ctx, payer, packet, types.Fee{
+		RecvFee:    nil,
+		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100))),
+	})
 	require.True(t, channeltypes.ErrChannelNotFound.Is(err))
 
-	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
-	err = k.LockFees(ctx, payer, packet, types.Fee{})
-	require.True(t, sdkerrors.ErrInsufficientFee.Is(err))
-
+	// bank send error
 	validFee := types.Fee{
 		RecvFee:    nil,
 		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
@@ -174,6 +177,7 @@ func TestKeeperLockFees(t *testing.T) {
 	err = k.LockFees(ctx, payer, packet, validFee)
 	require.ErrorContains(t, err, "bank error")
 
+	//  valid case
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, validFee.Total()).Return(nil)
 	err = k.LockFees(ctx, payer, packet, validFee)
@@ -191,6 +195,30 @@ func TestKeeperLockFees(t *testing.T) {
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
 		),
 	}, ctx.EventManager().Events())
+
+	// insufficient fee
+	err = k.LockFees(ctx, payer, packet, types.Fee{
+		RecvFee:    nil,
+		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+	})
+	require.True(t, sdkerrors.ErrInsufficientFee.Is(err))
+
+	// ack fee is empty
+	err = k.LockFees(ctx, payer, packet, types.Fee{
+		RecvFee:    nil,
+		AckFee:     nil,
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+	})
+	require.ErrorContains(t, err, "ack fee or timeout fee is zero")
+
+	// timeout fee is empty
+	err = k.LockFees(ctx, payer, packet, types.Fee{
+		RecvFee:    nil,
+		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+		TimeoutFee: nil,
+	})
+	require.ErrorContains(t, err, "ack fee or timeout fee is zero")
 }
 
 func TestDistributeAcknowledgementFee(t *testing.T) {
@@ -220,15 +248,7 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 		PacketId: packet,
 	})
 
-	invalidPacket := types.PacketID{
-		ChannelId: "channel-0",
-		PortId:    "transfer",
-		Sequence:  1,
-	}
-	panicErrorToCatch := errors.Wrapf(errors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", invalidPacket.ChannelId, invalidPacket.PortId, invalidPacket.Sequence), "no fee info")
-	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeAcknowledgementFee(ctx, receiver, invalidPacket) })
-
-	panicErrorToCatch = errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing ack fee: receiver = %s, packetID=%v", receiver, packet)
+	panicErrorToCatch := errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing ack fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.AckFee).Return(fmt.Errorf("bank module error"))
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeAcknowledgementFee(ctx, receiver, packet) })
 
@@ -254,9 +274,18 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 		),
 	}, ctx.EventManager().Events())
 
-	feeInfo, err := k.GetFeeInfo(ctx, packet)
+	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
-	require.ErrorContains(t, err, "no fee info")
+	require.False(t, found, "no expected fee info")
+
+	// simulate fee disabled
+	noFeePacket := types.PacketID{
+		ChannelId: "channel-0",
+		PortId:    "transfer",
+		Sequence:  112123,
+	}
+	// does not call fee transfers
+	assert.NotPanics(t, func() { k.DistributeAcknowledgementFee(ctx, receiver, noFeePacket) })
 }
 
 func TestDistributeTimeoutFee(t *testing.T) {
@@ -286,15 +315,7 @@ func TestDistributeTimeoutFee(t *testing.T) {
 		PacketId: packet,
 	})
 
-	invalidPacket := types.PacketID{
-		ChannelId: "channel-0",
-		PortId:    "transfer",
-		Sequence:  1,
-	}
-	panicErrorToCatch := errors.Wrapf(errors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", invalidPacket.ChannelId, invalidPacket.PortId, invalidPacket.Sequence), "no fee info")
-	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeTimeoutFee(ctx, receiver, invalidPacket) })
-
-	panicErrorToCatch = errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing timeout fee: receiver = %s, packetID=%v", receiver, packet)
+	panicErrorToCatch := errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing timeout fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.TimeoutFee).Return(fmt.Errorf("bank module error"))
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeTimeoutFee(ctx, receiver, packet) })
 
@@ -320,9 +341,18 @@ func TestDistributeTimeoutFee(t *testing.T) {
 		),
 	}, ctx.EventManager().Events())
 
-	feeInfo, err := k.GetFeeInfo(ctx, packet)
+	feeInfo, found := k.GetFeeInfo(ctx, packet)
 	require.Nil(t, feeInfo)
-	require.ErrorContains(t, err, "no fee info")
+	require.False(t, found, "no expected fee info")
+
+	// simulate fee disabled
+	noFeePacket := types.PacketID{
+		ChannelId: "channel-0",
+		PortId:    "transfer",
+		Sequence:  112123,
+	}
+	// does not call fee transfers
+	assert.NotPanics(t, func() { k.DistributeTimeoutFee(ctx, receiver, noFeePacket) })
 }
 
 func TestFeeInfo(t *testing.T) {

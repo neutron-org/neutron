@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v8/x/revenue/types"
 )
 
 func TestDefaultGenesis(t *testing.T) {

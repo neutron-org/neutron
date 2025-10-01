@@ -8,8 +8,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 type cancelLimitOrderTestParams struct {
@@ -139,6 +139,14 @@ func removeRedundantCancelLOTests(params []cancelLimitOrderTestParams) []cancelL
 			// it does not make any sense to create two tranches
 			continue
 		}
+
+		if p.Filled == 100 &&
+			(p.ExistingTokenAHolders == OneOtherAndCreatorLO && p.WithdrawnCreator && p.WithdrawnOneOther) ||
+			(p.ExistingTokenAHolders == CreatorLO && p.WithdrawnCreator) {
+			// if limit order is filled and withdrawn by all shareholders, it's impossible to cancel it
+			continue
+		}
+
 		newParams = append(newParams, p)
 	}
 	return newParams
@@ -153,17 +161,17 @@ func (s *DexStateTestSuite) handleCancelErrors(params cancelLimitOrderTestParams
 	s.NoError(err)
 }
 
-func (s *DexStateTestSuite) assertCalcelAmount(params cancelLimitOrderTestParams) {
+func (s *DexStateTestSuite) assertCancelAmount(params cancelLimitOrderTestParams) {
 	depositSize := BaseTokenAmountInt
 
 	// expected balance: InitialBalance - depositSize + pre-withdrawn (filled/2 or 0) + withdrawn (filled/2 or filled)
 	// pre-withdrawn (filled/2 or 0) + withdrawn (filled/2 or filled) === filled
 	// converted to TokenB
 	price := dextypes.MustCalcPrice(params.Tick)
-	expectedBalanceB := price.MulInt(depositSize.MulRaw(params.Filled).QuoRaw(100)).Ceil().TruncateInt()
+	expectedBalanceB := price.MulInt(depositSize.MulRaw(params.Filled).QuoRaw(100)).TruncateInt()
 	expectedBalanceA := depositSize.Sub(depositSize.MulRaw(params.Filled).QuoRaw(100))
 	// 1 - withdrawn amount
-	s.assertBalanceWithPrecision(s.creator, params.PairID.Token1, expectedBalanceB, 3)
+	s.assertBalance(s.creator, params.PairID.Token1, expectedBalanceB)
 
 	s.assertBalance(s.creator, params.PairID.Token0, expectedBalanceA)
 }
@@ -199,7 +207,8 @@ func TestCancel(t *testing.T) {
 			s.handleCancelErrors(tc, err)
 			_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.creator.String(), tranche.Key.TrancheKey)
 			s.False(found)
-			s.assertCalcelAmount(tc)
+			s.assertCancelAmount(tc)
 		})
 	}
+	s.TearDownTest()
 }

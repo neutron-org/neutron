@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/spf13/cobra"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v6/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v8/x/contractmanager/types"
 )
 
 func CmdFailures() *cobra.Command {

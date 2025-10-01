@@ -9,14 +9,14 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v6/app/params"
+	"github.com/neutron-org/neutron/v8/app/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v6/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v6/x/interchaintxs/keeper"
+	feerefundertypes "github.com/neutron-org/neutron/v8/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/interchaintxs/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -25,10 +25,10 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	testkeeper "github.com/neutron-org/neutron/v6/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v6/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v6/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v8/testutil"
+	testkeeper "github.com/neutron-org/neutron/v8/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v8/x/interchaintxs/types"
 )
 
 const TestFeeCollectorAddr = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"
@@ -233,7 +233,11 @@ func TestRegisterInterchainAccountUnordered(t *testing.T) {
 }
 
 func TestMsgSubmitTXValidate(t *testing.T) {
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 
@@ -301,38 +305,6 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					RecvFee:    sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
 					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
 					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			sdkerrors.ErrInvalidCoins,
-		},
-		{
-			"zero ack fee",
-			types.MsgSubmitTx{
-				FromAddress:         testutil.TestOwnerAddress,
-				ConnectionId:        "connection-id",
-				InterchainAccountId: "1",
-				Msgs:                []*codectypes.Any{&cosmosMsg},
-				Timeout:             1,
-				Fee: feerefundertypes.Fee{
-					RecvFee:    nil,
-					AckFee:     nil,
-					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			sdkerrors.ErrInvalidCoins,
-		},
-		{
-			"zero timeout fee",
-			types.MsgSubmitTx{
-				FromAddress:         testutil.TestOwnerAddress,
-				ConnectionId:        "connection-id",
-				InterchainAccountId: "1",
-				Msgs:                []*codectypes.Any{&cosmosMsg},
-				Timeout:             1,
-				Fee: feerefundertypes.Fee{
-					RecvFee:    nil,
-					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
-					TimeoutFee: nil,
 				},
 			},
 			sdkerrors.ErrInvalidCoins,

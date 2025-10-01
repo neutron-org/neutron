@@ -7,7 +7,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/neutron-org/neutron/v6/x/cron/types"
+	"github.com/neutron-org/neutron/v8/x/cron/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/revenue/types"
+	"github.com/neutron-org/neutron/v8/x/revenue/types"
 )
 
 func TestPerformanceRating(t *testing.T) {

@@ -59,7 +59,7 @@ func (msg *MsgRegisterInterchainAccount) GetSignBytes() []byte {
 
 func (msg *MsgSubmitTx) Validate() error {
 	if err := msg.Fee.Validate(); err != nil {
-		return err
+		return errors.Wrapf(err, "failed to validate fee")
 	}
 
 	if len(msg.ConnectionId) == 0 {

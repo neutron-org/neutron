@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (s *DexTestSuite) TestSimulateMultiHopSwapSingleRoute() {
@@ -30,12 +30,9 @@ func (s *DexTestSuite) TestSimulateMultiHopSwapSingleRoute() {
 	s.NoError(err)
 
 	// THEN alice would get out ~99 BIGTokenD
-	expectedOutCoin := sdk.NewCoin("TokenD", math.NewInt(99970003))
+	expectedOutCoin := sdk.NewCoin("TokenD", math.NewInt(99970005))
 	s.Assert().True(resp.Resp.CoinOut.Equal(expectedOutCoin))
 	s.Assert().Equal(route, resp.Resp.Route)
-	dust := sdk.NewCoins(resp.Resp.Dust...)
-	expectedDust := sdk.NewCoin("TokenA", math.OneInt())
-	s.Assert().True(dust.Equal(sdk.NewCoins(expectedDust)))
 
 	// Nothing changes on the dex
 	s.assertDexBalanceWithDenom("TokenA", 0)
@@ -68,12 +65,9 @@ func (s *DexTestSuite) TestSimulateMultiHopSwapMultiRoute() {
 	s.NoError(err)
 
 	// THEN alice would get out ~110 BIGTokenD
-	expectedOutCoin := sdk.NewCoin("TokenD", math.NewInt(110494438))
+	expectedOutCoin := sdk.NewCoin("TokenD", math.NewInt(110494439))
 	s.Assert().True(resp.Resp.CoinOut.Equal(expectedOutCoin))
 	s.Assert().Equal(route2, resp.Resp.Route)
-	dust := sdk.NewCoins(resp.Resp.Dust...)
-	expectedDust := sdk.NewCoin("TokenA", math.OneInt())
-	s.Assert().True(dust.Equal(sdk.NewCoins(expectedDust)))
 
 	// Nothing changes on the dex
 	s.assertDexBalanceWithDenom("TokenA", 0)

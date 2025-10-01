@@ -17,10 +17,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v8/x/revenue/types"
 
-	"github.com/neutron-org/neutron/v6/x/feeburner/keeper"
-	"github.com/neutron-org/neutron/v6/x/feeburner/types"
+	"github.com/neutron-org/neutron/v8/x/feeburner/keeper"
+	"github.com/neutron-org/neutron/v8/x/feeburner/types"
 )
 
 func FeeburnerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

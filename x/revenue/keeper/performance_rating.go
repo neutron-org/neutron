@@ -3,7 +3,7 @@ package keeper
 import (
 	"cosmossdk.io/math"
 
-	revenuetypes "github.com/neutron-org/neutron/v6/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v8/x/revenue/types"
 )
 
 // evaluateValCommitment calculates validator's performance rating and expected compensation amount.

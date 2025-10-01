@@ -7,8 +7,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	cronsimulation "github.com/neutron-org/neutron/v6/x/cron/simulation"
-	"github.com/neutron-org/neutron/v6/x/cron/types"
+	cronsimulation "github.com/neutron-org/neutron/v8/x/cron/simulation"
+	"github.com/neutron-org/neutron/v8/x/cron/types"
 )
 
 // avoid unused import issue

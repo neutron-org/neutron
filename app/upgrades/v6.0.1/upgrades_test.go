@@ -9,9 +9,9 @@ import (
 
 	time "time"
 
-	v601 "github.com/neutron-org/neutron/v6/app/upgrades/v6.0.1"
-	"github.com/neutron-org/neutron/v6/testutil"
-	dextypes "github.com/neutron-org/neutron/v6/x/dex/types"
+	v601 "github.com/neutron-org/neutron/v8/app/upgrades/v6.0.1"
+	"github.com/neutron-org/neutron/v8/testutil"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 type UpgradeTestSuite struct {

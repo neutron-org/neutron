@@ -3,9 +3,10 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (k Keeper) SimulateDeposit(
@@ -51,12 +52,21 @@ func (k Keeper) SimulateDeposit(
 		return nil, err
 	}
 
+	reserves0DepositedInt := make([]math.Int, len(reserve0Deposited))
+	reserves1DepositedInt := make([]math.Int, len(reserve1Deposited))
+	for i, amount0 := range reserve0Deposited {
+		reserves0DepositedInt[i] = amount0.Ceil().TruncateInt()
+		reserves1DepositedInt[i] = reserve1Deposited[i].Ceil().TruncateInt()
+	}
+
 	return &types.QuerySimulateDepositResponse{
 		Resp: &types.MsgDepositResponse{
-			Reserve0Deposited: reserve0Deposited,
-			Reserve1Deposited: reserve1Deposited,
-			FailedDeposits:    failedDeposits,
-			SharesIssued:      sharesIssued,
+			Reserve0Deposited:    reserves0DepositedInt,
+			Reserve1Deposited:    reserves1DepositedInt,
+			DecReserve0Deposited: reserve0Deposited,
+			DecReserve1Deposited: reserve1Deposited,
+			FailedDeposits:       failedDeposits,
+			SharesIssued:         sharesIssued,
 		},
 	}, nil
 }

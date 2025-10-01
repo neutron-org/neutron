@@ -3,7 +3,7 @@ package neutron.dex.v2;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v6/x/dex/types/v2";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types/v2";
 
 // Params defines the parameters for the module.
 message Params {
@@ -11,7 +11,7 @@ message Params {
   repeated uint64 fee_tiers = 1;
   string max_true_taker_spread = 2 [
     (gogoproto.moretags) = "yaml:\"max_true_taker_spread\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v6/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "max_true_taker_spread"
   ];

@@ -15,7 +15,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v6/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/feerefunder/types"
 )
 
 type (
@@ -55,17 +55,24 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// LockFees locks interchain transaction `fee` from given `payer`
 func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
 	c := sdk.UnwrapSDKContext(ctx)
 
 	k.Logger(c).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
 
-	if _, ok := k.channelKeeper.GetChannel(c, packetID.PortId, packetID.ChannelId); !ok {
-		return errors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
+	params := k.GetParams(c)
+	if !params.FeeEnabled {
+		k.Logger(c).Debug("Skip locking fees because fee disabled", "packetID", packetID, "fee", fee)
+		return nil
 	}
 
 	if err := k.checkFees(c, fee); err != nil {
-		return errors.Wrapf(err, "failed to lock fees")
+		return errors.Wrapf(err, "fees check failed")
+	}
+
+	if _, ok := k.channelKeeper.GetChannel(c, packetID.PortId, packetID.ChannelId); !ok {
+		return errors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
 	}
 
 	feeInfo := types.FeeInfo{
@@ -96,14 +103,17 @@ func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID typ
 	return nil
 }
 
+// DistributeAcknowledgementFee distributes ack fee to the `receiver`
+// and returns back unused timeout fee to the `feeInfo.Payer`.
+// In case feeInfo for this `packetID` is not found, do nothing.
 func (k Keeper) DistributeAcknowledgementFee(ctx context.Context, receiver sdk.AccAddress, packetID types.PacketID) {
 	c := sdk.UnwrapSDKContext(ctx)
 
 	k.Logger(c).Debug("Trying to distribute ack fee", "packetID", packetID)
-	feeInfo, err := k.GetFeeInfo(c, packetID)
-	if err != nil {
-		k.Logger(c).Error("no fee info", "error", err)
-		panic(errors.Wrapf(err, "no fee info"))
+	feeInfo, found := k.GetFeeInfo(c, packetID)
+	if !found {
+		k.Logger(c).Debug("Nothing to distribute for ack fee", "packetID", packetID)
+		return
 	}
 
 	// try to distribute ack fee
@@ -135,14 +145,17 @@ func (k Keeper) DistributeAcknowledgementFee(ctx context.Context, receiver sdk.A
 	k.removeFeeInfo(c, packetID)
 }
 
+// DistributeTimeoutFee distributes timeout fee to the `receiver`
+// and returns back unused ack fee to the `feeInfo.Payer`.
+// In case feeInfo for this `packetID` is not found, do nothing.
 func (k Keeper) DistributeTimeoutFee(ctx context.Context, receiver sdk.AccAddress, packetID types.PacketID) {
 	c := sdk.UnwrapSDKContext(ctx)
 
 	k.Logger(c).Debug("Trying to distribute timeout fee", "packetID", packetID)
-	feeInfo, err := k.GetFeeInfo(c, packetID)
-	if err != nil {
-		k.Logger(c).Error("no fee info", "error", err)
-		panic(errors.Wrapf(err, "no fee info"))
+	feeInfo, found := k.GetFeeInfo(c, packetID)
+	if !found {
+		k.Logger(c).Debug("Nothing to distribute for timeout fee", "packetID", packetID)
+		return
 	}
 
 	// try to distribute timeout fee
@@ -174,17 +187,17 @@ func (k Keeper) DistributeTimeoutFee(ctx context.Context, receiver sdk.AccAddres
 	k.removeFeeInfo(c, packetID)
 }
 
-func (k Keeper) GetFeeInfo(ctx sdk.Context, packetID types.PacketID) (*types.FeeInfo, error) {
+func (k Keeper) GetFeeInfo(ctx sdk.Context, packetID types.PacketID) (*types.FeeInfo, bool) {
 	store := ctx.KVStore(k.storeKey)
 
 	var feeInfo types.FeeInfo
 	bzFeeInfo := store.Get(types.GetFeePacketKey(packetID))
 	if bzFeeInfo == nil {
-		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", packetID.ChannelId, packetID.PortId, packetID.Sequence)
+		return nil, false
 	}
 	k.cdc.MustUnmarshal(bzFeeInfo, &feeInfo)
 
-	return &feeInfo, nil
+	return &feeInfo, true
 }
 
 func (k Keeper) GetAllFeeInfos(ctx sdk.Context) []types.FeeInfo {
@@ -225,6 +238,15 @@ func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 	params := k.GetParams(ctx)
 
+	if err := fees.Validate(); err != nil {
+		return errors.Wrapf(err, "fees do not pass validation")
+	}
+
+	// if ack or timeout fees are zero or empty return an error
+	if fees.AckFee.IsZero() || fees.TimeoutFee.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidCoins, "provided ack fee or timeout fee is zero")
+	}
+
 	if !fees.TimeoutFee.IsAnyGTE(params.MinFee.TimeoutFee) {
 		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min governance set timeout fee: %v < %v", fees.TimeoutFee, params.MinFee.TimeoutFee)
 	}
@@ -233,17 +255,12 @@ func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", fees.AckFee, params.MinFee.AckFee)
 	}
 
-	if allowedCoins(fees.TimeoutFee, params.MinFee.TimeoutFee) {
+	if hasNotAllowedCoins(fees.TimeoutFee, params.MinFee.TimeoutFee) {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "timeout fee cannot have coins other than in params")
 	}
 
-	if allowedCoins(fees.AckFee, params.MinFee.AckFee) {
+	if hasNotAllowedCoins(fees.AckFee, params.MinFee.AckFee) {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "ack fee cannot have coins other than in params")
-	}
-
-	// we don't allow users to set recv fees, because we can't refund relayers for such messages
-	if !fees.RecvFee.IsZero() {
-		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
 	}
 
 	return nil
@@ -258,9 +275,9 @@ func (k Keeper) distributeFee(ctx sdk.Context, receiver sdk.AccAddress, fee sdk.
 	return nil
 }
 
-// allowedCoins returns true if one or more coins from `fees` are not present in coins from `params`
+// hasNotAllowedCoins returns true if one or more coins from `fees` are not present in coins from `params`
 // assumes that `params` is sorted
-func allowedCoins(fees, params sdk.Coins) bool {
+func hasNotAllowedCoins(fees, params sdk.Coins) bool {
 	for _, fee := range fees {
 		if params.AmountOf(fee.Denom).IsZero() {
 			return true

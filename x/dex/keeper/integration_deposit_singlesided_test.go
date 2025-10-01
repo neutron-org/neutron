@@ -5,7 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func (s *DexTestSuite) TestDepositSingleSidedInSpread1To0() {
@@ -477,9 +477,9 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapPartial() {
 	// A = 50 - 30 * 1.0001^~2003 = 13.3
 	// SharesIssued = 13.3 + 30 * 1.0001^2006 = ~50
 
-	s.Equal(sdkmath.NewInt(13347289), resp.Reserve0Deposited[0])
+	s.Equal(sdkmath.NewInt(13347290), resp.Reserve0Deposited[0])
 	s.Equal(sdkmath.NewInt(30000000), resp.Reserve1Deposited[0])
-	s.Equal(sdkmath.NewInt(50010995), resp.SharesIssued[0].Amount)
+	s.Equal(sdkmath.NewInt(50010996), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
 
 	s.assertLiquidityAtTickInt(sdkmath.NewInt(13347289), sdkmath.NewInt(30000000), 2006, 1)
@@ -504,37 +504,11 @@ func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapAll() {
 	// SharesIssued = 20.4 * 1.0001^2006 = 25
 
 	s.True(resp.Reserve0Deposited[0].IsZero())
-	s.Equal(sdkmath.NewInt(20463287), resp.Reserve1Deposited[0])
-	s.Equal(sdkmath.NewInt(25008665), resp.SharesIssued[0].Amount)
+	s.Equal(sdkmath.NewInt(20463288), resp.Reserve1Deposited[0])
+	s.Equal(sdkmath.NewInt(25008666), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
 
 	s.assertLiquidityAtTickInt(sdkmath.ZeroInt(), sdkmath.NewInt(20463287), 2006, 1)
-}
-
-func (s *DexTestSuite) TestDepositSingleToken0BELWithSwapAll2() {
-	s.fundAliceBalances(20, 0)
-	s.fundBobBalances(0, 30)
-
-	// GIVEN TokenB liquidity at tick 10,001
-	s.bobDeposits(NewDeposit(0, 10, 10000, 1))
-	// WHEN alice deposits TokenA at tick -10,002 (BEL)
-	resp := s.aliceDeposits(
-		NewDepositWithOptions(20, 0, 10003, 1,
-			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
-		),
-	)
-
-	// THEN (almost) all of alice's TokenA is swapped with 2 coins not swapped due to monotonic rounding
-	// and she deposits 0TokenA & ~7.3TokenB
-	// B = 20 / 1.0001^10001 = 7.3
-	// SharesIssued = 7.3 * 1.0001^10003 = 20
-
-	s.True(resp.Reserve0Deposited[0].IsZero())
-	s.Equal(sdkmath.NewInt(7357220), resp.Reserve1Deposited[0])
-	s.Equal(sdkmath.NewInt(20003997), resp.SharesIssued[0].Amount)
-	s.assertAliceBalancesInt(sdkmath.NewInt(2), sdkmath.ZeroInt())
-
-	s.assertLiquidityAtTickInt(sdkmath.ZeroInt(), sdkmath.NewInt(7357220), 10003, 1)
 }
 
 func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapPartial() {
@@ -557,11 +531,11 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapPartial() {
 	// SharesIssued = 20 +  17 * 1.0001^-5005 = 30.3
 
 	s.Equal(sdkmath.NewInt(20000000), resp.Reserve0Deposited[0])
-	s.Equal(sdkmath.NewInt(17018153), resp.Reserve1Deposited[0])
-	s.Equal(sdkmath.NewInt(30317130), resp.SharesIssued[0].Amount)
+	s.Equal(sdkmath.NewInt(17018155), resp.Reserve1Deposited[0])
+	s.Equal(sdkmath.NewInt(30317131), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
 
-	s.assertLiquidityAtTickInt(sdkmath.NewInt(20000000), sdkmath.NewInt(17018153), -5005, 1)
+	s.assertLiquidityAtTickInt(sdkmath.NewInt(20000000), sdkmath.NewInt(17018154), -5005, 1)
 }
 
 func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
@@ -576,7 +550,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
 	// WHEN alice deposits TokenB at tick 5000 (BEL)
 	resp := s.aliceDeposits(
 		NewDepositWithOptions(0, 5, 4999, 1,
-			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10},
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true},
 		),
 	)
 
@@ -584,7 +558,7 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll() {
 	// A = 5 / 1.0001^-5001 = 8.2
 	// SharesIssued = 8.2
 
-	s.Equal(sdkmath.NewInt(8244224), resp.Reserve0Deposited[0])
+	s.Equal(sdkmath.NewInt(8244225), resp.Reserve0Deposited[0])
 	s.True(resp.Reserve1Deposited[0].IsZero())
 	s.Equal(sdkmath.NewInt(8244224), resp.SharesIssued[0].Amount)
 	s.assertAliceBalances(0, 0)
@@ -601,18 +575,18 @@ func (s *DexTestSuite) TestDepositSingleToken1BELWithSwapAll2() {
 	// WHEN alice deposits TokenB at tick -10,004 (BEL)
 	resp := s.aliceDeposits(
 		NewDepositWithOptions(0, 20, -10005, 1,
-			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true, SwapOnDepositSlopToleranceBps: 10}),
+			types.DepositOptions{FailTxOnBel: true, SwapOnDeposit: true}),
 	)
 
-	// THEN (almost) all of alice's TokenB is swapped with 2 coins not swapped due to monotonic rounding
+	// THEN all of alice's TokenB is swapped
 	// and she deposits ~7.3TokenA & 0TokenB
 	// A = 20 / 1.0001^10003 = 7.3
 	// SharesIssued = 7.3
 
-	s.Equal(sdkmath.NewInt(7355749), resp.Reserve0Deposited[0])
+	s.Equal(sdkmath.NewInt(7355750), resp.Reserve0Deposited[0])
 	s.True(resp.Reserve1Deposited[0].IsZero())
 	s.Equal(sdkmath.NewInt(7355749), resp.SharesIssued[0].Amount)
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(2))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.ZeroInt())
 
 	s.assertLiquidityAtTickInt(sdkmath.NewInt(7355749), sdkmath.ZeroInt(), -10005, 1)
 }
@@ -695,129 +669,4 @@ func (s *DexTestSuite) TestDepositSingleToken1NotBELWithSwap() {
 	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.ZeroInt())
 
 	s.assertLiquidityAtTickInt(sdkmath.ZeroInt(), sdkmath.NewInt(20000000), -10003, 1)
-}
-
-func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopToleranceFails() {
-	s.fundAliceBalances(10, 0)
-	s.fundBobBalances(0, 1)
-
-	// GIVEN TokenB dust
-	s.limitSellsIntSuccess(s.bob, "TokenB", 999, sdkmath.NewInt(10))
-	s.limitSellsIntSuccess(s.bob, "TokenB", 998, sdkmath.NewInt(10))
-	s.limitSellsIntSuccess(s.bob, "TokenB", 997, sdkmath.NewInt(400))
-
-	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0 slop tolerance
-
-	// THEN deposit fails
-	s.assertAliceDepositFails(
-		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
-		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{
-			FailTxOnBel:                   true,
-			SwapOnDeposit:                 true,
-			SwapOnDepositSlopToleranceBps: 0, // 0% slop tolerance
-		}),
-	)
-}
-
-func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopToleranceFails2() {
-	s.fundAliceBalances(10, 0)
-	s.fundBobBalances(0, 1)
-
-	// GIVEN TokenB dust
-	s.limitSellsIntSuccess(s.bob, "TokenB", 999, sdkmath.NewInt(10))
-	s.limitSellsIntSuccess(s.bob, "TokenB", 998, sdkmath.NewInt(10))
-	s.limitSellsIntSuccess(s.bob, "TokenB", 997, sdkmath.NewInt(400))
-
-	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0.25% slop tolerance
-	// THEN deposit fails
-	s.assertAliceDepositFails(
-		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
-		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{
-			FailTxOnBel:                   true,
-			SwapOnDeposit:                 true,
-			SwapOnDepositSlopToleranceBps: 25, // 0.25% slop tolerance
-		}),
-	)
-}
-
-func (s *DexTestSuite) TestDepositSingleToken0WithSwapSlopTolerance() {
-	s.fundAliceBalances(10, 0)
-	s.fundBobBalances(0, 1)
-
-	// GIVEN TokenB dust
-	s.limitSellsIntSuccess(s.bob, "TokenB", 999, sdkmath.NewInt(10))
-	s.limitSellsIntSuccess(s.bob, "TokenB", 998, sdkmath.NewInt(10))
-	s.limitSellsIntSuccess(s.bob, "TokenB", 997, sdkmath.NewInt(400))
-
-	// WHEN alice deposits TokenA at tick -1000 (BEL) with 0.5% slop tolerance
-	// THEN deposit succeeds
-	s.aliceDeposits(
-		NewDepositWithOptions(10, 0, 1001, 1, types.DepositOptions{
-			FailTxOnBel:                   true,
-			SwapOnDeposit:                 true,
-			SwapOnDepositSlopToleranceBps: 50, // 0.5% slop tolerance
-		}),
-	)
-}
-
-func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopToleranceFails() {
-	s.fundAliceBalances(0, 10)
-	s.fundBobBalances(1, 0)
-
-	// GIVEN TokenA dust
-	s.limitSellsIntSuccess(s.bob, "TokenA", 999, sdkmath.NewInt(20))
-	s.limitSellsIntSuccess(s.bob, "TokenA", 998, sdkmath.NewInt(20))
-	s.limitSellsIntSuccess(s.bob, "TokenA", 997, sdkmath.NewInt(300))
-
-	// WHEN alice deposits TokenB at tick 996 (BEL) with 0 slop tolerance
-	// THEN deposit fails
-	s.assertAliceDepositFails(
-		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
-		NewDepositWithOptions(0, 10, 995, 1, types.DepositOptions{
-			FailTxOnBel:                   true,
-			SwapOnDeposit:                 true,
-			SwapOnDepositSlopToleranceBps: 0, // 0% slop tolerance
-		}),
-	)
-}
-
-func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopToleranceFails2() {
-	s.fundAliceBalances(0, 10)
-	s.fundBobBalances(1, 0)
-
-	// GIVEN TokenA dust
-	s.limitSellsIntSuccess(s.bob, "TokenA", 999, sdkmath.NewInt(20))
-	s.limitSellsIntSuccess(s.bob, "TokenA", 998, sdkmath.NewInt(20))
-	s.limitSellsIntSuccess(s.bob, "TokenA", 997, sdkmath.NewInt(300))
-
-	// WHEN alice deposits TokenB at tick 996 (BEL) with 0.5% slop tolerance
-	// THEN deposit fails
-	s.assertAliceDepositFails(
-		types.ErrSwapOnDepositSlopToleranceNotSatisfied,
-		NewDepositWithOptions(0, 10, 995, 1, types.DepositOptions{
-			FailTxOnBel:                   true,
-			SwapOnDeposit:                 true,
-			SwapOnDepositSlopToleranceBps: 50, // 0.5% slop tolerance
-		}),
-	)
-}
-
-func (s *DexTestSuite) TestDepositSingleToken1WithSwapSlopTolerance() {
-	s.fundAliceBalances(0, 10)
-	s.fundBobBalances(1, 0)
-
-	// GIVEN TokenA dust
-	s.limitSellsIntSuccess(s.bob, "TokenA", 999, sdkmath.NewInt(20))
-	s.limitSellsIntSuccess(s.bob, "TokenA", 998, sdkmath.NewInt(20))
-	s.limitSellsIntSuccess(s.bob, "TokenA", 997, sdkmath.NewInt(300))
-
-	// WHEN alice deposits TokenB at tick 996 (BEL) with 0.75% slop tolerance
-	// THEN deposit succeeds
-	s.aliceDeposits(
-		NewDepositWithOptions(0, 10, 995, 1, types.DepositOptions{
-			FailTxOnBel:                   true,
-			SwapOnDeposit:                 true,
-			SwapOnDepositSlopToleranceBps: 75, // 0.75% slop tolerance
-		}),
-	)
 }

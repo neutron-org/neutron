@@ -3,11 +3,11 @@ package types
 import (
 	"cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
 )
 
 func (p PoolReserves) HasToken() bool {
-	return p.ReservesMakerDenom.GT(math.ZeroInt())
+	return p.DecReservesMakerDenom.IsPositive()
 }
 
 func NewPoolReservesFromCounterpart(
@@ -19,6 +19,7 @@ func NewPoolReservesFromCounterpart(
 	return &PoolReserves{
 		Key:                       thisID,
 		ReservesMakerDenom:        math.ZeroInt(),
+		DecReservesMakerDenom:     math_utils.ZeroPrecDec(),
 		MakerPrice:                makerPrice,
 		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
 		PriceOppositeTakerToMaker: counterpart.PriceTakerToMaker,
@@ -41,6 +42,7 @@ func NewPoolReserves(
 	return &PoolReserves{
 		Key:                       poolReservesID,
 		ReservesMakerDenom:        math.ZeroInt(),
+		DecReservesMakerDenom:     math_utils.ZeroPrecDec(),
 		MakerPrice:                makerPrice,
 		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
 		PriceOppositeTakerToMaker: priceOppositeTakerToMaker,
@@ -55,4 +57,14 @@ func MustNewPoolReserves(
 		panic(err)
 	}
 	return poolReserves
+}
+
+func (p *PoolReserves) SetMakerReserves(reserves math_utils.PrecDec) {
+	// It should be impossible for reserves to be negative.
+	// This check provides an extra safegaurd against possible exploits or bugs.
+	if reserves.IsNegative() {
+		panic("reserves cannot be negative")
+	}
+	p.ReservesMakerDenom = reserves.TruncateInt()
+	p.DecReservesMakerDenom = reserves
 }

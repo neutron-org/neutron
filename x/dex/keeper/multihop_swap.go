@@ -10,8 +10,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v6/utils/math"
-	"github.com/neutron-org/neutron/v6/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 type MultihopStep struct {
@@ -21,9 +21,9 @@ type MultihopStep struct {
 
 type MultiHopRouteOutput struct {
 	write   func()
-	coinOut sdk.Coin
+	coinOut types.PrecDecCoin
 	route   []string
-	dust    sdk.Coins
+	dust    types.PrecDecCoins
 }
 
 // MultiHopSwapCore handles logic for MsgMultihopSwap including bank operations and event emissions.
@@ -35,35 +35,33 @@ func (k Keeper) MultiHopSwapCore(
 	pickBestRoute bool,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-) (coinOut sdk.Coin, route []string, dust sdk.Coins, err error) {
+) (coinOut types.PrecDecCoin, route []string, dust types.PrecDecCoins, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	bestRoute, initialInCoin, err := k.CalulateMultiHopSwap(ctx, amountIn, routes, exitLimitPrice, pickBestRoute)
 	if err != nil {
-		return sdk.Coin{}, []string{}, sdk.Coins{}, err
+		return types.PrecDecCoin{}, []string{}, types.PrecDecCoins{}, err
 	}
 
 	bestRoute.write()
-	err = k.bankKeeper.SendCoinsFromAccountToModule(
+	err = k.FractionalBanker.SendFractionalCoinsFromAccountToDex(
 		ctx,
 		callerAddr,
-		types.ModuleName,
-		sdk.Coins{initialInCoin},
+		types.PrecDecCoins{initialInCoin},
 	)
 	if err != nil {
-		return sdk.Coin{}, []string{}, sdk.Coins{}, err
+		return types.PrecDecCoin{}, []string{}, types.PrecDecCoins{}, err
 	}
 
 	// send both dust and coinOut to receiver
 	// note that dust can be multiple coins collected from multiple hops.
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(
+	err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
 		ctx,
-		types.ModuleName,
 		receiverAddr,
 		bestRoute.dust.Add(bestRoute.coinOut),
 	)
 	if err != nil {
-		return sdk.Coin{}, []string{}, sdk.Coins{}, fmt.Errorf("failed to send out coin and dust to the receiver: %w", err)
+		return types.PrecDecCoin{}, []string{}, types.PrecDecCoins{}, fmt.Errorf("failed to send out coin and dust to the receiver: %w", err)
 	}
 
 	ctx.EventManager().EmitEvent(types.CreateMultihopSwapEvent(
@@ -88,12 +86,12 @@ func (k Keeper) CalulateMultiHopSwap(
 	routes []*types.MultiHopRoute,
 	exitLimitPrice math_utils.PrecDec,
 	pickBestRoute bool,
-) (bestRoute MultiHopRouteOutput, initialInCoin sdk.Coin, err error) {
+) (bestRoute MultiHopRouteOutput, initialInCoin types.PrecDecCoin, err error) {
 	var routeErrors []error
-	initialInCoin = sdk.NewCoin(routes[0].Hops[0], amountIn)
+	initialInCoin = types.NewPrecDecCoinFromCoin(sdk.NewCoin(routes[0].Hops[0], amountIn))
 	stepCache := make(map[multihopCacheKey]StepResult)
 
-	bestRoute.coinOut = sdk.Coin{Amount: math.ZeroInt()}
+	bestRoute.coinOut = types.PrecDecCoin{Amount: math_utils.ZeroPrecDec()}
 
 	for _, route := range routes {
 		routeDust, routeCoinOut, writeRoute, err := k.RunMultihopRoute(
@@ -124,7 +122,7 @@ func (k Keeper) CalulateMultiHopSwap(
 
 		allErr := errors.Join(append([]error{types.ErrAllMultiHopRoutesFailed}, routeErrors...)...)
 
-		return MultiHopRouteOutput{}, sdk.Coin{}, allErr
+		return MultiHopRouteOutput{}, types.PrecDecCoin{}, allErr
 	}
 
 	return bestRoute, initialInCoin, nil
@@ -161,18 +159,18 @@ func (k Keeper) HopsToRouteData(
 
 type StepResult struct {
 	Ctx     *types.BranchableCache
-	CoinOut sdk.Coin
-	Dust    sdk.Coin
+	CoinOut types.PrecDecCoin
+	Dust    types.PrecDecCoin
 	Err     error
 }
 
 type multihopCacheKey struct {
 	TokenIn  string
 	TokenOut string
-	InAmount math.Int
+	InAmount math_utils.PrecDec
 }
 
-func newCacheKey(tokenIn, tokenOut string, inAmount math.Int) multihopCacheKey {
+func newCacheKey(tokenIn, tokenOut string, inAmount math_utils.PrecDec) multihopCacheKey {
 	return multihopCacheKey{
 		TokenIn:  tokenIn,
 		TokenOut: tokenOut,
@@ -183,9 +181,9 @@ func newCacheKey(tokenIn, tokenOut string, inAmount math.Int) multihopCacheKey {
 func (k Keeper) MultihopStep(
 	bCtx *types.BranchableCache,
 	step MultihopStep,
-	inCoin sdk.Coin,
+	inCoin types.PrecDecCoin,
 	stepCache map[multihopCacheKey]StepResult,
-) (sdk.Coin, sdk.Coin, *types.BranchableCache, error) {
+) (types.PrecDecCoin, types.PrecDecCoin, *types.BranchableCache, error) {
 	cacheKey := newCacheKey(step.tradePairID.TakerDenom, step.tradePairID.MakerDenom, inCoin.Amount)
 	val, ok := stepCache[cacheKey]
 	if ok {
@@ -202,7 +200,7 @@ func (k Keeper) MultihopStep(
 	ctxBranch := bCtx.Branch()
 	stepCache[cacheKey] = StepResult{Ctx: bCtx, CoinOut: coinOut, Dust: dust, Err: err}
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, bCtx, err
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, bCtx, err
 	}
 
 	return dust, coinOut, ctxBranch, nil
@@ -211,28 +209,28 @@ func (k Keeper) MultihopStep(
 func (k Keeper) RunMultihopRoute(
 	ctx sdk.Context,
 	route types.MultiHopRoute,
-	initialInCoin sdk.Coin,
+	initialInCoin types.PrecDecCoin,
 	exitLimitPrice math_utils.PrecDec,
 	stepCache map[multihopCacheKey]StepResult,
-) (sdk.Coins, sdk.Coin, func(), error) {
+) (types.PrecDecCoins, types.PrecDecCoin, func(), error) {
 	routeData, err := k.HopsToRouteData(ctx, route.Hops)
 	if err != nil {
-		return sdk.Coins{}, sdk.Coin{}, nil, err
+		return types.PrecDecCoins{}, types.PrecDecCoin{}, nil, err
 	}
 	currentPrice := math_utils.OnePrecDec()
 
-	var stepOutCoin sdk.Coin
-	var stepDust sdk.Coin
+	var stepOutCoin types.PrecDecCoin
+	var stepDust types.PrecDecCoin
 	inCoin := initialInCoin
 	bCacheCtx := types.NewBranchableCache(ctx)
 
-	var dustAcc sdk.Coins
+	var dustAcc types.PrecDecCoins
 
 	for _, step := range routeData {
 		// If we can't hit the best possible price we can greedily abort
 		priceUpperbound := currentPrice.Mul(step.RemainingBestPrice)
 		if exitLimitPrice.GT(priceUpperbound) {
-			return sdk.Coins{}, sdk.Coin{}, bCacheCtx.WriteCache, types.ErrLimitPriceNotSatisfied
+			return types.PrecDecCoins{}, types.PrecDecCoin{}, bCacheCtx.WriteCache, types.ErrLimitPriceNotSatisfied
 		}
 
 		stepDust, stepOutCoin, bCacheCtx, err = k.MultihopStep(
@@ -243,7 +241,7 @@ func (k Keeper) RunMultihopRoute(
 		)
 		inCoin = stepOutCoin
 		if err != nil {
-			return sdk.Coins{}, sdk.Coin{}, nil, sdkerrors.Wrapf(
+			return types.PrecDecCoins{}, types.PrecDecCoin{}, nil, sdkerrors.Wrapf(
 				err,
 				"Failed at pair: %s",
 				step.tradePairID.MustPairID().CanonicalString(),
@@ -253,12 +251,12 @@ func (k Keeper) RunMultihopRoute(
 		// Add what hasn't been swapped to dustAcc
 		dustAcc = dustAcc.Add(stepDust)
 
-		currentPrice = math_utils.NewPrecDecFromInt(stepOutCoin.Amount).
-			Quo(math_utils.NewPrecDecFromInt(initialInCoin.Amount))
+		currentPrice = stepOutCoin.Amount.
+			Quo(initialInCoin.Amount)
 	}
 
 	if exitLimitPrice.GT(currentPrice) {
-		return sdk.Coins{}, sdk.Coin{}, nil, types.ErrLimitPriceNotSatisfied
+		return types.PrecDecCoins{}, types.PrecDecCoin{}, nil, types.ErrLimitPriceNotSatisfied
 	}
 
 	return dustAcc, stepOutCoin, bCacheCtx.WriteCache, nil
@@ -271,8 +269,8 @@ func (k Keeper) RunMultihopRoute(
 func (k Keeper) SwapFullAmountIn(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	amountIn math.Int,
-) (dust, totalOut sdk.Coin, err error) {
+	amountIn math_utils.PrecDec,
+) (dust, totalOut types.PrecDecCoin, err error) {
 	swapAmountTakerDenom, swapAmountMakerDenom, orderFilled, err := k.Swap(
 		ctx,
 		tradePairID,
@@ -281,15 +279,16 @@ func (k Keeper) SwapFullAmountIn(
 		nil,
 	)
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, err
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 	if !orderFilled {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrNoLiquidity
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, types.ErrNoLiquidity
 	}
 
-	dust = sdk.Coin.Sub(sdk.NewCoin(swapAmountTakerDenom.Denom, amountIn), swapAmountTakerDenom)
+	dustAmount := amountIn.Sub(swapAmountTakerDenom.Amount)
+	dust = types.NewPrecDecCoin(swapAmountTakerDenom.Denom, dustAmount)
 	if dust.IsNegative() {
-		return sdk.Coin{}, sdk.Coin{}, fmt.Errorf("dust coins are negative")
+		return types.PrecDecCoin{}, types.PrecDecCoin{}, fmt.Errorf("dust coins are negative")
 	}
 
 	return dust, swapAmountMakerDenom, err

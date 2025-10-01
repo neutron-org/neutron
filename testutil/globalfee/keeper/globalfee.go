@@ -17,8 +17,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/x/globalfee/keeper"
-	"github.com/neutron-org/neutron/v6/x/globalfee/types"
+	"github.com/neutron-org/neutron/v8/x/globalfee/keeper"
+	"github.com/neutron-org/neutron/v8/x/globalfee/types"
 )
 
 func GlobalFeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

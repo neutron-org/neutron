@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v6/testutil"
-	"github.com/neutron-org/neutron/v6/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/v6/x/feeburner/types"
+	"github.com/neutron-org/neutron/v8/testutil"
+	"github.com/neutron-org/neutron/v8/testutil/feeburner/keeper"
+	"github.com/neutron-org/neutron/v8/x/feeburner/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {
