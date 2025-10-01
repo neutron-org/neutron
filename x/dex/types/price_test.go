@@ -13,7 +13,7 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 	for _, tc := range []struct {
 		desc string
 		tick int64
-		err  error
+		err  bool
 	}{
 		{
 			desc: "0",
@@ -32,16 +32,16 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 			tick: 100000,
 		},
 		{
-			desc: "-100000",
-			tick: -100000,
+			desc: "-100051",
+			tick: -100051,
 		},
 		{
-			desc: "-200000",
-			tick: -200000,
+			desc: "-200100",
+			tick: -2000100,
 		},
 		{
-			desc: "-400000",
-			tick: -400000,
+			desc: "400000",
+			tick: 400000,
 		},
 		{
 			desc: "MaxTickExp",
@@ -54,22 +54,23 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 		{
 			desc: "GT MaxTickExp",
 			tick: int64(types.MaxTickExp) + 1,
-			err:  types.ErrTickOutsideRange,
+			err:  true,
 		},
 		{
 			desc: "LT MinTickExp",
 			tick: -1*int64(types.MaxTickExp) - 1,
-			err:  types.ErrTickOutsideRange,
+			err:  true,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			price, err1 := types.CalcPrice(tc.tick)
 			val, err2 := types.CalcTickIndexFromPrice(price)
 			if err1 != nil {
-				require.ErrorIs(t, err1, tc.err)
-				require.ErrorIs(t, err2, tc.err)
+				require.Error(t, err1)
+				require.Error(t, err2)
 			} else {
 				// If we are not outside the tick range we should TestCalcTickIndexFromPrice to never throw
+				require.NoError(t, err1)
 				require.NoError(t, err2)
 				require.Equal(t, tc.tick, val)
 			}

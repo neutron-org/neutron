@@ -15,8 +15,8 @@ const (
 	// when using 27 digit decimal precision (via prec_dec).
 	// The error rate for very negative ticks approaches zero, so there is no concern there
 	MaxTickExp uint64 = 529_715
-	MinPrice   string = "0.000000000000000000000000495"
-	MaxPrice   string = "2020125331305056766452345.127500016657360222036663651"
+	MinPrice   string = "0.000000000000000000000009906"
+	MaxPrice   string = "100943872917137109121294.116592697013542139739189686"
 )
 
 //go:embed precomputed_prices.gob
@@ -72,10 +72,14 @@ func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 	right := MaxTickExp
 
 	// Binary search to find the closest precomputed value
+BinarySearch:
 	for left < right {
 		switch mid := (left + right) / 2; {
 		case PrecomputedPrices[mid].Equal(price):
 			return mid
+		case right-left == 1:
+			// Use bottom logic
+			break BinarySearch
 		case PrecomputedPrices[mid].LT(price):
 			left = mid + 1
 		default:
@@ -83,8 +87,10 @@ func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 
 		}
 	}
-
-	// If exact match is not found, return the upper bound
+	// Round to the nearest tick or exact match
+	if PrecomputedPrices[left].Sub(price).Abs().LT(PrecomputedPrices[right].Sub(price).Abs()) {
+		return left
+	}
 	return right
 }
 
