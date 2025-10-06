@@ -204,8 +204,6 @@ cosmossdk.io/log v1.6.1 h1:YXNwAgbDwMEKwDlCdH8vPcoggma48MgZrTQXCfmMBeI=
 cosmossdk.io/log v1.6.1/go.mod h1:gMwsWyyDBjpdG9u2avCFdysXqxq28WJapJvu+vF1y+E=
 cosmossdk.io/math v1.5.3 h1:WH6tu6Z3AUCeHbeOSHg2mt9rnoiUWVWaQ2t6Gkll96U=
 cosmossdk.io/math v1.5.3/go.mod h1:uqcZv7vexnhMFJF+6zh9EWdm/+Ylyln34IvPnBauPCQ=
-cosmossdk.io/store v1.1.1 h1:NA3PioJtWDVU7cHHeyvdva5J/ggyLDkyH0hGHl2804Y=
-cosmossdk.io/store v1.1.1/go.mod h1:8DwVTz83/2PSI366FERGbWSH7hL6sB7HbYp8bqksNwM=
 cosmossdk.io/x/circuit v0.1.1 h1:KPJCnLChWrxD4jLwUiuQaf5mFD/1m7Omyo7oooefBVQ=
 cosmossdk.io/x/circuit v0.1.1/go.mod h1:B6f/urRuQH8gjt4eLIXfZJucrbreuYrKh5CSjaOxr+Q=
 cosmossdk.io/x/evidence v0.1.1 h1:Ks+BLTa3uftFpElLTDp9L76t2b58htjVbSZ86aoK/E4=
@@ -841,6 +839,8 @@ github.com/neutron-org/admin-module/v2 v2.0.3 h1:zTME5kRRMB4uE/DbCEU84mGn3EKDNXZ
 github.com/neutron-org/admin-module/v2 v2.0.3/go.mod h1:RfOyabXsdJ5btcOKyKPZDYiZhtuKFubbJMOb8EJZtvA=
 github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250808012539-4561deb913c6 h1:kg5up1YNO/0UwPvfJw6Lzd1DhC6Gz41H4ej1jjgh7Bk=
 github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250808012539-4561deb913c6/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
+github.com/neutron-org/cosmos-sdk/store v1.1.1-async-pruning h1:UoxlwEd09GKt42E5pFuFQgaIAJYGZmMInMxjRFTzwUc=
+github.com/neutron-org/cosmos-sdk/store v1.1.1-async-pruning/go.mod h1:8DwVTz83/2PSI366FERGbWSH7hL6sB7HbYp8bqksNwM=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464 h1:5mbzd7sqp8pPYWzIhIYKFovMRBL0ru24N2E6dIWjL0o=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464/go.mod h1:DUa6djUsTeMOrbrcIZqWSVxU9IZNCXp96ruaojyBNpc=
 github.com/neutron-org/wasmd v0.54.1-neutron h1:aIEOBz00VJmt49azOobu/OnKeHEj/Pm6oGPnQ8Ju1LI=

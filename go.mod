@@ -223,6 +223,7 @@ require (
 )
 
 replace (
+	cosmossdk.io/store => github.com/neutron-org/cosmos-sdk/store v1.1.1-async-pruning
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.54.1-neutron
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
