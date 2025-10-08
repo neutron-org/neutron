@@ -229,8 +229,8 @@ replace (
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250808012539-4561deb913c6
-	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
-	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
+	// explicitely replace iavl to v1.2.6 cause sometimes go mod tidy uses not right version
+	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.6
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
 	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464
