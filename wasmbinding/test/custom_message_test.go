@@ -836,7 +836,7 @@ func (suite *CustomMessengerTestSuite) executeMsg(contractAddress sdk.AccAddress
 
 	data, err = suite.contractKeeper.Execute(suite.ctx, contractAddress, suite.contractOwner, msg, nil)
 
-	return
+	return data, err
 }
 
 func (suite *CustomMessengerTestSuite) executeNeutronMsg(contractAddress sdk.AccAddress, fullMsg bindings.NeutronMsg) (data []byte, err error) {

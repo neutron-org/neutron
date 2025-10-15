@@ -55,7 +55,7 @@ func (k Keeper) GetAllInactiveLimitOrderTranche(ctx sdk.Context) (list []*types.
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 // UpdateInactiveTranche handles the logic for all updates to InactiveLimitOrderTranches

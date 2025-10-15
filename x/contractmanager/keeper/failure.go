@@ -71,7 +71,7 @@ func (k Keeper) GetAllFailures(ctx context.Context) (list []types.Failure) {
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint64) (*types.Failure, error) {

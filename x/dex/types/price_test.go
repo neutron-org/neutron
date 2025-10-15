@@ -77,6 +77,7 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 		})
 	}
 }
+
 func TestPriceDups(t *testing.T) {
 	prevPrice := math_utils.ZeroPrecDec()
 	for i := 0; i >= int(types.MaxTickExp)*-1; i-- {

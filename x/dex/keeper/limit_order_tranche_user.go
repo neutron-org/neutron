@@ -119,7 +119,7 @@ func (k Keeper) GetAllLimitOrderTrancheUser(ctx sdk.Context) (list []*types.Limi
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) GetAllLimitOrderTrancheUserForAddress(
@@ -138,5 +138,5 @@ func (k Keeper) GetAllLimitOrderTrancheUserForAddress(
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
