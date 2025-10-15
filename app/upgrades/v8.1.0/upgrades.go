@@ -15,9 +15,9 @@ import (
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
-	keepers *upgrades.UpgradeKeepers,
+	_ *upgrades.UpgradeKeepers,
 	_ upgrades.StoreKeys,
-	cdc codec.Codec,
+	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
 	return func(c context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx := sdk.UnwrapSDKContext(c)
