@@ -121,7 +121,8 @@ func (k Keeper) ExecuteDeposit(
 		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, depositAmount0, depositAmount1) {
 			err = sdkerrors.Wrapf(types.ErrDepositBehindEnemyLines,
 				"deposit failed at tick %d fee %d", tickIndex, fee)
-			if option.FailTxOnBel {
+			// Always fail entire tx when SwapOnDeposit is enabled or FailTxOnBel is enabled
+			if option.FailTxOnBel || option.SwapOnDeposit {
 				return nil, nil, math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, nil, err
 			}
 			failedDeposits = append(failedDeposits, &types.FailedDeposit{DepositIdx: uint64(i), Error: err.Error()}) //nolint:gosec

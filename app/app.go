@@ -15,6 +15,7 @@ import (
 	v700 "github.com/neutron-org/neutron/v8/app/upgrades/v7.0.0"
 	v800 "github.com/neutron-org/neutron/v8/app/upgrades/v8.0.0"
 	v800_rc0 "github.com/neutron-org/neutron/v8/app/upgrades/v8.0.0-rc0"
+	v810 "github.com/neutron-org/neutron/v8/app/upgrades/v8.1.0"
 	dynamicfeestypes "github.com/neutron-org/neutron/v8/x/dynamicfees/types"
 	stateverifier "github.com/neutron-org/neutron/v8/x/state-verifier"
 	svkeeper "github.com/neutron-org/neutron/v8/x/state-verifier/keeper"
@@ -241,6 +242,7 @@ var (
 		v700.Upgrade,
 		v800_rc0.Upgrade,
 		v800.Upgrade,
+		v810.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
