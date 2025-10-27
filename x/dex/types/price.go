@@ -6,20 +6,17 @@ import (
 	"encoding/gob"
 	fmt "fmt"
 
-	"cosmossdk.io/errors"
-	"cosmossdk.io/math"
-
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/utils"
 )
 
 const (
-	// NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error
+	// NOTE: 529_715 is the highest possible tick at which price can be calculated with a < 1% error and all prices are unique for negative ticks
 	// when using 27 digit decimal precision (via prec_dec).
 	// The error rate for very negative ticks approaches zero, so there is no concern there
-	MaxTickExp uint64 = 559_680
-	MinPrice   string = "0.000000000000000000000000495"
-	MaxPrice   string = "2020125331305056766452345.127500016657360222036663651"
+	MaxTickExp uint64 = 529_715
+	MinPrice   string = "0.000000000000000000000009906"
+	MaxPrice   string = "100943872917137109121294.116592697013542139739189686"
 )
 
 //go:embed precomputed_prices.gob
@@ -69,16 +66,20 @@ func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 
 func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 	if price.LT(math_utils.OnePrecDec()) {
-		panic("Can only lookup prices <= 1")
+		panic("Can only lookup prices >= 1")
 	}
 	var left uint64 // = 0
 	right := MaxTickExp
 
 	// Binary search to find the closest precomputed value
+BinarySearch:
 	for left < right {
 		switch mid := (left + right) / 2; {
 		case PrecomputedPrices[mid].Equal(price):
 			return mid
+		case right-left == 1:
+			// Use bottom logic
+			break BinarySearch
 		case PrecomputedPrices[mid].LT(price):
 			left = mid + 1
 		default:
@@ -86,8 +87,10 @@ func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 
 		}
 	}
-
-	// If exact match is not found, return the upper bound
+	// Round to the nearest tick or exact match
+	if PrecomputedPrices[left].Sub(price).Abs().LT(PrecomputedPrices[right].Sub(price).Abs()) {
+		return left
+	}
 	return right
 }
 
@@ -136,14 +139,6 @@ func ValidateTickFee(tick int64, fee uint64) error {
 	// NOTE: Ugly arithmetic is to ensure that we don't overflow uint64
 	if utils.Abs(tick) > MaxTickExp-fee {
 		return ErrTickOutsideRange
-	}
-	return nil
-}
-
-func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
-	amountOut := math_utils.NewPrecDecFromInt(amountIn).Quo(price)
-	if amountOut.LT(math_utils.OnePrecDec()) {
-		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}
 	return nil
 }

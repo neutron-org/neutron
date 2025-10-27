@@ -5,7 +5,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // GetAllTickLiquidity returns all tickLiquidity
@@ -21,7 +21,7 @@ func (k Keeper) GetAllTickLiquidity(ctx sdk.Context) (list []*types.TickLiquidit
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) GetTickLiquidityIterator(ctx sdk.Context) storetypes.Iterator {

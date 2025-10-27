@@ -10,9 +10,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
-	"github.com/neutron-org/neutron/v7/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func NewLimitOrderTranche(
@@ -24,14 +23,17 @@ func NewLimitOrderTranche(
 		return nil, err
 	}
 	return &types.LimitOrderTranche{
-		Key:                limitOrderTrancheKey,
-		ReservesMakerDenom: math.ZeroInt(),
-		ReservesTakerDenom: math.ZeroInt(),
-		TotalMakerDenom:    math.ZeroInt(),
-		TotalTakerDenom:    math.ZeroInt(),
-		ExpirationTime:     goodTil,
-		MakerPrice:         price,
-		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(price),
+		Key:                   limitOrderTrancheKey,
+		ReservesMakerDenom:    math.ZeroInt(),
+		ReservesTakerDenom:    math.ZeroInt(),
+		DecReservesMakerDenom: math_utils.ZeroPrecDec(),
+		DecReservesTakerDenom: math_utils.ZeroPrecDec(),
+		TotalMakerDenom:       math.ZeroInt(),
+		TotalTakerDenom:       math.ZeroInt(),
+		DecTotalTakerDenom:    math_utils.ZeroPrecDec(),
+		ExpirationTime:        goodTil,
+		MakerPrice:            price,
+		PriceTakerToMaker:     math_utils.OnePrecDec().Quo(price),
 	}, nil
 }
 
@@ -206,16 +208,10 @@ func (k Keeper) GetAllLimitOrderTrancheAtIndex(
 	return trancheList
 }
 
-func NewTrancheKey(ctx sdk.Context) string {
-	blockHeight := ctx.BlockHeight()
-	txGas := ctx.GasMeter().GasConsumed()
-	blockGas := utils.MustGetBlockGasUsed(ctx)
-	totalGas := blockGas + txGas
-
-	blockStr := utils.Uint64ToSortableString(uint64(blockHeight)) //nolint:gosec
-	gasStr := utils.Uint64ToSortableString(totalGas)
-
-	return fmt.Sprintf("%s%s", blockStr, gasStr)
+func (k Keeper) NewTrancheKey(ctx sdk.Context) string {
+	trancheCount := k.GetTrancheCount(ctx)
+	k.IncrementTrancheCount(ctx)
+	return fmt.Sprintf("tk-%d", trancheCount)
 }
 
 func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
@@ -236,7 +232,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
-			TrancheKey:            NewTrancheKey(ctx),
+			TrancheKey:            k.NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, &JITGoodTilTime)
 		ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
@@ -244,7 +240,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
-			TrancheKey:            NewTrancheKey(ctx),
+			TrancheKey:            k.NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
 		ctx.EventManager().EmitEvents(types.GetEventsIncExpiringOrders(tradePairID))
@@ -254,7 +250,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 				TradePairId:           tradePairID,
 				TickIndexTakerToMaker: tickIndexTakerToMaker,
-				TrancheKey:            NewTrancheKey(ctx),
+				TrancheKey:            k.NewTrancheKey(ctx),
 			}
 			placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, nil)
 			ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
@@ -297,4 +293,31 @@ func (k Keeper) SetJITsInBlockCount(ctx sdk.Context, count uint64) {
 func (k Keeper) IncrementJITsInBlock(ctx sdk.Context) {
 	currentCount := k.GetJITsInBlockCount(ctx)
 	k.SetJITsInBlockCount(ctx, currentCount+1)
+}
+
+func (k Keeper) SetTrancheCount(ctx sdk.Context, count uint64) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	byteKey := types.KeyPrefix(types.TrancheCountKey)
+	bz := make([]byte, 8)
+	binary.BigEndian.PutUint64(bz, count)
+	store.Set(byteKey, bz)
+}
+
+func (k Keeper) GetTrancheCount(ctx sdk.Context) uint64 {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	byteKey := types.KeyPrefix(types.TrancheCountKey)
+	bz := store.Get(byteKey)
+
+	// Count doesn't exist: no element
+	if bz == nil {
+		return 0
+	}
+
+	// Parse bytes
+	return binary.BigEndian.Uint64(bz)
+}
+
+func (k Keeper) IncrementTrancheCount(ctx sdk.Context) {
+	currentCount := k.GetTrancheCount(ctx)
+	k.SetTrancheCount(ctx, currentCount+1)
 }

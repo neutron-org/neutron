@@ -10,7 +10,7 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v7/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v8/x/ibc-rate-limit/types"
 )
 
 var (

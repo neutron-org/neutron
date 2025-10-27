@@ -4,7 +4,7 @@ package neutron.dex;
 import "gogoproto/gogo.proto";
 import "neutron/dex/trade_pair_id.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
 
 message PoolReservesKey {
   TradePairID trade_pair_id = 1;
@@ -14,7 +14,9 @@ message PoolReservesKey {
 
 message PoolReserves {
   PoolReservesKey key = 1;
+  // DEPRECATED: reserves_maker_denom will be removed in future release, `dec_reserves_maker_denom` should always be used.
   string reserves_maker_denom = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserves_maker_denom\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.jsontag) = "reserves_maker_denom",
@@ -23,7 +25,7 @@ message PoolReserves {
   // DEPRECATED: price_taker_to_maker will be removed in future release, `maker_price` should always be used.
   string price_taker_to_maker = 3 [
     (gogoproto.moretags) = "yaml:\"price_taker_to_maker\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_taker_to_maker",
     deprecated = true
@@ -32,7 +34,7 @@ message PoolReserves {
   // It is being kept strictly for backwards compatibility. The actual field value is unused.
   string price_opposite_taker_to_maker = 4 [
     (gogoproto.moretags) = "yaml:\"price_opposite_taker_to_maker\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_opposite_taker_to_maker",
     deprecated = true
@@ -40,8 +42,15 @@ message PoolReserves {
   // This is the price of the PoolReserves denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
   string maker_price = 5 [
     (gogoproto.moretags) = "yaml:\"maker_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "maker_price"
+  ];
+
+  string dec_reserves_maker_denom = 6 [
+    (gogoproto.moretags) = "yaml:\"dec_reserves_maker_denom\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.jsontag) = "dec_reserves_maker_denom",
+    (gogoproto.nullable) = false
   ];
 }

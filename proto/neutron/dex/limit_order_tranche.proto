@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "neutron/dex/pair_id.proto";
 import "neutron/dex/trade_pair_id.proto";
 
-option go_package = "github.com/neutron-org/neutron/v7/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
 
 message LimitOrderTrancheKey {
   TradePairID trade_pair_id = 1;
@@ -16,13 +16,17 @@ message LimitOrderTrancheKey {
 
 message LimitOrderTranche {
   LimitOrderTrancheKey key = 1;
+  // DEPRECATED: reserves_maker_denom will be removed in future release, `dec_reserves_maker_denom` should always be used.
   string reserves_maker_denom = 2 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserves_maker_denom\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserves_maker_denom"
   ];
+  // DEPRECATED: reserves_taker_denom will be removed in future release, `dec_reserves_taker_denom` should always be used.
   string reserves_taker_denom = 3 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"reserves_taker_denom\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -34,7 +38,9 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "total_maker_denom"
   ];
+  // DEPRECATED: total_taker_denom will be removed in future release, `dec_total_taker_denom` should always be used.
   string total_taker_denom = 5 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"total_taker_denom\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -52,7 +58,7 @@ message LimitOrderTranche {
   // DEPRECATED: price_taker_to_maker will be removed in future release, `maker_price` should always be used.
   string price_taker_to_maker = 7 [
     (gogoproto.moretags) = "yaml:\"price_taker_to_maker\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_taker_to_maker",
     deprecated = true
@@ -60,8 +66,27 @@ message LimitOrderTranche {
   // This is the price of the LimitOrder denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
   string maker_price = 8 [
     (gogoproto.moretags) = "yaml:\"maker_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v7/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "maker_price"
+  ];
+  string dec_reserves_maker_denom = 9 [
+    (gogoproto.moretags) = "yaml:\"dec_reserves_maker_denom\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserves_maker_denom"
+  ];
+  string dec_reserves_taker_denom = 10 [
+    (gogoproto.moretags) = "yaml:\"dec_reserves_taker_denom\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_reserves_taker_denom"
+  ];
+
+  string dec_total_taker_denom = 11 [
+    (gogoproto.moretags) = "yaml:\"dec_total_taker_denom\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v8/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_total_taker_denom"
   ];
 }

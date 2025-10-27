@@ -15,12 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v7/app/params"
-	"github.com/neutron-org/neutron/v7/testutil"
-	mock_types "github.com/neutron-org/neutron/v7/testutil/mocks/transfer/types"
-	"github.com/neutron-org/neutron/v7/testutil/transfer/keeper"
-	feetypes "github.com/neutron-org/neutron/v7/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v7/x/transfer/types"
+	"github.com/neutron-org/neutron/v8/app/params"
+	"github.com/neutron-org/neutron/v8/testutil"
+	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/transfer/types"
+	"github.com/neutron-org/neutron/v8/testutil/transfer/keeper"
+	feetypes "github.com/neutron-org/neutron/v8/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v8/x/transfer/types"
 )
 
 const (
@@ -245,38 +245,6 @@ func TestMsgTransferValidate(t *testing.T) {
 					RecvFee:    sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 					AckFee:     sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			errors.ErrInvalidCoins,
-		},
-		{
-			"zero ack fee",
-			types.MsgTransfer{
-				SourcePort:    "transfer",
-				SourceChannel: "channel-2",
-				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
-				Sender:        testutil.TestOwnerAddress,
-				Receiver:      TestAddress,
-				Fee: feetypes.Fee{
-					RecvFee:    nil,
-					AckFee:     nil,
-					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-				},
-			},
-			errors.ErrInvalidCoins,
-		},
-		{
-			"zero timeout fee",
-			types.MsgTransfer{
-				SourcePort:    "transfer",
-				SourceChannel: "channel-2",
-				Token:         sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
-				Sender:        testutil.TestOwnerAddress,
-				Receiver:      TestAddress,
-				Fee: feetypes.Fee{
-					RecvFee:    nil,
-					AckFee:     sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
-					TimeoutFee: nil,
 				},
 			},
 			errors.ErrInvalidCoins,

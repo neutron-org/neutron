@@ -5,9 +5,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
+// TODO: get rid of this query
 // TODO: This doesn't run ValidateBasic() checks.
 func (k Keeper) EstimateMultiHopSwap(
 	goCtx context.Context,
@@ -46,5 +47,5 @@ func (k Keeper) EstimateMultiHopSwap(
 
 	// NB: Critically, we do not write the best route's buffered state context since this is only an estimate.
 
-	return &types.QueryEstimateMultiHopSwapResponse{CoinOut: coinOut}, nil
+	return &types.QueryEstimateMultiHopSwapResponse{CoinOut: coinOut.TruncateToCoin()}, nil
 }

@@ -7,7 +7,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // Creates a new LimitOrderExpiration struct based on a LimitOrderTranche
@@ -104,7 +104,7 @@ func (k Keeper) GetAllLimitOrderExpiration(ctx sdk.Context) (list []*types.Limit
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {

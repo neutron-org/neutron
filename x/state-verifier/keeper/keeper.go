@@ -15,9 +15,9 @@ import (
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
 	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v7/utils/stateverification"
-	icqtypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v7/x/state-verifier/types"
+	"github.com/neutron-org/neutron/v8/utils/stateverification"
+	icqtypes "github.com/neutron-org/neutron/v8/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v8/x/state-verifier/types"
 )
 
 type (

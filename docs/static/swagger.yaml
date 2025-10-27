@@ -17828,6 +17828,8 @@ definitions:
             type: string
           lower_tick0:
             properties:
+              dec_reserves_maker_denom:
+                type: string
               key:
                 properties:
                   fee:
@@ -17864,10 +17866,15 @@ definitions:
                   release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
+                description: >-
+                  DEPRECATED: reserves_maker_denom will be removed in future
+                  release, `dec_reserves_maker_denom` should always be used.
                 type: string
             type: object
           upper_tick1:
             properties:
+              dec_reserves_maker_denom:
+                type: string
               key:
                 properties:
                   fee:
@@ -17904,6 +17911,9 @@ definitions:
                   release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
+                description: >-
+                  DEPRECATED: reserves_maker_denom will be removed in future
+                  release, `dec_reserves_maker_denom` should always be used.
                 type: string
             type: object
         type: object
@@ -17925,6 +17935,12 @@ definitions:
     type: object
   neutron.dex.LimitOrderTranche:
     properties:
+      dec_reserves_maker_denom:
+        type: string
+      dec_reserves_taker_denom:
+        type: string
+      dec_total_taker_denom:
+        type: string
       expiration_time:
         format: date-time
         title: >-
@@ -17963,12 +17979,21 @@ definitions:
           `maker_price` should always be used.
         type: string
       reserves_maker_denom:
+        description: >-
+          DEPRECATED: reserves_maker_denom will be removed in future release,
+          `dec_reserves_maker_denom` should always be used.
         type: string
       reserves_taker_denom:
+        description: >-
+          DEPRECATED: reserves_taker_denom will be removed in future release,
+          `dec_reserves_taker_denom` should always be used.
         type: string
       total_maker_denom:
         type: string
       total_taker_denom:
+        description: >-
+          DEPRECATED: total_taker_denom will be removed in future release,
+          `dec_total_taker_denom` should always be used.
         type: string
     type: object
   neutron.dex.LimitOrderTrancheKey:
@@ -18037,6 +18062,22 @@ definitions:
     type: object
   neutron.dex.MsgCancelLimitOrderResponse:
     properties:
+      dec_maker_coin_out:
+        title: Total amount of maker reserves that were canceled
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+      dec_taker_coin_out:
+        title: Total amount of taker reserves that were withdrawn
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
       maker_coin_out:
         description: |-
           Coin defines a token with a denomination and an amount.
@@ -18049,7 +18090,7 @@ definitions:
           denom:
             type: string
         type: object
-        title: Total amount of maker reserves that were canceled
+        title: maker_coin_out is DEPRECATED
       taker_coin_out:
         description: |-
           Coin defines a token with a denomination and an amount.
@@ -18062,7 +18103,7 @@ definitions:
           denom:
             type: string
         type: object
-        title: Total amount of taker reserves that were withdrawn
+        title: taker_coin_out is DEPRECATED
     type: object
   neutron.dex.MsgDeposit:
     properties:
@@ -18109,6 +18150,14 @@ definitions:
     type: object
   neutron.dex.MsgDepositResponse:
     properties:
+      dec_reserve0_deposited:
+        items:
+          type: string
+        type: array
+      dec_reserve1_deposited:
+        items:
+          type: string
+        type: array
       failed_deposits:
         items:
           properties:
@@ -18122,10 +18171,12 @@ definitions:
       reserve0_deposited:
         items:
           type: string
+        title: reserve0_deposited is DEPRECATED
         type: array
       reserve1_deposited:
         items:
           type: string
+        title: reserve0_deposited is DEPRECATED
         type: array
       shares_issued:
         items:
@@ -18183,6 +18234,23 @@ definitions:
           denom:
             type: string
         type: object
+        title: coin_out is DEPRECATED
+      dec_coin_out:
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+      dec_dust:
+        items:
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
       dust:
         items:
           description: |-
@@ -18196,6 +18264,7 @@ definitions:
             denom:
               type: string
           type: object
+        title: dust is DEPRECATED
         type: array
       route:
         properties:
@@ -18220,14 +18289,7 @@ definitions:
       max_amount_out:
         type: string
       min_average_sell_price:
-        title: >-
-          min_average_sell_price is an optional parameter that sets a required
-          minimum average price for the entire trade.
-
-          if the min_average_sell_price is not met the trade will fail.
-
-          If min_average_sell_price is omitted limit_sell_price will be used
-          instead
+        title: min_average_sell_price is DEPRECATED
         type: string
       order_type:
         default: GOOD_TIL_CANCELLED
@@ -18266,12 +18328,7 @@ definitions:
             type: string
         type: object
         title: Total amount of coin used for the limit order
-      taker_coin_in:
-        description: |-
-          Coin defines a token with a denomination and an amount.
-
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
+      dec_taker_coin_in:
         properties:
           amount:
             type: string
@@ -18281,12 +18338,7 @@ definitions:
         title: >-
           Total amount of the token in that was immediately swapped for
           takerOutCoin
-      taker_coin_out:
-        description: |-
-          Coin defines a token with a denomination and an amount.
-
-          NOTE: The amount field is an Int which implements the custom method
-          signatures required by gogoproto.
+      dec_taker_coin_out:
         properties:
           amount:
             type: string
@@ -18304,19 +18356,7 @@ definitions:
           from the
 
           maker portion which will have withdrawn in the future
-      trancheKey:
-        type: string
-    type: object
-  neutron.dex.MsgWithdrawFilledLimitOrder:
-    properties:
-      creator:
-        type: string
-      tranche_key:
-        type: string
-    type: object
-  neutron.dex.MsgWithdrawFilledLimitOrderResponse:
-    properties:
-      maker_coin_out:
+      taker_coin_in:
         description: |-
           Coin defines a token with a denomination and an amount.
 
@@ -18328,9 +18368,7 @@ definitions:
           denom:
             type: string
         type: object
-        title: >-
-          Total amount of maker reserves that were withdrawn --only applies to
-          inactive LimitOrders
+        title: taker_coin_in is DEPRECATED
       taker_coin_out:
         description: |-
           Coin defines a token with a denomination and an amount.
@@ -18343,7 +18381,63 @@ definitions:
           denom:
             type: string
         type: object
+        title: taker_coin_out is DEPRECATED
+      trancheKey:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawFilledLimitOrder:
+    properties:
+      creator:
+        type: string
+      tranche_key:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawFilledLimitOrderResponse:
+    properties:
+      dec_maker_coin_out:
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: >-
+          Total amount of maker reserves that were withdrawn --only applies to
+          inactive LimitOrders
+      dec_taker_coin_out:
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
         title: Total amount of taker reserves that were withdrawn
+      maker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: maker_coin_out is DEPRECATED
+      taker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: taker_coin_out is DEPRECATED
     type: object
   neutron.dex.MsgWithdrawal:
     properties:
@@ -18372,9 +18466,15 @@ definitions:
     type: object
   neutron.dex.MsgWithdrawalResponse:
     properties:
+      dec_reserve0_withdrawn:
+        type: string
+      dec_reserve1_withdrawn:
+        type: string
       reserve0_withdrawn:
+        title: reserve0_withdrawn is DEPRECATED
         type: string
       reserve1_withdrawn:
+        title: reserve1_withdrawn is DEPRECATED
         type: string
       shares_burned:
         items:
@@ -18438,6 +18538,8 @@ definitions:
         type: string
       lower_tick0:
         properties:
+          dec_reserves_maker_denom:
+            type: string
           key:
             properties:
               fee:
@@ -18473,10 +18575,15 @@ definitions:
               release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
+            description: >-
+              DEPRECATED: reserves_maker_denom will be removed in future
+              release, `dec_reserves_maker_denom` should always be used.
             type: string
         type: object
       upper_tick1:
         properties:
+          dec_reserves_maker_denom:
+            type: string
           key:
             properties:
               fee:
@@ -18512,6 +18619,9 @@ definitions:
               release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
+            description: >-
+              DEPRECATED: reserves_maker_denom will be removed in future
+              release, `dec_reserves_maker_denom` should always be used.
             type: string
         type: object
     type: object
@@ -18536,6 +18646,8 @@ definitions:
     type: object
   neutron.dex.PoolReserves:
     properties:
+      dec_reserves_maker_denom:
+        type: string
       key:
         properties:
           fee:
@@ -18571,6 +18683,9 @@ definitions:
           `maker_price` should always be used.
         type: string
       reserves_maker_denom:
+        description: >-
+          DEPRECATED: reserves_maker_denom will be removed in future release,
+          `dec_reserves_maker_denom` should always be used.
         type: string
     type: object
   neutron.dex.PoolReservesKey:
@@ -18589,11 +18704,24 @@ definitions:
             type: string
         type: object
     type: object
+  neutron.dex.PrecDecCoin:
+    properties:
+      amount:
+        type: string
+      denom:
+        type: string
+    type: object
   neutron.dex.QueryAllInactiveLimitOrderTrancheResponse:
     properties:
       inactive_limit_order_tranche:
         items:
           properties:
+            dec_reserves_maker_denom:
+              type: string
+            dec_reserves_taker_denom:
+              type: string
+            dec_total_taker_denom:
+              type: string
             expiration_time:
               format: date-time
               title: >-
@@ -18633,12 +18761,21 @@ definitions:
                 release, `maker_price` should always be used.
               type: string
             reserves_maker_denom:
+              description: >-
+                DEPRECATED: reserves_maker_denom will be removed in future
+                release, `dec_reserves_maker_denom` should always be used.
               type: string
             reserves_taker_denom:
+              description: >-
+                DEPRECATED: reserves_taker_denom will be removed in future
+                release, `dec_reserves_taker_denom` should always be used.
               type: string
             total_maker_denom:
               type: string
             total_taker_denom:
+              description: >-
+                DEPRECATED: total_taker_denom will be removed in future release,
+                `dec_total_taker_denom` should always be used.
               type: string
           type: object
         type: array
@@ -18674,6 +18811,12 @@ definitions:
       limit_order_tranche:
         items:
           properties:
+            dec_reserves_maker_denom:
+              type: string
+            dec_reserves_taker_denom:
+              type: string
+            dec_total_taker_denom:
+              type: string
             expiration_time:
               format: date-time
               title: >-
@@ -18713,12 +18856,21 @@ definitions:
                 release, `maker_price` should always be used.
               type: string
             reserves_maker_denom:
+              description: >-
+                DEPRECATED: reserves_maker_denom will be removed in future
+                release, `dec_reserves_maker_denom` should always be used.
               type: string
             reserves_taker_denom:
+              description: >-
+                DEPRECATED: reserves_taker_denom will be removed in future
+                release, `dec_reserves_taker_denom` should always be used.
               type: string
             total_maker_denom:
               type: string
             total_taker_denom:
+              description: >-
+                DEPRECATED: total_taker_denom will be removed in future release,
+                `dec_total_taker_denom` should always be used.
               type: string
           type: object
         type: array
@@ -18958,6 +19110,8 @@ definitions:
       pool_reserves:
         items:
           properties:
+            dec_reserves_maker_denom:
+              type: string
             key:
               properties:
                 fee:
@@ -18994,6 +19148,9 @@ definitions:
                 release, `maker_price` should always be used.
               type: string
             reserves_maker_denom:
+              description: >-
+                DEPRECATED: reserves_maker_denom will be removed in future
+                release, `dec_reserves_maker_denom` should always be used.
               type: string
           type: object
         type: array
@@ -19031,6 +19188,12 @@ definitions:
           properties:
             limit_order_tranche:
               properties:
+                dec_reserves_maker_denom:
+                  type: string
+                dec_reserves_taker_denom:
+                  type: string
+                dec_total_taker_denom:
+                  type: string
                 expiration_time:
                   format: date-time
                   title: >-
@@ -19070,16 +19233,27 @@ definitions:
                     release, `maker_price` should always be used.
                   type: string
                 reserves_maker_denom:
+                  description: >-
+                    DEPRECATED: reserves_maker_denom will be removed in future
+                    release, `dec_reserves_maker_denom` should always be used.
                   type: string
                 reserves_taker_denom:
+                  description: >-
+                    DEPRECATED: reserves_taker_denom will be removed in future
+                    release, `dec_reserves_taker_denom` should always be used.
                   type: string
                 total_maker_denom:
                   type: string
                 total_taker_denom:
+                  description: >-
+                    DEPRECATED: total_taker_denom will be removed in future
+                    release, `dec_total_taker_denom` should always be used.
                   type: string
               type: object
             pool_reserves:
               properties:
+                dec_reserves_maker_denom:
+                  type: string
                 key:
                   properties:
                     fee:
@@ -19117,6 +19291,9 @@ definitions:
                     release, `maker_price` should always be used.
                   type: string
                 reserves_maker_denom:
+                  description: >-
+                    DEPRECATED: reserves_maker_denom will be removed in future
+                    release, `dec_reserves_maker_denom` should always be used.
                   type: string
               type: object
           type: object
@@ -19150,6 +19327,8 @@ definitions:
                   type: string
                 lower_tick0:
                   properties:
+                    dec_reserves_maker_denom:
+                      type: string
                     key:
                       properties:
                         fee:
@@ -19187,10 +19366,16 @@ definitions:
                         future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
+                      description: >-
+                        DEPRECATED: reserves_maker_denom will be removed in
+                        future release, `dec_reserves_maker_denom` should always
+                        be used.
                       type: string
                   type: object
                 upper_tick1:
                   properties:
+                    dec_reserves_maker_denom:
+                      type: string
                     key:
                       properties:
                         fee:
@@ -19228,6 +19413,10 @@ definitions:
                         future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
+                      description: >-
+                        DEPRECATED: reserves_maker_denom will be removed in
+                        future release, `dec_reserves_maker_denom` should always
+                        be used.
                       type: string
                   type: object
               type: object
@@ -19343,6 +19532,12 @@ definitions:
     properties:
       inactive_limit_order_tranche:
         properties:
+          dec_reserves_maker_denom:
+            type: string
+          dec_reserves_taker_denom:
+            type: string
+          dec_total_taker_denom:
+            type: string
           expiration_time:
             format: date-time
             title: >-
@@ -19381,12 +19576,21 @@ definitions:
               release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
+            description: >-
+              DEPRECATED: reserves_maker_denom will be removed in future
+              release, `dec_reserves_maker_denom` should always be used.
             type: string
           reserves_taker_denom:
+            description: >-
+              DEPRECATED: reserves_taker_denom will be removed in future
+              release, `dec_reserves_taker_denom` should always be used.
             type: string
           total_maker_denom:
             type: string
           total_taker_denom:
+            description: >-
+              DEPRECATED: total_taker_denom will be removed in future release,
+              `dec_total_taker_denom` should always be used.
             type: string
         type: object
     type: object
@@ -19394,6 +19598,12 @@ definitions:
     properties:
       limit_order_tranche:
         properties:
+          dec_reserves_maker_denom:
+            type: string
+          dec_reserves_taker_denom:
+            type: string
+          dec_total_taker_denom:
+            type: string
           expiration_time:
             format: date-time
             title: >-
@@ -19432,12 +19642,21 @@ definitions:
               release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
+            description: >-
+              DEPRECATED: reserves_maker_denom will be removed in future
+              release, `dec_reserves_maker_denom` should always be used.
             type: string
           reserves_taker_denom:
+            description: >-
+              DEPRECATED: reserves_taker_denom will be removed in future
+              release, `dec_reserves_taker_denom` should always be used.
             type: string
           total_maker_denom:
             type: string
           total_taker_denom:
+            description: >-
+              DEPRECATED: total_taker_denom will be removed in future release,
+              `dec_total_taker_denom` should always be used.
             type: string
         type: object
     type: object
@@ -19505,6 +19724,8 @@ definitions:
     properties:
       pool_reserves:
         properties:
+          dec_reserves_maker_denom:
+            type: string
           key:
             properties:
               fee:
@@ -19540,6 +19761,9 @@ definitions:
               release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
+            description: >-
+              DEPRECATED: reserves_maker_denom will be removed in future
+              release, `dec_reserves_maker_denom` should always be used.
             type: string
         type: object
     type: object
@@ -19582,6 +19806,8 @@ definitions:
             type: string
           lower_tick0:
             properties:
+              dec_reserves_maker_denom:
+                type: string
               key:
                 properties:
                   fee:
@@ -19618,10 +19844,15 @@ definitions:
                   release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
+                description: >-
+                  DEPRECATED: reserves_maker_denom will be removed in future
+                  release, `dec_reserves_maker_denom` should always be used.
                 type: string
             type: object
           upper_tick1:
             properties:
+              dec_reserves_maker_denom:
+                type: string
               key:
                 properties:
                   fee:
@@ -19658,6 +19889,9 @@ definitions:
                   release, `maker_price` should always be used.
                 type: string
               reserves_maker_denom:
+                description: >-
+                  DEPRECATED: reserves_maker_denom will be removed in future
+                  release, `dec_reserves_maker_denom` should always be used.
                 type: string
             type: object
         type: object
@@ -19666,6 +19900,22 @@ definitions:
     properties:
       resp:
         properties:
+          dec_maker_coin_out:
+            title: Total amount of maker reserves that were canceled
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+          dec_taker_coin_out:
+            title: Total amount of taker reserves that were withdrawn
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
           maker_coin_out:
             description: >-
               Coin defines a token with a denomination and an amount.
@@ -19681,7 +19931,7 @@ definitions:
               denom:
                 type: string
             type: object
-            title: Total amount of maker reserves that were canceled
+            title: maker_coin_out is DEPRECATED
           taker_coin_out:
             description: >-
               Coin defines a token with a denomination and an amount.
@@ -19697,13 +19947,21 @@ definitions:
               denom:
                 type: string
             type: object
-            title: Total amount of taker reserves that were withdrawn
+            title: taker_coin_out is DEPRECATED
         type: object
     type: object
   neutron.dex.QuerySimulateDepositResponse:
     properties:
       resp:
         properties:
+          dec_reserve0_deposited:
+            items:
+              type: string
+            type: array
+          dec_reserve1_deposited:
+            items:
+              type: string
+            type: array
           failed_deposits:
             items:
               properties:
@@ -19717,10 +19975,12 @@ definitions:
           reserve0_deposited:
             items:
               type: string
+            title: reserve0_deposited is DEPRECATED
             type: array
           reserve1_deposited:
             items:
               type: string
+            title: reserve0_deposited is DEPRECATED
             type: array
           shares_issued:
             items:
@@ -19760,6 +20020,23 @@ definitions:
               denom:
                 type: string
             type: object
+            title: coin_out is DEPRECATED
+          dec_coin_out:
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+          dec_dust:
+            items:
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            type: array
           dust:
             items:
               description: >-
@@ -19776,6 +20053,7 @@ definitions:
                 denom:
                   type: string
               type: object
+            title: dust is DEPRECATED
             type: array
           route:
             properties:
@@ -19806,15 +20084,7 @@ definitions:
                 type: string
             type: object
             title: Total amount of coin used for the limit order
-          taker_coin_in:
-            description: >-
-              Coin defines a token with a denomination and an amount.
-
-
-              NOTE: The amount field is an Int which implements the custom
-              method
-
-              signatures required by gogoproto.
+          dec_taker_coin_in:
             properties:
               amount:
                 type: string
@@ -19824,15 +20094,7 @@ definitions:
             title: >-
               Total amount of the token in that was immediately swapped for
               takerOutCoin
-          taker_coin_out:
-            description: >-
-              Coin defines a token with a denomination and an amount.
-
-
-              NOTE: The amount field is an Int which implements the custom
-              method
-
-              signatures required by gogoproto.
+          dec_taker_coin_out:
             properties:
               amount:
                 type: string
@@ -19850,15 +20112,7 @@ definitions:
               from the
 
               maker portion which will have withdrawn in the future
-          trancheKey:
-            type: string
-        type: object
-    type: object
-  neutron.dex.QuerySimulateWithdrawFilledLimitOrderResponse:
-    properties:
-      resp:
-        properties:
-          maker_coin_out:
+          taker_coin_in:
             description: >-
               Coin defines a token with a denomination and an amount.
 
@@ -19873,9 +20127,7 @@ definitions:
               denom:
                 type: string
             type: object
-            title: >-
-              Total amount of maker reserves that were withdrawn --only applies
-              to inactive LimitOrders
+            title: taker_coin_in is DEPRECATED
           taker_coin_out:
             description: >-
               Coin defines a token with a denomination and an amount.
@@ -19891,16 +20143,80 @@ definitions:
               denom:
                 type: string
             type: object
+            title: taker_coin_out is DEPRECATED
+          trancheKey:
+            type: string
+        type: object
+    type: object
+  neutron.dex.QuerySimulateWithdrawFilledLimitOrderResponse:
+    properties:
+      resp:
+        properties:
+          dec_maker_coin_out:
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: >-
+              Total amount of maker reserves that were withdrawn --only applies
+              to inactive LimitOrders
+          dec_taker_coin_out:
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
             title: Total amount of taker reserves that were withdrawn
+          maker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: maker_coin_out is DEPRECATED
+          taker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: taker_coin_out is DEPRECATED
         type: object
     type: object
   neutron.dex.QuerySimulateWithdrawalResponse:
     properties:
       resp:
         properties:
+          dec_reserve0_withdrawn:
+            type: string
+          dec_reserve1_withdrawn:
+            type: string
           reserve0_withdrawn:
+            title: reserve0_withdrawn is DEPRECATED
             type: string
           reserve1_withdrawn:
+            title: reserve1_withdrawn is DEPRECATED
             type: string
           shares_burned:
             items:
@@ -19925,6 +20241,12 @@ definitions:
     properties:
       limit_order_tranche:
         properties:
+          dec_reserves_maker_denom:
+            type: string
+          dec_reserves_taker_denom:
+            type: string
+          dec_total_taker_denom:
+            type: string
           expiration_time:
             format: date-time
             title: >-
@@ -19963,16 +20285,27 @@ definitions:
               release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
+            description: >-
+              DEPRECATED: reserves_maker_denom will be removed in future
+              release, `dec_reserves_maker_denom` should always be used.
             type: string
           reserves_taker_denom:
+            description: >-
+              DEPRECATED: reserves_taker_denom will be removed in future
+              release, `dec_reserves_taker_denom` should always be used.
             type: string
           total_maker_denom:
             type: string
           total_taker_denom:
+            description: >-
+              DEPRECATED: total_taker_denom will be removed in future release,
+              `dec_total_taker_denom` should always be used.
             type: string
         type: object
       pool_reserves:
         properties:
+          dec_reserves_maker_denom:
+            type: string
           key:
             properties:
               fee:
@@ -20008,6 +20341,9 @@ definitions:
               release, `maker_price` should always be used.
             type: string
           reserves_maker_denom:
+            description: >-
+              DEPRECATED: reserves_maker_denom will be removed in future
+              release, `dec_reserves_maker_denom` should always be used.
             type: string
         type: object
     type: object
@@ -20368,6 +20704,8 @@ definitions:
   neutron.feerefunder.Params:
     description: Params defines the parameters for the module.
     properties:
+      fee_enabled:
+        type: boolean
       min_fee:
         properties:
           ack_fee:
@@ -20433,6 +20771,8 @@ definitions:
       params:
         description: params holds all the parameters of this module.
         properties:
+          fee_enabled:
+            type: boolean
           min_fee:
             properties:
               ack_fee:
@@ -27092,7 +27432,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v7
+  version: v8
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -45218,6 +45558,8 @@ paths:
               params:
                 description: params holds all the parameters of this module.
                 properties:
+                  fee_enabled:
+                    type: boolean
                   min_fee:
                     properties:
                       ack_fee:
@@ -46334,6 +46676,12 @@ paths:
               inactive_limit_order_tranche:
                 items:
                   properties:
+                    dec_reserves_maker_denom:
+                      type: string
+                    dec_reserves_taker_denom:
+                      type: string
+                    dec_total_taker_denom:
+                      type: string
                     expiration_time:
                       format: date-time
                       title: >-
@@ -46373,12 +46721,23 @@ paths:
                         future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
+                      description: >-
+                        DEPRECATED: reserves_maker_denom will be removed in
+                        future release, `dec_reserves_maker_denom` should always
+                        be used.
                       type: string
                     reserves_taker_denom:
+                      description: >-
+                        DEPRECATED: reserves_taker_denom will be removed in
+                        future release, `dec_reserves_taker_denom` should always
+                        be used.
                       type: string
                     total_maker_denom:
                       type: string
                     total_taker_denom:
+                      description: >-
+                        DEPRECATED: total_taker_denom will be removed in future
+                        release, `dec_total_taker_denom` should always be used.
                       type: string
                   type: object
                 type: array
@@ -46464,6 +46823,12 @@ paths:
             properties:
               inactive_limit_order_tranche:
                 properties:
+                  dec_reserves_maker_denom:
+                    type: string
+                  dec_reserves_taker_denom:
+                    type: string
+                  dec_total_taker_denom:
+                    type: string
                   expiration_time:
                     format: date-time
                     title: >-
@@ -46503,12 +46868,21 @@ paths:
                       release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
+                    description: >-
+                      DEPRECATED: reserves_maker_denom will be removed in future
+                      release, `dec_reserves_maker_denom` should always be used.
                     type: string
                   reserves_taker_denom:
+                    description: >-
+                      DEPRECATED: reserves_taker_denom will be removed in future
+                      release, `dec_reserves_taker_denom` should always be used.
                     type: string
                   total_maker_denom:
                     type: string
                   total_taker_denom:
+                    description: >-
+                      DEPRECATED: total_taker_denom will be removed in future
+                      release, `dec_total_taker_denom` should always be used.
                     type: string
                 type: object
             type: object
@@ -46605,6 +46979,12 @@ paths:
               inactive_limit_order_tranche:
                 items:
                   properties:
+                    dec_reserves_maker_denom:
+                      type: string
+                    dec_reserves_taker_denom:
+                      type: string
+                    dec_total_taker_denom:
+                      type: string
                     expiration_time:
                       format: date-time
                       title: >-
@@ -46644,12 +47024,23 @@ paths:
                         future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
+                      description: >-
+                        DEPRECATED: reserves_maker_denom will be removed in
+                        future release, `dec_reserves_maker_denom` should always
+                        be used.
                       type: string
                     reserves_taker_denom:
+                      description: >-
+                        DEPRECATED: reserves_taker_denom will be removed in
+                        future release, `dec_reserves_taker_denom` should always
+                        be used.
                       type: string
                     total_maker_denom:
                       type: string
                     total_taker_denom:
+                      description: >-
+                        DEPRECATED: total_taker_denom will be removed in future
+                        release, `dec_total_taker_denom` should always be used.
                       type: string
                   type: object
                 type: array
@@ -46735,6 +47126,12 @@ paths:
             properties:
               inactive_limit_order_tranche:
                 properties:
+                  dec_reserves_maker_denom:
+                    type: string
+                  dec_reserves_taker_denom:
+                    type: string
+                  dec_total_taker_denom:
+                    type: string
                   expiration_time:
                     format: date-time
                     title: >-
@@ -46774,12 +47171,21 @@ paths:
                       release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
+                    description: >-
+                      DEPRECATED: reserves_maker_denom will be removed in future
+                      release, `dec_reserves_maker_denom` should always be used.
                     type: string
                   reserves_taker_denom:
+                    description: >-
+                      DEPRECATED: reserves_taker_denom will be removed in future
+                      release, `dec_reserves_taker_denom` should always be used.
                     type: string
                   total_maker_denom:
                     type: string
                   total_taker_denom:
+                    description: >-
+                      DEPRECATED: total_taker_denom will be removed in future
+                      release, `dec_total_taker_denom` should always be used.
                     type: string
                 type: object
             type: object
@@ -46884,6 +47290,12 @@ paths:
               limit_order_tranche:
                 items:
                   properties:
+                    dec_reserves_maker_denom:
+                      type: string
+                    dec_reserves_taker_denom:
+                      type: string
+                    dec_total_taker_denom:
+                      type: string
                     expiration_time:
                       format: date-time
                       title: >-
@@ -46923,12 +47335,23 @@ paths:
                         future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
+                      description: >-
+                        DEPRECATED: reserves_maker_denom will be removed in
+                        future release, `dec_reserves_maker_denom` should always
+                        be used.
                       type: string
                     reserves_taker_denom:
+                      description: >-
+                        DEPRECATED: reserves_taker_denom will be removed in
+                        future release, `dec_reserves_taker_denom` should always
+                        be used.
                       type: string
                     total_maker_denom:
                       type: string
                     total_taker_denom:
+                      description: >-
+                        DEPRECATED: total_taker_denom will be removed in future
+                        release, `dec_total_taker_denom` should always be used.
                       type: string
                   type: object
                 type: array
@@ -47016,6 +47439,12 @@ paths:
             properties:
               limit_order_tranche:
                 properties:
+                  dec_reserves_maker_denom:
+                    type: string
+                  dec_reserves_taker_denom:
+                    type: string
+                  dec_total_taker_denom:
+                    type: string
                   expiration_time:
                     format: date-time
                     title: >-
@@ -47055,12 +47484,21 @@ paths:
                       release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
+                    description: >-
+                      DEPRECATED: reserves_maker_denom will be removed in future
+                      release, `dec_reserves_maker_denom` should always be used.
                     type: string
                   reserves_taker_denom:
+                    description: >-
+                      DEPRECATED: reserves_taker_denom will be removed in future
+                      release, `dec_reserves_taker_denom` should always be used.
                     type: string
                   total_maker_denom:
                     type: string
                   total_taker_denom:
+                    description: >-
+                      DEPRECATED: total_taker_denom will be removed in future
+                      release, `dec_total_taker_denom` should always be used.
                     type: string
                 type: object
             type: object
@@ -47418,6 +47856,8 @@ paths:
                     type: string
                   lower_tick0:
                     properties:
+                      dec_reserves_maker_denom:
+                        type: string
                       key:
                         properties:
                           fee:
@@ -47455,10 +47895,16 @@ paths:
                           future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
+                        description: >-
+                          DEPRECATED: reserves_maker_denom will be removed in
+                          future release, `dec_reserves_maker_denom` should
+                          always be used.
                         type: string
                     type: object
                   upper_tick1:
                     properties:
+                      dec_reserves_maker_denom:
+                        type: string
                       key:
                         properties:
                           fee:
@@ -47496,6 +47942,10 @@ paths:
                           future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
+                        description: >-
+                          DEPRECATED: reserves_maker_denom will be removed in
+                          future release, `dec_reserves_maker_denom` should
+                          always be used.
                         type: string
                     type: object
                 type: object
@@ -47546,6 +47996,8 @@ paths:
                     type: string
                   lower_tick0:
                     properties:
+                      dec_reserves_maker_denom:
+                        type: string
                       key:
                         properties:
                           fee:
@@ -47583,10 +48035,16 @@ paths:
                           future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
+                        description: >-
+                          DEPRECATED: reserves_maker_denom will be removed in
+                          future release, `dec_reserves_maker_denom` should
+                          always be used.
                         type: string
                     type: object
                   upper_tick1:
                     properties:
+                      dec_reserves_maker_denom:
+                        type: string
                       key:
                         properties:
                           fee:
@@ -47624,6 +48082,10 @@ paths:
                           future release, `maker_price` should always be used.
                         type: string
                       reserves_maker_denom:
+                        description: >-
+                          DEPRECATED: reserves_maker_denom will be removed in
+                          future release, `dec_reserves_maker_denom` should
+                          always be used.
                         type: string
                     type: object
                 type: object
@@ -47956,6 +48418,8 @@ paths:
               pool_reserves:
                 items:
                   properties:
+                    dec_reserves_maker_denom:
+                      type: string
                     key:
                       properties:
                         fee:
@@ -47993,6 +48457,10 @@ paths:
                         future release, `maker_price` should always be used.
                       type: string
                     reserves_maker_denom:
+                      description: >-
+                        DEPRECATED: reserves_maker_denom will be removed in
+                        future release, `dec_reserves_maker_denom` should always
+                        be used.
                       type: string
                   type: object
                 type: array
@@ -48051,6 +48519,8 @@ paths:
             properties:
               pool_reserves:
                 properties:
+                  dec_reserves_maker_denom:
+                    type: string
                   key:
                     properties:
                       fee:
@@ -48088,6 +48558,9 @@ paths:
                       release, `maker_price` should always be used.
                     type: string
                   reserves_maker_denom:
+                    description: >-
+                      DEPRECATED: reserves_maker_denom will be removed in future
+                      release, `dec_reserves_maker_denom` should always be used.
                     type: string
                 type: object
             type: object
@@ -48135,6 +48608,22 @@ paths:
             properties:
               resp:
                 properties:
+                  dec_maker_coin_out:
+                    title: Total amount of maker reserves that were canceled
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                  dec_taker_coin_out:
+                    title: Total amount of taker reserves that were withdrawn
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
                   maker_coin_out:
                     description: >-
                       Coin defines a token with a denomination and an amount.
@@ -48150,7 +48639,7 @@ paths:
                       denom:
                         type: string
                     type: object
-                    title: Total amount of maker reserves that were canceled
+                    title: maker_coin_out is DEPRECATED
                   taker_coin_out:
                     description: >-
                       Coin defines a token with a denomination and an amount.
@@ -48166,7 +48655,7 @@ paths:
                       denom:
                         type: string
                     type: object
-                    title: Total amount of taker reserves that were withdrawn
+                    title: taker_coin_out is DEPRECATED
                 type: object
             type: object
         default:
@@ -48251,6 +48740,14 @@ paths:
             properties:
               resp:
                 properties:
+                  dec_reserve0_deposited:
+                    items:
+                      type: string
+                    type: array
+                  dec_reserve1_deposited:
+                    items:
+                      type: string
+                    type: array
                   failed_deposits:
                     items:
                       properties:
@@ -48264,10 +48761,12 @@ paths:
                   reserve0_deposited:
                     items:
                       type: string
+                    title: reserve0_deposited is DEPRECATED
                     type: array
                   reserve1_deposited:
                     items:
                       type: string
+                    title: reserve0_deposited is DEPRECATED
                     type: array
                   shares_issued:
                     items:
@@ -48364,6 +48863,23 @@ paths:
                       denom:
                         type: string
                     type: object
+                    title: coin_out is DEPRECATED
+                  dec_coin_out:
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                  dec_dust:
+                    items:
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
                   dust:
                     items:
                       description: >-
@@ -48380,6 +48896,7 @@ paths:
                         denom:
                           type: string
                       type: object
+                    title: dust is DEPRECATED
                     type: array
                   route:
                     properties:
@@ -48472,14 +48989,7 @@ paths:
           name: msg.limit_sell_price
           required: false
           type: string
-        - description: >-
-            min_average_sell_price is an optional parameter that sets a required
-            minimum average price for the entire trade.
-
-            if the min_average_sell_price is not met the trade will fail.
-
-            If min_average_sell_price is omitted limit_sell_price will be used
-            instead.
+        - description: min_average_sell_price is DEPRECATED.
           in: query
           name: msg.min_average_sell_price
           required: false
@@ -48507,15 +49017,7 @@ paths:
                         type: string
                     type: object
                     title: Total amount of coin used for the limit order
-                  taker_coin_in:
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
+                  dec_taker_coin_in:
                     properties:
                       amount:
                         type: string
@@ -48525,15 +49027,7 @@ paths:
                     title: >-
                       Total amount of the token in that was immediately swapped
                       for takerOutCoin
-                  taker_coin_out:
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
-
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
+                  dec_taker_coin_out:
                     properties:
                       amount:
                         type: string
@@ -48551,6 +49045,38 @@ paths:
                       proceeds from the
 
                       maker portion which will have withdrawn in the future
+                  taker_coin_in:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: taker_coin_in is DEPRECATED
+                  taker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: taker_coin_out is DEPRECATED
                   trancheKey:
                     type: string
                 type: object
@@ -48599,6 +49125,24 @@ paths:
             properties:
               resp:
                 properties:
+                  dec_maker_coin_out:
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: >-
+                      Total amount of maker reserves that were withdrawn --only
+                      applies to inactive LimitOrders
+                  dec_taker_coin_out:
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of taker reserves that were withdrawn
                   maker_coin_out:
                     description: >-
                       Coin defines a token with a denomination and an amount.
@@ -48614,9 +49158,7 @@ paths:
                       denom:
                         type: string
                     type: object
-                    title: >-
-                      Total amount of maker reserves that were withdrawn --only
-                      applies to inactive LimitOrders
+                    title: maker_coin_out is DEPRECATED
                   taker_coin_out:
                     description: >-
                       Coin defines a token with a denomination and an amount.
@@ -48632,7 +49174,7 @@ paths:
                       denom:
                         type: string
                     type: object
-                    title: Total amount of taker reserves that were withdrawn
+                    title: taker_coin_out is DEPRECATED
                 type: object
             type: object
         default:
@@ -48710,9 +49252,15 @@ paths:
             properties:
               resp:
                 properties:
+                  dec_reserve0_withdrawn:
+                    type: string
+                  dec_reserve1_withdrawn:
+                    type: string
                   reserve0_withdrawn:
+                    title: reserve0_withdrawn is DEPRECATED
                     type: string
                   reserve1_withdrawn:
+                    title: reserve1_withdrawn is DEPRECATED
                     type: string
                   shares_burned:
                     items:
@@ -48864,6 +49412,12 @@ paths:
                   properties:
                     limit_order_tranche:
                       properties:
+                        dec_reserves_maker_denom:
+                          type: string
+                        dec_reserves_taker_denom:
+                          type: string
+                        dec_total_taker_denom:
+                          type: string
                         expiration_time:
                           format: date-time
                           title: >-
@@ -48904,16 +49458,30 @@ paths:
                             future release, `maker_price` should always be used.
                           type: string
                         reserves_maker_denom:
+                          description: >-
+                            DEPRECATED: reserves_maker_denom will be removed in
+                            future release, `dec_reserves_maker_denom` should
+                            always be used.
                           type: string
                         reserves_taker_denom:
+                          description: >-
+                            DEPRECATED: reserves_taker_denom will be removed in
+                            future release, `dec_reserves_taker_denom` should
+                            always be used.
                           type: string
                         total_maker_denom:
                           type: string
                         total_taker_denom:
+                          description: >-
+                            DEPRECATED: total_taker_denom will be removed in
+                            future release, `dec_total_taker_denom` should
+                            always be used.
                           type: string
                       type: object
                     pool_reserves:
                       properties:
+                        dec_reserves_maker_denom:
+                          type: string
                         key:
                           properties:
                             fee:
@@ -48951,6 +49519,10 @@ paths:
                             future release, `maker_price` should always be used.
                           type: string
                         reserves_maker_denom:
+                          description: >-
+                            DEPRECATED: reserves_maker_denom will be removed in
+                            future release, `dec_reserves_maker_denom` should
+                            always be used.
                           type: string
                       type: object
                   type: object
@@ -49080,6 +49652,8 @@ paths:
                           type: string
                         lower_tick0:
                           properties:
+                            dec_reserves_maker_denom:
+                              type: string
                             key:
                               properties:
                                 fee:
@@ -49118,10 +49692,16 @@ paths:
                                 be used.
                               type: string
                             reserves_maker_denom:
+                              description: >-
+                                DEPRECATED: reserves_maker_denom will be removed
+                                in future release, `dec_reserves_maker_denom`
+                                should always be used.
                               type: string
                           type: object
                         upper_tick1:
                           properties:
+                            dec_reserves_maker_denom:
+                              type: string
                             key:
                               properties:
                                 fee:
@@ -49160,6 +49740,10 @@ paths:
                                 be used.
                               type: string
                             reserves_maker_denom:
+                              description: >-
+                                DEPRECATED: reserves_maker_denom will be removed
+                                in future release, `dec_reserves_maker_denom`
+                                should always be used.
                               type: string
                           type: object
                       type: object

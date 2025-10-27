@@ -14,8 +14,8 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 
-	feetypes "github.com/neutron-org/neutron/v7/x/feerefunder/types"
-	wrappedtypes "github.com/neutron-org/neutron/v7/x/transfer/types"
+	feetypes "github.com/neutron-org/neutron/v8/x/feerefunder/types"
+	wrappedtypes "github.com/neutron-org/neutron/v8/x/transfer/types"
 )
 
 // KeeperTransferWrapper is a wrapper for original ibc keeper to override response for "Transfer" method
@@ -50,7 +50,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 	}
 
 	// if the sender is a contract, lock fees.
-	// Because contracts are required to pay fees for the acknowledgements
+	// Because contracts are required to pay fees for the acknowledgements and timeouts
 	if isContract {
 		if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
 			return nil, errors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)

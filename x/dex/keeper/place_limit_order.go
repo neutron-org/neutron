@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v7/utils/math"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 // PlaceLimitOrderCore handles the logic for MsgPlaceLimitOrder including bank operations and event emissions.
@@ -24,7 +24,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	minAvgSellPriceP *math_utils.PrecDec,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin sdk.Coin, err error) {
+) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin types.PrecDecCoin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	takerTradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
@@ -47,11 +47,10 @@ func (k Keeper) PlaceLimitOrderCore(
 	}
 
 	if swapOutCoin.IsPositive() {
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(
+		err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
 			ctx,
-			types.ModuleName,
 			receiverAddr,
-			sdk.Coins{swapOutCoin},
+			[]types.PrecDecCoin{swapOutCoin},
 		)
 		if err != nil {
 			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
@@ -59,13 +58,12 @@ func (k Keeper) PlaceLimitOrderCore(
 	}
 
 	if totalIn.IsPositive() {
-		totalInCoin = sdk.NewCoin(tokenIn, totalIn)
+		totalInCoin = types.NewPrecDecCoin(tokenIn, totalIn)
 
-		err = k.bankKeeper.SendCoinsFromAccountToModule(
+		err = k.FractionalBanker.SendFractionalCoinsFromAccountToDex(
 			ctx,
 			callerAddr,
-			types.ModuleName,
-			sdk.Coins{totalInCoin},
+			[]types.PrecDecCoin{totalInCoin},
 		)
 		if err != nil {
 			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
@@ -111,13 +109,13 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	receiverAddr sdk.AccAddress,
 ) (
 	trancheKey string,
-	totalIn math.Int,
-	swapInCoin, swapOutCoin sdk.Coin,
+	totalIn math_utils.PrecDec,
+	swapInCoin, swapOutCoin types.PrecDecCoin,
 	sharesIssued math.Int,
 	minAvgSellPrice math_utils.PrecDec,
 	err error,
 ) {
-	amountLeft := amountIn
+	amountLeft := math_utils.NewPrecDecFromInt(amountIn)
 
 	limitBuyPrice, err := types.CalcPrice(tickIndexInToOut)
 	if err != nil {
@@ -131,17 +129,11 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		minAvgSellPrice = *minAvgSellPriceP
 	}
 
-	// Ensure that after rounding user will get at least 1 token out.
-	err = types.ValidateFairOutput(amountIn, limitBuyPrice)
-	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
-	}
-
 	var orderFilled bool
 	if orderType.IsTakerOnly() {
-		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountLeft, maxAmountOut, limitBuyPrice, minAvgSellPrice, orderType)
 	} else {
-		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitBuyPrice, minAvgSellPrice)
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountLeft, limitBuyPrice, minAvgSellPrice)
 	}
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
@@ -165,7 +157,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	}
 
 	trancheKey = placeTranche.Key.TrancheKey
-	trancheUser := k.GetOrInitLimitOrderTrancheUser(
+	trancheUser, err := k.GetOrInitLimitOrderTrancheUser(
 		ctx,
 		makerTradePairID,
 		tickIndexTakerToMaker,
@@ -173,21 +165,17 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		orderType,
 		receiverAddr.String(),
 	)
+	if err != nil {
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
+	}
 
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
-	if amountLeft.IsPositive() && !orderFilled &&
+	if amountLeft.TruncateInt().IsPositive() && !orderFilled &&
 		(orderType.IsGTC() || orderType.IsJIT() || orderType.IsGoodTil()) {
 
-		// Ensure that the maker portion will generate at least 1 token of output
-		// NOTE: This does mean that a successful taker leg of the trade will be thrown away since the entire tx will fail.
-		// In most circumstances this seems preferable to executing the taker leg and exiting early before placing a maker
-		// order with the remaining liquidity.
-		err = types.ValidateFairOutput(amountLeft, limitBuyPrice)
-		if err != nil {
-			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
-		}
-		placeTranche.PlaceMakerLimitOrder(amountLeft)
-		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountLeft)
+		amountToPlace := amountLeft.TruncateInt()
+		placeTranche.PlaceMakerLimitOrder(amountToPlace)
+		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountToPlace)
 
 		if orderType.HasExpiration() {
 			goodTilRecord := NewLimitOrderExpiration(placeTranche)
@@ -199,8 +187,8 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		// But we use the general updateTranche function so the correct events are emitted
 		k.UpdateTranche(ctx, placeTranche)
 
-		totalIn = totalIn.Add(amountLeft)
-		sharesIssued = amountLeft
+		totalIn = totalIn.Add(math_utils.NewPrecDecFromInt(amountToPlace))
+		sharesIssued = amountToPlace
 	}
 
 	// This update will ALWAYS save the trancheUser as active.

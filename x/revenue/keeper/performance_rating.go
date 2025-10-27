@@ -3,7 +3,7 @@ package keeper
 import (
 	"cosmossdk.io/math"
 
-	revenuetypes "github.com/neutron-org/neutron/v7/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v8/x/revenue/types"
 )
 
 // evaluateValCommitment calculates validator's performance rating and expected compensation amount.
@@ -25,7 +25,7 @@ func evaluateValCommitment(
 
 	if blocksInPeriod == 0 {
 		valCompensation = math.ZeroInt()
-		return
+		return perfRating, valCompensation
 	}
 
 	valCompensation = perfRating.
@@ -34,7 +34,7 @@ func evaluateValCommitment(
 		QuoInt(math.NewIntFromUint64(blocksInPeriod)).
 		TruncateInt()
 
-	return
+	return perfRating, valCompensation
 }
 
 // performanceRating evaluates the performance of a validator based on its participation in block

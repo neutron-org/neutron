@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 type (
@@ -19,6 +19,7 @@ type (
 		tKey       storetypes.StoreKey
 		bankKeeper types.BankKeeper
 		authority  string
+		*FractionalBanker
 	}
 )
 
@@ -31,12 +32,13 @@ func NewKeeper(
 	authority string,
 ) *Keeper {
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		tKey:       tKey,
-		bankKeeper: bankKeeper,
-		authority:  authority,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		memKey:           memKey,
+		tKey:             tKey,
+		bankKeeper:       bankKeeper,
+		authority:        authority,
+		FractionalBanker: NewFractionalBanker(storeKey, bankKeeper, cdc),
 	}
 }
 

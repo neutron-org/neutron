@@ -4,7 +4,7 @@ import (
 	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 
-	"github.com/neutron-org/neutron/v7/x/crypto/hd"
+	"github.com/neutron-org/neutron/v8/x/crypto/hd"
 )
 
 var (

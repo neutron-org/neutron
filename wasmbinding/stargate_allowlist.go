@@ -16,19 +16,19 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	crontypes "github.com/neutron-org/neutron/v7/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v7/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v7/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v7/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v7/x/interchaintxs/types"
-	stateverifiertypes "github.com/neutron-org/neutron/v7/x/state-verifier/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v7/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v8/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v8/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v8/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v8/x/interchaintxs/types"
+	stateverifiertypes "github.com/neutron-org/neutron/v8/x/state-verifier/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v8/x/tokenfactory/types"
 
-	harpoontypes "github.com/neutron-org/neutron/v7/x/harpoon/types"
+	harpoontypes "github.com/neutron-org/neutron/v8/x/harpoon/types"
 
-	globalfeetypes "github.com/neutron-org/neutron/v7/x/globalfee/types"
+	globalfeetypes "github.com/neutron-org/neutron/v8/x/globalfee/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v7/x/dynamicfees/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v8/x/dynamicfees/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {

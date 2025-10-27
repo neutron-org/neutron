@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v7/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v8/x/contractmanager/types"
 )
 
 // AddContractFailure adds a specific failure to the store. The provided address is used to determine
@@ -71,7 +71,7 @@ func (k Keeper) GetAllFailures(ctx context.Context) (list []types.Failure) {
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint64) (*types.Failure, error) {

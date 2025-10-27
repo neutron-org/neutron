@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v7/x/dynamicfees/types"
+	"github.com/neutron-org/neutron/v8/x/dynamicfees/types"
 )
 
 type msgServer struct {

@@ -10,10 +10,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v7/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v7/testutil/common/sample"
-	keepertest "github.com/neutron-org/neutron/v7/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v8/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v8/testutil/common/sample"
+	keepertest "github.com/neutron-org/neutron/v8/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
 func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {
@@ -75,8 +76,8 @@ func TestLimitOrderTrancheUserQuerySingleWithdrawableShares(t *testing.T) {
 	tranches := createNLimitOrderTranches(keeper, ctx, 2)
 
 	tranches[0].TotalMakerDenom = math.NewInt(100)
-	tranches[0].TotalTakerDenom = math.NewInt(50)
-	tranches[0].ReservesTakerDenom = math.NewInt(50)
+	tranches[0].DecTotalTakerDenom = math_utils.NewPrecDec(50)
+	tranches[0].DecReservesTakerDenom = math_utils.NewPrecDec(50)
 
 	keeper.SetLimitOrderTranche(ctx, tranches[0])
 
