@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"sort"
 	"strings"
 
 	math "cosmossdk.io/math"
@@ -72,7 +73,14 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.Prec
 
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, balances BalanceMap) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
-	for denom, amount := range balances {
+	sortedBalances := make([]string, 0, len(balances))
+	for denom := range balances {
+		sortedBalances = append(sortedBalances, denom)
+	}
+	sort.Strings(sortedBalances)
+
+	for _, denom := range sortedBalances {
+		amount := balances[denom]
 		if amount.IsPositive() {
 			bz, err := amount.Marshal()
 			// Marshal will NEVER actually return an error unless there are downstream code changes
