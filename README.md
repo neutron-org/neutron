@@ -6,7 +6,7 @@ You can check the documentation here: https://docs.neutron.org/
 
 ## Build
 
-You can check out the build instructions here: https://docs.neutron.org/neutron/build-and-run/overview
+You can check out the build instructions here: https://docs.neutron.org/operators/running-a-node#installation-process
 
 ## Sync and join the network
 
