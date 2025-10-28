@@ -204,6 +204,9 @@ test-sim-multi-seed-short: runsim
 lint:
 	golangci-lint run --exclude-files ".*.pb.go"
 	find . -name '*.go' -not -name "*.pb.go" -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*_test.go" | xargs gofmt -d -s
+	go build -o /tmp/mapiter ./internal/analyzers/mapiter
+	go vet -vettool=/tmp/mapiter ./...
+
 
 format:
 	@go install mvdan.cc/gofumpt@latest
