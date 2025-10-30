@@ -18,6 +18,7 @@ import (
 	stateverifier "github.com/neutron-org/neutron/v8/x/state-verifier"
 	svkeeper "github.com/neutron-org/neutron/v8/x/state-verifier/keeper"
 	stateverifiertypes "github.com/neutron-org/neutron/v8/x/state-verifier/types"
+	"github.com/neutron-org/neutron/v8/x/tokenfactory2"
 
 	"github.com/neutron-org/neutron/v8/x/harpoon"
 
@@ -167,6 +168,9 @@ import (
 	"github.com/neutron-org/neutron/v8/x/tokenfactory"
 	tokenfactorykeeper "github.com/neutron-org/neutron/v8/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/neutron-org/neutron/v8/x/tokenfactory/types"
+	tokenfactory2keeper "github.com/neutron-org/neutron/v8/x/tokenfactory2/keeper"
+
+	tokenfactory2types "github.com/neutron-org/neutron/v8/x/tokenfactory2/types"
 
 	"github.com/cosmos/admin-module/v2/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/v2/x/adminmodule/client/cli"
@@ -269,6 +273,7 @@ var (
 		staking.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		tokenfactory.AppModuleBasic{},
+		tokenfactory2.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
 		feerefunder.AppModuleBasic{},
@@ -312,6 +317,7 @@ var (
 		stakingtypes.BondedPoolName:                 {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName:              {authtypes.Burner, authtypes.Staking},
 		tokenfactorytypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
+		tokenfactory2types.ModuleName:               {authtypes.Minter, authtypes.Burner},
 		crontypes.ModuleName:                        nil,
 		dextypes.ModuleName:                         {authtypes.Minter, authtypes.Burner},
 		oracletypes.ModuleName:                      nil,
@@ -384,6 +390,7 @@ type App struct {
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	StakingKeeper       *stakingkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
+	TokenFactory2Keeper *tokenfactory2keeper.Keeper
 	CronKeeper          cronkeeper.Keeper
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
@@ -491,7 +498,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
+		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, tokenfactorytypes.StoreKey, tokenfactory2types.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey,
 		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey, stateverifiertypes.StoreKey,
@@ -627,6 +634,17 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
+
+	tokenFactory2Keeper := tokenfactory2keeper.NewKeeper(
+		appCodec,
+		app.keys[tokenfactory2types.StoreKey],
+		maccPerms,
+		app.AccountKeeper,
+		&app.BankKeeper,
+		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	app.TokenFactory2Keeper = &tokenFactory2Keeper
 
 	app.WireICS20PreWasmKeeper(appCodec)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
@@ -768,6 +786,7 @@ func New(
 		app.FeeKeeper,
 		&app.BankKeeper,
 		app.TokenFactoryKeeper,
+		app.TokenFactory2Keeper,
 		&app.CronKeeper,
 		&app.ContractManagerKeeper,
 		&app.DexKeeper,
@@ -905,6 +924,7 @@ func New(
 		ibcHooksModule,
 		revenue.NewAppModule(appCodec, app.RevenueKeeper),
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
+		tokenfactory2.NewAppModule(appCodec, *app.TokenFactory2Keeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
 		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
 		feemarket.NewAppModule(appCodec, *app.FeeMarkerKeeper),
@@ -943,6 +963,7 @@ func New(
 		paramstypes.ModuleName,
 		stakingtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
+		tokenfactory2types.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -981,6 +1002,7 @@ func New(
 		ibctransfertypes.ModuleName,
 		stakingtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
+		tokenfactory2types.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -1027,6 +1049,7 @@ func New(
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		tokenfactorytypes.ModuleName,
+		tokenfactory2types.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -1586,6 +1609,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(feeburnertypes.StoreKey).WithKeyTable(feeburnertypes.ParamKeyTable())
 	paramsKeeper.Subspace(feetypes.StoreKey).WithKeyTable(feetypes.ParamKeyTable())
 	paramsKeeper.Subspace(tokenfactorytypes.StoreKey).WithKeyTable(tokenfactorytypes.ParamKeyTable())
+	paramsKeeper.Subspace(tokenfactory2types.StoreKey).WithKeyTable(tokenfactory2types.ParamKeyTable())
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.StoreKey).WithKeyTable(interchainqueriesmoduletypes.ParamKeyTable())
 	paramsKeeper.Subspace(interchaintxstypes.StoreKey).WithKeyTable(interchaintxstypes.ParamKeyTable())
 

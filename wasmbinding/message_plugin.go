@@ -9,6 +9,7 @@ import (
 	"time"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
+	tokenfactory2keeper "github.com/neutron-org/neutron/v8/x/tokenfactory2/keeper"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
@@ -62,6 +63,7 @@ func CustomMessageDecorator(
 	adminKeeper *adminmodulekeeper.Keeper,
 	bankKeeper *bankkeeper.BaseKeeper,
 	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
+	tokenFactory2Keeper *tokenfactory2keeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
 	dexKeeper *dexkeeper.Keeper,
@@ -76,6 +78,7 @@ func CustomMessageDecorator(
 			Adminserver:                adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
 			Bank:                       bankKeeper,
 			TokenFactory:               tokenFactoryKeeper,
+			TokenFactory2:              tokenFactory2Keeper,
 			CronMsgServer:              cronkeeper.NewMsgServerImpl(*cronKeeper),
 			CronQueryServer:            cronKeeper,
 			AdminKeeper:                adminKeeper,
@@ -95,6 +98,7 @@ type CustomMessenger struct {
 	Adminserver                admintypes.MsgServer
 	Bank                       *bankkeeper.BaseKeeper
 	TokenFactory               *tokenfactorykeeper.Keeper
+	TokenFactory2              *tokenfactory2keeper.Keeper
 	CronMsgServer              crontypes.MsgServer
 	CronQueryServer            crontypes.QueryServer
 	AdminKeeper                *adminmodulekeeper.Keeper
