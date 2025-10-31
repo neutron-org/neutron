@@ -104,7 +104,7 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 			valid:     true,
 		},
 		{
-			desc:      "error: try minting non-tokenfactory denom",
+			desc:      "error: try minting non-coinfactory denom",
 			amount:    10,
 			mintDenom: params.DefaultDenom,
 			admin:     suite.TestAccs[0].String(),
@@ -173,7 +173,7 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 			valid:     true,
 		},
 		{
-			desc:      "fail case - burn non-tokenfactory denom",
+			desc:      "fail case - burn non-coinfactory denom",
 			amount:    10,
 			burnDenom: params.DefaultDenom,
 			admin:     suite.TestAccs[0].String(),

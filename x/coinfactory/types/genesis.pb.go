@@ -23,7 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// GenesisState defines the tokenfactory module's genesis state.
+// GenesisState defines the coinfactory module's genesis state.
 type GenesisState struct {
 	// params defines the parameters of the module.
 	Params        Params         `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
@@ -77,7 +77,7 @@ func (m *GenesisState) GetFactoryDenoms() []GenesisDenom {
 	return nil
 }
 
-// GenesisDenom defines a tokenfactory denom that is defined within genesis
+// GenesisDenom defines a coinfactory denom that is defined within genesis
 // state. The structure contains DenomAuthorityMetadata which defines the
 // denom's admin.
 type GenesisDenom struct {

@@ -26,7 +26,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Params defines the parameters for the tokenfactory module.
+// Params defines the parameters for the coinfactory module.
 type Params struct {
 	// DenomCreationFee defines the fee to be charged on the creation of a new
 	// denom. The fee is drawn from the MsgCreateDenom's sender account, and

@@ -33,14 +33,14 @@ func (suite *KeeperTestSuite) initBalanceTrackContract(denom string) (sdk.AccAdd
 	factoryDenom := res.GetNewTokenDenom()
 
 	// instantiate wasm code
-	tokenFactoryModuleAddr := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress(types.ModuleName)
+	coinFactoryModuleAddr := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress(types.ModuleName)
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
 	codeID, _, err := contractKeeper.Create(suite.ChainA.GetContext(), suite.TestAccs[0], wasmCode, nil)
 	suite.Require().NoError(err)
 	initMsg, _ := json.Marshal(
 		map[string]interface{}{
 			"tracked_denom":               factoryDenom,
-			"tokenfactory_module_address": tokenFactoryModuleAddr,
+			"tokenfactory_module_address": coinFactoryModuleAddr,
 		},
 	)
 	cosmwasmAddress, _, err := contractKeeper.Instantiate(
@@ -254,18 +254,18 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 		expectedError   bool
 	}{
 		{
-			name:            "sending tokenfactory denom from module to module with infinite contract should panic",
+			name:            "sending coinfactory denom from module to module with infinite contract should panic",
 			wasmFile:        "./testdata/infinite_track_beforesend.wasm", // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/infinite-track-beforesend
 			useFactoryDenom: true,
 		},
 		{
-			name:            "sending tokenfactory denom from account to account with infinite contract should panic",
+			name:            "sending coinfactory denom from account to account with infinite contract should panic",
 			wasmFile:        "./testdata/infinite_track_beforesend.wasm",
 			useFactoryDenom: true,
 			blockBeforeSend: true,
 		},
 		{
-			name:            "sending non-tokenfactory denom from module to module with infinite contract should not panic",
+			name:            "sending non-coinfactory denom from module to module with infinite contract should not panic",
 			wasmFile:        "./testdata/infinite_track_beforesend.wasm",
 			tokenToSend:     sdk.NewCoins(sdk.NewInt64Coin("foo", 1000000)),
 			useFactoryDenom: false,

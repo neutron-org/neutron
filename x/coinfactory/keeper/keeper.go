@@ -26,7 +26,7 @@ type (
 	}
 )
 
-// NewKeeper returns a new instance of the x/tokenfactory keeper
+// NewKeeper returns a new instance of the x/coinfactory keeper
 func NewKeeper(
 	cdc codec.Codec,
 	storeKey storetypes.StoreKey,
@@ -53,12 +53,12 @@ func NewKeeper(
 	}
 }
 
-// Logger returns a logger for the x/tokenfactory module
+// Logger returns a logger for the x/coinfactory module
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// GetAuthority returns an authority for the x/tokenfactory module
+// GetAuthority returns an authority for the x/coinfactory module
 func (k Keeper) GetAuthority() string {
 	return k.authority
 }

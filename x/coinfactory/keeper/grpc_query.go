@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -43,7 +42,11 @@ func (k Keeper) DenomsFromCreator(ctx context.Context, req *types.QueryDenomsFro
 func (k Keeper) BeforeSendHookAddress(ctx context.Context, req *types.QueryBeforeSendHookAddressRequest) (*types.QueryBeforeSendHookAddressResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	denom := fmt.Sprintf("factory/%s/%s", req.GetCreator(), req.GetSubdenom())
+	denom, err := types.GetTokenDenom(req.GetCreator(), req.GetSubdenom())
+	if err != nil {
+		return nil, err
+	}
+
 	contractAddr := k.GetBeforeSendHook(sdkCtx, denom)
 
 	return &types.QueryBeforeSendHookAddressResponse{ContractAddr: contractAddr}, nil

@@ -14,7 +14,7 @@ import (
 
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd() *cobra.Command {
-	// Group tokenfactory queries under a subcommand
+	// Group coinfactory queries under a subcommand
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
@@ -37,7 +37,7 @@ func GetQueryCmd() *cobra.Command {
 func GetParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params [flags]",
-		Short: "Get the params for the x/tokenfactory module",
+		Short: "Get the params for the x/coinfactory module",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)

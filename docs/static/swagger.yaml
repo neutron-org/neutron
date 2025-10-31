@@ -17454,7 +17454,7 @@ definitions:
         type: string
     type: object
   neutron.coinfactory.Params:
-    description: Params defines the parameters for the tokenfactory module.
+    description: Params defines the parameters for the coinfactory module.
     properties:
       denom_creation_fee:
         description: >-
@@ -46172,10 +46172,8 @@ paths:
               message:
                 type: string
             type: object
-      summary: >-
-        Params defines a gRPC query method that returns the tokenfactory
-        module's
-
+      summary: |-
+        Params defines a gRPC query method that returns the coinfactory module's
         parameters.
       tags:
         - Query

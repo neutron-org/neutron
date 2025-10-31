@@ -6,7 +6,7 @@ import (
 	"github.com/neutron-org/neutron/v8/x/coinfactory/types"
 )
 
-// InitGenesis initializes the tokenfactory module's state from a provided genesis
+// InitGenesis initializes the coinfactory module's state from a provided genesis
 // state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.CreateModuleAccount(ctx)
@@ -47,7 +47,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	}
 }
 
-// ExportGenesis returns the tokenfactory module's exported genesis.
+// ExportGenesis returns the coinfactory module's exported genesis.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genDenoms := []types.GenesisDenom{}
 	iterator := k.GetAllDenomsIterator(ctx)

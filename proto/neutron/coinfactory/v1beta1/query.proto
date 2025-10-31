@@ -10,7 +10,7 @@ option go_package = "github.com/neutron-org/neutron/v8/x/coinfactory/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // Params defines a gRPC query method that returns the tokenfactory module's
+  // Params defines a gRPC query method that returns the coinfactory module's
   // parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/coinfactory/v1beta1/params";

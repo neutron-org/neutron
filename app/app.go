@@ -635,7 +635,7 @@ func New(
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
 
-	CoinfactoryKeeper := coinfactorykeeper.NewKeeper(
+	coinfactoryKeeper := coinfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[coinfactorytypes.StoreKey],
 		maccPerms,
@@ -644,7 +644,7 @@ func New(
 		&app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	app.CoinfactoryKeeper = &CoinfactoryKeeper
+	app.CoinfactoryKeeper = &coinfactoryKeeper
 
 	app.WireICS20PreWasmKeeper(appCodec)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))

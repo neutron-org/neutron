@@ -11,7 +11,7 @@ const (
 	ModuleDenomPrefix = "coinfactory"
 	// See the TokenFactory readme for a derivation of these.
 	// TL;DR, MaxSubdenomLength + MaxHrpLength = 60 comes from SDK max denom length = 128
-	// and the structure of tokenfactory denoms.
+	// and the structure of coinfactory denoms.
 	MaxSubdenomLength = 44
 	MaxHrpLength      = 16
 	// MaxCreatorLength = 59 + MaxHrpLength
@@ -19,7 +19,7 @@ const (
 	Separator        = "."
 )
 
-// GetTokenDenom constructs a denom string for tokens created by tokenfactory
+// GetTokenDenom constructs a denom string for tokens created by coinfactory
 // based on an input creator address and a subdenom
 // The denom constructed is factory/{creator}/{subdenom}
 func GetTokenDenom(creator, subdenom string) (string, error) {
@@ -37,7 +37,7 @@ func GetTokenDenom(creator, subdenom string) (string, error) {
 }
 
 // DeconstructDenom takes a token denom string and verifies that it is a valid
-// denom of the tokenfactory module, and is of the form `factory/{creator}/{subdenom}`
+// denom of the tokenfactory module, and is of the form `factory + Separator + {creator} + Separator + {subdenom}`
 // If valid, it returns the creator address and subdenom
 func DeconstructDenom(denom string) (creator, subdenom string, err error) {
 	err = sdk.ValidateDenom(denom)

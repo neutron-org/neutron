@@ -7,7 +7,7 @@ import "neutron/coinfactory/v1beta1/authorityMetadata.proto";
 
 option go_package = "github.com/neutron-org/neutron/v8/x/coinfactory/types";
 
-// GenesisState defines the tokenfactory module's genesis state.
+// GenesisState defines the coinfactory module's genesis state.
 message GenesisState {
   // params defines the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
@@ -18,7 +18,7 @@ message GenesisState {
   ];
 }
 
-// GenesisDenom defines a tokenfactory denom that is defined within genesis
+// GenesisDenom defines a coinfactory denom that is defined within genesis
 // state. The structure contains DenomAuthorityMetadata which defines the
 // denom's admin.
 message GenesisDenom {

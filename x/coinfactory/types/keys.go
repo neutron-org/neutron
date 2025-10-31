@@ -18,7 +18,7 @@ const (
 	QuerierRoute = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_tokenfactory"
+	MemStoreKey = "mem_coinfactory"
 )
 
 // KeySeparator is used to combine parts of the keys in the store

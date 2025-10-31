@@ -79,12 +79,12 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)) //nolint:errcheck
 }
 
-// GetTxCmd returns the tokenfactory module's root tx command.
+// GetTxCmd returns the coinfactory module's root tx command.
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 	return cli.GetTxCmd()
 }
 
-// GetQueryCmd returns the tokenfactory module's root query command.
+// GetQueryCmd returns the coinfactory module's root query command.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
 }
@@ -137,10 +137,10 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 }
 
-// RegisterInvariants registers the tokenfactory module's invariants.
+// RegisterInvariants registers the coinfactory module's invariants.
 func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// InitGenesis performs the tokenfactory module's genesis initialization It returns
+// InitGenesis performs the coinfactory module's genesis initialization It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
 	var genState types.GenesisState
@@ -160,10 +160,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // ConsensusVersion implements ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
-// BeginBlock executes all ABCI BeginBlock logic respective to the tokenfactory module.
+// BeginBlock executes all ABCI BeginBlock logic respective to the coinfactory module.
 func (am AppModule) BeginBlock(_ sdk.Context) {}
 
-// EndBlock executes all ABCI EndBlock logic respective to the tokenfactory module. It
+// EndBlock executes all ABCI EndBlock logic respective to the coinfactory module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(_ sdk.Context) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}

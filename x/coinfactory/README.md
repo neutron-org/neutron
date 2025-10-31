@@ -5,7 +5,7 @@
 > Also support of the creation fee was removed at the moment because we do not have community pool in the Neutron. 
 
 
-The tokenfactory module allows any account to create a new token with
+The coinfactory module allows any account to create a new token with
 the name `factory/{creator address}/{subdenom}`. Because tokens are
 namespaced by creator address, this allows token minting to be
 permissionless, due to not needing to resolve name collisions. A single
@@ -54,7 +54,7 @@ message MsgMint {
 
 **State Modifications:**
 - Safety check the following
-  - Check that the denom minting is created via `tokenfactory` module
+  - Check that the denom minting is created via `coinfactory` module
   - Check that the sender of the message is the admin of the denom
 - Mint designated amount of tokens for the denom via `bank` module
 
@@ -74,7 +74,7 @@ message MsgBurn {
 
 **State Modifications:**
 - Safety check the following
-  - Check that the denom minting is created via `tokenfactory` module
+  - Check that the denom minting is created via `coinfactory` module
   - Check that the sender of the message is the admin of the denom
 - Burn designated amount of tokens for the denom via `bank` module
 

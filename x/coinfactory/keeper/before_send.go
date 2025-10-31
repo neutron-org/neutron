@@ -14,7 +14,7 @@ import (
 )
 
 func (k Keeper) setBeforeSendHook(ctx sdk.Context, denom, contractAddr string) error {
-	// verify that denom is an x/tokenfactory denom
+	// verify that denom is an x/coinfactory denom
 	_, _, err := types.DeconstructDenom(denom)
 	if err != nil {
 		return err

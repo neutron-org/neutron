@@ -584,7 +584,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Params defines a gRPC query method that returns the tokenfactory module's
+	// Params defines a gRPC query method that returns the coinfactory module's
 	// parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// DenomAuthorityMetadata defines a gRPC query method for fetching
@@ -656,7 +656,7 @@ func (c *queryClient) FullDenom(ctx context.Context, in *QueryFullDenomRequest, 
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Params defines a gRPC query method that returns the tokenfactory module's
+	// Params defines a gRPC query method that returns the coinfactory module's
 	// parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// DenomAuthorityMetadata defines a gRPC query method for fetching

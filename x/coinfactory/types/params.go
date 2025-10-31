@@ -20,7 +20,7 @@ var (
 	DefaultWhitelistedHooks        = []*WhitelistedHook{}
 )
 
-// ParamKeyTable the param key table for tokenfactory module.
+// ParamKeyTable the param key table for coinfactory module.
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
