@@ -4,12 +4,12 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
+	coinfactorykeeper "github.com/neutron-org/neutron/v8/x/coinfactory/keeper"
 	contractmanagerkeeper "github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/v8/x/cron/keeper"
 	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/v8/x/feeburner/keeper"
 	feerefunderkeeper "github.com/neutron-org/neutron/v8/x/feerefunder/keeper"
-	tokenfactory2keeper "github.com/neutron-org/neutron/v8/x/tokenfactory2/keeper"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
@@ -32,7 +32,7 @@ func RegisterCustomPlugins(
 	feeRefunderKeeper *feerefunderkeeper.Keeper,
 	bank *bankkeeper.BaseKeeper,
 	tfk *tokenfactorykeeper.Keeper,
-	tfk2 *tokenfactory2keeper.Keeper,
+	tfk2 *coinfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
 	dexKeeper *dexkeeper.Keeper,

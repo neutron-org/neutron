@@ -1,6 +1,7 @@
 package wasmbinding
 
 import (
+	coinfactorykeeper "github.com/neutron-org/neutron/v8/x/coinfactory/keeper"
 	contractmanagerkeeper "github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
 	contractmanagertypes "github.com/neutron-org/neutron/v8/x/contractmanager/types"
 	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
@@ -8,7 +9,6 @@ import (
 	feerefunderkeeper "github.com/neutron-org/neutron/v8/x/feerefunder/keeper"
 	icqkeeper "github.com/neutron-org/neutron/v8/x/interchainqueries/keeper"
 	icacontrollerkeeper "github.com/neutron-org/neutron/v8/x/interchaintxs/keeper"
-	tokenfactory2keeper "github.com/neutron-org/neutron/v8/x/tokenfactory2/keeper"
 
 	tokenfactorykeeper "github.com/neutron-org/neutron/v8/x/tokenfactory/keeper"
 
@@ -22,7 +22,7 @@ type QueryPlugin struct {
 	feeBurnerKeeper            *feeburnerkeeper.Keeper
 	feeRefunderKeeper          *feerefunderkeeper.Keeper
 	tokenFactoryKeeper         *tokenfactorykeeper.Keeper
-	tokenFactory2Keeper        *tokenfactory2keeper.Keeper
+	CoinfactoryKeeper          *coinfactorykeeper.Keeper
 	contractmanagerQueryServer contractmanagertypes.QueryServer
 	dexKeeper                  *dexkeeper.Keeper
 	oracleKeeper               *oraclekeeper.Keeper
@@ -30,14 +30,14 @@ type QueryPlugin struct {
 }
 
 // NewQueryPlugin returns a reference to a new QueryPlugin.
-func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper, feeBurnerKeeper *feeburnerkeeper.Keeper, feeRefunderKeeper *feerefunderkeeper.Keeper, tfk *tokenfactorykeeper.Keeper, tfk2 *tokenfactory2keeper.Keeper, contractmanagerKeeper *contractmanagerkeeper.Keeper, dexKeeper *dexkeeper.Keeper, oracleKeeper *oraclekeeper.Keeper, marketmapKeeper *marketmapkeeper.Keeper) *QueryPlugin {
+func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper, feeBurnerKeeper *feeburnerkeeper.Keeper, feeRefunderKeeper *feerefunderkeeper.Keeper, tfk *tokenfactorykeeper.Keeper, tfk2 *coinfactorykeeper.Keeper, contractmanagerKeeper *contractmanagerkeeper.Keeper, dexKeeper *dexkeeper.Keeper, oracleKeeper *oraclekeeper.Keeper, marketmapKeeper *marketmapkeeper.Keeper) *QueryPlugin {
 	return &QueryPlugin{
 		icaControllerKeeper:        icaControllerKeeper,
 		icqKeeper:                  icqKeeper,
 		feeBurnerKeeper:            feeBurnerKeeper,
 		feeRefunderKeeper:          feeRefunderKeeper,
 		tokenFactoryKeeper:         tfk,
-		tokenFactory2Keeper:        tfk2,
+		CoinfactoryKeeper:          tfk2,
 		contractmanagerQueryServer: contractmanagerkeeper.NewQueryServerImpl(*contractmanagerKeeper),
 		dexKeeper:                  dexKeeper,
 		oracleKeeper:               oracleKeeper,

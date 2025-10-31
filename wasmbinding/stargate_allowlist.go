@@ -16,6 +16,7 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
+	coinfactorytypes "github.com/neutron-org/neutron/v8/x/coinfactory/types"
 	crontypes "github.com/neutron-org/neutron/v8/x/cron/types"
 	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/v8/x/feeburner/types"
@@ -23,7 +24,6 @@ import (
 	interchaintxstypes "github.com/neutron-org/neutron/v8/x/interchaintxs/types"
 	stateverifiertypes "github.com/neutron-org/neutron/v8/x/state-verifier/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/v8/x/tokenfactory/types"
-	tokenfactory2types "github.com/neutron-org/neutron/v8/x/tokenfactory2/types"
 
 	harpoontypes "github.com/neutron-org/neutron/v8/x/harpoon/types"
 
@@ -47,12 +47,12 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/osmosis.tokenfactory.v1beta1.Query/BeforeSendHookAddress":  func() proto.Message { return &tokenfactorytypes.QueryBeforeSendHookAddressResponse{} },
 		"/osmosis.tokenfactory.v1beta1.Query/FullDenom":              func() proto.Message { return &tokenfactorytypes.QueryFullDenomResponse{} },
 
-		// tokenfactory2
-		"/osmosis.tokenfactory2.v1beta1.Query/Params":                 func() proto.Message { return &tokenfactory2types.QueryParamsResponse{} },
-		"/osmosis.tokenfactory2.v1beta1.Query/DenomAuthorityMetadata": func() proto.Message { return &tokenfactory2types.QueryDenomAuthorityMetadataResponse{} },
-		"/osmosis.tokenfactory2.v1beta1.Query/DenomsFromCreator":      func() proto.Message { return &tokenfactory2types.QueryDenomsFromCreatorResponse{} },
-		"/osmosis.tokenfactory2.v1beta1.Query/BeforeSendHookAddress":  func() proto.Message { return &tokenfactory2types.QueryBeforeSendHookAddressResponse{} },
-		"/osmosis.tokenfactory2.v1beta1.Query/FullDenom":              func() proto.Message { return &tokenfactory2types.QueryFullDenomResponse{} },
+		// coinfactory
+		"/osmosis.coinfactory.v1beta1.Query/Params":                 func() proto.Message { return &coinfactorytypes.QueryParamsResponse{} },
+		"/osmosis.coinfactory.v1beta1.Query/DenomAuthorityMetadata": func() proto.Message { return &coinfactorytypes.QueryDenomAuthorityMetadataResponse{} },
+		"/osmosis.coinfactory.v1beta1.Query/DenomsFromCreator":      func() proto.Message { return &coinfactorytypes.QueryDenomsFromCreatorResponse{} },
+		"/osmosis.coinfactory.v1beta1.Query/BeforeSendHookAddress":  func() proto.Message { return &coinfactorytypes.QueryBeforeSendHookAddressResponse{} },
+		"/osmosis.coinfactory.v1beta1.Query/FullDenom":              func() proto.Message { return &coinfactorytypes.QueryFullDenomResponse{} },
 
 		// interchain accounts
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": func() proto.Message { return &icacontrollertypes.QueryInterchainAccountResponse{} },
