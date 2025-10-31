@@ -25,21 +25,23 @@ import (
 */
 
 type IBCModule struct {
-	wrappedKeeper      wrapkeeper.KeeperTransferWrapper
-	keeper             keeper.Keeper
-	sudoKeeper         neutrontypes.WasmKeeper
-	tokenfactoryKeeper neutrontypes.TokenfactoryKeeper
+	wrappedKeeper       wrapkeeper.KeeperTransferWrapper
+	keeper              keeper.Keeper
+	sudoKeeper          neutrontypes.WasmKeeper
+	tokenfactoryKeeper  neutrontypes.TokenfactoryKeeper
+	tokenfactory2Keeper neutrontypes.TokenfactoryKeeper
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper neutrontypes.TokenfactoryKeeper, tokenfactory2Keeper neutrontypes.TokenfactoryKeeper) IBCModule {
 	return IBCModule{
-		wrappedKeeper:      k,
-		keeper:             k.Keeper,
-		sudoKeeper:         sudoKeeper,
-		IBCModule:          transfer.NewIBCModule(k.Keeper),
-		tokenfactoryKeeper: tokenfactoryKeeper,
+		wrappedKeeper:       k,
+		keeper:              k.Keeper,
+		sudoKeeper:          sudoKeeper,
+		IBCModule:           transfer.NewIBCModule(k.Keeper),
+		tokenfactoryKeeper:  tokenfactoryKeeper,
+		tokenfactory2Keeper: tokenfactory2Keeper,
 	}
 }
 

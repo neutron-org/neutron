@@ -32,11 +32,12 @@ func TestHandleAcknowledgement(t *testing.T) {
 	chanKeeper := mock_types.NewMockChannelKeeper(ctrl)
 	authKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	tokenfactoryKeeper := mock_types.NewMockTokenfactoryKeeper(ctrl)
+	tokenfactory2Keeper := mock_types.NewMockTokenfactoryKeeper(ctrl)
 
 	// required to initialize keeper
 	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx, _ := testkeeper.TransferKeeper(t, wmKeeper, feeKeeper, chanKeeper, authKeeper)
-	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper, tokenfactoryKeeper)
+	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper, tokenfactoryKeeper, tokenfactory2Keeper)
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 
 	resACK := channeltypes.Acknowledgement{
@@ -117,10 +118,11 @@ func TestHandleTimeout(t *testing.T) {
 	chanKeeper := mock_types.NewMockChannelKeeper(ctrl)
 	authKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	tokenfactoryKeeper := mock_types.NewMockTokenfactoryKeeper(ctrl)
+	tokenfactory2Keeper := mock_types.NewMockTokenfactoryKeeper(ctrl)
 	// required to initialize keeper
 	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx, _ := testkeeper.TransferKeeper(t, wmKeeper, feeKeeper, chanKeeper, authKeeper)
-	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper, tokenfactoryKeeper)
+	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper, tokenfactoryKeeper, tokenfactory2Keeper)
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"

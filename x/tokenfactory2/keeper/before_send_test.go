@@ -33,7 +33,7 @@ func (suite *KeeperTestSuite) initBalanceTrackContract(denom string) (sdk.AccAdd
 	factoryDenom := res.GetNewTokenDenom()
 
 	// instantiate wasm code
-	tokenFactoryModuleAddr := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress("tokenfactory")
+	tokenFactoryModuleAddr := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress(types.ModuleName)
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
 	codeID, _, err := contractKeeper.Create(suite.ChainA.GetContext(), suite.TestAccs[0], wasmCode, nil)
 	suite.Require().NoError(err)

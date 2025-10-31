@@ -694,6 +694,7 @@ func New(
 	app.BankKeeper.BaseSendKeeper = app.BankKeeper.BaseSendKeeper.SetHooks(
 		banktypes.NewMultiBankHooks(
 			app.TokenFactoryKeeper.Hooks(),
+			app.TokenFactory2Keeper.Hooks(),
 		))
 
 	app.DexKeeper = *dexkeeper.NewKeeper(
@@ -1737,6 +1738,7 @@ func (app *App) WireICS20PreWasmKeeper(
 			app.TransferKeeper,
 			contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 			app.TokenFactoryKeeper,
+			app.TokenFactory2Keeper,
 		),
 		app.PFMKeeper,
 		0,
