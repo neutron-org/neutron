@@ -16,7 +16,7 @@ const (
 	MaxHrpLength      = 16
 	// MaxCreatorLength = 59 + MaxHrpLength
 	MaxCreatorLength = 59 + MaxHrpLength
-	Separator        = ":"
+	Separator        = "."
 )
 
 // GetTokenDenom constructs a denom string for tokens created by tokenfactory
@@ -60,9 +60,9 @@ func DeconstructDenom(denom string) (creator, subdenom string, err error) {
 		return "", "", errorsmod.Wrapf(ErrInvalidDenom, "Invalid creator address (%s)", err)
 	}
 
-	// Handle the case where a denom has a slash in its subdenom. For example,
-	// when we did the split, we'd turn factory/accaddr/atomderivative/sikka into ["factory", "accaddr", "atomderivative", "sikka"]
-	// So we have to join [2:] with a Separator as the delimiter to get back the correct subdenom which should be "atomderivative/sikka"
+	// Handle the case where a denom has a Separator in its subdenom. For example,
+	// when we did the split, we'd turn factory + Separator + accaddr + Separator + atomderivative + Separator + sikka into ["factory", "accaddr", "atomderivative", "sikka"]
+	// So we have to join [2:] with a Separator as the delimiter to get back the correct subdenom which should be "atomderivative + Separator + sikka"
 	subdenom = strings.Join(strParts[2:], Separator)
 
 	return creatorAddr.String(), subdenom, nil
