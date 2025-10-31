@@ -18,6 +18,7 @@ import (
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
+	coinfactorytypes "github.com/neutron-org/neutron/v8/x/coinfactory/types"
 	revenuetypes "github.com/neutron-org/neutron/v8/x/revenue/types"
 
 	harpoontypes "github.com/neutron-org/neutron/v8/x/harpoon/types"
@@ -62,6 +63,7 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*ibcclienttypes.MsgRecoverClient,
 		*ibcclienttypes.MsgIBCSoftwareUpgrade,
 		*tokenfactorytypes.MsgUpdateParams,
+		*coinfactorytypes.MsgUpdateParams,
 		*interchainqueriestypes.MsgUpdateParams,
 		*interchaintxstypes.MsgUpdateParams,
 		*feeburnertypes.MsgUpdateParams,
