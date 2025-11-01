@@ -48,11 +48,11 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/osmosis.tokenfactory.v1beta1.Query/FullDenom":              func() proto.Message { return &tokenfactorytypes.QueryFullDenomResponse{} },
 
 		// coinfactory
-		"/osmosis.coinfactory.v1beta1.Query/Params":                 func() proto.Message { return &coinfactorytypes.QueryParamsResponse{} },
-		"/osmosis.coinfactory.v1beta1.Query/DenomAuthorityMetadata": func() proto.Message { return &coinfactorytypes.QueryDenomAuthorityMetadataResponse{} },
-		"/osmosis.coinfactory.v1beta1.Query/DenomsFromCreator":      func() proto.Message { return &coinfactorytypes.QueryDenomsFromCreatorResponse{} },
-		"/osmosis.coinfactory.v1beta1.Query/BeforeSendHookAddress":  func() proto.Message { return &coinfactorytypes.QueryBeforeSendHookAddressResponse{} },
-		"/osmosis.coinfactory.v1beta1.Query/FullDenom":              func() proto.Message { return &coinfactorytypes.QueryFullDenomResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/Params":                 func() proto.Message { return &coinfactorytypes.QueryParamsResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/DenomAuthorityMetadata": func() proto.Message { return &coinfactorytypes.QueryDenomAuthorityMetadataResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/DenomsFromCreator":      func() proto.Message { return &coinfactorytypes.QueryDenomsFromCreatorResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/BeforeSendHookAddress":  func() proto.Message { return &coinfactorytypes.QueryBeforeSendHookAddressResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/FullDenom":              func() proto.Message { return &coinfactorytypes.QueryFullDenomResponse{} },
 
 		// interchain accounts
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": func() proto.Message { return &icacontrollertypes.QueryInterchainAccountResponse{} },
