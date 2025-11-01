@@ -29,17 +29,19 @@ type IBCModule struct {
 	keeper             keeper.Keeper
 	sudoKeeper         neutrontypes.WasmKeeper
 	tokenfactoryKeeper neutrontypes.TokenfactoryKeeper
+	CoinfactoryKeeper  neutrontypes.TokenfactoryKeeper
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper, coinfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
 	return IBCModule{
 		wrappedKeeper:      k,
 		keeper:             k.Keeper,
 		sudoKeeper:         sudoKeeper,
 		IBCModule:          transfer.NewIBCModule(k.Keeper),
 		tokenfactoryKeeper: tokenfactoryKeeper,
+		CoinfactoryKeeper:  coinfactoryKeeper,
 	}
 }
 

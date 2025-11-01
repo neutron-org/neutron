@@ -16,6 +16,7 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
+	coinfactorytypes "github.com/neutron-org/neutron/v8/x/coinfactory/types"
 	crontypes "github.com/neutron-org/neutron/v8/x/cron/types"
 	dextypes "github.com/neutron-org/neutron/v8/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/v8/x/feeburner/types"
@@ -45,6 +46,13 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator":      func() proto.Message { return &tokenfactorytypes.QueryDenomsFromCreatorResponse{} },
 		"/osmosis.tokenfactory.v1beta1.Query/BeforeSendHookAddress":  func() proto.Message { return &tokenfactorytypes.QueryBeforeSendHookAddressResponse{} },
 		"/osmosis.tokenfactory.v1beta1.Query/FullDenom":              func() proto.Message { return &tokenfactorytypes.QueryFullDenomResponse{} },
+
+		// coinfactory
+		"/neutron.coinfactory.v1beta1.Query/Params":                 func() proto.Message { return &coinfactorytypes.QueryParamsResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/DenomAuthorityMetadata": func() proto.Message { return &coinfactorytypes.QueryDenomAuthorityMetadataResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/DenomsFromCreator":      func() proto.Message { return &coinfactorytypes.QueryDenomsFromCreatorResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/BeforeSendHookAddress":  func() proto.Message { return &coinfactorytypes.QueryBeforeSendHookAddressResponse{} },
+		"/neutron.coinfactory.v1beta1.Query/FullDenom":              func() proto.Message { return &coinfactorytypes.QueryFullDenomResponse{} },
 
 		// interchain accounts
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": func() proto.Message { return &icacontrollertypes.QueryInterchainAccountResponse{} },
