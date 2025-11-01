@@ -420,7 +420,7 @@ func TestMsgChangeAdminValidate(t *testing.T) {
 			"not enough parts of denom",
 			types.MsgChangeAdmin{
 				Sender:   testutil.TestOwnerAddress,
-				Denom:    "factory/sun",
+				Denom:    "factory.sun",
 				NewAdmin: testAddress,
 			},
 			types.ErrInvalidDenom,
