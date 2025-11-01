@@ -429,7 +429,7 @@ func TestMsgChangeAdminValidate(t *testing.T) {
 			"incorrect denom prefix",
 			types.MsgChangeAdmin{
 				Sender:   testutil.TestOwnerAddress,
-				Denom:    "bitcoin/factory/sun",
+				Denom:    "bitcoin.factory.sun",
 				NewAdmin: testAddress,
 			},
 			types.ErrInvalidDenom,
