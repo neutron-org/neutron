@@ -55,7 +55,7 @@ func (suite *KeeperTestSuite) Setup() {
 	}
 	suite.TestAccs = CreateRandomAccounts(3)
 
-	suite.SetupTokenFactory()
+	suite.SetupCoinFactory()
 
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 
@@ -74,7 +74,7 @@ func (suite *KeeperTestSuite) Setup() {
 	suite.contractKeeper = wasmkeeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
 }
 
-func (suite *KeeperTestSuite) SetupTokenFactory() {
+func (suite *KeeperTestSuite) SetupCoinFactory() {
 	suite.GetNeutronZoneApp(suite.ChainA).CoinfactoryKeeper.CreateModuleAccount(suite.ChainA.GetContext())
 }
 
