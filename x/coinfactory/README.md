@@ -6,7 +6,7 @@
 
 
 The coinfactory module allows any account to create a new token with
-the name `factory/{creator address}/{subdenom}`. Because tokens are
+the name `factory.{creator address}.{subdenom}`. Because tokens are
 namespaced by creator address, this allows token minting to be
 permissionless, due to not needing to resolve name collisions. A single
 account can create multiple denoms, by providing a unique subdenom for each
