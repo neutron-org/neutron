@@ -9,7 +9,7 @@ import (
 
 const (
 	ModuleDenomPrefix = "coinfactory"
-	// See the TokenFactory readme for a derivation of these.
+	// See the CoinFactory readme for a derivation of these.
 	// TL;DR, MaxSubdenomLength + MaxHrpLength = 60 comes from SDK max denom length = 128
 	// and the structure of coinfactory denoms.
 	MaxSubdenomLength = 44
