@@ -37,7 +37,7 @@ message MsgCreateDenom {
 **State Modifications:**
 - Fund community pool with the denom creation fee from the creator address, set in `Params`
 - Set `DenomMetaData` via bank keeper
-- Set `AuthorityMetadata` for the given denom to store the admin for the created denom `factory/{creator address}/{subdenom}`. Admin is automatically set as the Msg sender
+- Set `AuthorityMetadata` for the given denom to store the admin for the created denom `factory.{creator address}.{subdenom}`. Admin is automatically set as the Msg sender
 - Add denom to the `CreatorPrefixStore`, where a state of denoms created per creator is kept
 
 ### Mint
