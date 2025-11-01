@@ -6,7 +6,7 @@
 
 
 The coinfactory module allows any account to create a new token with
-the name `factory.{creator address}.{subdenom}`. Because tokens are
+the name `coinfactory.{creator address}.{subdenom}`. Because tokens are
 namespaced by creator address, this allows token minting to be
 permissionless, due to not needing to resolve name collisions. A single
 account can create multiple denoms, by providing a unique subdenom for each
@@ -26,7 +26,7 @@ created denom. Once a denom is created, the original creator is given
 ## Messages
 
 ### CreateDenom
-- Creates a denom of `factory.{creator address}.{subdenom}` given the denom creator address and the subdenom. Subdenoms can contain `[a-zA-Z0-9./]`.
+- Creates a denom of `coinfactory.{creator address}.{subdenom}` given the denom creator address and the subdenom. Subdenoms can contain `[a-zA-Z0-9./]`.
 ``` {.go}
 message MsgCreateDenom {
   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
@@ -37,7 +37,7 @@ message MsgCreateDenom {
 **State Modifications:**
 - Fund community pool with the denom creation fee from the creator address, set in `Params`
 - Set `DenomMetaData` via bank keeper
-- Set `AuthorityMetadata` for the given denom to store the admin for the created denom `factory.{creator address}.{subdenom}`. Admin is automatically set as the Msg sender
+- Set `AuthorityMetadata` for the given denom to store the admin for the created denom `coinfactory.{creator address}.{subdenom}`. Admin is automatically set as the Msg sender
 - Add denom to the `CreatorPrefixStore`, where a state of denoms created per creator is kept
 
 ### Mint
@@ -99,7 +99,7 @@ The chain's bech32 prefix for addresses can be at most 16 characters long.
 
 This comes from denoms having a 128 byte maximum length, enforced from the SDK, and us setting longest_subdenom to be 44 bytes.
 A token factory token's denom is:
-`factory.{creator address}.{subdenom}`
+`coinfactory.{creator address}.{subdenom}`
 Splitting up into sub-components, this has:
 * `len(factory) = 7`
 * `2 * len(".") = 2`

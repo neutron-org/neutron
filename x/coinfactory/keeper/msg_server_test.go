@@ -20,7 +20,7 @@ import (
 
 const (
 	testAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
-	denom       = "factory.neutron1p87pglxer3rlqx5hafy2glszfdwhcg04qp6pj9.sun"
+	denom       = "coinfactory.neutron1p87pglxer3rlqx5hafy2glszfdwhcg04qp6pj9.sun"
 )
 
 func TestMsgCreateDenomValidate(t *testing.T) {
@@ -420,7 +420,7 @@ func TestMsgChangeAdminValidate(t *testing.T) {
 			"not enough parts of denom",
 			types.MsgChangeAdmin{
 				Sender:   testutil.TestOwnerAddress,
-				Denom:    "factory.sun",
+				Denom:    "coinfactory.sun",
 				NewAdmin: testAddress,
 			},
 			types.ErrInvalidDenom,
@@ -429,7 +429,7 @@ func TestMsgChangeAdminValidate(t *testing.T) {
 			"incorrect denom prefix",
 			types.MsgChangeAdmin{
 				Sender:   testutil.TestOwnerAddress,
-				Denom:    "bitcoin.factory.sun",
+				Denom:    "bitcoin.coinfactory.sun",
 				NewAdmin: testAddress,
 			},
 			types.ErrInvalidDenom,

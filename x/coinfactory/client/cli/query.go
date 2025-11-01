@@ -76,7 +76,7 @@ func GetCmdDenomAuthorityMetadata() *cobra.Command {
 			denom := strings.Split(args[0], types.Separator)
 
 			if len(denom) != 3 {
-				return fmt.Errorf("invalid denom format, expected format: factory.[creator].[subdenom]")
+				return fmt.Errorf("invalid denom format, expected format: coinfactory.[creator].[subdenom]")
 			}
 
 			res, err := queryClient.DenomAuthorityMetadata(cmd.Context(), &types.QueryDenomAuthorityMetadataRequest{

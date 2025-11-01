@@ -85,7 +85,7 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 		{
 			desc:      "denom does not exist",
 			amount:    10,
-			mintDenom: "factory.osmo1t7egva48prqmzl59x5ngv4zx0dtrwewc9m7z44.evmos",
+			mintDenom: "coinfactory.osmo1t7egva48prqmzl59x5ngv4zx0dtrwewc9m7z44.evmos",
 			admin:     suite.TestAccs[0].String(),
 			valid:     false,
 		},
@@ -147,7 +147,7 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 		{
 			desc:      "denom does not exist",
 			amount:    10,
-			burnDenom: "factory.osmo1t7egva48prqmzl59x5ngv4zx0dtrwewc9m7z44.evmos",
+			burnDenom: "coinfactory.osmo1t7egva48prqmzl59x5ngv4zx0dtrwewc9m7z44.evmos",
 			admin:     suite.TestAccs[0].String(),
 			valid:     false,
 		},
@@ -218,7 +218,7 @@ func (suite *KeeperTestSuite) TestForceTransferDenom() {
 		{
 			desc:          "denom does not exist",
 			amount:        10,
-			transferDenom: "factory.osmo1t7egva48prqmzl59x5ngv4zx0dtrwewc9m7z44.evmos",
+			transferDenom: "coinfactory.osmo1t7egva48prqmzl59x5ngv4zx0dtrwewc9m7z44.evmos",
 			admin:         suite.TestAccs[0].String(),
 			valid:         false,
 		},

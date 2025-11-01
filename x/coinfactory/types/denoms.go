@@ -21,7 +21,7 @@ const (
 
 // GetTokenDenom constructs a denom string for tokens created by coinfactory
 // based on an input creator address and a subdenom
-// The denom constructed is factory.{creator}.{subdenom}
+// The denom constructed is coinfactory.{creator}.{subdenom}
 func GetTokenDenom(creator, subdenom string) (string, error) {
 	if len(subdenom) > MaxSubdenomLength {
 		return "", ErrSubdenomTooLong
