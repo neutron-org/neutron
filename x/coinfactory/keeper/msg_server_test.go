@@ -20,7 +20,7 @@ import (
 
 const (
 	testAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
-	denom       = "factory/neutron1p87pglxer3rlqx5hafy2glszfdwhcg04qp6pj9/sun"
+	denom       = "factory.neutron1p87pglxer3rlqx5hafy2glszfdwhcg04qp6pj9.sun"
 )
 
 func TestMsgCreateDenomValidate(t *testing.T) {
