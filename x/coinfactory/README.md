@@ -102,7 +102,7 @@ A token factory token's denom is:
 `factory.{creator address}.{subdenom}`
 Splitting up into sub-components, this has:
 * `len(factory) = 7`
-* `2 * len("/") = 2`
+* `2 * len(".") = 2`
 * `len(longest_subdenom)`
 * `len(creator_address) = len(bech32(longest_addr_length, chain_addr_prefix))`.
 Longest addr length at the moment is `32 bytes`.
