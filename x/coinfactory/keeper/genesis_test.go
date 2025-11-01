@@ -7,11 +7,12 @@ import (
 )
 
 func getDenom(owner, denom string) string {
-	if fullDenom, err := types.GetTokenDenom(owner, denom); err != nil {
+	fullDenom, err := types.GetTokenDenom(owner, denom)
+	if err != nil {
 		panic(err.Error())
-	} else {
-		return fullDenom
 	}
+
+	return fullDenom
 }
 
 func (suite *KeeperTestSuite) TestGenesis() {
