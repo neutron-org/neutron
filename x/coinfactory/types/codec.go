@@ -8,13 +8,13 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgCreateDenom{}, "osmosis/coinfactory/create-denom", nil)
-	cdc.RegisterConcrete(&MsgMint{}, "osmosis/coinfactory/mint", nil)
-	cdc.RegisterConcrete(&MsgBurn{}, "osmosis/coinfactory/burn", nil)
-	// cdc.RegisterConcrete(&MsgForceTransfer{}, "osmosis/coinfactory/force-transfer", nil)
-	cdc.RegisterConcrete(&MsgChangeAdmin{}, "osmosis/coinfactory/change-admin", nil)
-	cdc.RegisterConcrete(&MsgSetBeforeSendHook{}, "osmosis/coinfactory/set-beforesend-hook", nil)
-	cdc.RegisterConcrete(&MsgUpdateParams{}, "osmosis/coinfactory/update-params", nil)
+	cdc.RegisterConcrete(&MsgCreateDenom{}, "neutron/coinfactory/create-denom", nil)
+	cdc.RegisterConcrete(&MsgMint{}, "neutron/coinfactory/mint", nil)
+	cdc.RegisterConcrete(&MsgBurn{}, "neutron/coinfactory/burn", nil)
+	// cdc.RegisterConcrete(&MsgForceTransfer{}, "neutron/coinfactory/force-transfer", nil)
+	cdc.RegisterConcrete(&MsgChangeAdmin{}, "neutron/coinfactory/change-admin", nil)
+	cdc.RegisterConcrete(&MsgSetBeforeSendHook{}, "neutron/coinfactory/set-beforesend-hook", nil)
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "neutron/coinfactory/update-params", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
