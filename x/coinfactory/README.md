@@ -99,7 +99,7 @@ The chain's bech32 prefix for addresses can be at most 16 characters long.
 
 This comes from denoms having a 128 byte maximum length, enforced from the SDK, and us setting longest_subdenom to be 44 bytes.
 A token factory token's denom is:
-`factory/{creator address}/{subdenom}`
+`factory.{creator address}.{subdenom}`
 Splitting up into sub-components, this has:
 * `len(factory) = 7`
 * `2 * len("/") = 2`
