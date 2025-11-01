@@ -26,7 +26,7 @@ created denom. Once a denom is created, the original creator is given
 ## Messages
 
 ### CreateDenom
-- Creates a denom of `factory/{creator address}/{subdenom}` given the denom creator address and the subdenom. Subdenoms can contain `[a-zA-Z0-9./]`.
+- Creates a denom of `factory.{creator address}.{subdenom}` given the denom creator address and the subdenom. Subdenoms can contain `[a-zA-Z0-9./]`.
 ``` {.go}
 message MsgCreateDenom {
   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
