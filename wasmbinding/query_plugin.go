@@ -1,7 +1,6 @@
 package wasmbinding
 
 import (
-	coinfactorykeeper "github.com/neutron-org/neutron/v8/x/coinfactory/keeper"
 	contractmanagerkeeper "github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
 	contractmanagertypes "github.com/neutron-org/neutron/v8/x/contractmanager/types"
 	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
@@ -22,7 +21,6 @@ type QueryPlugin struct {
 	feeBurnerKeeper            *feeburnerkeeper.Keeper
 	feeRefunderKeeper          *feerefunderkeeper.Keeper
 	tokenFactoryKeeper         *tokenfactorykeeper.Keeper
-	CoinfactoryKeeper          *coinfactorykeeper.Keeper
 	contractmanagerQueryServer contractmanagertypes.QueryServer
 	dexKeeper                  *dexkeeper.Keeper
 	oracleKeeper               *oraclekeeper.Keeper
@@ -30,14 +28,13 @@ type QueryPlugin struct {
 }
 
 // NewQueryPlugin returns a reference to a new QueryPlugin.
-func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper, feeBurnerKeeper *feeburnerkeeper.Keeper, feeRefunderKeeper *feerefunderkeeper.Keeper, tfk *tokenfactorykeeper.Keeper, tfk2 *coinfactorykeeper.Keeper, contractmanagerKeeper *contractmanagerkeeper.Keeper, dexKeeper *dexkeeper.Keeper, oracleKeeper *oraclekeeper.Keeper, marketmapKeeper *marketmapkeeper.Keeper) *QueryPlugin {
+func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper, feeBurnerKeeper *feeburnerkeeper.Keeper, feeRefunderKeeper *feerefunderkeeper.Keeper, tfk *tokenfactorykeeper.Keeper, contractmanagerKeeper *contractmanagerkeeper.Keeper, dexKeeper *dexkeeper.Keeper, oracleKeeper *oraclekeeper.Keeper, marketmapKeeper *marketmapkeeper.Keeper) *QueryPlugin {
 	return &QueryPlugin{
 		icaControllerKeeper:        icaControllerKeeper,
 		icqKeeper:                  icqKeeper,
 		feeBurnerKeeper:            feeBurnerKeeper,
 		feeRefunderKeeper:          feeRefunderKeeper,
 		tokenFactoryKeeper:         tfk,
-		CoinfactoryKeeper:          tfk2,
 		contractmanagerQueryServer: contractmanagerkeeper.NewQueryServerImpl(*contractmanagerKeeper),
 		dexKeeper:                  dexKeeper,
 		oracleKeeper:               oracleKeeper,

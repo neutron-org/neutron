@@ -787,7 +787,6 @@ func New(
 		app.FeeKeeper,
 		&app.BankKeeper,
 		app.TokenFactoryKeeper,
-		app.CoinfactoryKeeper,
 		&app.CronKeeper,
 		&app.ContractManagerKeeper,
 		&app.DexKeeper,

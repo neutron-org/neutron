@@ -4,7 +4,6 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	coinfactorykeeper "github.com/neutron-org/neutron/v8/x/coinfactory/keeper"
 	contractmanagerkeeper "github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/v8/x/cron/keeper"
 	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
@@ -32,20 +31,19 @@ func RegisterCustomPlugins(
 	feeRefunderKeeper *feerefunderkeeper.Keeper,
 	bank *bankkeeper.BaseKeeper,
 	tfk *tokenfactorykeeper.Keeper,
-	tfk2 *coinfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
 	dexKeeper *dexkeeper.Keeper,
 	oracleKeeper *oraclekeeper.Keeper,
 	markemapKeeper *marketmapkeeper.Keeper,
 ) []wasmkeeper.Option {
-	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, tfk2, contractmanagerKeeper, dexKeeper, oracleKeeper, markemapKeeper)
+	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, contractmanagerKeeper, dexKeeper, oracleKeeper, markemapKeeper)
 
 	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
 		Custom: CustomQuerier(wasmQueryPlugin),
 	})
 	messagePluginOpt := wasmkeeper.WithMessageHandlerDecorator(
-		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, adminKeeper, bank, tfk, tfk2, cronKeeper, contractmanagerKeeper, dexKeeper),
+		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, adminKeeper, bank, tfk, cronKeeper, contractmanagerKeeper, dexKeeper),
 	)
 
 	return []wasmkeeper.Option{

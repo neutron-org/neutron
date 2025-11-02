@@ -29,7 +29,7 @@ type IBCModule struct {
 	keeper             keeper.Keeper
 	sudoKeeper         neutrontypes.WasmKeeper
 	tokenfactoryKeeper neutrontypes.TokenfactoryKeeper
-	CoinfactoryKeeper  neutrontypes.TokenfactoryKeeper
+	coinfactoryKeeper  neutrontypes.TokenfactoryKeeper
 	transfer.IBCModule
 }
 
@@ -41,7 +41,7 @@ func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.Wa
 		sudoKeeper:         sudoKeeper,
 		IBCModule:          transfer.NewIBCModule(k.Keeper),
 		tokenfactoryKeeper: tokenfactoryKeeper,
-		CoinfactoryKeeper:  coinfactoryKeeper,
+		coinfactoryKeeper:  coinfactoryKeeper,
 	}
 }
 
@@ -87,6 +87,7 @@ func (im IBCModule) OnChanOpenAck(
 
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+	im.coinfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
 
 	return nil
 }
@@ -104,6 +105,7 @@ func (im IBCModule) OnChanOpenConfirm(
 
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+	im.coinfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
 
 	return nil
 }
