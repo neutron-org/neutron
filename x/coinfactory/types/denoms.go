@@ -12,7 +12,7 @@ const (
 	// See the CoinFactory readme for a derivation of these.
 	// TL;DR, MaxSubdenomLength + MaxHrpLength = 60 comes from SDK max denom length = 128
 	// and the structure of coinfactory denoms.
-	MaxSubdenomLength = 44
+	MaxSubdenomLength = 40
 	MaxHrpLength      = 16
 	// MaxCreatorLength = 59 + MaxHrpLength
 	MaxCreatorLength = 59 + MaxHrpLength
