@@ -20,6 +20,7 @@ service Msg {
 
   rpc Deposit(MsgDeposit) returns (MsgDepositResponse);
   rpc Withdrawal(MsgWithdrawal) returns (MsgWithdrawalResponse);
+  rpc WithdrawalWithShares(MsgWithdrawalWithShares) returns (MsgWithdrawalResponse);
   rpc PlaceLimitOrder(MsgPlaceLimitOrder) returns (MsgPlaceLimitOrderResponse);
   rpc WithdrawFilledLimitOrder(MsgWithdrawFilledLimitOrder) returns (MsgWithdrawFilledLimitOrderResponse);
   rpc CancelLimitOrder(MsgCancelLimitOrder) returns (MsgCancelLimitOrderResponse);
@@ -118,6 +119,20 @@ message MsgWithdrawal {
   ];
   repeated int64 tick_indexes_a_to_b = 6;
   repeated uint64 fees = 7;
+}
+
+message MsgWithdrawalWithShares {
+  option (amino.name) = "dex/MsgWithdrawalWithShares";
+  option (cosmos.msg.v1.signer) = "creator";
+
+  string creator = 1;
+  string receiver = 2;
+  repeated string shares_to_remove = 5 [
+    (gogoproto.moretags) = "yaml:\"shares_to_remove\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "shares_to_remove"
+  ];
 }
 
 message MsgWithdrawalResponse {
