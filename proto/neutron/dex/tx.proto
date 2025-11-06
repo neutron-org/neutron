@@ -127,7 +127,7 @@ message MsgWithdrawalWithShares {
 
   string creator = 1;
   string receiver = 2;
-  repeated string shares_to_remove = 5 [
+  repeated cosmos.base.v1beta1.Coin shares_to_remove = 3 [
     (gogoproto.moretags) = "yaml:\"shares_to_remove\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.nullable) = false,
