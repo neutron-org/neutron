@@ -21,7 +21,7 @@ func (k Keeper) GetAllTickLiquidity(ctx sdk.Context) (list []*types.TickLiquidit
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) GetTickLiquidityIterator(ctx sdk.Context) storetypes.Iterator {
