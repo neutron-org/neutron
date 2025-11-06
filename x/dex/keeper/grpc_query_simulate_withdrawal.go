@@ -44,6 +44,10 @@ func (k Keeper) SimulateWithdrawal(
 		msg.SharesToRemove,
 	)
 
+	if err != nil {
+		return nil, err
+	}
+
 	return &types.QuerySimulateWithdrawalResponse{
 		Resp: &types.MsgWithdrawalResponse{
 			Reserve0Withdrawn:    reserve0Withdrawn.TruncateInt(),
@@ -85,6 +89,10 @@ func (k Keeper) SimulateWithdrawalWithShares(
 		poolsToRemoveFrom,
 		shareAmountsToRemove,
 	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.QuerySimulateWithdrawalResponse{
 		Resp: &types.MsgWithdrawalResponse{
