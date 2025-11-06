@@ -29,7 +29,7 @@ func (k Keeper) WithdrawCore(
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
 	}
 
-	return k.WithdrawHandler(ctx, goCtx, callerAddr, receiverAddr, pairID, poolsToRemoveFrom, sharesToRemoveList)
+	return k.WithdrawHandler(ctx, callerAddr, receiverAddr, pairID, poolsToRemoveFrom, sharesToRemoveList)
 }
 
 // WithdrawWithSharesCore handles logic for MsgWithdrawalWithShares including bank operations and event emissions.
@@ -46,21 +46,18 @@ func (k Keeper) WithdrawWithSharesCore(
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
 	}
 
-	return k.WithdrawHandler(ctx, goCtx, callerAddr, receiverAddr, poolsToRemoveFrom[0].MustPairID(), poolsToRemoveFrom, shareAmountsToRemove)
+	return k.WithdrawHandler(ctx, callerAddr, receiverAddr, poolsToRemoveFrom[0].MustPairID(), poolsToRemoveFrom, shareAmountsToRemove)
 }
 
-// WithdrawCore handles logic for both MsgWithdrawal and MsgWithdrawalWithShares including bank operations and event emissions.
+// WithdrawHandler handles logic for both MsgWithdrawal and MsgWithdrawalWithShares including bank operations and event emissions.
 func (k Keeper) WithdrawHandler(
 	ctx sdk.Context,
-	goCtx context.Context,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
 	pairID *types.PairID,
 	poolsToRemoveFrom []*types.Pool,
 	sharesAmountsToRemove []math.Int,
-
 ) (reserves0ToRemoved, reserves1ToRemoved math_utils.PrecDec, sharesBurned sdk.Coins, err error) {
-
 	totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, err := k.ExecuteWithdraw(
 		ctx,
 		pairID,

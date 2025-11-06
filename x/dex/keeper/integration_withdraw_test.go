@@ -6,6 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v8/x/dex/types"
 )
 
@@ -322,7 +323,8 @@ func (s *DexTestSuite) TestWithdrawWithSharesMixedDenoms() {
 	// Withdraw fails with ErrCanOnlyWithdrawFromSamePair
 
 	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
-	s.deposits(s.alice, []*Deposit{NewDeposit(10, 0, 0, 1)}, types.PairID{Token0: "TokenA", Token1: "TokenC"})
+	_, err := s.deposits(s.alice, []*Deposit{NewDeposit(10, 0, 0, 1)}, types.PairID{Token0: "TokenA", Token1: "TokenC"})
+	s.NoError(err)
 
 	s.withdrawsWithSharesFails(
 		s.alice,

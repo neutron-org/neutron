@@ -43,7 +43,6 @@ func (k Keeper) SimulateWithdrawal(
 		poolsToRemoveFrom,
 		msg.SharesToRemove,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +88,6 @@ func (k Keeper) SimulateWithdrawalWithShares(
 		poolsToRemoveFrom,
 		shareAmountsToRemove,
 	)
-
 	if err != nil {
 		return nil, err
 	}
