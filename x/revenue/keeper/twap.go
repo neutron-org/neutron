@@ -222,7 +222,7 @@ func (k *Keeper) getRewardAssetSymbol(ctx sdk.Context) (string, error) {
 	return rewardAssetMd.Symbol, nil
 }
 
-// getRewardAssetSymbol retrieves the exponent of the reward asset's alias that corresponds to
+// getRewardAssetExponent retrieves the exponent of the reward asset's alias that corresponds to
 // reward asset's symbol.
 func (k *Keeper) getRewardAssetExponent(ctx sdk.Context) (uint32, error) {
 	rewardAssetMd, err := k.getRewardAssetMetadata(ctx)
