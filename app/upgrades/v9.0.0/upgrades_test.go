@@ -1,4 +1,4 @@
-package v830_test
+package v900_test
 
 import (
 	"testing"
@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	v830 "github.com/neutron-org/neutron/v8/app/upgrades/v8.3.0"
-	"github.com/neutron-org/neutron/v8/testutil"
+	v900 "github.com/neutron-org/neutron/v9/app/upgrades/v9.0.0"
+	"github.com/neutron-org/neutron/v9/testutil"
 )
 
 type UpgradeTestSuite struct {
@@ -29,7 +29,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
-		Name:   v830.UpgradeName,
+		Name:   v900.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}

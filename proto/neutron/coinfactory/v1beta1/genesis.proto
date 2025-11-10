@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "neutron/coinfactory/params.proto";
 import "neutron/coinfactory/v1beta1/authorityMetadata.proto";
 
-option go_package = "github.com/neutron-org/neutron/v8/x/coinfactory/types";
+option go_package = "github.com/neutron-org/neutron/v9/x/coinfactory/types";
 
 // GenesisState defines the coinfactory module's genesis state.
 message GenesisState {
