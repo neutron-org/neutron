@@ -1,6 +1,8 @@
 package types
 
 import (
+	fmt "fmt"
+
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -94,6 +96,17 @@ func (msg *MsgWithdrawal) Validate() error {
 		if err := ValidateTickFee(msg.TickIndexesAToB[i], msg.Fees[i]); err != nil {
 			return err
 		}
+	}
+
+	poolsSeen := make(map[string]bool)
+	for i := 0; i < len(msg.Fees); i++ {
+		tickIndex := msg.TickIndexesAToB[i]
+		fee := msg.Fees[i]
+		poolStr := fmt.Sprintf("%d-%d", tickIndex, fee)
+		if _, ok := poolsSeen[poolStr]; ok {
+			return sdkerrors.Wrapf(ErrDuplicatePoolWithdraw, "pool with tickindex %d, fee %d is duplicated", tickIndex, fee)
+		}
+		poolsSeen[poolStr] = true
 	}
 
 	return nil

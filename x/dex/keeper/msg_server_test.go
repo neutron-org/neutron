@@ -779,6 +779,24 @@ func (s *DexTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*Withdra
 	s.Assert().Nil(err)
 }
 
+func (s *DexTestSuite) withdrawsWithShares(account sdk.AccAddress, sharesToRemove sdk.Coins) {
+	_, err := s.msgServer.WithdrawalWithShares(s.Ctx, &types.MsgWithdrawalWithShares{
+		Creator:        account.String(),
+		Receiver:       account.String(),
+		SharesToRemove: sharesToRemove,
+	})
+	s.Assert().Nil(err)
+}
+
+func (s *DexTestSuite) withdrawsWithSharesFails(account sdk.AccAddress, expectedErr error, sharesToRemove sdk.Coins) {
+	_, err := s.msgServer.WithdrawalWithShares(s.Ctx, &types.MsgWithdrawalWithShares{
+		Creator:        account.String(),
+		Receiver:       account.String(),
+		SharesToRemove: sharesToRemove,
+	})
+	s.Assert().ErrorIs(err, expectedErr)
+}
+
 func (s *DexTestSuite) aliceWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
 	s.withdrawFails(s.alice, expectedErr, withdrawals...)
 }
@@ -1843,176 +1861,74 @@ func TestMsgDepositValidate(t *testing.T) {
 	}
 }
 
-func TestMsgWithdrawalValidate(t *testing.T) {
+func TestMsgWithdrawalWithSharesValidate(t *testing.T) {
 	k, ctx := testkeeper.DexKeeper(t)
 	msgServer := dexkeeper.NewMsgServerImpl(*k)
 
 	tests := []struct {
 		name        string
-		msg         types.MsgWithdrawal
+		msg         types.MsgWithdrawalWithShares
 		expectedErr error
 	}{
 		{
 			"invalid creator",
-			types.MsgWithdrawal{
-				Creator:         "invalid_address",
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{0},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			types.MsgWithdrawalWithShares{
+				Creator:        "invalid_address",
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.OneInt())},
 			},
 			types.ErrInvalidAddress,
 		},
 		{
 			"invalid receiver",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        "invalid_address",
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{0},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       "invalid_address",
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.OneInt())},
 			},
 			types.ErrInvalidAddress,
 		},
 		{
-			"invalid TokenA",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "er",
-				TokenB:          "TokenB",
-				Fees:            []uint64{0},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
-			},
-			types.ErrInvalidDenom,
-		},
-		{
-			"invalid TokenB",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "er",
-				Fees:            []uint64{0},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
-			},
-			types.ErrInvalidDenom,
-		},
-		{
-			"invalid fee indexes length",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
-			},
-			types.ErrUnbalancedTxArray,
-		},
-		{
-			"invalid tick indexes length",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{0},
-				TickIndexesAToB: []int64{},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
-			},
-			types.ErrUnbalancedTxArray,
-		},
-		{
-			"invalid shares to remove length",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{0},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{},
-			},
-			types.ErrUnbalancedTxArray,
-		},
-		{
-			"no withdraw specs",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{},
-				TickIndexesAToB: []int64{},
-				SharesToRemove:  []sdkmath.Int{},
+			"empty shares to remove",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{},
 			},
 			types.ErrZeroWithdraw,
 		},
 		{
-			"no withdraw specs",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{0},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{sdkmath.ZeroInt()},
+			"invalid share amount",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.ZeroInt())},
 			},
 			types.ErrZeroWithdraw,
 		},
 		{
-			"invalid tick + fee upper",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{3},
-				TickIndexesAToB: []int64{559678},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			"invalid share denom",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{sdk.NewCoin("invalid_denom", sdkmath.OneInt())},
 			},
-			types.ErrTickOutsideRange,
+			types.ErrInvalidPoolDenom,
 		},
 		{
-			"invalid tick + fee lower",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{50},
-				TickIndexesAToB: []int64{-559631},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			"duplicate share denom",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.OneInt()), types.NewPoolShares(0, sdkmath.OneInt())},
 			},
-			types.ErrTickOutsideRange,
-		},
-		{
-			"invalid fee overflow",
-			types.MsgWithdrawal{
-				Creator:         sample.AccAddress(),
-				Receiver:        sample.AccAddress(),
-				TokenA:          "TokenA",
-				TokenB:          "TokenB",
-				Fees:            []uint64{559681},
-				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
-			},
-			types.ErrInvalidFee,
+			types.ErrDuplicatePoolWithdraw,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := msgServer.Withdrawal(ctx, &tt.msg)
+			resp, err := msgServer.WithdrawalWithShares(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
 			require.Nil(t, resp)
 		})
