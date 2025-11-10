@@ -18,21 +18,21 @@ import (
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
-	feerefunderkeeper "github.com/neutron-org/neutron/v8/x/feerefunder/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v9/x/feerefunder/keeper"
 
-	harpoonkeeper "github.com/neutron-org/neutron/v8/x/harpoon/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v8/x/revenue/keeper"
+	harpoonkeeper "github.com/neutron-org/neutron/v9/x/harpoon/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v9/x/revenue/keeper"
 
-	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
-	ibcratelimitkeeper "github.com/neutron-org/neutron/v8/x/ibc-rate-limit/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v9/x/dex/keeper"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v9/x/ibc-rate-limit/keeper"
 
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v8/x/dynamicfees/keeper"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v9/x/dynamicfees/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v8/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v8/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v8/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v8/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v8/x/tokenfactory/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v9/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v9/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v9/x/feeburner/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v9/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v9/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
