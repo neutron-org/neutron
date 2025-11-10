@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v8/x/coinfactory/types"
+	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
 )
 
 // StoreEscrowAddress sets the total set of params.

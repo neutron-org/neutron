@@ -6,7 +6,7 @@ import "google/api/annotations.proto";
 import "neutron/coinfactory/params.proto";
 import "neutron/coinfactory/v1beta1/authorityMetadata.proto";
 
-option go_package = "github.com/neutron-org/neutron/v8/x/coinfactory/types";
+option go_package = "github.com/neutron-org/neutron/v9/x/coinfactory/types";
 
 // Query defines the gRPC querier service.
 service Query {

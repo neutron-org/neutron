@@ -11,11 +11,11 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v8/app/params"
-	"github.com/neutron-org/neutron/v8/testutil"
-	testkeeper "github.com/neutron-org/neutron/v8/testutil/coinfactory/keeper"
-	"github.com/neutron-org/neutron/v8/x/coinfactory/keeper"
-	"github.com/neutron-org/neutron/v8/x/coinfactory/types"
+	"github.com/neutron-org/neutron/v9/app/params"
+	"github.com/neutron-org/neutron/v9/testutil"
+	testkeeper "github.com/neutron-org/neutron/v9/testutil/coinfactory/keeper"
+	"github.com/neutron-org/neutron/v9/x/coinfactory/keeper"
+	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
 )
 
 const (

@@ -10,8 +10,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v9/utils/math"
+	"github.com/neutron-org/neutron/v9/x/dex/types"
 )
 
 func NewLimitOrderTranche(

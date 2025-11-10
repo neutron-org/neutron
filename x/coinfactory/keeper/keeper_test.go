@@ -15,10 +15,10 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v8/app/params"
-	"github.com/neutron-org/neutron/v8/testutil"
-	"github.com/neutron-org/neutron/v8/x/coinfactory/keeper"
-	"github.com/neutron-org/neutron/v8/x/coinfactory/types"
+	"github.com/neutron-org/neutron/v9/app/params"
+	"github.com/neutron-org/neutron/v9/testutil"
+	"github.com/neutron-org/neutron/v9/x/coinfactory/keeper"
+	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
 )
 
 const (

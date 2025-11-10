@@ -3,7 +3,7 @@ package keeper_test
 import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v8/x/coinfactory/types"
+	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
 )
 
 func getDenom(owner, denom string) string {
