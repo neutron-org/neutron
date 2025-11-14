@@ -104,7 +104,7 @@ func (k Keeper) GetAllLimitOrderExpiration(ctx sdk.Context) (list []*types.Limit
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {

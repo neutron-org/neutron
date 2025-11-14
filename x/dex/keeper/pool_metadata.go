@@ -82,7 +82,7 @@ func (k Keeper) GetAllPoolMetadata(ctx sdk.Context) (list []types.PoolMetadata) 
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 // GetPoolMetadataIDBytes returns the byte representation of the ID
