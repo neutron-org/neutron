@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -125,8 +124,6 @@ func (k Keeper) ExecuteWithdraw(
 
 		sharesOwned := k.bankKeeper.GetBalance(ctx, callerAddr, poolDenom).Amount
 
-		fmt.Printf("sharesOwned: %s\n", sharesOwned)
-		fmt.Printf("sharesToRemove: %s\n", sharesToRemove)
 		if sharesOwned.LT(sharesToRemove) {
 			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, sdkerrors.Wrapf(
 				types.ErrInsufficientShares,
@@ -176,8 +173,9 @@ func (k Keeper) PoolDataToPools(
 		pool, found := k.GetPool(ctx, pairID, tickIndex, fees[i])
 		if !found {
 			return nil, sdkerrors.Wrapf(
-				types.ErrInsufficientShares,
-				"User does not have shares for in Pool tickIndex %d, fee %d",
+				types.ErrPoolNotFound,
+				"pool for pair %s, tick index %d, fee %d not found",
+				pairID.CanonicalString(),
 				tickIndex,
 				fees[i],
 			)
@@ -206,8 +204,8 @@ func (k Keeper) SharesToPools(
 		pool, found := k.GetPoolByID(ctx, poolID)
 		if !found {
 			return nil, nil, sdkerrors.Wrapf(
-				types.ErrInsufficientShares,
-				"user does not have shares in Pool %d",
+				types.ErrPoolNotFound,
+				"pool %d not found",
 				poolID,
 			)
 		}

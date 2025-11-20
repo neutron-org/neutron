@@ -265,11 +265,16 @@ var (
 	ErrDuplicatePoolWithdraw = sdkerrors.Register(
 		ModuleName,
 		1172,
-		"Cannot withdraw from the same pool multiple times:", // tickIndex: "%d", fee: "%d"
+		"Cannot withdraw from the same pool multiple times", // tickIndex: "%d", fee: "%d"
 	)
 	ErrCanOnlyWithdrawFromSamePair = sdkerrors.Register(
 		ModuleName,
 		1173,
-		"Can only withdraw from the same pair:", // poolId: "%d", pairID: "%s"
+		"Can only withdraw from the same pair", // poolId: "%d", pairID: "%s"
+	)
+	ErrPoolNotFound = sdkerrors.Register(
+		ModuleName,
+		1174,
+		"Pool not found", // poolId: "%d"
 	)
 )
