@@ -262,7 +262,7 @@ func (s *DexTestSuite) TestWithdrawalFailsWithNonExistentPair() {
 	// NOTE: As code is currently written we hit not enough shares check
 	// before validating pair existence. This is correct from a
 	// UX perspective --users should not care whether tick is initialized
-	s.Assert().ErrorIs(err, types.ErrInsufficientShares)
+	s.Assert().ErrorIs(err, types.ErrPoolNotFound)
 }
 
 func (s *DexTestSuite) TestPartialWithdrawWithShares() {
@@ -301,7 +301,7 @@ func (s *DexTestSuite) TestWithdrawWithSharesFailsInvalidPool() {
 
 	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
 
-	s.withdrawsWithSharesFails(s.alice, types.ErrInsufficientShares, sdk.Coins{types.NewPoolShares(1, sdkmath.NewInt(10).Mul(denomMultiple))})
+	s.withdrawsWithSharesFails(s.alice, types.ErrPoolNotFound, sdk.Coins{types.NewPoolShares(1, sdkmath.NewInt(10).Mul(denomMultiple))})
 }
 
 func (s *DexTestSuite) TestWithdrawWithSharesInsufficientShares() {
@@ -312,7 +312,7 @@ func (s *DexTestSuite) TestWithdrawWithSharesInsufficientShares() {
 
 	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
 
-	s.withdrawsWithSharesFails(s.alice, types.ErrInsufficientShares, sdk.Coins{types.NewPoolShares(1, sdkmath.NewInt(100).Mul(denomMultiple))})
+	s.withdrawsWithSharesFails(s.alice, types.ErrInsufficientShares, sdk.Coins{types.NewPoolShares(0, sdkmath.NewInt(100).Mul(denomMultiple))})
 }
 
 func (s *DexTestSuite) TestWithdrawWithSharesMixedDenoms() {
