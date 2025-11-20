@@ -3,7 +3,7 @@ package types
 import (
 	"cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	math_utils "github.com/neutron-org/neutron/v9/utils/math"
 )
 
 func (p PoolReserves) HasToken() bool {

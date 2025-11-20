@@ -10,7 +10,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 
-	"github.com/neutron-org/neutron/v8/x/revenue/types"
+	"github.com/neutron-org/neutron/v9/x/revenue/types"
 )
 
 // UpdateRewardAssetPrice stores fresh cumulative and absolute price of the reward asset and cleans
@@ -222,7 +222,7 @@ func (k *Keeper) getRewardAssetSymbol(ctx sdk.Context) (string, error) {
 	return rewardAssetMd.Symbol, nil
 }
 
-// getRewardAssetSymbol retrieves the exponent of the reward asset's alias that corresponds to
+// getRewardAssetExponent retrieves the exponent of the reward asset's alias that corresponds to
 // reward asset's symbol.
 func (k *Keeper) getRewardAssetExponent(ctx sdk.Context) (uint32, error) {
 	rewardAssetMd, err := k.getRewardAssetMetadata(ctx)

@@ -16,7 +16,7 @@ import (
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
-	github_com_neutron_org_neutron_v8_utils_math "github.com/neutron-org/neutron/v8/utils/math"
+	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v9/utils/math"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -295,8 +295,8 @@ type MsgDepositResponse struct {
 	Reserve1Deposited    []cosmossdk_io_math.Int                                `protobuf:"bytes,2,rep,name=reserve1_deposited,json=reserve1Deposited,proto3,customtype=cosmossdk.io/math.Int" json:"reserve1_deposited" yaml:"reserve1_deposited"` // Deprecated: Do not use.
 	FailedDeposits       []*FailedDeposit                                       `protobuf:"bytes,3,rep,name=failed_deposits,json=failedDeposits,proto3" json:"failed_deposits,omitempty"`
 	SharesIssued         []github_com_cosmos_cosmos_sdk_types.Coin              `protobuf:"bytes,4,rep,name=shares_issued,json=sharesIssued,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"shares_issued" yaml:"shares_issued"`
-	DecReserve0Deposited []github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,5,rep,name=dec_reserve0_deposited,json=decReserve0Deposited,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"dec_reserve0_deposited" yaml:"dec_reserve0_deposited"`
-	DecReserve1Deposited []github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,6,rep,name=dec_reserve1_deposited,json=decReserve1Deposited,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"dec_reserve1_deposited" yaml:"dec_reserve1_deposited"`
+	DecReserve0Deposited []github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,rep,name=dec_reserve0_deposited,json=decReserve0Deposited,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve0_deposited" yaml:"dec_reserve0_deposited"`
+	DecReserve1Deposited []github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,6,rep,name=dec_reserve1_deposited,json=decReserve1Deposited,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve1_deposited" yaml:"dec_reserve1_deposited"`
 }
 
 func (m *MsgDepositResponse) Reset()         { *m = MsgDepositResponse{} }
@@ -483,8 +483,8 @@ type MsgWithdrawalResponse struct {
 	// reserve1_withdrawn is DEPRECATED
 	Reserve1Withdrawn    cosmossdk_io_math.Int                                `protobuf:"bytes,2,opt,name=reserve1_withdrawn,json=reserve1Withdrawn,proto3,customtype=cosmossdk.io/math.Int" json:"reserve1_withdrawn" yaml:"reserve1_withdrawn"` // Deprecated: Do not use.
 	SharesBurned         []github_com_cosmos_cosmos_sdk_types.Coin            `protobuf:"bytes,3,rep,name=shares_burned,json=sharesBurned,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"shares_burned" yaml:"shares_burned"`
-	DecReserve0Withdrawn github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,4,opt,name=dec_reserve0_withdrawn,json=decReserve0Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"dec_reserve0_withdrawn" yaml:"dec_reserve0_withdrawn"`
-	DecReserve1Withdrawn github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,5,opt,name=dec_reserve1_withdrawn,json=decReserve1Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"dec_reserve1_withdrawn" yaml:"dec_reserve1_withdrawn"`
+	DecReserve0Withdrawn github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,4,opt,name=dec_reserve0_withdrawn,json=decReserve0Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve0_withdrawn" yaml:"dec_reserve0_withdrawn"`
+	DecReserve1Withdrawn github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=dec_reserve1_withdrawn,json=decReserve1Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve1_withdrawn" yaml:"dec_reserve1_withdrawn"`
 }
 
 func (m *MsgWithdrawalResponse) Reset()         { *m = MsgWithdrawalResponse{} }
@@ -532,9 +532,9 @@ type MsgPlaceLimitOrder struct {
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *time.Time                                            `protobuf:"bytes,9,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
 	MaxAmountOut   *cosmossdk_io_math.Int                                `protobuf:"bytes,10,opt,name=max_amount_out,json=maxAmountOut,proto3,customtype=cosmossdk.io/math.Int" json:"max_amount_out" yaml:"max_amount_out"`
-	LimitSellPrice *github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
+	LimitSellPrice *github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
 	// min_average_sell_price is DEPRECATED
-	MinAverageSellPrice *github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,12,opt,name=min_average_sell_price,json=minAverageSellPrice,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"min_average_sell_price" yaml:"min_average_sell_price"` // Deprecated: Do not use.
+	MinAverageSellPrice *github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,12,opt,name=min_average_sell_price,json=minAverageSellPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"min_average_sell_price" yaml:"min_average_sell_price"` // Deprecated: Do not use.
 }
 
 func (m *MsgPlaceLimitOrder) Reset()         { *m = MsgPlaceLimitOrder{} }
@@ -960,7 +960,7 @@ type MsgMultiHopSwap struct {
 	Receiver       string                                               `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
 	Routes         []*MultiHopRoute                                     `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes,omitempty"`
 	AmountIn       cosmossdk_io_math.Int                                `protobuf:"bytes,4,opt,name=amount_in,json=amountIn,proto3,customtype=cosmossdk.io/math.Int" json:"amount_in" yaml:"amount_in"`
-	ExitLimitPrice github_com_neutron_org_neutron_v8_utils_math.PrecDec `protobuf:"bytes,5,opt,name=exit_limit_price,json=exitLimitPrice,proto3,customtype=github.com/neutron-org/neutron/v8/utils/math.PrecDec" json:"exit_limit_price" yaml:"exit_limit_price"`
+	ExitLimitPrice github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=exit_limit_price,json=exitLimitPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"exit_limit_price" yaml:"exit_limit_price"`
 	// If pickBestRoute == true then all routes are run and the route with the
 	// best price is chosen otherwise, the first successful route is used.
 	PickBestRoute bool `protobuf:"varint,6,opt,name=pick_best_route,json=pickBestRoute,proto3" json:"pick_best_route,omitempty"`
@@ -1213,7 +1213,7 @@ var fileDescriptor_a489f6e187d5e074 = []byte{
 	// 2315 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x5a, 0x4f, 0x6c, 0xdb, 0xc8,
 	0xd5, 0x0f, 0x2d, 0x59, 0x96, 0xc6, 0xb6, 0xac, 0x8c, 0x9d, 0x98, 0x51, 0xbe, 0x35, 0x0d, 0x26,
-	0x48, 0xfc, 0xa5, 0x1b, 0x29, 0x4a, 0xbb, 0xdb, 0xc2, 0x87, 0x02, 0x96, 0x9d, 0x6c, 0xd4, 0x95,
+	0x48, 0xfc, 0xa5, 0x1b, 0x29, 0x4a, 0xbb, 0x5b, 0xd4, 0x87, 0x02, 0x96, 0x9d, 0x6c, 0xd4, 0x95,
 	0xd6, 0x01, 0xad, 0x45, 0x17, 0xbb, 0xc5, 0xb2, 0x94, 0x38, 0x91, 0x09, 0x93, 0x1c, 0x81, 0x43,
 	0xd9, 0xf2, 0x1e, 0x8a, 0xb4, 0x87, 0x1e, 0xf6, 0x94, 0x4b, 0x81, 0xb6, 0x40, 0x4f, 0x7b, 0x69,
 	0x0f, 0x2d, 0x72, 0xe8, 0xb9, 0xe7, 0x1c, 0x17, 0x05, 0x8a, 0x16, 0x45, 0xab, 0x16, 0x09, 0x8a,
@@ -1355,7 +1355,7 @@ var fileDescriptor_a489f6e187d5e074 = []byte{
 	0xbe, 0xf7, 0xec, 0xf9, 0x9a, 0xf0, 0xe5, 0xf3, 0x35, 0xe1, 0x9f, 0xcf, 0xd7, 0x84, 0x27, 0x2f,
 	0xd6, 0x2e, 0x7c, 0xf9, 0x62, 0xed, 0xc2, 0x5f, 0x5e, 0xac, 0x5d, 0xf8, 0xf8, 0xf6, 0xe4, 0x1d,
 	0xb1, 0xef, 0xfd, 0x07, 0x0c, 0xca, 0xa8, 0xad, 0x0c, 0xfb, 0x7c, 0xf6, 0xcd, 0xff, 0x04, 0x00,
-	0x00, 0xff, 0xff, 0x8b, 0x5f, 0x2e, 0x6f, 0x9c, 0x21, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0x62, 0xed, 0xa9, 0x0f, 0x9c, 0x21, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -4256,7 +4256,7 @@ func (m *MsgDepositResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v github_com_neutron_org_neutron_v8_utils_math.PrecDec
+			var v github_com_neutron_org_neutron_v9_utils_math.PrecDec
 			m.DecReserve0Deposited = append(m.DecReserve0Deposited, v)
 			if err := m.DecReserve0Deposited[len(m.DecReserve0Deposited)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -4292,7 +4292,7 @@ func (m *MsgDepositResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v github_com_neutron_org_neutron_v8_utils_math.PrecDec
+			var v github_com_neutron_org_neutron_v9_utils_math.PrecDec
 			m.DecReserve1Deposited = append(m.DecReserve1Deposited, v)
 			if err := m.DecReserve1Deposited[len(m.DecReserve1Deposited)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5384,7 +5384,7 @@ func (m *MsgPlaceLimitOrder) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v github_com_neutron_org_neutron_v8_utils_math.PrecDec
+			var v github_com_neutron_org_neutron_v9_utils_math.PrecDec
 			m.LimitSellPrice = &v
 			if err := m.LimitSellPrice.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5420,7 +5420,7 @@ func (m *MsgPlaceLimitOrder) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v github_com_neutron_org_neutron_v8_utils_math.PrecDec
+			var v github_com_neutron_org_neutron_v9_utils_math.PrecDec
 			m.MinAverageSellPrice = &v
 			if err := m.MinAverageSellPrice.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err

@@ -78,6 +78,7 @@ func (k Keeper) SimulateWithdrawalWithShares(
 		return nil, err
 	}
 
+	// This is
 	pairID := poolsToRemoveFrom[0].MustPairID()
 
 	reserve0Withdrawn, reserve1Withdrawn, sharesBurned, _, err := k.ExecuteWithdraw(
