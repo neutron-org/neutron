@@ -16,6 +16,7 @@ import (
 	v810 "github.com/neutron-org/neutron/v9/app/upgrades/v8.1.0"
 	v820 "github.com/neutron-org/neutron/v9/app/upgrades/v8.2.0"
 	v900 "github.com/neutron-org/neutron/v9/app/upgrades/v9.0.0"
+	nextupgrade "github.com/neutron-org/neutron/v9/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/v9/x/coinfactory"
 	dynamicfeestypes "github.com/neutron-org/neutron/v9/x/dynamicfees/types"
 	stateverifier "github.com/neutron-org/neutron/v9/x/state-verifier"
@@ -245,6 +246,7 @@ var (
 		v810.Upgrade,
 		v820.Upgrade,
 		v900.Upgrade,
+		nextupgrade.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
@@ -931,6 +933,40 @@ func New(
 
 	app.mm.SetOrderPreBlockers(
 		upgradetypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		ibctransfertypes.ModuleName,
+		authtypes.ModuleName,
+		authz.ModuleName,
+		banktypes.ModuleName,
+		crisistypes.ModuleName,
+		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		stakingtypes.ModuleName,
+		tokenfactorytypes.ModuleName,
+		coinfactorytypes.ModuleName,
+		icatypes.ModuleName,
+		interchainqueriesmoduletypes.ModuleName,
+		interchaintxstypes.ModuleName,
+		contractmanagermoduletypes.ModuleName,
+		wasmtypes.ModuleName,
+		feetypes.ModuleName,
+		feeburnertypes.ModuleName,
+		adminmoduletypes.ModuleName,
+		ibcratelimittypes.ModuleName,
+		ibchookstypes.ModuleName,
+		pfmtypes.ModuleName,
+		crontypes.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
+		globalfee.ModuleName,
+		feemarkettypes.ModuleName,
+		dextypes.ModuleName,
+		harpoontypes.ModuleName,
+		consensusparamtypes.ModuleName,
+		stateverifiertypes.ModuleName,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
