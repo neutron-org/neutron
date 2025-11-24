@@ -1,14 +1,14 @@
-package v8
+package nextupgrade
 
 import (
 	storetypes "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v7/app/upgrades"
+	"github.com/neutron-org/neutron/v9/app/upgrades"
 )
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v8"
+	UpgradeName = "nextupgrade"
 )
 
 var Upgrade = upgrades.Upgrade{

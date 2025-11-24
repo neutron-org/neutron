@@ -13,7 +13,7 @@ import (
 	tokenfactorytypes "github.com/neutron-org/neutron/v9/x/tokenfactory/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"

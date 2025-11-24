@@ -30,7 +30,7 @@ import (
 	"github.com/neutron-org/neutron/v9/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmvm/v2/types"
+	"github.com/CosmWasm/wasmvm/v3/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
