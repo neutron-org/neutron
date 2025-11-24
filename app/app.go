@@ -795,12 +795,13 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		app.StakingKeeper,
-		nil,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.TransferKeeper,
-		app.MsgServiceRouter(),
-		app.GRPCQueryRouter(),
+		nil, // distrKeeper
+		app.RateLimitingICS4Wrapper, // ics4Wrapper
+		app.IBCKeeper.ChannelKeeper, // channelKeeper
+		app.IBCKeeper.ChannelKeeperV2, // channelKeeperV2
+		app.TransferKeeper.Keeper, // portSource
+		app.MsgServiceRouter(), // router
+		app.GRPCQueryRouter(), // grpcQueryRouter
 		wasmDir,
 		nodeConfig,
 		wasmtypes.VMConfig{},
@@ -858,7 +859,7 @@ func New(
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, app.TransferStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
-		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper))
+		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.TransferKeeper.Keeper, app.IBCKeeper.ChannelKeeper))
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	app.RevenueKeeper = revenuekeeper.NewKeeper(
