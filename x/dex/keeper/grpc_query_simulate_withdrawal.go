@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v9/x/dex/types"
@@ -66,6 +67,9 @@ func (k Keeper) SimulateWithdrawalWithShares(
 	cacheCtx, _ := ctx.CacheContext()
 
 	msg := req.Msg
+	if msg == nil {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidAddress, "msg cannot be nil")
+	}
 
 	if err := msg.Validate(); err != nil {
 		return nil, err
