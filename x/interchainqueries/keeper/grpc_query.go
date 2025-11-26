@@ -3,13 +3,15 @@ package keeper
 import (
 	"context"
 
+	"github.com/cosmos/ibc-go/v10/modules/core/03-connection/keeper"
+
 	"cosmossdk.io/errors"
 
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	querytypes "github.com/cosmos/cosmos-sdk/types/query"
-	contypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	tndtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	contypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	tndtypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -91,7 +93,7 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 
 func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLastRemoteHeight) (*types.QueryLastRemoteHeightResponse, error) {
 	req := contypes.QueryConnectionClientStateRequest{ConnectionId: request.ConnectionId}
-	r, err := k.ibcKeeper.ConnectionClientState(goCtx, &req)
+	r, err := keeper.NewQueryServer(k.ibcKeeper.ConnectionKeeper).ConnectionClientState(goCtx, &req)
 	if err != nil {
 		return nil, errors.Wrapf(types.ErrInvalidConnectionID, "connection not found")
 	}

@@ -10,7 +10,7 @@ import (
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v9/x/contractmanager/keeper"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/cosmos/gogoproto/proto"
 
@@ -30,7 +30,7 @@ import (
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
