@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
@@ -55,4 +56,8 @@ func NewDexDenomMintCoinsRestriction() types.MintingRestrictionFn {
 		}
 		return nil
 	}
+}
+
+func NewPoolShares(poolID uint64, amount math.Int) sdk.Coin {
+	return sdk.NewCoin(NewPoolDenom(poolID), amount)
 }

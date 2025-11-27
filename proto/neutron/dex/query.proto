@@ -138,6 +138,11 @@ service Query {
     option (google.api.http).get = "/neutron/dex/simulate_withdrawal";
   }
 
+  // Simulates MsgWithdrawalWithShares
+  rpc SimulateWithdrawalWithShares(QuerySimulateWithdrawalWithSharesRequest) returns (QuerySimulateWithdrawalResponse) {
+    option (google.api.http).get = "/neutron/dex/simulate_withdrawal_with_shares";
+  }
+
   // Simulates MsgPlaceLimitOrder
   rpc SimulatePlaceLimitOrder(QuerySimulatePlaceLimitOrderRequest) returns (QuerySimulatePlaceLimitOrderResponse) {
     option (google.api.http).get = "/neutron/dex/simulate_place_limit_order";
@@ -422,6 +427,10 @@ message QuerySimulateDepositResponse {
 
 message QuerySimulateWithdrawalRequest {
   MsgWithdrawal msg = 1;
+}
+
+message QuerySimulateWithdrawalWithSharesRequest {
+  MsgWithdrawalWithShares msg = 1;
 }
 
 message QuerySimulateWithdrawalResponse {

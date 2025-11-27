@@ -5,6 +5,8 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v9/x/dex/types"
 )
 
@@ -260,5 +262,72 @@ func (s *DexTestSuite) TestWithdrawalFailsWithNonExistentPair() {
 	// NOTE: As code is currently written we hit not enough shares check
 	// before validating pair existence. This is correct from a
 	// UX perspective --users should not care whether tick is initialized
-	s.Assert().ErrorIs(err, types.ErrInsufficientShares)
+	s.Assert().ErrorIs(err, types.ErrPoolNotFound)
+}
+
+func (s *DexTestSuite) TestPartialWithdrawWithShares() {
+	s.fundAliceBalances(50, 50)
+	// CASE
+	// Alice deposits 10 of A at tick 0, fee tier 0
+	// and then withdraws only 5 shares of A
+
+	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
+
+	s.withdrawsWithShares(s.alice, sdk.Coins{types.NewPoolShares(0, sdkmath.NewInt(5).Mul(denomMultiple))})
+
+	s.assertAliceBalances(45, 50)
+	s.assertDexBalances(5, 0)
+}
+
+func (s *DexTestSuite) TestFullWithdrawWithShares() {
+	s.fundAliceBalances(50, 50)
+	// CASE
+	// Alice deposits 10 of A at tick 0, fee tier 0
+	// and then withdraws all shares
+
+	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
+
+	s.withdrawsWithShares(s.alice, sdk.Coins{types.NewPoolShares(0, sdkmath.NewInt(10).Mul(denomMultiple))})
+
+	s.assertAliceBalances(50, 50)
+	s.assertDexBalances(0, 0)
+}
+
+func (s *DexTestSuite) TestWithdrawWithSharesFailsInvalidPool() {
+	s.fundAliceBalances(50, 50)
+	// CASE
+	// Alice deposits 10 of A at tick 0, fee tier 0
+	// and then tries to withdraw shares from an invalid pool
+
+	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
+
+	s.withdrawsWithSharesFails(s.alice, types.ErrPoolNotFound, sdk.Coins{types.NewPoolShares(1, sdkmath.NewInt(10).Mul(denomMultiple))})
+}
+
+func (s *DexTestSuite) TestWithdrawWithSharesInsufficientShares() {
+	s.fundAliceBalances(50, 50)
+	// CASE
+	// Alice deposits 10 of A at tick 0, fee tier 0
+	// and then tries to withdraw more shares than she owns
+
+	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
+
+	s.withdrawsWithSharesFails(s.alice, types.ErrInsufficientShares, sdk.Coins{types.NewPoolShares(0, sdkmath.NewInt(100).Mul(denomMultiple))})
+}
+
+func (s *DexTestSuite) TestWithdrawWithSharesMixedDenoms() {
+	s.fundAliceBalances(50, 50)
+	s.fundAccountBalancesWithDenom(s.alice, sdk.NewCoins(sdk.NewCoin("TokenC", sdkmath.NewInt(10).Mul(denomMultiple))))
+	// CASE
+	// Alice deposits into 2 pools with different pairIDs
+	// Withdraw fails with ErrCanOnlyWithdrawFromSamePair
+
+	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
+	_, err := s.deposits(s.alice, []*Deposit{NewDeposit(10, 0, 0, 1)}, types.PairID{Token0: "TokenA", Token1: "TokenC"})
+	s.NoError(err)
+
+	s.withdrawsWithSharesFails(
+		s.alice,
+		types.ErrCanOnlyWithdrawFromSamePair,
+		sdk.Coins{types.NewPoolShares(0, sdkmath.NewInt(10)), types.NewPoolShares(1, sdkmath.NewInt(10))})
 }
