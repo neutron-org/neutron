@@ -16,6 +16,7 @@ import (
 	v810 "github.com/neutron-org/neutron/v9/app/upgrades/v8.1.0"
 	v820 "github.com/neutron-org/neutron/v9/app/upgrades/v8.2.0"
 	v900 "github.com/neutron-org/neutron/v9/app/upgrades/v9.0.0"
+	v910 "github.com/neutron-org/neutron/v9/app/upgrades/v9.1.0"
 	"github.com/neutron-org/neutron/v9/x/coinfactory"
 	dynamicfeestypes "github.com/neutron-org/neutron/v9/x/dynamicfees/types"
 	stateverifier "github.com/neutron-org/neutron/v9/x/state-verifier"
@@ -249,6 +250,7 @@ var (
 		v810.Upgrade,
 		v820.Upgrade,
 		v900.Upgrade,
+		v910.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
