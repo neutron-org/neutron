@@ -1,8 +1,6 @@
 module neutron/tests/slinky
 
-go 1.23.2
-
-toolchain go1.23.9
+go 1.24.10
 
 replace (
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
