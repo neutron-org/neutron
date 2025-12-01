@@ -3,8 +3,8 @@ package v800
 import (
 	storetypes "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v8/app/upgrades"
-	stateverifier "github.com/neutron-org/neutron/v8/x/state-verifier/types"
+	"github.com/neutron-org/neutron/v9/app/upgrades"
+	stateverifier "github.com/neutron-org/neutron/v9/x/state-verifier/types"
 )
 
 // This v8.0.0 upgrade is meant only for the neutron-1 chain (mainnet),
