@@ -308,3 +308,15 @@ func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_uti
 func CalcAmountAsToken0(amount0, amount1, price1To0 math_utils.PrecDec) math_utils.PrecDec {
 	return amount0.Add(amount1.Quo(price1To0))
 }
+
+func (p *Pool) PairID() (*PairID, error) {
+	return p.LowerTick0.Key.TradePairId.PairID()
+}
+
+func (p *Pool) MustPairID() *PairID {
+	pairID, err := p.PairID()
+	if err != nil {
+		panic(err)
+	}
+	return pairID
+}

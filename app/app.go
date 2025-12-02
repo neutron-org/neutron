@@ -10,13 +10,14 @@ import (
 	"path/filepath"
 	"time"
 
+	nextupgrade "github.com/neutron-org/neutron/v9/app/upgrades/nextupgrade"
 	v700 "github.com/neutron-org/neutron/v9/app/upgrades/v7.0.0"
 	v800 "github.com/neutron-org/neutron/v9/app/upgrades/v8.0.0"
 	v800_rc0 "github.com/neutron-org/neutron/v9/app/upgrades/v8.0.0-rc0"
 	v810 "github.com/neutron-org/neutron/v9/app/upgrades/v8.1.0"
 	v820 "github.com/neutron-org/neutron/v9/app/upgrades/v8.2.0"
 	v900 "github.com/neutron-org/neutron/v9/app/upgrades/v9.0.0"
-	nextupgrade "github.com/neutron-org/neutron/v9/app/upgrades/nextupgrade"
+	v910 "github.com/neutron-org/neutron/v9/app/upgrades/v9.1.0"
 	"github.com/neutron-org/neutron/v9/x/coinfactory"
 	dynamicfeestypes "github.com/neutron-org/neutron/v9/x/dynamicfees/types"
 	stateverifier "github.com/neutron-org/neutron/v9/x/state-verifier"
@@ -246,6 +247,7 @@ var (
 		v810.Upgrade,
 		v820.Upgrade,
 		v900.Upgrade,
+		v910.Upgrade,
 		nextupgrade.Upgrade,
 	}
 
@@ -797,13 +799,13 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		app.StakingKeeper,
-		nil, // distrKeeper
-		app.RateLimitingICS4Wrapper, // ics4Wrapper
-		app.IBCKeeper.ChannelKeeper, // channelKeeper
+		nil,                           // distrKeeper
+		app.RateLimitingICS4Wrapper,   // ics4Wrapper
+		app.IBCKeeper.ChannelKeeper,   // channelKeeper
 		app.IBCKeeper.ChannelKeeperV2, // channelKeeperV2
-		app.TransferKeeper.Keeper, // portSource
-		app.MsgServiceRouter(), // router
-		app.GRPCQueryRouter(), // grpcQueryRouter
+		app.TransferKeeper.Keeper,     // portSource
+		app.MsgServiceRouter(),        // router
+		app.GRPCQueryRouter(),         // grpcQueryRouter
 		wasmDir,
 		nodeConfig,
 		wasmtypes.VMConfig{},

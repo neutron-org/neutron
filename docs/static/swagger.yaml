@@ -18695,6 +18695,27 @@ definitions:
           type: object
         type: array
     type: object
+  neutron.dex.MsgWithdrawalWithShares:
+    properties:
+      creator:
+        type: string
+      receiver:
+        type: string
+      shares_to_remove:
+        items:
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+    type: object
   neutron.dex.MultiHopRoute:
     properties:
       hops:
@@ -49831,6 +49852,79 @@ paths:
                 type: string
             type: object
       summary: Simulates MsgWithdrawal
+      tags:
+        - Query
+  /neutron/dex/simulate_withdrawal_with_shares:
+    get:
+      operationId: SimulateWithdrawalWithShares
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  dec_reserve0_withdrawn:
+                    type: string
+                  dec_reserve1_withdrawn:
+                    type: string
+                  reserve0_withdrawn:
+                    title: reserve0_withdrawn is DEPRECATED
+                    type: string
+                  reserve1_withdrawn:
+                    title: reserve1_withdrawn is DEPRECATED
+                    type: string
+                  shares_burned:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgWithdrawalWithShares
       tags:
         - Query
   /neutron/dex/tick_liquidity/{pair_id}/{token_in}:
