@@ -248,7 +248,7 @@ replace (
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
-	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20251203205125-0eabde8a6ed4
+	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20251203205813-e01b9340d525
 	github.com/skip-mev/slinky => github.com/neutron-org/connect v1.2.3-0.20251203181514-a2a22987f99d
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
