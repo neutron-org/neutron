@@ -12,14 +12,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/gov"
+	interchaintest "github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/skip-mev/feemarket/tests/e2e"
 	feemarketmodule "github.com/skip-mev/feemarket/x/feemarket"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmapmodule "github.com/skip-mev/slinky/x/marketmap"
 	"github.com/skip-mev/slinky/x/oracle"
-	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v9/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v9/ibc"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -36,13 +36,13 @@ var (
 	image = ibc.DockerImage{
 		Repository: "neutron-node",
 		Version:    "latest",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	oracleImage = ibc.DockerImage{
 		Repository: "ghcr.io/skip-mev/slinky-sidecar",
 		Version:    "latest",
-		UidGid:     "1000:1000",
+		UIDGID:     "1000:1000",
 	}
 
 	numValidators = 4

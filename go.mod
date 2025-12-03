@@ -17,7 +17,7 @@ require (
 	github.com/CosmWasm/wasmd v0.61.0
 	github.com/CosmWasm/wasmvm/v3 v3.0.2
 	github.com/cometbft/cometbft v0.38.19
-	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
+	github.com/cosmos/admin-module/v2 v2.0.0
 	github.com/cosmos/cosmos-db v1.1.3
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/cosmos-sdk v0.53.4
@@ -242,13 +242,13 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.61.7-0.20251129091030-9951af3588a1
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
-	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.4-0.20251124153332-6a701ce2d335
+	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.4-0.20251203133557-9b4c59c3151f
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20251125163820-71ff8c91e59f
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
-	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20251112122816-faebd4caa52e
-	github.com/skip-mev/slinky => github.com/neutron-org/connect v1.2.3-0.20251129105600-563bd9b47c04
+	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20251203205125-0eabde8a6ed4
+	github.com/skip-mev/slinky => github.com/neutron-org/connect v1.2.3-0.20251203181514-a2a22987f99d
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
