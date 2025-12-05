@@ -8,7 +8,7 @@ SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
 GO_VERSION=1.24
-GOLANGCI_LINT_VERSION=v1.63.4
+GOLANGCI_LINT_VERSION=v1.64.8
 BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
