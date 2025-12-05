@@ -158,7 +158,7 @@ func (k Keeper) GetAllSubscriptions(goCtx context.Context) (res []types.HookSubs
 	store := prefix.NewStore(runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx)), types.GetHookSubscriptionKeyPrefix())
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 	for ; iterator.Valid(); iterator.Next() {
 		var s types.HookSubscriptions
 		k.cdc.MustUnmarshal(iterator.Value(), &s)

@@ -12,7 +12,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v9/app/params"
@@ -20,9 +20,9 @@ import (
 	"github.com/neutron-org/neutron/v9/x/ibc-hooks/testutils"
 	"github.com/neutron-org/neutron/v9/x/ibc-hooks/utils"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
 type HooksTestSuite struct {
@@ -35,7 +35,7 @@ func TestIBCHooksTestSuite(t *testing.T) {
 
 func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 	var (
-		trace    transfertypes.DenomTrace
+		trace    transfertypes.Denom
 		amount   math.Int
 		receiver string
 		status   testutils.Status
@@ -67,7 +67,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 			amount = math.NewInt(100) // must be explicitly changed in malleate
 			seq := uint64(1)
 
-			trace = transfertypes.ParseDenomTrace(params.DefaultDenom)
+			trace = transfertypes.ExtractDenomFromPath(params.DefaultDenom)
 
 			// send coin from chainA to chainB
 			transferMsg := transfertypes.NewMsgTransfer(
@@ -83,11 +83,11 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 
 			tc.malleate(&status)
 
-			data := transfertypes.NewFungibleTokenPacketData(trace.GetFullDenomPath(), amount.String(), suite.ChainA.SenderAccount.GetAddress().String(), receiver, "")
+			data := transfertypes.NewFungibleTokenPacketData(trace.String(), amount.String(), suite.ChainA.SenderAccount.GetAddress().String(), receiver, "")
 			packet := channeltypes.NewPacket(data.GetBytes(), seq, suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID, clienttypes.NewHeight(1, 100), 0)
 
 			ack := suite.GetNeutronZoneApp(suite.ChainB).TransferStack.
-				OnRecvPacket(suite.ChainB.GetContext(), packet, suite.ChainA.SenderAccount.GetAddress())
+				OnRecvPacket(suite.ChainB.GetContext(), transfertypes.V1, packet, suite.ChainA.SenderAccount.GetAddress())
 
 			if tc.expPass {
 				suite.Require().True(ack.Success())
@@ -121,7 +121,7 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		Memo:     memo,
 	}
 
-	return channeltypes.NewPacket(
+	packet := channeltypes.NewPacket(
 		packetData.GetBytes(),
 		prevSequence+1,
 		suite.TransferPath.EndpointB.ChannelConfig.PortID,
@@ -131,6 +131,7 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		clienttypes.NewHeight(1, 150),
 		0,
 	)
+	return packet
 }
 
 func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
@@ -138,14 +139,16 @@ func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
 }
 
 func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, prevSequence uint64) []byte {
-	channelCap := suite.ChainB.GetChannelCapability(
-		suite.TransferPath.EndpointB.ChannelConfig.PortID,
-		suite.TransferPath.EndpointB.ChannelID)
-
 	packet := suite.makeMockPacket(receiver, memo, prevSequence)
 
+	// Escrow manually for test purposes. This is needed because we don't call transfer.SendTransfer but HooksICS4Wrapper.SendPacket in this test.
+	// So that when transfer fails, and we call suite.TransferPath.EndpointB.AcknowledgePacket, there were some tokens to unescrow.
+	escrowAddress := transfertypes.GetEscrowAddress(suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID)
+	err := suite.GetNeutronZoneApp(suite.ChainB).TransferKeeper.EscrowCoin(suite.ChainB.GetContext(), suite.ChainB.SenderAccount.GetAddress(), escrowAddress, sdk.NewCoin("untrn", math.NewInt(1)))
+	suite.NoError(err)
+
 	seqID, err := suite.GetNeutronZoneApp(suite.ChainB).HooksICS4Wrapper.SendPacket(
-		suite.ChainB.GetContext(), channelCap, suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
+		suite.ChainB.GetContext(), suite.TransferPath.EndpointB.ChannelConfig.PortID, suite.TransferPath.EndpointB.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
 	suite.Require().NoError(err, "IBC send failed. Expected success. %s", err)
 	suite.Require().Equal(prevSequence+1, seqID)
 
@@ -164,7 +167,7 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 	suite.Require().NoError(err)
 
 	// manually send the acknowledgement to chain b
-	err = suite.TransferPath.EndpointA.AcknowledgePacket(packet, ack)
+	err = suite.TransferPath.EndpointB.AcknowledgePacket(packet, ack)
 	suite.Require().NoError(err)
 	return ack
 }
@@ -331,7 +334,7 @@ func (suite *HooksTestSuite) RelayPacket(packet channeltypes.Packet, direction D
 }
 
 func (suite *HooksTestSuite) StoreContractCode(chain *ibctesting.TestChain, addr sdk.AccAddress, path string) uint64 {
-	wasmCode, err := os.ReadFile(path)
+	wasmCode, err := os.ReadFile(path) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}

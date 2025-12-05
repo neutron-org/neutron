@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ibc.applications.transfer.v1;
+
+option go_package = "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types";
+
+import "ibc/applications/transfer/v1/transfer.proto";
+import "gogoproto/gogo.proto";
+
+// Denom holds the base denom of a Token and a trace of the chains it was sent through.
+message Denom {
+  // the base token denomination
+  string base = 1;
+  // the trace of the token
+  repeated ibc.applications.transfer.v1.Hop trace = 3 [(gogoproto.nullable) = false];
+}

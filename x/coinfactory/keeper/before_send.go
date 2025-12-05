@@ -10,7 +10,7 @@ import (
 	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
 
 	errorsmod "cosmossdk.io/errors"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 )
 
 func (k Keeper) setBeforeSendHook(ctx sdk.Context, denom, contractAddr string) error {

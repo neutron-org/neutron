@@ -13,8 +13,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
+	channelkeeper "github.com/cosmos/ibc-go/v10/modules/core/04-channel/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
@@ -35,7 +34,7 @@ import (
 	tokenfactorykeeper "github.com/neutron-org/neutron/v9/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	transferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 )
 
 // Upgrade defines a struct containing necessary fields that a SoftwareUpgradeProposal
@@ -63,8 +62,7 @@ type UpgradeKeepers struct {
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper
 	FeeBurnerKeeper    *feeburnerkeeper.Keeper
 	SlashingKeeper     slashingkeeper.Keeper
-	ParamsKeeper       paramskeeper.Keeper
-	CapabilityKeeper   *capabilitykeeper.Keeper
+	ParamsKeeper       paramskeeper.Keeper //nolint:staticcheck
 	ContractManager    contractmanagerkeeper.Keeper
 	AdminModule        adminmodulekeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper
@@ -80,8 +78,7 @@ type UpgradeKeepers struct {
 	RevenueKeeper      *revenuekeeper.Keeper
 	FeerefunderKeeper  *feerefunderkeeper.Keeper
 	// subspaces
-	GlobalFeeSubspace   paramtypes.Subspace
-	CcvConsumerSubspace paramtypes.Subspace
+	GlobalFeeSubspace paramtypes.Subspace
 }
 
 type StoreKeys interface {
