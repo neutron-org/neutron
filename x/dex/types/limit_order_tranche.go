@@ -96,7 +96,7 @@ func (t LimitOrderTranche) HasExpiration() bool {
 }
 
 func (t LimitOrderTranche) IsJIT() bool {
-	return t.ExpirationTime != nil && *t.ExpirationTime == JITGoodTilTime()
+	return t.ExpirationTime.Equal(JITGoodTilTime())
 }
 
 func (t LimitOrderTranche) IsExpired(ctx sdk.Context) bool {

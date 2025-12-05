@@ -58,7 +58,7 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 		)
 
 		// if result does not satisfy the filter, return (false, nil) to tell FilteredPaginate method to skip this value
-		if !(passedOwnerFilter && passedConnectionIDFilter) {
+		if !passedOwnerFilter || !passedConnectionIDFilter {
 			return false, nil
 		}
 

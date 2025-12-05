@@ -35,7 +35,10 @@ func createNFailure(k *keeper.Keeper, ctx sdk.Context, addresses, failures int) 
 	items := make([][]types.Failure, addresses)
 	for i := range items {
 		items[i] = make([]types.Failure, failures)
-		rand.Read(pub.Key) //nolint:errcheck
+		_, err := rand.Read(pub.Key)
+		if err != nil {
+			panic(err)
+		}
 		acc := sdk.AccAddress(pub.Address())
 
 		for c := range items[i] {

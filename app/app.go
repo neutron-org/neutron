@@ -377,10 +377,10 @@ type App struct {
 	AuthzKeeper         authzkeeper.Keeper
 	BankKeeper          bankkeeper.BaseKeeper
 	SlashingKeeper      slashingkeeper.Keeper
-	CrisisKeeper        crisiskeeper.Keeper
+	CrisisKeeper        crisiskeeper.Keeper //nolint:staticcheck
 	UpgradeKeeper       upgradekeeper.Keeper
-	ParamsKeeper        paramskeeper.Keeper
-	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	ParamsKeeper        paramskeeper.Keeper //nolint:staticcheck
+	IBCKeeper           *ibckeeper.Keeper   // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	EvidenceKeeper      evidencekeeper.Keeper
@@ -552,7 +552,7 @@ func New(
 		app.StakingKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	app.CrisisKeeper = *crisiskeeper.NewKeeper(
+	app.CrisisKeeper = *crisiskeeper.NewKeeper( //nolint:staticcheck
 		appCodec,
 		runtime.NewKVStoreService(keys[crisistypes.StoreKey]),
 		invCheckPeriod,
@@ -683,7 +683,7 @@ func New(
 
 	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
 
-	app.BankKeeper.BaseSendKeeper = app.BankKeeper.BaseSendKeeper.SetHooks(
+	app.BankKeeper.BaseSendKeeper = app.BankKeeper.SetHooks(
 		banktypes.NewMultiBankHooks(
 			app.TokenFactoryKeeper.Hooks(),
 			app.CoinfactoryKeeper.Hooks(),
@@ -882,7 +882,7 @@ func New(
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
 	// we prefer to be more strict in what arguments the modules expect.
-	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
+	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants)) //nolint:staticcheck
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
@@ -900,7 +900,7 @@ func New(
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
-		params.NewAppModule(app.ParamsKeeper),
+		params.NewAppModule(app.ParamsKeeper), //nolint:staticcheck
 		harpoon.NewAppModule(appCodec, app.HarpoonKeeper),
 		transferModule,
 		stakingModule,
@@ -930,7 +930,7 @@ func New(
 		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 		feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
-		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
+		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), //nolint:staticcheck
 	)
 
 	app.mm.SetOrderPreBlockers(
@@ -1062,7 +1062,7 @@ func New(
 		revenuetypes.ModuleName,
 	)
 
-	app.mm.RegisterInvariants(&app.CrisisKeeper)
+	app.mm.RegisterInvariants(&app.CrisisKeeper) //nolint:staticcheck
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	err = app.mm.RegisterServices(app.configurator)
 	if err != nil {
@@ -1081,7 +1081,7 @@ func New(
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
-		params.NewAppModule(app.ParamsKeeper),
+		params.NewAppModule(app.ParamsKeeper), //nolint:staticcheck
 		transferModule,
 		stakingModule,
 		ibcRateLimitmodule,
@@ -1328,7 +1328,7 @@ func (app *App) LoadLatest() {
 		tmos.Exit(err.Error())
 	}
 
-	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+	ctx := app.NewUncachedContext(true, tmproto.Header{})
 
 	// Initialize pinned codes in wasmvm as they are not persisted there
 	if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
@@ -1558,17 +1558,17 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *App) RegisterTxService(clientCtx client.Context) {
-	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
+	authtx.RegisterTxService(app.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
 func (app *App) RegisterTendermintService(clientCtx client.Context) {
-	cmtservice.RegisterTendermintService(clientCtx, app.BaseApp.GRPCQueryRouter(), app.interfaceRegistry, app.Query)
+	cmtservice.RegisterTendermintService(clientCtx, app.GRPCQueryRouter(), app.interfaceRegistry, app.Query)
 }
 
 // initParamsKeeper init params keeper and its subspaces
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
-	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
+func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper { //nolint:staticcheck
+	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey) //nolint:staticcheck
 
 	paramsKeeper.Subspace(authtypes.ModuleName).WithKeyTable(authtypes.ParamKeyTable())         //nolint:staticcheck
 	paramsKeeper.Subspace(banktypes.ModuleName).WithKeyTable(banktypes.ParamKeyTable())         //nolint:staticcheck

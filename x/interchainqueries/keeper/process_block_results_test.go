@@ -199,7 +199,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				header.SignedHeader.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
+				header.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
 
 				nextHeader, err := suite.Path.EndpointB.Chain.IBCClientHeader(suite.Path.EndpointA.Counterparty.Chain.LatestCommittedHeader, suite.Path.EndpointA.GetClientState().(*ibctmtypes.ClientState).LatestHeight)
 				suite.Require().NoError(err)

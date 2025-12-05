@@ -206,7 +206,7 @@ func (k Keeper) GetAllFeeInfos(ctx sdk.Context) []types.FeeInfo {
 	infos := make([]types.FeeInfo, 0)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		var info types.FeeInfo

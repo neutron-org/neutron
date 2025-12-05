@@ -47,7 +47,7 @@ func (k Keeper) GetAllInactiveLimitOrderTranche(ctx sdk.Context) (list []*types.
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.InactiveLimitOrderTrancheKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		val := &types.LimitOrderTranche{}

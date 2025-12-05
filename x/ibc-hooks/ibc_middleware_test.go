@@ -334,7 +334,7 @@ func (suite *HooksTestSuite) RelayPacket(packet channeltypes.Packet, direction D
 }
 
 func (suite *HooksTestSuite) StoreContractCode(chain *ibctesting.TestChain, addr sdk.AccAddress, path string) uint64 {
-	wasmCode, err := os.ReadFile(path)
+	wasmCode, err := os.ReadFile(path) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}

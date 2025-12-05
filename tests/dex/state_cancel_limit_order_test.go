@@ -53,7 +53,7 @@ func hydrateCancelLoTestCase(params map[string]string) cancelLimitOrderTestParam
 		Expired:               parseBool(params["Expired"]),
 		OrderType:             dextypes.LimitOrderType(dextypes.LimitOrderType_value[params["OrderType"]]),
 	}
-	c.SharedParams.Tick = selltick
+	c.Tick = selltick
 	return c
 }
 

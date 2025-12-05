@@ -52,7 +52,7 @@ func UpgradeRemoveOrphanedLimitOrders(ctx sdk.Context, cdc codec.Codec, k dexkee
 
 	tickLiquidityIterator := k.GetTickLiquidityIterator(ctx)
 
-	defer tickLiquidityIterator.Close()
+	defer tickLiquidityIterator.Close() //nolint:errcheck
 
 	tranchesToRemove := make([]*types.LimitOrderTranche, 0)
 	for ; tickLiquidityIterator.Valid(); tickLiquidityIterator.Next() {

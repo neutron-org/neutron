@@ -58,7 +58,7 @@ func hydrateWithdrawLoTestCase(params map[string]string) withdrawLimitOrderTestP
 		Expired:               parseBool(params["Expired"]),
 		OrderType:             dextypes.LimitOrderType_value[params["OrderType"]],
 	}
-	w.SharedParams.Tick = selltick
+	w.Tick = selltick
 	return w
 }
 

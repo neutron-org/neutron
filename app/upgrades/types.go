@@ -62,7 +62,7 @@ type UpgradeKeepers struct {
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper
 	FeeBurnerKeeper    *feeburnerkeeper.Keeper
 	SlashingKeeper     slashingkeeper.Keeper
-	ParamsKeeper       paramskeeper.Keeper
+	ParamsKeeper       paramskeeper.Keeper //nolint:staticcheck
 	ContractManager    contractmanagerkeeper.Keeper
 	AdminModule        adminmodulekeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper

@@ -101,7 +101,7 @@ func (suite *MiddlewareTestSuite) FullSendBToA(msg sdk.Msg) (*abci.ExecTxResult,
 	sendResult, err := suite.SendMsgsNoCheck(suite.ChainB, msg)
 	suite.Require().NoError(err)
 
-	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents()) //nolint:staticcheck
 	suite.Require().NoError(err)
 
 	err = suite.TransferPath.EndpointA.UpdateClient()
@@ -127,7 +127,7 @@ func (suite *MiddlewareTestSuite) FullSendAToB(msg sdk.Msg) (*abci.ExecTxResult,
 		return nil, "", err
 	}
 
-	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents()) //nolint:staticcheck
 	if err != nil {
 		return nil, "", err
 	}
@@ -163,7 +163,7 @@ func (suite *MiddlewareTestSuite) FullSendAToC(msg sdk.Msg) (*abci.ExecTxResult,
 		return nil, "", err
 	}
 
-	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents()) //nolint:staticcheck
 	if err != nil {
 		return nil, "", err
 	}
@@ -584,7 +584,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	// Execute the acknowledgement from chain B in chain A
 
 	// extract the sent packet
-	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents()) //nolint:staticcheck
 	suite.Require().NoError(err)
 
 	// recv in chain b

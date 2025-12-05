@@ -130,13 +130,13 @@ func BuildWasmExecMsg(msgType string, packet exported.PacketI) ([]byte, error) {
 	}
 
 	var asJSON []byte
-	switch {
-	case msgType == msgSend:
+	switch msgType {
+	case msgSend:
 		msg := SendPacketMsg{SendPacket: PacketMsg{
 			Packet: unwrapped,
 		}}
 		asJSON, err = json.Marshal(msg)
-	case msgType == msgRecv:
+	case msgRecv:
 		msg := RecvPacketMsg{RecvPacket: PacketMsg{
 			Packet: unwrapped,
 		}}
