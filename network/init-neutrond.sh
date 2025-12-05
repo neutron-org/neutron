@@ -86,7 +86,7 @@ PRE_PROPOSAL_SINGLE_AMOUNT=1000
 PRE_PROPOSAL_SINGLE_REFUND_POLICY="only_passed"
 PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION=false
 
-## proposal singe params
+## proposal single params
 PROPOSAL_ALLOW_REVOTING=false # should be true for non-testing env
 PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE=false
 PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD=1200 # seconds; should be 2 weeks in production
