@@ -101,8 +101,6 @@ func TestSlinkyOracleIntegration(t *testing.T) {
 	baseSuite := integration.NewSlinkyIntegrationSuite(
 		spec,
 		oracleImage,
-		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
-		integration.WithChainConstructor(integration.CCVChainConstructor),
 		integration.WithDenom(denom),
 	)
 
