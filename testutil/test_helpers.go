@@ -137,7 +137,7 @@ func testHomeDir(chainID string) string {
 	return path.Join(projectRoot, ".testchains", chainID)
 }
 
-// NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
+// NewProviderConsumerCoordinator initializes Coordinator with interchain security dummy provider and 3 neutron consumer chains
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 0)
 	chainID := ibctesting.GetChainID(1)
