@@ -102,7 +102,7 @@ func (p *Pool) Swap(
 	// c) The maximum amount the user wants out (maxAmountOut1)
 	amountMakerOut = utils.MinPrecDecArr(possibleAmountsMakerOut)
 
-	// Due to precision loss when when doing division before multipliation the amountIn can be greater than maxAmountTakerIn
+	// Due to precision loss when doing division before multipliation the amountIn can be greater than maxAmountTakerIn
 	// so we need to cap it at maxAmountTakerIn
 	amountTakerIn = math_utils.MinPrecDec(
 		makerReserves.MakerPrice.Mul(amountMakerOut),
