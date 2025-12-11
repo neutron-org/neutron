@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GO_VERSION="1.23"
+ARG GO_VERSION="1.24"
 ARG RUNNER_IMAGE="gcr.io/distroless/static"
 
 # --------------------------------------------------------
@@ -14,7 +14,7 @@ ARG GIT_COMMIT
 ARG BUILD_TAGS
 ARG ENABLED_PROPOSALS
 
-ENV GOTOOLCHAIN go1.23.4
+ENV GOTOOLCHAIN go1.24.10
 
 RUN apk add --no-cache \
     ca-certificates \
@@ -29,7 +29,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     go mod download
 
 # Cosmwasm - Download correct libwasmvm version
-RUN WASMVM_VERSION=$(go list -m github.com/CosmWasm/wasmvm/v2 | cut -d ' ' -f 2) && \
+RUN WASMVM_VERSION=$(go list -m github.com/CosmWasm/wasmvm/v3 | cut -d ' ' -f 2) && \
     wget https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/libwasmvm_muslc.$(uname -m).a \
       -O /lib/libwasmvm_muslc.$(uname -m).a && \
     # verify checksum

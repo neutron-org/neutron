@@ -51,7 +51,7 @@ func (k Keeper) GetCurrTickIndexTakerToMakerNormalized(
 
 func (k Keeper) GetCurrLiq(ctx sdk.Context, tradePairID *types.TradePairID) *types.TickLiquidity {
 	ti := k.NewTickIterator(ctx, tradePairID)
-	defer ti.Close()
+	defer ti.Close() //nolint:errcheck
 	for ; ti.Valid(); ti.Next() {
 		tick := ti.Value()
 		trancheMaybe := tick.GetLimitOrderTranche()

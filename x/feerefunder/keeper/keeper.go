@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/neutron-org/neutron/v9/x/feerefunder/types"
 )
@@ -206,7 +206,7 @@ func (k Keeper) GetAllFeeInfos(ctx sdk.Context) []types.FeeInfo {
 	infos := make([]types.FeeInfo, 0)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		var info types.FeeInfo

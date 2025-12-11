@@ -3,17 +3,16 @@ package transfer
 import (
 	"context"
 
+	"cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
-	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 
 	feetypes "github.com/neutron-org/neutron/v9/x/feerefunder/types"
 	wrappedtypes "github.com/neutron-org/neutron/v9/x/transfer/types"
@@ -83,16 +82,31 @@ func (k KeeperTransferWrapper) UpdateParams(goCtx context.Context, msg *wrappedt
 
 // NewKeeper creates a new IBC transfer Keeper(KeeperTransferWrapper) instance
 func NewKeeper(
-	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
-	ics4Wrapper porttypes.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper, portKeeper types.PortKeeper,
-	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
+	cdc codec.BinaryCodec,
+	store store.KVStoreService,
+	paramSpace paramtypes.Subspace,
+	ics4Wrapper porttypes.ICS4Wrapper,
+	channelKeeper wrappedtypes.ChannelKeeper,
+	msgRouter types.MessageRouter,
+	authKeeper types.AccountKeeper,
+	bankKeeper types.BankKeeper,
 	feeKeeper wrappedtypes.FeeRefunderKeeper,
-	sudoKeeper wrappedtypes.WasmKeeper, authority string,
+	sudoKeeper wrappedtypes.WasmKeeper,
+	authority string,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		channelKeeper: channelKeeper,
-		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
-			authKeeper, bankKeeper, scopedKeeper, authority),
+		Keeper: keeper.NewKeeper(
+			cdc,
+			store,
+			paramSpace,
+			ics4Wrapper,
+			channelKeeper,
+			msgRouter,
+			authKeeper,
+			bankKeeper,
+			authority,
+		),
 		FeeKeeper:  feeKeeper,
 		SudoKeeper: sudoKeeper,
 	}

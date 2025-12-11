@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	ibcchanneltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"

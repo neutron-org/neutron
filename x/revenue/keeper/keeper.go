@@ -113,7 +113,7 @@ func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []revenuetypes.Vali
 	if err != nil {
 		return nil, fmt.Errorf("failed to iterate over validator info: %w", err)
 	}
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 
 	infos = make([]revenuetypes.ValidatorInfo, 0)
 	for ; iter.Valid(); iter.Next() {

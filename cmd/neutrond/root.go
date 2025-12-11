@@ -55,7 +55,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	tempDir := tempDir()
 	// cleanup temp dir after we are done with the tempApp, so we don't leave behind a
 	// new temporary directory for every invocation. See https://github.com/CosmWasm/wasmd/issues/2017
-	defer os.RemoveAll(tempDir)
+	defer os.RemoveAll(tempDir) //nolint:errcheck
 	initAppOptions.Set(flags.FlagHome, tempDir)
 	tempApplication := app.New(
 		log.NewNopLogger(),
@@ -184,7 +184,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
+	crisis.AddModuleInitFlags(startCmd) //nolint:staticcheck
 	wasm.AddModuleInitFlags(startCmd)
 }
 
@@ -389,7 +389,10 @@ func setCustomEnvVariablesFromClientToml(ctx client.Context) {
 		val := viper.GetString(key)
 		if val != "" {
 			// Sets the env for this instance of the app only.
-			os.Setenv(envVar, val)
+			err := os.Setenv(envVar, val)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
