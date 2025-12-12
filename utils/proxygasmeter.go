@@ -64,16 +64,11 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 }
 
 func (pgm ProxyGasMeter) ConsumeGas(amount storetypes.Gas, descriptor string) {
-	consumed, overflow := addUint64Overflow(pgm.GasMeter.GasConsumed(), amount)
-	if overflow {
-		panic(storetypes.ErrorGasOverflow{Descriptor: descriptor})
-	}
+	pgm.GasMeter.ConsumeGas(amount, descriptor)
 
-	if consumed > pgm.limit {
+	if pgm.GasConsumed() > pgm.limit {
 		panic(storetypes.ErrorOutOfGas{Descriptor: descriptor})
 	}
-
-	pgm.GasMeter.ConsumeGas(amount, descriptor)
 }
 
 func (pgm ProxyGasMeter) String() string {

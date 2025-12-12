@@ -36,9 +36,10 @@ func TestProxyGasMeter(t *testing.T) {
 	require.Panics(t, func() {
 		pgm.ConsumeGas(1, "test")
 	})
-	require.Equal(t, storetypes.Gas(700), bgm.GasRemaining())
+	require.Equal(t, storetypes.Gas(699), bgm.GasRemaining())
 
-	pgm.RefundGas(1, "test")
+	pgm.RefundGas(2, "test")
+	require.Equal(t, storetypes.Gas(701), bgm.GasRemaining())
 	require.Equal(t, storetypes.Gas(299), pgm.GasConsumed())
 	require.Equal(t, storetypes.Gas(1), pgm.GasRemaining())
 	require.False(t, pgm.IsOutOfGas())
