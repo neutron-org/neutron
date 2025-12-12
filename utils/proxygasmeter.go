@@ -4,7 +4,6 @@ package utils
 
 import (
 	"fmt"
-	"math"
 
 	storetypes "cosmossdk.io/store/types"
 )
@@ -51,16 +50,6 @@ func (pgm ProxyGasMeter) IsPastLimit() bool {
 
 func (pgm ProxyGasMeter) IsOutOfGas() bool {
 	return pgm.GasConsumed() >= pgm.limit
-}
-
-// addUint64Overflow performs the addition operation on two uint64 integers and
-// returns a boolean on whether or not the result overflows.
-func addUint64Overflow(a, b uint64) (uint64, bool) {
-	if math.MaxUint64-a < b {
-		return 0, true
-	}
-
-	return a + b, false
 }
 
 func (pgm ProxyGasMeter) ConsumeGas(amount storetypes.Gas, descriptor string) {
