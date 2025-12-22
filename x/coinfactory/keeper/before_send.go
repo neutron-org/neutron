@@ -89,12 +89,12 @@ func (k Keeper) AssertIsHookWhitelisted(ctx sdk.Context, denom string, contractA
 	return types.ErrBeforeSendHookNotWhitelisted.Wrapf("no whitelist for contract with codeID (%d) and denomCreator (%s) ", codeID, denomCreator)
 }
 
-// TrackBeforeSend calls the before send listener contract suppresses any errors
+// TrackBeforeSend calls the before send listener contract but does not return any errors
 func (h Hooks) TrackBeforeSend(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	_ = h.k.callBeforeSendListener(ctx, from, to, amount, false)
 }
 
-// TrackBeforeSend calls the before send listener contract returns any errors
+// BlockBeforeSend calls the before send listener contract and returns any errors
 func (h Hooks) BlockBeforeSend(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
 	return h.k.callBeforeSendListener(ctx, from, to, amount, true)
 }
