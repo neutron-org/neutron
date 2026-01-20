@@ -344,6 +344,8 @@ github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06/go.mod h1:
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
 github.com/cometbft/cometbft-db v0.15.0 h1:VLtsRt8udD4jHCyjvrsTBpgz83qne5hnL245AcPJVRk=
 github.com/cometbft/cometbft-db v0.15.0/go.mod h1:EBrFs1GDRiTqrWXYi4v90Awf/gcdD5ExzdPbg4X8+mk=
+github.com/cometbft/cometbft-sec-tachyon v0.38.21-0.20260113214209-9ac677707f85 h1:xCfV8uIRpj/O6wwoJhGBdUQYBSaVHyxy+aCxV70hnOI=
+github.com/cometbft/cometbft-sec-tachyon v0.38.21-0.20260113214209-9ac677707f85/go.mod h1:UCu8dlHqvkAsmAFmWDRWNZJPlu6ya2fTWZlDrWsivwo=
 github.com/containerd/continuity v0.3.0 h1:nisirsYROK15TAMVukJOUyGJjz4BNQJBVsNvAXZJ/eg=
 github.com/containerd/continuity v0.3.0/go.mod h1:wJEAIwKOm/pBZuBd0JmeTvnLquTB1Ag8espWhkykbPM=
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
@@ -837,8 +839,6 @@ github.com/nats-io/nkeys v0.1.3/go.mod h1:xpnFELMwJABBLVhffcfd1MZx6VsNRFpEugbxzi
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/neutron-org/admin-module/v2 v2.0.3 h1:zTME5kRRMB4uE/DbCEU84mGn3EKDNXZEw5+XMO8+Q7A=
 github.com/neutron-org/admin-module/v2 v2.0.3/go.mod h1:RfOyabXsdJ5btcOKyKPZDYiZhtuKFubbJMOb8EJZtvA=
-github.com/neutron-org/cometbft-sec-tachyon v0.38.21-0.20260113214209-9ac677707f85 h1:pfVyStXVkrxyriE9TZXXfmYKdk0lzfOoK2zYRi+iV+g=
-github.com/neutron-org/cometbft-sec-tachyon v0.38.21-0.20260113214209-9ac677707f85/go.mod h1:UCu8dlHqvkAsmAFmWDRWNZJPlu6ya2fTWZlDrWsivwo=
 github.com/neutron-org/cosmos-sdk v0.50.15-neutron h1:GUNvegbD3dILBusS7xU2W7T3JxPBFuqvznvanhLWfRk=
 github.com/neutron-org/cosmos-sdk v0.50.15-neutron/go.mod h1:/dinzXHi7qK0dEPZjS3LI5gMHueKQdqyjbB9chwswo0=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464 h1:5mbzd7sqp8pPYWzIhIYKFovMRBL0ru24N2E6dIWjL0o=

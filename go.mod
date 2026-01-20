@@ -226,7 +226,7 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.54.3-neutron
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
-	github.com/cometbft/cometbft => github.com/neutron-org/cometbft-sec-tachyon v0.38.21-0.20260113214209-9ac677707f85
+	github.com/cometbft/cometbft => github.com/cometbft/cometbft-sec-tachyon v0.38.21-0.20260113214209-9ac677707f85
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.15-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version

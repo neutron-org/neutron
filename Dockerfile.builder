@@ -24,7 +24,7 @@ RUN apk add --no-cache \
 
 # Download go dependencies
 WORKDIR /neutron
-ENV GOPRIVATE=github.com/neutron-org/cometbft-sec-tachyon
+ENV GOPRIVATE=github.com/cometbft/cometbft-sec-tachyon
 RUN git config --global url."git@github.com:".insteadOf "https://github.com/"
 COPY go.mod go.sum ./
 RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
