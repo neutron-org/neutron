@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
-	"github.com/neutron-org/neutron/v8/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v9/utils/math"
+	"github.com/neutron-org/neutron/v9/x/dex/utils"
 )
 
 func NewLimitOrderTranche(
@@ -196,7 +196,7 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math_utils.PrecDec, maxAmountM
 	}
 	outAmount = utils.MinPrecDecArr(possibleOutAmounts)
 
-	// Due to precision loss when when doing division before multipliation the amountIn can be greater than maxAmountTakerIn
+	// Due to precision loss when doing division before multipliation the amountIn can be greater than maxAmountTakerIn
 	// so we need to cap it at maxAmountTakerIn
 	inAmount = math_utils.MinPrecDec(
 		t.MakerPrice.Mul(outAmount),

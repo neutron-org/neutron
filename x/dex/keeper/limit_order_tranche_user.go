@@ -7,7 +7,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	"github.com/neutron-org/neutron/v9/x/dex/types"
 )
 
 func (k Keeper) GetOrInitLimitOrderTrancheUser(
@@ -119,7 +119,7 @@ func (k Keeper) GetAllLimitOrderTrancheUser(ctx sdk.Context) (list []*types.Limi
 		list = append(list, val)
 	}
 
-	return
+	return list
 }
 
 func (k Keeper) GetAllLimitOrderTrancheUserForAddress(
@@ -138,5 +138,5 @@ func (k Keeper) GetAllLimitOrderTrancheUserForAddress(
 		list = append(list, val)
 	}
 
-	return
+	return list
 }

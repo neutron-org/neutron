@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v9/utils/math"
+	"github.com/neutron-org/neutron/v9/x/dex/types"
 )
 
 // WithdrawCore handles logic for MsgWithdrawal including bank operations and event emissions.
@@ -23,14 +23,47 @@ func (k Keeper) WithdrawCore(
 ) (reserves0ToRemoved, reserves1ToRemoved math_utils.PrecDec, sharesBurned sdk.Coins, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	poolsToRemoveFrom, err := k.PoolDataToPools(ctx, pairID, tickIndicesNormalized, fees)
+	if err != nil {
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
+	}
+
+	return k.WithdrawHandler(ctx, callerAddr, receiverAddr, pairID, poolsToRemoveFrom, sharesToRemoveList)
+}
+
+// WithdrawWithSharesCore handles logic for MsgWithdrawalWithShares including bank operations and event emissions.
+func (k Keeper) WithdrawWithSharesCore(
+	goCtx context.Context,
+	callerAddr sdk.AccAddress,
+	receiverAddr sdk.AccAddress,
+	sharesToRemove sdk.Coins,
+) (reserves0ToRemoved, reserves1ToRemoved math_utils.PrecDec, sharesBurned sdk.Coins, err error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	poolsToRemoveFrom, shareAmountsToRemove, err := k.SharesToPools(ctx, sharesToRemove)
+	if err != nil {
+		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
+	}
+
+	return k.WithdrawHandler(ctx, callerAddr, receiverAddr, poolsToRemoveFrom[0].MustPairID(), poolsToRemoveFrom, shareAmountsToRemove)
+}
+
+// WithdrawHandler handles logic for both MsgWithdrawal and MsgWithdrawalWithShares including bank operations and event emissions.
+func (k Keeper) WithdrawHandler(
+	ctx sdk.Context,
+	callerAddr sdk.AccAddress,
+	receiverAddr sdk.AccAddress,
+	pairID *types.PairID,
+	poolsToRemoveFrom []*types.Pool,
+	sharesAmountsToRemove []math.Int,
+) (reserves0ToRemoved, reserves1ToRemoved math_utils.PrecDec, sharesBurned sdk.Coins, err error) {
 	totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, err := k.ExecuteWithdraw(
 		ctx,
 		pairID,
 		callerAddr,
 		receiverAddr,
-		sharesToRemoveList,
-		tickIndicesNormalized,
-		fees,
+		poolsToRemoveFrom,
+		sharesAmountsToRemove,
 	)
 	if err != nil {
 		return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, err
@@ -77,28 +110,20 @@ func (k Keeper) ExecuteWithdraw(
 	pairID *types.PairID,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-	sharesToRemoveList []math.Int,
-	tickIndicesNormalized []int64,
-	fees []uint64,
+	poolsToRemoveFrom []*types.Pool,
+	sharesAmountsToRemove []math.Int,
 ) (totalReserves0ToRemove, totalReserves1ToRemove math_utils.PrecDec, coinsToBurn sdk.Coins, events sdk.Events, err error) {
 	totalReserve0ToRemove := math_utils.ZeroPrecDec()
 	totalReserve1ToRemove := math_utils.ZeroPrecDec()
 
-	for i, fee := range fees {
-		sharesToRemove := sharesToRemoveList[i]
-		tickIndex := tickIndicesNormalized[i]
+	for i, pool := range poolsToRemoveFrom {
 
-		pool, err := k.GetOrInitPool(ctx, pairID, tickIndex, fee)
-		if err != nil {
-			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, err
-		}
+		sharesToRemove := sharesAmountsToRemove[i]
 
 		poolDenom := pool.GetPoolDenom()
 
-		// TODO: this is a bit hacky. Since it is possible to have multiple withdrawals from the same pool we have to artificially update the bank balance
-		// In the future we should enforce only one withdraw operation per pool in the message validation
-		alreadyWithdrawnOfDenom := coinsToBurn.AmountOf(poolDenom)
-		sharesOwned := k.bankKeeper.GetBalance(ctx, callerAddr, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
+		sharesOwned := k.bankKeeper.GetBalance(ctx, callerAddr, poolDenom).Amount
+
 		if sharesOwned.LT(sharesToRemove) {
 			return math_utils.ZeroPrecDec(), math_utils.ZeroPrecDec(), nil, nil, sdkerrors.Wrapf(
 				types.ErrInsufficientShares,
@@ -109,7 +134,7 @@ func (k Keeper) ExecuteWithdraw(
 			)
 		}
 
-		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
+		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
 
 		// Save both sides of the pool. If one or both sides are empty they will be deleted.
@@ -125,8 +150,8 @@ func (k Keeper) ExecuteWithdraw(
 			receiverAddr,
 			pairID.Token0,
 			pairID.Token1,
-			tickIndex,
-			fee,
+			pool.CenterTickIndexToken1(),
+			pool.Fee(),
 			outAmount0,
 			outAmount1,
 			pool.Id,
@@ -135,4 +160,68 @@ func (k Keeper) ExecuteWithdraw(
 		events = append(events, withdrawEvent)
 	}
 	return totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, nil
+}
+
+func (k Keeper) PoolDataToPools(
+	ctx sdk.Context,
+	pairID *types.PairID,
+	tickIndicesNormalized []int64,
+	fees []uint64,
+) ([]*types.Pool, error) {
+	poolsToRemoveFrom := make([]*types.Pool, len(tickIndicesNormalized))
+	for i, tickIndex := range tickIndicesNormalized {
+		pool, found := k.GetPool(ctx, pairID, tickIndex, fees[i])
+		if !found {
+			return nil, sdkerrors.Wrapf(
+				types.ErrPoolNotFound,
+				"pool for pair %s, tick index %d, fee %d not found",
+				pairID.CanonicalString(),
+				tickIndex,
+				fees[i],
+			)
+		}
+		poolsToRemoveFrom[i] = pool
+	}
+	return poolsToRemoveFrom, nil
+}
+
+func (k Keeper) SharesToPools(
+	ctx sdk.Context,
+	sharesToRemove sdk.Coins,
+) ([]*types.Pool, []math.Int, error) {
+	shareAmountsToRemove := make([]math.Int, len(sharesToRemove))
+	poolsToRemoveFrom := make([]*types.Pool, len(sharesToRemove))
+
+	for i, share := range sharesToRemove {
+		poolID, err := types.ParsePoolIDFromDenom(share.Denom)
+		if err != nil {
+			return nil, nil, sdkerrors.Wrapf(
+				types.ErrInvalidPoolDenom,
+				"invalid pool denom (%s)",
+				share.Denom,
+			)
+		}
+		pool, found := k.GetPoolByID(ctx, poolID)
+		if !found {
+			return nil, nil, sdkerrors.Wrapf(
+				types.ErrPoolNotFound,
+				"pool %d not found",
+				poolID,
+			)
+		}
+
+		// Safety check to ensure that all pools are from the same pair
+		// this cannot be validated for MsgWithdrawalWithShares so it must be done here
+		if i > 0 && !pool.MustPairID().Equal(poolsToRemoveFrom[0].MustPairID()) {
+			return nil, nil, sdkerrors.Wrapf(
+				types.ErrCanOnlyWithdrawFromSamePair,
+				"pool %d is not part of pair %s",
+				pool.Id,
+				poolsToRemoveFrom[0].MustPairID().CanonicalString(),
+			)
+		}
+		poolsToRemoveFrom[i] = pool
+		shareAmountsToRemove[i] = share.Amount
+	}
+	return poolsToRemoveFrom, shareAmountsToRemove, nil
 }

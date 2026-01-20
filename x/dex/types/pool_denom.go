@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
@@ -43,8 +44,8 @@ func ParsePoolIDFromDenom(denom string) (uint64, error) {
 	return idInt, nil
 }
 
-// NewDexMintCoinsRestriction creates and returns a BankMintingRestrictionFn that only allows minting of
-// valid pool denoms
+// NewDexDenomMintCoinsRestriction creates and returns a BankMintingRestrictionFn that only
+// allows minting of valid pool denoms
 func NewDexDenomMintCoinsRestriction() types.MintingRestrictionFn {
 	return func(_ context.Context, coinsToMint sdk.Coins) error {
 		for _, coin := range coinsToMint {
@@ -55,4 +56,8 @@ func NewDexDenomMintCoinsRestriction() types.MintingRestrictionFn {
 		}
 		return nil
 	}
+}
+
+func NewPoolShares(poolID uint64, amount math.Int) sdk.Coin {
+	return sdk.NewCoin(NewPoolDenom(poolID), amount)
 }

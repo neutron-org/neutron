@@ -1,6 +1,6 @@
-module github.com/neutron-org/neutron/v8
+module github.com/neutron-org/neutron/v9
 
-go 1.23.1
+go 1.23.2
 
 toolchain go1.23.4
 
@@ -18,11 +18,11 @@ require (
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/CosmWasm/wasmd v0.54.0
 	github.com/CosmWasm/wasmvm/v2 v2.2.4
-	github.com/cometbft/cometbft v0.38.17
+	github.com/cometbft/cometbft v0.38.20
 	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
 	github.com/cosmos/cosmos-db v1.1.1
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
-	github.com/cosmos/cosmos-sdk v0.50.11
+	github.com/cosmos/cosmos-sdk v0.50.14
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.2.0
@@ -224,10 +224,10 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.54.1-neutron
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.54.3-neutron
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3
-	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250512094026-b5afd837c4de
+	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.15-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1

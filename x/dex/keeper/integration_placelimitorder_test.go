@@ -7,8 +7,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v9/utils/math"
+	"github.com/neutron-org/neutron/v9/x/dex/types"
 )
 
 // Core tests w/ GTC limitOrders //////////////////////////////////////////////
@@ -345,8 +345,8 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice0To1() {
 	s.aliceWithdrawsLimitSell(trancheKey0)
 
 	// THEN alice gets out ~100 TOKENB and bob gets ~10 TOKENA
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_977))
-	s.assertBobBalancesInt(sdkmath.NewInt(10000000), sdkmath.NewInt(22))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_999))
+	s.assertBobBalancesInt(sdkmath.NewInt(9999002), sdkmath.NewInt(0))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
