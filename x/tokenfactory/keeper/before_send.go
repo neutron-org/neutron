@@ -141,7 +141,7 @@ func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, fro
 	// this types.BeforeSendHookGasLimit limit needed in case trackBeforeSend is called from begin/endblocker and does not have an outer gas limit.
 	// because contract code can be added by anybody, it can be a security issue
 	limit := types.BeforeSendHookGasLimit
-	cacheCtx, writeFn := createCachedContext(ctx, limit)
+	cacheCtx, writeFn := utils.NewProxyCachedContext(ctx, limit)
 
 	// get msgBz, either BlockBeforeSend or TrackBeforeSend
 	msgBz, err := k.constructCosmwasmMsg(blockBeforeSend, from, to, coin)
@@ -184,13 +184,6 @@ func (k Keeper) constructCosmwasmMsg(blockBeforeSend bool, from, to sdk.AccAddre
 		msgBz, err = json.Marshal(msg)
 	}
 	return
-}
-
-// createCachedContext creates a cached context with a limited gas meter.
-func createCachedContext(ctx sdk.Context, gasLimit uint64) (sdk.Context, func()) {
-	cacheCtx, writeFn := ctx.CacheContext()
-	cacheCtx = cacheCtx.WithGasMeter(utils.NewProxyGasMeter(ctx.GasMeter(), gasLimit))
-	return cacheCtx, writeFn
 }
 
 // outOfGasRecovery converts `out of gas` panic into an error

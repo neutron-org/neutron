@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	storetypes "cosmossdk.io/store/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ storetypes.GasMeter = &ProxyGasMeter{}
@@ -62,4 +63,11 @@ func (pgm ProxyGasMeter) ConsumeGas(amount storetypes.Gas, descriptor string) {
 
 func (pgm ProxyGasMeter) String() string {
 	return fmt.Sprintf("ProxyGasMeter{consumed: %d, limit: %d}", pgm.GasConsumed(), pgm.limit)
+}
+
+// NewProxyCachedContext creates a cached context with a proxy limited gas meter.
+func NewProxyCachedContext(ctx sdk.Context, gasLimit uint64) (sdk.Context, func()) {
+	cacheCtx, writeFn := ctx.CacheContext()
+	cacheCtx = cacheCtx.WithGasMeter(NewProxyGasMeter(ctx.GasMeter(), gasLimit))
+	return cacheCtx, writeFn
 }
