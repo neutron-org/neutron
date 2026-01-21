@@ -7,6 +7,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/neutron-org/neutron/v9/utils"
 	"github.com/neutron-org/neutron/v9/x/tokenfactory/types"
 
 	errorsmod "cosmossdk.io/errors"
@@ -127,12 +128,7 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 				continue
 			}
 
-			gasConsumed, err := k.callBeforeSendForCoin(sdkCtx, blockBeforeSend, from, to, coin, cwAddr)
-
-			// consume gas used for calling contract to the parent ctx
-			// note that we consume gas even in case of error
-			sdkCtx.GasMeter().ConsumeGas(gasConsumed, "before send gas")
-
+			err = k.callBeforeSendForCoin(sdkCtx, blockBeforeSend, from, to, coin, cwAddr)
 			if err != nil {
 				return err
 			}
@@ -141,21 +137,16 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 	return nil
 }
 
-func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, from, to sdk.AccAddress, coin sdk.Coin, cwAddr sdk.AccAddress) (gasConsumed storetypes.Gas, err error) {
+func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, from, to sdk.AccAddress, coin sdk.Coin, cwAddr sdk.AccAddress) (err error) {
 	// this types.BeforeSendHookGasLimit limit needed in case trackBeforeSend is called from begin/endblocker and does not have an outer gas limit.
 	// because contract code can be added by anybody, it can be a security issue
 	limit := types.BeforeSendHookGasLimit
-	// ensure that limit is not more then current gas context gas remaining
-	// to avoid recursive gas consumption without gas consume
-	if limit > ctx.GasMeter().GasRemaining() {
-		limit = ctx.GasMeter().GasRemaining()
-	}
 	cacheCtx, writeFn := createCachedContext(ctx, limit)
 
 	// get msgBz, either BlockBeforeSend or TrackBeforeSend
 	msgBz, err := k.constructCosmwasmMsg(blockBeforeSend, from, to, coin)
 	if err != nil {
-		return cacheCtx.GasMeter().GasConsumed(), err
+		return err
 	}
 
 	// contain outOfGas recovery inside function to wrap potential err cleanly
@@ -165,11 +156,11 @@ func (k Keeper) callBeforeSendForCoin(ctx sdk.Context, blockBeforeSend bool, fro
 	}()
 
 	if err != nil {
-		return cacheCtx.GasMeter().GasConsumed(), errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
+		return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
 	}
 	writeFn()
 
-	return cacheCtx.GasMeter().GasConsumed(), nil
+	return nil
 }
 
 func (k Keeper) constructCosmwasmMsg(blockBeforeSend bool, from, to sdk.AccAddress, coin sdk.Coin) (msgBz []byte, err error) {
@@ -198,8 +189,7 @@ func (k Keeper) constructCosmwasmMsg(blockBeforeSend bool, from, to sdk.AccAddre
 // createCachedContext creates a cached context with a limited gas meter.
 func createCachedContext(ctx sdk.Context, gasLimit uint64) (sdk.Context, func()) {
 	cacheCtx, writeFn := ctx.CacheContext()
-	gasMeter := storetypes.NewGasMeter(gasLimit)
-	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
+	cacheCtx = cacheCtx.WithGasMeter(utils.NewProxyGasMeter(ctx.GasMeter(), gasLimit))
 	return cacheCtx, writeFn
 }
 
