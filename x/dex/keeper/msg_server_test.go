@@ -2500,6 +2500,26 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 			},
 			types.ErrZeroExitPrice,
 		},
+		{
+			"single hop",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes:   []*types.MultiHopRoute{{Hops: []string{"TokenA"}}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrRouteWithoutExitToken,
+		},
+		{
+			"no hops",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes:   []*types.MultiHopRoute{{Hops: []string{}}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrRouteWithoutExitToken,
+		},
 	}
 
 	for _, tt := range tests {
