@@ -3,15 +3,16 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/types/address"
 
 	"github.com/neutron-org/neutron/v9/x/ibc-hooks/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
 // NewEmitErrorAcknowledgement creates a new error acknowledgement after having emitted an event with the
@@ -43,24 +44,21 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 	}
 
 	var denom string
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// remove prefix added by sender chain
-		voucherPrefix := transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
-
-		unprefixedDenom := data.Denom[len(voucherPrefix):]
-
+	voucherPrefix := transfertypes.NewHop(packet.GetSourcePort(), packet.GetSourceChannel()).String()
+	if strings.HasPrefix(data.Denom, voucherPrefix) {
 		// coin denomination used in sending from the escrow address
-		denom = unprefixedDenom
+		// remove prefix added by sender chain
+		denom = data.Denom[len(voucherPrefix)+1:]
 
 		// The denomination used to send the coins is either the native denom or the hash of the path
 		// if the denomination is not native.
-		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
-		if denomTrace.Path != "" {
+		denomTrace := transfertypes.ExtractDenomFromPath(denom)
+		if denomTrace.Path() != "" {
 			denom = denomTrace.IBCDenom()
 		}
 	} else {
-		prefixedDenom := transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom
-		denom = transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
+		prefixedDenom := fmt.Sprintf("%s/%s", transfertypes.NewHop(packet.GetDestPort(), packet.GetDestChannel()).String(), data.Denom)
+		denom = transfertypes.ExtractDenomFromPath(prefixedDenom).IBCDenom()
 	}
 	return denom
 }

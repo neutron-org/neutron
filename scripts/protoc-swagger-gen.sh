@@ -8,9 +8,10 @@ mkdir -p tmp_deps
 
 #copy some deps to use their proto files to generate swagger
 declare -a deps=("github.com/cosmos/cosmos-sdk"
+                "github.com/cosmos/cosmos-proto"
                 "github.com/CosmWasm/wasmd"
                 "github.com/cosmos/admin-module/v2"
-                "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8"
+                "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10"
                 "github.com/skip-mev/feemarket"
                 "github.com/skip-mev/slinky"
                 "github.com/skip-mev/block-sdk/v2")
@@ -21,9 +22,12 @@ do
     cp -r $path tmp_deps; \
 done
 
-proto_dirs=$(find ./proto ./tmp_deps -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+# Skip cosmos-sdk test fixtures that are outside any buf module (they trip
+# swagger generation on cosmos_proto.* options) but keep scanning all other
+# .proto files from dependencies.
+proto_dirs=$(find ./proto ./tmp_deps -path '*/testutil/testdata/testpb/*' -prune -o -type f -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
-
+  echo "processing dir: $dir"
   # generate swagger files (filter query files)
   query_file=$(find "${dir}" -maxdepth 1 \( -name 'query.proto' -o -name 'service.proto' \))
   if [[ ! -z "$query_file" ]]; then

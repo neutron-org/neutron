@@ -148,7 +148,7 @@ func (k Keeper) GetGTCPlaceTranche(
 	)
 	iter := prefixStore.Iterator(nil, nil)
 
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 	for ; iter.Valid(); iter.Next() {
 		var tick types.TickLiquidity
 		k.cdc.MustUnmarshal(iter.Value(), &tick)
@@ -173,7 +173,7 @@ func (k Keeper) GetFillTranche(
 	)
 	iter := storetypes.KVStorePrefixIterator(prefixStore, []byte{})
 
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 	for ; iter.Valid(); iter.Next() {
 		var tick types.TickLiquidity
 		k.cdc.MustUnmarshal(iter.Value(), &tick)
@@ -195,7 +195,7 @@ func (k Keeper) GetAllLimitOrderTrancheAtIndex(
 	)
 	iter := storetypes.KVStorePrefixIterator(prefixStore, []byte{})
 
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 	for ; iter.Valid(); iter.Next() {
 		var tick types.TickLiquidity
 		k.cdc.MustUnmarshal(iter.Value(), &tick)

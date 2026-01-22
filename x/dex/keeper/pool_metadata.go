@@ -74,7 +74,7 @@ func (k Keeper) GetAllPoolMetadata(ctx sdk.Context) (list []types.PoolMetadata) 
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PoolMetadataKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.PoolMetadata
