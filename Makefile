@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
-VERSION := 9.1.2
+VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
 LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
@@ -113,7 +113,6 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 		--build-arg GIT_COMMIT=$(COMMIT) \
 		--build-arg BUILD_TAGS=$(build_tags_comma_sep),muslc \
 		--platform linux/amd64 \
-		--ssh default \
 		-t neutron-amd64 \
 		--load \
 		-f Dockerfile.builder .
@@ -131,7 +130,6 @@ build-static-linux-arm64: go.sum $(BUILDDIR)/
 		--build-arg GIT_COMMIT=$(COMMIT) \
 		--build-arg BUILD_TAGS=$(build_tags_comma_sep),muslc \
 		--platform linux/arm64 \
-		--ssh default \
 		-t neutron-arm64 \
 		--load \
 		-f Dockerfile.builder .

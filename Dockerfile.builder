@@ -19,15 +19,11 @@ ENV GOTOOLCHAIN go1.23.4
 RUN apk add --no-cache \
     ca-certificates \
     build-base \
-    linux-headers \
-    git openssh-client
+    linux-headers
 
 # Download go dependencies
 WORKDIR /neutron
-ENV GOPRIVATE=github.com/cometbft/cometbft-sec-tachyon
-RUN git config --global url."git@github.com:".insteadOf "https://github.com/"
 COPY go.mod go.sum ./
-RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/go/pkg/mod \
     --mount=type=ssh \
