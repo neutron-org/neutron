@@ -26,7 +26,6 @@ WORKDIR /neutron
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/go/pkg/mod \
-    --mount=type=ssh \
     go mod download
 
 # Cosmwasm - Download correct libwasmvm version
