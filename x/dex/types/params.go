@@ -21,6 +21,8 @@ var (
 	DefaultGoodTilPurgeAllowance uint64 = 540_000
 	KeyWhitelistedLPs                   = []byte("WhiteListedLPs")
 	DefaultKeyWhitelistedLPs     []string
+	KeyWithdrawOnly              = []byte("WithdrawOnly")
+	DefaultWithdrawOnly          = false
 )
 
 // ParamKeyTable the param key table for launch module
@@ -29,19 +31,20 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(feeTiers []uint64, paused bool, maxJITsPerBlock, goodTilPurgeAllowance uint64, whitelistedLPs []string) Params {
+func NewParams(feeTiers []uint64, paused bool, maxJITsPerBlock, goodTilPurgeAllowance uint64, whitelistedLPs []string, withdrawOnly bool) Params {
 	return Params{
 		FeeTiers:              feeTiers,
 		Paused:                paused,
 		MaxJitsPerBlock:       maxJITsPerBlock,
 		GoodTilPurgeAllowance: goodTilPurgeAllowance,
 		WhitelistedLps:        whitelistedLPs,
+		WithdrawOnly:          withdrawOnly,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultFeeTiers, DefaultPaused, DefaultMaxJITsPerBlock, DefaultGoodTilPurgeAllowance, DefaultKeyWhitelistedLPs)
+	return NewParams(DefaultFeeTiers, DefaultPaused, DefaultMaxJITsPerBlock, DefaultGoodTilPurgeAllowance, DefaultKeyWhitelistedLPs, DefaultWithdrawOnly)
 }
 
 // ParamSetPairs get the params.ParamSet
@@ -52,6 +55,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyMaxJITsPerBlock, &p.MaxJitsPerBlock, validateMaxJITsPerBlock),
 		paramtypes.NewParamSetPair(KeyGoodTilPurgeAllowance, &p.GoodTilPurgeAllowance, validatePurgeAllowance),
 		paramtypes.NewParamSetPair(KeyWhitelistedLPs, &p.WhitelistedLps, validateWhitelistedLPs),
+		paramtypes.NewParamSetPair(KeyWithdrawOnly, &p.WithdrawOnly, validateWithdrawOnly),
 	}
 }
 
@@ -83,6 +87,10 @@ func (p Params) Validate() error {
 		return fmt.Errorf("invalid whitelisted LPs: %w", err)
 	}
 
+	if err := validateWithdrawOnly(p.WithdrawOnly); err != nil {
+		return fmt.Errorf("invalid withdraw only: %w", err)
+	}
+
 	return nil
 }
 
@@ -103,6 +111,15 @@ func validateFeeTiers(v interface{}) error {
 }
 
 func validatePaused(v interface{}) error {
+	_, ok := v.(bool)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", v)
+	}
+
+	return nil
+}
+
+func validateWithdrawOnly(v interface{}) error {
 	_, ok := v.(bool)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", v)

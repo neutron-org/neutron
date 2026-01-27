@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"testing"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	testkeeper "github.com/neutron-org/neutron/v9/testutil/dex/keeper"
@@ -96,4 +98,37 @@ func (s *DexTestSuite) TestPauseDex() {
 	s.aliceWithdrawsLimitSell(trancheKey)
 	s.aliceCancelsLimitSell(trancheKey)
 	s.aliceMultiHopSwaps([][]string{{"TokenA", "TokenB"}}, 5, math_utils.MustNewPrecDecFromStr("0.01"), false)
+}
+
+func (s *DexTestSuite) TestWithdrawOnlyDex() {
+	s.fundAliceBalances(100, 100)
+	trancheKey1 := s.aliceLimitSells("TokenA", 0, 10, types.LimitOrderType_GOOD_TIL_CANCELLED)
+	trancheKey2 := s.aliceLimitSells("TokenA", -2, 1, types.LimitOrderType_GOOD_TIL_CANCELLED)
+
+	// By default all messages succeed
+	s.aliceDeposits(NewDeposit(0, 10, 0, 1))
+	s.aliceWithdraws(NewWithdrawal(5, 0, 1))
+	s.aliceLimitSells("TokenB", -2, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.aliceWithdrawsLimitSell(trancheKey1)
+	s.aliceCancelsLimitSell(trancheKey1)
+	s.aliceMultiHopSwaps([][]string{{"TokenA", "TokenB"}}, 5, math_utils.MustNewPrecDecFromStr("0.01"), false)
+
+	// WHEN params.withdrawOnly is set to true
+	params := types.DefaultParams()
+	params.WithdrawOnly = true
+	_, err := s.msgServer.UpdateParams(s.Ctx, &types.MsgUpdateParams{Params: params, Authority: s.App.DexKeeper.GetAuthority()})
+
+	s.NoError(err)
+
+	// THEN all new positions fail
+	s.assertAliceDepositFails(types.ErrDexWithdrawOnly, NewDeposit(0, 10, 0, 1))
+	s.assertAliceLimitSellFails(types.ErrDexWithdrawOnly, "TokenB", -2, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.aliceMultiHopSwapFails(types.ErrDexWithdrawOnly, [][]string{{"TokenA", "TokenB"}}, 5, math_utils.MustNewPrecDecFromStr("0.01"), false)
+
+	// Withdraws / Cancels still work
+
+	s.aliceWithdraws(NewWithdrawal(5, 0, 1))
+	s.withdrawsWithShares(s.alice, sdk.Coins{types.NewPoolShares(0, sdkmath.NewInt(5))})
+	s.aliceCancelsLimitSell(trancheKey2)
+	s.aliceWithdrawsLimitSell(trancheKey2)
 }

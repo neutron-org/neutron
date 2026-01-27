@@ -277,4 +277,9 @@ var (
 		1174,
 		"Pool not found", // poolId: "%d"
 	)
+	ErrDexWithdrawOnly = sdkerrors.Register(
+		ModuleName,
+		1175,
+		"Dex is in withdraw only mode, all messages except withdrawals are disabled at this time",
+	)
 )
