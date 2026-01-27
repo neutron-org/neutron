@@ -21,8 +21,7 @@ message Params {
     // Adding jsontag prevents protoc from adding `omitempty` tag
     (gogoproto.jsontag) = "whitelisted_lps"
   ];
-  bool withdraw_only = 7
-  [
+  bool withdraw_only = 7 [
     // Adding jsontag prevents protoc from adding `omitempty` tag
     (gogoproto.jsontag) = "withdraw_only"
   ];
