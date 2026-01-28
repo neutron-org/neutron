@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/neutron-org/neutron/v7/x/crypto/keyring"
+	"github.com/neutron-org/neutron/v9/x/crypto/keyring"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
@@ -26,6 +26,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -41,8 +42,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/neutron-org/neutron/v7/app"
-	"github.com/neutron-org/neutron/v7/app/params"
+	"github.com/neutron-org/neutron/v9/app"
+	"github.com/neutron-org/neutron/v9/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -180,6 +181,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
+		snapshot.Cmd(ac.newApp),
 	)
 }
 
@@ -302,6 +304,8 @@ func (ac appCreator) newApp(
 		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
 		baseapp.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{Interval: cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval)), KeepRecent: cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))}),
 		baseapp.SetChainID(chainID),
+		baseapp.SetIAVLCacheSize(cast.ToInt(appOpts.Get(server.FlagIAVLCacheSize))),
+		baseapp.SetIAVLDisableFastNode(cast.ToBool(appOpts.Get(server.FlagDisableIAVLFastNode))),
 	}
 
 	if isEnabled := cast.ToBool(appOpts.Get(server.FlagOptimisticExecutionEnabled)); isEnabled {

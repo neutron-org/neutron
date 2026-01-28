@@ -15,8 +15,8 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	wrapkeeper "github.com/neutron-org/neutron/v7/x/transfer/keeper"
-	neutrontypes "github.com/neutron-org/neutron/v7/x/transfer/types"
+	wrapkeeper "github.com/neutron-org/neutron/v9/x/transfer/keeper"
+	neutrontypes "github.com/neutron-org/neutron/v9/x/transfer/types"
 )
 
 /*
@@ -29,17 +29,19 @@ type IBCModule struct {
 	keeper             keeper.Keeper
 	sudoKeeper         neutrontypes.WasmKeeper
 	tokenfactoryKeeper neutrontypes.TokenfactoryKeeper
+	coinfactoryKeeper  neutrontypes.TokenfactoryKeeper
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper, coinfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
 	return IBCModule{
 		wrappedKeeper:      k,
 		keeper:             k.Keeper,
 		sudoKeeper:         sudoKeeper,
 		IBCModule:          transfer.NewIBCModule(k.Keeper),
 		tokenfactoryKeeper: tokenfactoryKeeper,
+		coinfactoryKeeper:  coinfactoryKeeper,
 	}
 }
 
@@ -85,6 +87,7 @@ func (im IBCModule) OnChanOpenAck(
 
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+	im.coinfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
 
 	return nil
 }
@@ -102,6 +105,7 @@ func (im IBCModule) OnChanOpenConfirm(
 
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+	im.coinfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
 
 	return nil
 }

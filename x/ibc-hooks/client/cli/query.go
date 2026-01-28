@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/neutron-org/neutron/v7/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v9/x/ibc-hooks/utils"
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/neutron-org/neutron/v7/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v9/x/ibc-hooks/types"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,7 +32,7 @@ func GetQueryCmd() *cobra.Command {
 	return cmd
 }
 
-// GetCmdPoolParams return pool params.
+// GetCmdWasmSender generates the local address for a wasm hooks sender.
 func GetCmdWasmSender() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "wasm-sender <channelID> <originalSender>",

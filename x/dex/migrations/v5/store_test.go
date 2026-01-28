@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v7/testutil"
-	"github.com/neutron-org/neutron/v7/utils/math"
-	v5 "github.com/neutron-org/neutron/v7/x/dex/migrations/v5"
-	"github.com/neutron-org/neutron/v7/x/dex/types"
+	"github.com/neutron-org/neutron/v9/testutil"
+	"github.com/neutron-org/neutron/v9/utils/math"
+	v5 "github.com/neutron-org/neutron/v9/x/dex/migrations/v5"
+	"github.com/neutron-org/neutron/v9/x/dex/types"
 )
 
 type V4DexMigrationTestSuite struct {

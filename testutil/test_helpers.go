@@ -20,9 +20,9 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 
-	"github.com/neutron-org/neutron/v7/utils"
+	"github.com/neutron-org/neutron/v9/utils"
 
-	"github.com/neutron-org/neutron/v7/app/config"
+	"github.com/neutron-org/neutron/v9/app/config"
 
 	"cosmossdk.io/log"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -36,12 +36,12 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v7/app/params"
-	tokenfactorytypes "github.com/neutron-org/neutron/v7/x/tokenfactory/types"
+	appparams "github.com/neutron-org/neutron/v9/app/params"
+	tokenfactorytypes "github.com/neutron-org/neutron/v9/x/tokenfactory/types"
 
 	//nolint:staticcheck
-	"github.com/neutron-org/neutron/v7/app"
-	ictxstypes "github.com/neutron-org/neutron/v7/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v9/app"
+	ictxstypes "github.com/neutron-org/neutron/v9/x/interchaintxs/types"
 )
 
 var (
@@ -137,7 +137,7 @@ func testHomeDir(chainID string) string {
 	return path.Join(projectRoot, ".testchains", chainID)
 }
 
-// NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
+// NewProviderConsumerCoordinator initializes Coordinator with interchain security dummy provider and 3 neutron consumer chains
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 0)
 	chainID := ibctesting.GetChainID(1)
