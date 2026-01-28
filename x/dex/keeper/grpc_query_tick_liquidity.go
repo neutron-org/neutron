@@ -12,7 +12,7 @@ import (
 	"github.com/neutron-org/neutron/v9/x/dex/types"
 )
 
-// NOTE: For single queries of tick liquidity use explicty typed queries
+// NOTE: For single queries of tick liquidity use explicitly typed queries
 // (ie. the k.LimitOrderTranche & k.PoolReserves)
 
 func (k Keeper) TickLiquidityAll(

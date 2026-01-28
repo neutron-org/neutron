@@ -102,7 +102,7 @@ func (p *Pool) Swap(
 	// c) The maximum amount the user wants out (maxAmountOut1)
 	amountMakerOut = utils.MinPrecDecArr(possibleAmountsMakerOut)
 
-	// Due to precision loss when when doing division before multipliation the amountIn can be greater than maxAmountTakerIn
+	// Due to precision loss when doing division before multipliation the amountIn can be greater than maxAmountTakerIn
 	// so we need to cap it at maxAmountTakerIn
 	amountTakerIn = math_utils.MinPrecDec(
 		makerReserves.MakerPrice.Mul(amountMakerOut),
@@ -307,4 +307,16 @@ func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_uti
 
 func CalcAmountAsToken0(amount0, amount1, price1To0 math_utils.PrecDec) math_utils.PrecDec {
 	return amount0.Add(amount1.Quo(price1To0))
+}
+
+func (p *Pool) PairID() (*PairID, error) {
+	return p.LowerTick0.Key.TradePairId.PairID()
+}
+
+func (p *Pool) MustPairID() *PairID {
+	pairID, err := p.PairID()
+	if err != nil {
+		panic(err)
+	}
+	return pairID
 }

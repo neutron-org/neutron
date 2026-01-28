@@ -110,6 +110,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.dex.Query/PoolMetadataAll":                   func() proto.Message { return &dextypes.QueryAllPoolMetadataResponse{} },
 		"/neutron.dex.Query/SimulateDeposit":                   func() proto.Message { return &dextypes.QuerySimulateDepositResponse{} },
 		"/neutron.dex.Query/SimulateWithdrawal":                func() proto.Message { return &dextypes.QuerySimulateWithdrawalResponse{} },
+		"/neutron.dex.Query/SimulateWithdrawalWithShares":      func() proto.Message { return &dextypes.QuerySimulateWithdrawalResponse{} },
 		"/neutron.dex.Query/SimulatePlaceLimitOrder":           func() proto.Message { return &dextypes.QuerySimulatePlaceLimitOrderResponse{} },
 		"/neutron.dex.Query/SimulateWithdrawFilledLimitOrder":  func() proto.Message { return &dextypes.QuerySimulateWithdrawFilledLimitOrderResponse{} },
 		"/neutron.dex.Query/SimulateCancelLimitOrder":          func() proto.Message { return &dextypes.QuerySimulateCancelLimitOrderResponse{} },
