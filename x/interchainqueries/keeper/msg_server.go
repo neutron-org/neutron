@@ -7,16 +7,18 @@ import (
 	"strconv"
 	"time"
 
-	"cosmossdk.io/errors"
-	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	"github.com/cosmos/ibc-go/v10/modules/core/03-connection/keeper"
 	ics23 "github.com/cosmos/ics23/go"
+
+	"cosmossdk.io/errors"
+	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
 
 	"github.com/neutron-org/neutron/v9/utils/stateverification"
 	"github.com/neutron-org/neutron/v9/x/interchainqueries/types"
@@ -55,7 +57,8 @@ func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, errors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
 	}
 
-	if _, err := m.ibcKeeper.ConnectionKeeper.Connection(goCtx, &ibcconnectiontypes.QueryConnectionRequest{ConnectionId: msg.ConnectionId}); err != nil {
+	// use query server Connection instead of IbcKeeper#GetConnection to include validation for connection id.
+	if _, err := keeper.NewQueryServer(m.ibcKeeper.ConnectionKeeper).Connection(goCtx, &ibcconnectiontypes.QueryConnectionRequest{ConnectionId: msg.ConnectionId}); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to get connection with ID", "message", msg)
 		return nil, errors.Wrapf(types.ErrInvalidConnectionID, "failed to get connection with ID '%s': %v", msg.ConnectionId, err)
 	}
@@ -207,7 +210,7 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, errors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), len(query.Keys))
 		}
 
-		resp, err := m.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
+		resp, err := keeper.NewQueryServer(m.ibcKeeper.ConnectionKeeper).ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 			ConnectionId:   query.ConnectionId,
 			RevisionNumber: msg.Result.Revision,
 			RevisionHeight: msg.Result.Height + 1,

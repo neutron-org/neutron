@@ -100,7 +100,7 @@ func (am AppModule) IsAppModule() { // marker
 }
 
 // RegisterInvariants registers the ibc-hooks module invariants.
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {} //nolint:staticcheck
 
 // QuerierRoute returns the module's querier route name.
 func (AppModule) QuerierRoute() string {

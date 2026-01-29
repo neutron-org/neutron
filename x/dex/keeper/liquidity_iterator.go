@@ -51,7 +51,7 @@ func (s *LiquidityIterator) Next() types.Liquidity {
 }
 
 func (s *LiquidityIterator) Close() {
-	s.iter.Close()
+	s.iter.Close() //nolint:gosec,errcheck
 }
 
 func (s *LiquidityIterator) WrapTickLiquidity(tick types.TickLiquidity) types.Liquidity {

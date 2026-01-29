@@ -14,7 +14,7 @@ import (
 	"github.com/neutron-org/neutron/v9/testutil"
 	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/contractmanager/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -35,7 +35,10 @@ func createNFailure(k *keeper.Keeper, ctx sdk.Context, addresses, failures int) 
 	items := make([][]types.Failure, addresses)
 	for i := range items {
 		items[i] = make([]types.Failure, failures)
-		rand.Read(pub.Key) //nolint:errcheck
+		_, err := rand.Read(pub.Key)
+		if err != nil {
+			panic(err)
+		}
 		acc := sdk.AccAddress(pub.Address())
 
 		for c := range items[i] {

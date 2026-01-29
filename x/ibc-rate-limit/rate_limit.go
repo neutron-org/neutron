@@ -6,9 +6,9 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	"github.com/neutron-org/neutron/v9/x/ibc-rate-limit/types"
 )
@@ -130,13 +130,13 @@ func BuildWasmExecMsg(msgType string, packet exported.PacketI) ([]byte, error) {
 	}
 
 	var asJSON []byte
-	switch {
-	case msgType == msgSend:
+	switch msgType {
+	case msgSend:
 		msg := SendPacketMsg{SendPacket: PacketMsg{
 			Packet: unwrapped,
 		}}
 		asJSON, err = json.Marshal(msg)
-	case msgType == msgRecv:
+	case msgRecv:
 		msg := RecvPacketMsg{RecvPacket: PacketMsg{
 			Packet: unwrapped,
 		}}

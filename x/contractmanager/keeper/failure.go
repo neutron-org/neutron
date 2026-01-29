@@ -7,7 +7,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -45,7 +45,7 @@ func (k Keeper) GetNextFailureIDKey(ctx context.Context, address string) uint64 
 
 	store := prefix.NewStore(c.KVStore(k.storeKey), types.GetFailureKeyPrefix(address))
 	iterator := storetypes.KVStoreReversePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	if iterator.Valid() {
 		var val types.Failure
@@ -63,7 +63,7 @@ func (k Keeper) GetAllFailures(ctx context.Context) (list []types.Failure) {
 
 	store := prefix.NewStore(c.KVStore(k.storeKey), types.ContractFailuresKey)
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.Failure

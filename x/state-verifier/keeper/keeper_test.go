@@ -9,9 +9,9 @@ import (
 	"github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibctypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibctypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v9/app/params"
@@ -37,7 +37,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -58,7 +58,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -79,7 +79,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -100,7 +100,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -121,7 +121,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Height: suite.ChainA.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -132,7 +132,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 					Proof:         resp.ProofOps,
 					Value:         resp.Value,
 					StoragePrefix: "kekekek",
-				}}, resp.Height, fmt.Errorf("Please ensure the path and value are both correct.") //nolint:revive
+				}}, resp.Height, fmt.Errorf("provided key doesn't match proof") //nolint:revive
 			},
 		},
 	}
