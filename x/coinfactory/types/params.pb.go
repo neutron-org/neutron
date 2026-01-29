@@ -97,6 +97,8 @@ type Params struct {
 	FeeCollectorAddress string `protobuf:"bytes,3,opt,name=fee_collector_address,json=feeCollectorAddress,proto3" json:"fee_collector_address,omitempty"`
 	// whitelisted_hooks is the list of hooks which are allowed to be added and executed
 	WhitelistedHooks []*WhitelistedHook `protobuf:"bytes,4,rep,name=whitelisted_hooks,json=whitelistedHooks,proto3" json:"whitelisted_hooks,omitempty"`
+	// Sets a limit on the gas that can be consumed by the before_send hook.
+	TrackBeforeSendGasLimit uint64 `protobuf:"varint,5,opt,name=track_before_send_gas_limit,json=trackBeforeSendGasLimit,proto3" json:"track_before_send_gas_limit,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -158,6 +160,13 @@ func (m *Params) GetWhitelistedHooks() []*WhitelistedHook {
 		return m.WhitelistedHooks
 	}
 	return nil
+}
+
+func (m *Params) GetTrackBeforeSendGasLimit() uint64 {
+	if m != nil {
+		return m.TrackBeforeSendGasLimit
+	}
+	return 0
 }
 
 func init() {
@@ -255,6 +264,11 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.TrackBeforeSendGasLimit != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.TrackBeforeSendGasLimit))
+		i--
+		dAtA[i] = 0x28
+	}
 	if len(m.WhitelistedHooks) > 0 {
 		for iNdEx := len(m.WhitelistedHooks) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -349,6 +363,9 @@ func (m *Params) Size() (n int) {
 			l = e.Size()
 			n += 1 + l + sovParams(uint64(l))
 		}
+	}
+	if m.TrackBeforeSendGasLimit != 0 {
+		n += 1 + sovParams(uint64(m.TrackBeforeSendGasLimit))
 	}
 	return n
 }
@@ -608,6 +625,25 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TrackBeforeSendGasLimit", wireType)
+			}
+			m.TrackBeforeSendGasLimit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TrackBeforeSendGasLimit |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])
