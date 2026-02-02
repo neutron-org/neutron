@@ -8,7 +8,7 @@ import (
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v9/utils/math"
+	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v10/utils/math"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -27,7 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type PrecDecCoin struct {
 	Denom  string                                               `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
-	Amount github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"amount"`
+	Amount github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"amount"`
 }
 
 func (m *PrecDecCoin) Reset()      { *m = PrecDecCoin{} }

@@ -8,7 +8,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v9/utils/math"
+	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v10/utils/math"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -90,13 +90,13 @@ type PoolReserves struct {
 	// DEPRECATED: reserves_maker_denom will be removed in future release, `dec_reserves_maker_denom` should always be used.
 	ReservesMakerDenom cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=reserves_maker_denom,json=reservesMakerDenom,proto3,customtype=cosmossdk.io/math.Int" json:"reserves_maker_denom" yaml:"reserves_maker_denom"` // Deprecated: Do not use.
 	// DEPRECATED: price_taker_to_maker will be removed in future release, `maker_price` should always be used.
-	PriceTakerToMaker github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,3,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"` // Deprecated: Do not use.
+	PriceTakerToMaker github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,3,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"` // Deprecated: Do not use.
 	// DEPRECATED: price_opposite_taker_maker was an internal implementation detail and will be removed in a future release.
 	// It is being kept strictly for backwards compatibility. The actual field value is unused.
-	PriceOppositeTakerToMaker github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,4,opt,name=price_opposite_taker_to_maker,json=priceOppositeTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"price_opposite_taker_to_maker" yaml:"price_opposite_taker_to_maker"` // Deprecated: Do not use.
+	PriceOppositeTakerToMaker github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,4,opt,name=price_opposite_taker_to_maker,json=priceOppositeTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"price_opposite_taker_to_maker" yaml:"price_opposite_taker_to_maker"` // Deprecated: Do not use.
 	// This is the price of the PoolReserves denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
-	MakerPrice            github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
-	DecReservesMakerDenom github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,6,opt,name=dec_reserves_maker_denom,json=decReservesMakerDenom,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserves_maker_denom" yaml:"dec_reserves_maker_denom"`
+	MakerPrice            github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
+	DecReservesMakerDenom github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,6,opt,name=dec_reserves_maker_denom,json=decReservesMakerDenom,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_reserves_maker_denom" yaml:"dec_reserves_maker_denom"`
 }
 
 func (m *PoolReserves) Reset()         { *m = PoolReserves{} }

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v9/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v10/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v10/x/contractmanager/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {

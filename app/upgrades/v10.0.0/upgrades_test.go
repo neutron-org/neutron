@@ -1,4 +1,4 @@
-package nextupgrade_test
+package v10_0_0_test
 
 import (
 	"testing"
@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v9/app/upgrades/nextupgrade"
-	"github.com/neutron-org/neutron/v9/testutil"
+	"github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
+	"github.com/neutron-org/neutron/v10/testutil"
 )
 
 type UpgradeTestSuite struct {
@@ -29,7 +29,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
+		Name:   v10_0_0.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}

@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32types "github.com/cosmos/cosmos-sdk/types/bech32"
 
-	revenuetypes "github.com/neutron-org/neutron/v9/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
 )
 
 type Keeper struct {

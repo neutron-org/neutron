@@ -14,10 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	appconfig "github.com/neutron-org/neutron/v9/app/config"
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/revenue/types"
-	testkeeper "github.com/neutron-org/neutron/v9/testutil/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v9/x/revenue/types"
+	appconfig "github.com/neutron-org/neutron/v10/app/config"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/revenue/types"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
 )
 
 const (

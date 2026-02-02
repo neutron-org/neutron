@@ -9,7 +9,7 @@ import (
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
-	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v9/utils/math"
+	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v10/utils/math"
 	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
@@ -103,12 +103,12 @@ type LimitOrderTranche struct {
 	// Order deletion still functions the same and the orders will be deleted at the end of the block
 	ExpirationTime *time.Time `protobuf:"bytes,6,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
 	// DEPRECATED: price_taker_to_maker will be removed in future release, `maker_price` should always be used.
-	PriceTakerToMaker github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,7,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"` // Deprecated: Do not use.
+	PriceTakerToMaker github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,7,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"` // Deprecated: Do not use.
 	// This is the price of the LimitOrder denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
-	MakerPrice            github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,8,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
-	DecReservesMakerDenom github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,9,opt,name=dec_reserves_maker_denom,json=decReservesMakerDenom,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserves_maker_denom" yaml:"dec_reserves_maker_denom"`
-	DecReservesTakerDenom github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,10,opt,name=dec_reserves_taker_denom,json=decReservesTakerDenom,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserves_taker_denom" yaml:"dec_reserves_taker_denom"`
-	DecTotalTakerDenom    github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,11,opt,name=dec_total_taker_denom,json=decTotalTakerDenom,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_total_taker_denom" yaml:"dec_total_taker_denom"`
+	MakerPrice            github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,8,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
+	DecReservesMakerDenom github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,9,opt,name=dec_reserves_maker_denom,json=decReservesMakerDenom,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_reserves_maker_denom" yaml:"dec_reserves_maker_denom"`
+	DecReservesTakerDenom github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,10,opt,name=dec_reserves_taker_denom,json=decReservesTakerDenom,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_reserves_taker_denom" yaml:"dec_reserves_taker_denom"`
+	DecTotalTakerDenom    github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,11,opt,name=dec_total_taker_denom,json=decTotalTakerDenom,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_total_taker_denom" yaml:"dec_total_taker_denom"`
 }
 
 func (m *LimitOrderTranche) Reset()         { *m = LimitOrderTranche{} }

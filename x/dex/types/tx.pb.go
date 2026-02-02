@@ -16,7 +16,7 @@ import (
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
-	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v9/utils/math"
+	github_com_neutron_org_neutron_v9_utils_math "github.com/neutron-org/neutron/v10/utils/math"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -295,8 +295,8 @@ type MsgDepositResponse struct {
 	Reserve1Deposited    []cosmossdk_io_math.Int                                `protobuf:"bytes,2,rep,name=reserve1_deposited,json=reserve1Deposited,proto3,customtype=cosmossdk.io/math.Int" json:"reserve1_deposited" yaml:"reserve1_deposited"` // Deprecated: Do not use.
 	FailedDeposits       []*FailedDeposit                                       `protobuf:"bytes,3,rep,name=failed_deposits,json=failedDeposits,proto3" json:"failed_deposits,omitempty"`
 	SharesIssued         []github_com_cosmos_cosmos_sdk_types.Coin              `protobuf:"bytes,4,rep,name=shares_issued,json=sharesIssued,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"shares_issued" yaml:"shares_issued"`
-	DecReserve0Deposited []github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,rep,name=dec_reserve0_deposited,json=decReserve0Deposited,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve0_deposited" yaml:"dec_reserve0_deposited"`
-	DecReserve1Deposited []github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,6,rep,name=dec_reserve1_deposited,json=decReserve1Deposited,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve1_deposited" yaml:"dec_reserve1_deposited"`
+	DecReserve0Deposited []github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,rep,name=dec_reserve0_deposited,json=decReserve0Deposited,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_reserve0_deposited" yaml:"dec_reserve0_deposited"`
+	DecReserve1Deposited []github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,6,rep,name=dec_reserve1_deposited,json=decReserve1Deposited,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_reserve1_deposited" yaml:"dec_reserve1_deposited"`
 }
 
 func (m *MsgDepositResponse) Reset()         { *m = MsgDepositResponse{} }
@@ -483,8 +483,8 @@ type MsgWithdrawalResponse struct {
 	// reserve1_withdrawn is DEPRECATED
 	Reserve1Withdrawn    cosmossdk_io_math.Int                                `protobuf:"bytes,2,opt,name=reserve1_withdrawn,json=reserve1Withdrawn,proto3,customtype=cosmossdk.io/math.Int" json:"reserve1_withdrawn" yaml:"reserve1_withdrawn"` // Deprecated: Do not use.
 	SharesBurned         []github_com_cosmos_cosmos_sdk_types.Coin            `protobuf:"bytes,3,rep,name=shares_burned,json=sharesBurned,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"shares_burned" yaml:"shares_burned"`
-	DecReserve0Withdrawn github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,4,opt,name=dec_reserve0_withdrawn,json=decReserve0Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve0_withdrawn" yaml:"dec_reserve0_withdrawn"`
-	DecReserve1Withdrawn github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=dec_reserve1_withdrawn,json=decReserve1Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"dec_reserve1_withdrawn" yaml:"dec_reserve1_withdrawn"`
+	DecReserve0Withdrawn github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,4,opt,name=dec_reserve0_withdrawn,json=decReserve0Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_reserve0_withdrawn" yaml:"dec_reserve0_withdrawn"`
+	DecReserve1Withdrawn github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=dec_reserve1_withdrawn,json=decReserve1Withdrawn,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"dec_reserve1_withdrawn" yaml:"dec_reserve1_withdrawn"`
 }
 
 func (m *MsgWithdrawalResponse) Reset()         { *m = MsgWithdrawalResponse{} }
@@ -532,9 +532,9 @@ type MsgPlaceLimitOrder struct {
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *time.Time                                            `protobuf:"bytes,9,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
 	MaxAmountOut   *cosmossdk_io_math.Int                                `protobuf:"bytes,10,opt,name=max_amount_out,json=maxAmountOut,proto3,customtype=cosmossdk.io/math.Int" json:"max_amount_out" yaml:"max_amount_out"`
-	LimitSellPrice *github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
+	LimitSellPrice *github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
 	// min_average_sell_price is DEPRECATED
-	MinAverageSellPrice *github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,12,opt,name=min_average_sell_price,json=minAverageSellPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"min_average_sell_price" yaml:"min_average_sell_price"` // Deprecated: Do not use.
+	MinAverageSellPrice *github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,12,opt,name=min_average_sell_price,json=minAverageSellPrice,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"min_average_sell_price" yaml:"min_average_sell_price"` // Deprecated: Do not use.
 }
 
 func (m *MsgPlaceLimitOrder) Reset()         { *m = MsgPlaceLimitOrder{} }
@@ -960,7 +960,7 @@ type MsgMultiHopSwap struct {
 	Receiver       string                                               `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
 	Routes         []*MultiHopRoute                                     `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes,omitempty"`
 	AmountIn       cosmossdk_io_math.Int                                `protobuf:"bytes,4,opt,name=amount_in,json=amountIn,proto3,customtype=cosmossdk.io/math.Int" json:"amount_in" yaml:"amount_in"`
-	ExitLimitPrice github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=exit_limit_price,json=exitLimitPrice,proto3,customtype=github.com/neutron-org/neutron/v9/utils/math.PrecDec" json:"exit_limit_price" yaml:"exit_limit_price"`
+	ExitLimitPrice github_com_neutron_org_neutron_v9_utils_math.PrecDec `protobuf:"bytes,5,opt,name=exit_limit_price,json=exitLimitPrice,proto3,customtype=github.com/neutron-org/neutron/v10/utils/math.PrecDec" json:"exit_limit_price" yaml:"exit_limit_price"`
 	// If pickBestRoute == true then all routes are run and the route with the
 	// best price is chosen otherwise, the first successful route is used.
 	PickBestRoute bool `protobuf:"varint,6,opt,name=pick_best_route,json=pickBestRoute,proto3" json:"pick_best_route,omitempty"`

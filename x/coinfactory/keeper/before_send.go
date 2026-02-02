@@ -7,7 +7,7 @@ import (
 	types2 "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
+	"github.com/neutron-org/neutron/v10/x/coinfactory/types"
 
 	errorsmod "cosmossdk.io/errors"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"

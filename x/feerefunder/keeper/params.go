@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v10/x/feerefunder/types"
 )
 
 // GetParams get all parameters as types.Params

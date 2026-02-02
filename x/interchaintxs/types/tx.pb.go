@@ -16,7 +16,7 @@ import (
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	types1 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	types3 "github.com/neutron-org/neutron/v9/x/feerefunder/types"
+	types3 "github.com/neutron-org/neutron/v10/x/feerefunder/types"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"

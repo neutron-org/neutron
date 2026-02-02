@@ -8,9 +8,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/revenue/types"
-	testkeeper "github.com/neutron-org/neutron/v9/testutil/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v9/x/revenue/types"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/revenue/types"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
 )
 
 func TestMonthlyPaymentSchedule(t *testing.T) {

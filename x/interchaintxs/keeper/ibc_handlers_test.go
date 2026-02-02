@@ -6,7 +6,7 @@ import (
 
 	types2 "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v9/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
@@ -14,11 +14,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/testutil"
-	testkeeper "github.com/neutron-org/neutron/v9/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v9/x/contractmanager/types"
-	feetypes "github.com/neutron-org/neutron/v9/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v10/testutil"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v10/x/contractmanager/types"
+	feetypes "github.com/neutron-org/neutron/v10/x/feerefunder/types"
 )
 
 const ICAId = ".ica0"

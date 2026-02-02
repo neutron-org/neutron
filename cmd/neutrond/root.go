@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/neutron-org/neutron/v9/x/crypto/keyring"
+	"github.com/neutron-org/neutron/v10/x/crypto/keyring"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
@@ -42,8 +42,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/neutron-org/neutron/v9/app"
-	"github.com/neutron-org/neutron/v9/app/params"
+	"github.com/neutron-org/neutron/v10/app"
+	"github.com/neutron-org/neutron/v10/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
