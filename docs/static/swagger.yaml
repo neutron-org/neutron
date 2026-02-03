@@ -28217,7 +28217,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v9
+  version: v10
 paths:
   /block-sdk/auction/v1/params:
     get:
