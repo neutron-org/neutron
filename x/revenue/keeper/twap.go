@@ -10,7 +10,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 
-	"github.com/neutron-org/neutron/v9/x/revenue/types"
+	"github.com/neutron-org/neutron/v10/x/revenue/types"
 )
 
 // UpdateRewardAssetPrice stores fresh cumulative and absolute price of the reward asset and cleans
@@ -99,7 +99,7 @@ func (k *Keeper) GetAllRewardAssetPrices(ctx sdk.Context) ([]*types.RewardAssetP
 	if err != nil {
 		return nil, fmt.Errorf("failed to iterate over reward asset prices: %w", err)
 	}
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 
 	var prices []*types.RewardAssetPrice
 	for ; iter.Valid(); iter.Next() {
@@ -125,7 +125,7 @@ func (k *Keeper) GetLastRewardAssetPrice(ctx sdk.Context) (types.RewardAssetPric
 	if err != nil {
 		return cmlt, fmt.Errorf("failed to iterate over reward asset prices: %w", err)
 	}
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 
 	for ; iter.Valid(); iter.Next() {
 		if err = k.cdc.Unmarshal(iter.Value(), &cmlt); err != nil {
@@ -151,7 +151,7 @@ func (k *Keeper) GetFirstRewardAssetPriceAfter(ctx sdk.Context, startAt int64) (
 	if err != nil {
 		return cmlt, fmt.Errorf("failed to iterate over reward asset prices: %w", err)
 	}
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 
 	for ; iter.Valid(); iter.Next() {
 		if err = k.cdc.Unmarshal(iter.Value(), &cmlt); err != nil {
@@ -174,7 +174,7 @@ func (k *Keeper) CleanOutdatedRewardAssetPrices(ctx sdk.Context, cleanUntil int6
 	if err != nil {
 		return fmt.Errorf("failed to iterate over reward asset prices: %w", err)
 	}
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 
 	var keysToRemove [][]byte
 	for ; iter.Valid(); iter.Next() {

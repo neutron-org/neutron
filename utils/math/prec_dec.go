@@ -525,7 +525,7 @@ func (d PrecDec) IsInteger() bool {
 }
 
 // Format decimal state
-func (d PrecDec) Format(s fmt.State) {
+func (d PrecDec) Format(s fmt.State) { //nolint:govet
 	_, err := s.Write([]byte(d.String()))
 	if err != nil {
 		panic(err)

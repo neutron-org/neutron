@@ -3,7 +3,7 @@ package ante
 import (
 	errorsmod "cosmossdk.io/errors"
 
-	gaiaerrors "github.com/neutron-org/neutron/v9/x/globalfee/types"
+	gaiaerrors "github.com/neutron-org/neutron/v10/x/globalfee/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

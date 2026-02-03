@@ -6,8 +6,8 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // CancelLimitOrderCore handles the logic for MsgCancelLimitOrder including bank operations and event emissions.
@@ -25,7 +25,7 @@ func (k Keeper) CancelLimitOrderCore(
 
 	coinsOut := types.NewPrecDecCoins(makerCoinOut, takerCoinOut)
 
-	err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
+	err = k.SendFractionalCoinsFromDexToAccount(
 		ctx,
 		callerAddr,
 		coinsOut,

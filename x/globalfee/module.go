@@ -22,9 +22,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/x/globalfee/client/cli"
-	"github.com/neutron-org/neutron/v9/x/globalfee/keeper"
-	"github.com/neutron-org/neutron/v9/x/globalfee/types"
+	"github.com/neutron-org/neutron/v10/x/globalfee/client/cli"
+	"github.com/neutron-org/neutron/v10/x/globalfee/keeper"
+	"github.com/neutron-org/neutron/v10/x/globalfee/types"
 )
 
 var (
@@ -118,7 +118,7 @@ func (a AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONCodec) jso
 	return marshaler.MustMarshalJSON(&genState)
 }
 
-func (a AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {
+func (a AppModule) RegisterInvariants(_ sdk.InvariantRegistry) { //nolint:staticcheck
 }
 
 func (a AppModule) RegisterServices(cfg module.Configurator) {

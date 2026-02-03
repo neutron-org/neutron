@@ -9,9 +9,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/app/upgrades"
-	dexkeeper "github.com/neutron-org/neutron/v9/x/dex/keeper"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	"github.com/neutron-org/neutron/v10/app/upgrades"
+	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 func CreateUpgradeHandler(
@@ -52,7 +52,7 @@ func UpgradeRemoveOrphanedLimitOrders(ctx sdk.Context, cdc codec.Codec, k dexkee
 
 	tickLiquidityIterator := k.GetTickLiquidityIterator(ctx)
 
-	defer tickLiquidityIterator.Close()
+	defer tickLiquidityIterator.Close() //nolint:errcheck
 
 	tranchesToRemove := make([]*types.LimitOrderTranche, 0)
 	for ; tickLiquidityIterator.Valid(); tickLiquidityIterator.Next() {

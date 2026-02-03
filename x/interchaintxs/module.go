@@ -17,9 +17,9 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v9/x/interchaintxs/client/cli"
-	"github.com/neutron-org/neutron/v9/x/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/v9/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v10/x/interchaintxs/client/cli"
+	"github.com/neutron-org/neutron/v10/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v10/x/interchaintxs/types"
 )
 
 var (
@@ -146,7 +146,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // RegisterInvariants registers the capability module's invariants.
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {} //nolint:staticcheck
 
 // InitGenesis performs the capability module's genesis initialization It returns
 // no validator updates.

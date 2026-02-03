@@ -6,24 +6,24 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v9/app/params"
+	"github.com/neutron-org/neutron/v10/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v9/testutil"
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/testutil"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
@@ -615,7 +615,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 			clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 			resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 				Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-				Height: suite.ChainB.LastHeader.Header.Height - 1,
+				Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 				Data:   clientKey,
 				Prove:  true,
 			})
@@ -761,7 +761,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -780,7 +780,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -810,7 +810,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -830,7 +830,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -860,7 +860,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -885,7 +885,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -914,7 +914,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -934,7 +934,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -964,7 +964,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -984,7 +984,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1014,7 +1014,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   []byte("non-registered key"),
 					Prove:  true,
 				})
@@ -1033,7 +1033,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1064,7 +1064,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -1084,7 +1084,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1116,7 +1116,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -1136,7 +1136,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1166,7 +1166,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -1185,7 +1185,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1215,7 +1215,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -1234,7 +1234,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1264,11 +1264,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// pretend like we have a very new query result
-				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(), 9999)))
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -1287,7 +1287,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1317,14 +1317,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// pretend like we have a very new query result
-				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(), 9999)))
 
 				// pretend like we have a very new query result with updated revision height
-				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber()+1, 1)))
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber()+1, 1)))
 
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
@@ -1344,7 +1344,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						Block:  nil,
 						Height: uint64(resp.Height), //nolint:gosec
 						// we forecefully "updated" revision height
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -1378,7 +1378,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 					Data:   keyWithSpecialBytes,
 					Prove:  true,
 				})
@@ -1398,7 +1398,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height), //nolint:gosec
-						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+						Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
