@@ -24,7 +24,7 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 v10.1.0
-	github.com/cosmos/ibc-go/v10 v10.4.0
+	github.com/cosmos/ibc-go/v10 v10.5.0
 	github.com/cosmos/ics23/go v0.11.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
 	github.com/gogo/protobuf v1.3.3
