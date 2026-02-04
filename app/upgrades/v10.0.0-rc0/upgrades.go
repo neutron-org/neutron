@@ -1,4 +1,4 @@
-package v10_0_0
+package v10_0_0_rc0
 
 import (
 	"context"
