@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // WithdrawCore handles logic for MsgWithdrawal including bank operations and event emissions.
@@ -88,7 +88,7 @@ func (k Keeper) WithdrawHandler(
 	// NewPrecDecCoins will remove zero amounts
 	coinsToRemove := types.NewPrecDecCoins(coin0, coin1)
 
-	err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
+	err = k.SendFractionalCoinsFromDexToAccount(
 		ctx,
 		receiverAddr,
 		coinsToRemove,

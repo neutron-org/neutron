@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/neutron-org/neutron/v9/x/crypto/keyring"
+	"github.com/neutron-org/neutron/v10/x/crypto/keyring"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
@@ -26,6 +26,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -41,8 +42,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/neutron-org/neutron/v9/app"
-	"github.com/neutron-org/neutron/v9/app/params"
+	"github.com/neutron-org/neutron/v10/app"
+	"github.com/neutron-org/neutron/v10/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -55,7 +56,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	tempDir := tempDir()
 	// cleanup temp dir after we are done with the tempApp, so we don't leave behind a
 	// new temporary directory for every invocation. See https://github.com/CosmWasm/wasmd/issues/2017
-	defer os.RemoveAll(tempDir)
+	defer os.RemoveAll(tempDir) //nolint:errcheck
 	initAppOptions.Set(flags.FlagHome, tempDir)
 	tempApplication := app.New(
 		log.NewNopLogger(),
@@ -180,11 +181,12 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
+		snapshot.Cmd(ac.newApp),
 	)
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
+	crisis.AddModuleInitFlags(startCmd) //nolint:staticcheck
 	wasm.AddModuleInitFlags(startCmd)
 }
 
@@ -389,7 +391,10 @@ func setCustomEnvVariablesFromClientToml(ctx client.Context) {
 		val := viper.GetString(key)
 		if val != "" {
 			// Sets the env for this instance of the app only.
-			os.Setenv(envVar, val)
+			err := os.Setenv(envVar, val)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 

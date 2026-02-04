@@ -8,12 +8,12 @@ import (
 	"cosmossdk.io/store/prefix"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v9/testutil"
-	"github.com/neutron-org/neutron/v9/utils/math"
-	v3 "github.com/neutron-org/neutron/v9/x/dex/migrations/v3"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
-	v2types "github.com/neutron-org/neutron/v9/x/dex/types/v2"
-	"github.com/neutron-org/neutron/v9/x/dex/utils"
+	"github.com/neutron-org/neutron/v10/testutil"
+	"github.com/neutron-org/neutron/v10/utils/math"
+	v3 "github.com/neutron-org/neutron/v10/x/dex/migrations/v3"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
+	v2types "github.com/neutron-org/neutron/v10/x/dex/types/v2"
+	"github.com/neutron-org/neutron/v10/x/dex/utils"
 )
 
 type V3DexMigrationTestSuite struct {

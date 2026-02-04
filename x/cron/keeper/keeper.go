@@ -17,7 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/x/cron/types"
+	"github.com/neutron-org/neutron/v10/x/cron/types"
 )
 
 var (
@@ -136,7 +136,7 @@ func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	res := make([]types.Schedule, 0)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		var schedule types.Schedule
@@ -159,7 +159,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context, executionStage t
 	res := make([]types.Schedule, 0)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		var schedule types.Schedule

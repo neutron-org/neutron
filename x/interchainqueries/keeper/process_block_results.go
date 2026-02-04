@@ -7,17 +7,17 @@ import (
 	"cosmossdk.io/errors"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	clientkeeper "github.com/cosmos/ibc-go/v8/modules/core/02-client/keeper"
+	clientkeeper "github.com/cosmos/ibc-go/v10/modules/core/02-client/keeper"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/merkle"
 	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
-	tendermintLightClientTypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 // deterministicExecTxResult strips non-deterministic fields from
@@ -110,7 +110,7 @@ func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID
 		return errors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack next block header: %v", err)
 	}
 
-	if err := k.headerVerifier.VerifyHeaders(ctx, k.ibcKeeper.ClientKeeper, clientID, header, nextHeader); err != nil {
+	if err := k.headerVerifier.VerifyHeaders(ctx, *k.ibcKeeper.ClientKeeper, clientID, header, nextHeader); err != nil {
 		ctx.Logger().Debug("ProcessBlock: failed to verify headers", "error", err)
 		return errors.Wrapf(types.ErrInvalidHeader, "failed to verify headers: %v", err)
 	}

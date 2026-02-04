@@ -9,7 +9,7 @@ import (
 	db2 "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	"cosmossdk.io/store"
 	storetypes "cosmossdk.io/store/types"
@@ -19,8 +19,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 func InterchainQueriesKeeper(

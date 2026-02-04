@@ -8,7 +8,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v9/x/ibc-rate-limit/keeper"
+	"github.com/neutron-org/neutron/v10/x/ibc-rate-limit/keeper"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,8 +19,8 @@ import (
 
 	"cosmossdk.io/core/appmodule"
 
-	ibcratelimitcli "github.com/neutron-org/neutron/v9/x/ibc-rate-limit/client/cli"
-	"github.com/neutron-org/neutron/v9/x/ibc-rate-limit/types"
+	ibcratelimitcli "github.com/neutron-org/neutron/v10/x/ibc-rate-limit/client/cli"
+	"github.com/neutron-org/neutron/v10/x/ibc-rate-limit/types"
 )
 
 var (
@@ -63,7 +63,10 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncoding
 // ---------------------------------------
 // Interfaces.
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)) //nolint:errcheck
+	err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
@@ -125,7 +128,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // RegisterInvariants registers the txfees module's invariants.
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {} //nolint:staticcheck
 
 // InitGenesis performs the txfees module's genesis initialization It returns
 // no validator updates.

@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 type LiquidityIterator struct {
@@ -51,7 +51,7 @@ func (s *LiquidityIterator) Next() types.Liquidity {
 }
 
 func (s *LiquidityIterator) Close() {
-	s.iter.Close()
+	s.iter.Close() //nolint:gosec,errcheck
 }
 
 func (s *LiquidityIterator) WrapTickLiquidity(tick types.TickLiquidity) types.Liquidity {
