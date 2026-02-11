@@ -532,9 +532,9 @@ func (s *DexTestSuite) TestWithdrawThenCancelLowTick() {
 	s.assertAliceBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
 
 	s.bobWithdrawsLimitSell(trancheKey)
-	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(4999999))
+	s.assertBobBalances(0, 5)
 	s.bobCancelsLimitSell(trancheKey)
-	s.assertBobBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
+	s.assertBobBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(5_000_000))
 }
 
 func (s *DexTestSuite) TestWrongSharesProtectionCancel() {
@@ -552,4 +552,52 @@ func (s *DexTestSuite) TestWrongSharesProtectionCancel() {
 	s.aliceCancelsLimitSell(trancheKey)
 
 	s.assertAliceBalances(1, 0)
+}
+
+func (s *DexTestSuite) TestCanceLimitOrderClearsPosition() {
+
+	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(10_000), sdkmath.ZeroInt())
+	s.fundAccountBalancesInt(s.bob, sdkmath.NewInt(500_000), sdkmath.ZeroInt())
+	s.fundAccountBalancesInt(s.carol, sdkmath.ZeroInt(), sdkmath.NewInt(22_015))
+
+	// GIVEN alice and bob place GTC limit sells at tick -100000
+	trancheKey := s.limitSellsIntSuccess(s.alice, "TokenA", -100000, sdkmath.NewInt(10_000))
+	s.limitSellsIntSuccess(s.bob, "TokenA", -100000, sdkmath.NewInt(500_000))
+
+	// AND carol swaps 22,015 TokenB for TokeA
+	s.limitSellsIntSuccess(s.carol, "TokenB", -100001, sdkmath.NewInt(22_015), types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN Alice withdraws then cancels
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.aliceCancelsLimitSell(trancheKey)
+
+	// THEN totalTakerDenom == ReservesTakerDenom
+	tranche, _, found := s.App.DexKeeper.FindLimitOrderTranche(
+		s.Ctx,
+		&types.LimitOrderTrancheKey{
+			TradePairId:           types.MustNewTradePairID("TokenB", "TokenA"),
+			TickIndexTakerToMaker: 100000,
+			TrancheKey:            trancheKey,
+		},
+	)
+	s.True(found)
+
+	s.Equal(tranche.DecTotalTakerDenom, tranche.DecReservesTakerDenom)
+
+	// WHEN bob cancels his limit order, the tranche only contains dust
+	s.bobCancelsLimitSell(trancheKey)
+
+	// Final tranche state
+	tranche, _, found = s.App.DexKeeper.FindLimitOrderTranche(
+		s.Ctx,
+		&types.LimitOrderTrancheKey{
+			TradePairId:           types.MustNewTradePairID("TokenB", "TokenA"),
+			TickIndexTakerToMaker: 100000,
+			TrancheKey:            trancheKey,
+		},
+	)
+
+	// NOTE: we are using the Int fields just to ensure only dust is left
+	s.Assert().Equal(tranche.ReservesTakerDenom, sdkmath.ZeroInt())
+	s.Assert().Equal(tranche.TotalTakerDenom, sdkmath.ZeroInt())
 }

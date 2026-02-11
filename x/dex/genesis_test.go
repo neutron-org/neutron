@@ -9,6 +9,7 @@ import (
 
 	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
 	keepertest "github.com/neutron-org/neutron/v10/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
 	"github.com/neutron-org/neutron/v10/x/dex"
 	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
@@ -26,7 +27,7 @@ func TestGenesis(t *testing.T) {
 				TrancheKey:            "0",
 				Address:               "fakeAddr",
 				SharesOwned:           math.NewInt(10),
-				SharesWithdrawn:       math.NewInt(0),
+				DecSharesWithdrawn:    math_utils.ZeroPrecDec(),
 			},
 			{
 				TradePairId: &types.TradePairID{
@@ -37,7 +38,7 @@ func TestGenesis(t *testing.T) {
 				TrancheKey:            "0",
 				Address:               "fakeAddr",
 				SharesOwned:           math.NewInt(10),
-				SharesWithdrawn:       math.NewInt(0),
+				DecSharesWithdrawn:    math_utils.ZeroPrecDec(),
 			},
 		},
 		TickLiquidityList: []*types.TickLiquidity{
