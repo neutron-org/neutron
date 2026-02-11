@@ -1,13 +1,15 @@
-package v10_0_0_rc0
+package v10_0_0
 
 import (
 	"context"
 	"fmt"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/neutron-org/neutron/v10/app/upgrades"
 )
@@ -15,7 +17,7 @@ import (
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
-	_ *upgrades.UpgradeKeepers,
+	keepers *upgrades.UpgradeKeepers,
 	_ upgrades.StoreKeys,
 	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
@@ -29,7 +31,23 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
+		err = wasmBurnerPerms(c, keepers)
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
+}
+
+func wasmBurnerPerms(c context.Context, k *upgrades.UpgradeKeepers) error {
+	// read module acc from storage or create new one
+	accI := k.AccountKeeper.GetModuleAccount(c, wasmtypes.ModuleName)
+	moduleAcc, ok := accI.(*types.ModuleAccount)
+	if !ok {
+		return fmt.Errorf("account is not a ModuleAccount")
+	}
+	// update permissions
+	moduleAcc.Permissions = []string{types.Burner}
+
+	k.AccountKeeper.SetModuleAccount(c, moduleAcc)
+	return nil
 }
