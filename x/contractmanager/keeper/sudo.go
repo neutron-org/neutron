@@ -11,10 +11,10 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v9/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v10/x/contractmanager/types"
 )
 
 func (k Keeper) HasContractInfo(ctx context.Context, contractAddress sdk.AccAddress) bool {

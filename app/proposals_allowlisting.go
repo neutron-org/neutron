@@ -12,29 +12,29 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	coinfactorytypes "github.com/neutron-org/neutron/v9/x/coinfactory/types"
-	revenuetypes "github.com/neutron-org/neutron/v9/x/revenue/types"
+	coinfactorytypes "github.com/neutron-org/neutron/v10/x/coinfactory/types"
+	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
 
-	harpoontypes "github.com/neutron-org/neutron/v9/x/harpoon/types"
-	ibcratelimittypes "github.com/neutron-org/neutron/v9/x/ibc-rate-limit/types"
+	harpoontypes "github.com/neutron-org/neutron/v10/x/harpoon/types"
+	ibcratelimittypes "github.com/neutron-org/neutron/v10/x/ibc-rate-limit/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v9/x/dynamicfees/types"
-	globalfeetypes "github.com/neutron-org/neutron/v9/x/globalfee/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v10/x/dynamicfees/types"
+	globalfeetypes "github.com/neutron-org/neutron/v10/x/globalfee/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v9/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/v9/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v9/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v9/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v9/x/feerefunder/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v9/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v9/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v9/x/tokenfactory/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v10/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v10/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v10/x/feerefunder/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v10/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {

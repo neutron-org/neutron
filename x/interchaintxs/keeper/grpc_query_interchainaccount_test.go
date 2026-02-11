@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	types2 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	types2 "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/testutil"
-	testkeeper "github.com/neutron-org/neutron/v9/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v9/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v10/testutil"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v10/x/interchaintxs/types"
 )
 
 func TestKeeper_InterchainAccountAddress(t *testing.T) {

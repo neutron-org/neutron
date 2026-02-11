@@ -12,10 +12,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	neutronapp "github.com/neutron-org/neutron/v9/app"
-	"github.com/neutron-org/neutron/v9/testutil"
-	keepertest "github.com/neutron-org/neutron/v9/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v10/app"
+	"github.com/neutron-org/neutron/v10/testutil"
+	keepertest "github.com/neutron-org/neutron/v10/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, deposit *types.DepositRecord) *types.Pool {
@@ -38,7 +38,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	// is NewContext tries to pass `app.finalizeBlockState.ms` as first argument while  app.finalizeBlockState is nil at this stage,
 	// and we get nil pointer exception
 	// when NewUncachedContext passes `app.cms` (multistore) as an argument to `sdk.NewContext`
-	ctx := app.(*neutronapp.App).BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.(*neutronapp.App).NewUncachedContext(false, tmproto.Header{})
 	addr := sdk.AccAddress("test_addr")
 	msgs := []*types.DepositRecord{
 		{

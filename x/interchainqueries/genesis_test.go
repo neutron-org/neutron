@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v9/testutil/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v9/x/interchainqueries"
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v10/testutil/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 func TestGenesis(t *testing.T) {

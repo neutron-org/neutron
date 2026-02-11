@@ -5,7 +5,7 @@ import (
 
 	v3 "github.com/neutron-org/neutron/v9/x/tokenfactory/migrations/v3"
 
-	v2 "github.com/neutron-org/neutron/v9/x/tokenfactory/migrations/v2"
+	v2 "github.com/neutron-org/neutron/v10/x/tokenfactory/migrations/v2"
 )
 
 // Migrator is a struct for handling in-place store migrations.

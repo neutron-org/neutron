@@ -19,9 +19,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/x/tokenfactory/client/cli"
-	"github.com/neutron-org/neutron/v9/x/tokenfactory/keeper"
-	"github.com/neutron-org/neutron/v9/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v10/x/tokenfactory/client/cli"
+	"github.com/neutron-org/neutron/v10/x/tokenfactory/keeper"
+	"github.com/neutron-org/neutron/v10/x/tokenfactory/types"
 )
 
 var (
@@ -76,7 +76,10 @@ func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)) //nolint:errcheck
+	err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	if err != nil {
+		panic(err)
+	}
 }
 
 // GetTxCmd returns the tokenfactory module's root tx command.
@@ -145,7 +148,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // RegisterInvariants registers the tokenfactory module's invariants.
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {} //nolint:staticcheck
 
 // InitGenesis performs the tokenfactory module's genesis initialization It returns
 // no validator updates.

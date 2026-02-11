@@ -4,12 +4,11 @@ import (
 	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v9/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v10/x/interchaintxs/keeper"
 )
 
 var _ porttypes.IBCModule = IBCModule{}
@@ -33,7 +32,6 @@ func (im IBCModule) OnChanOpenInit(
 	_ []string,
 	_ string,
 	_ string,
-	_ *capabilitytypes.Capability,
 	_ channeltypes.Counterparty,
 	version string,
 ) (string, error) {
@@ -48,7 +46,6 @@ func (im IBCModule) OnChanOpenTry(
 	_ []string,
 	_,
 	_ string,
-	_ *capabilitytypes.Capability,
 	_ channeltypes.Counterparty,
 	_ string,
 ) (string, error) {
@@ -100,6 +97,7 @@ func (im IBCModule) OnChanCloseConfirm(
 // logic returns without error.
 func (im IBCModule) OnRecvPacket(
 	_ sdk.Context,
+	_ string,
 	_ channeltypes.Packet,
 	_ sdk.AccAddress,
 ) ibcexported.Acknowledgement {
@@ -109,18 +107,20 @@ func (im IBCModule) OnRecvPacket(
 // OnAcknowledgementPacket implements the IBCModule interface.
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
+	return im.keeper.HandleAcknowledgement(ctx, channelVersion, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleTimeout(ctx, packet, relayer)
+	return im.keeper.HandleTimeout(ctx, channelVersion, packet, relayer)
 }

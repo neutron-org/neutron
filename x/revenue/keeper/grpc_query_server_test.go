@@ -8,11 +8,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	appconfig "github.com/neutron-org/neutron/v9/app/config"
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/revenue/types"
-	testutil_keeper "github.com/neutron-org/neutron/v9/testutil/revenue/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v9/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v9/x/revenue/types"
+	appconfig "github.com/neutron-org/neutron/v10/app/config"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/revenue/types"
+	testutil_keeper "github.com/neutron-org/neutron/v10/testutil/revenue/keeper"
+	revenuekeeper "github.com/neutron-org/neutron/v10/x/revenue/keeper"
+	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
 )
 
 func TestQueryParams(t *testing.T) {

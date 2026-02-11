@@ -5,15 +5,15 @@ import (
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 func (suite *KeeperTestSuite) TestRemoteLastHeight() {
@@ -501,7 +501,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 
 	resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
-		Height: suite.ChainB.LastHeader.Header.Height - 1,
+		Height: suite.ChainB.LatestCommittedHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
 	})
@@ -521,7 +521,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 			// and we don't have access to it here
 			Block:    nil,
 			Height:   uint64(resp.Height), //nolint:gosec
-			Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+			Revision: suite.ChainA.LatestCommittedHeader.GetHeight().GetRevisionNumber(),
 		},
 	}
 

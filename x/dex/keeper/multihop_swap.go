@@ -10,8 +10,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 type MultihopStep struct {
@@ -44,7 +44,7 @@ func (k Keeper) MultiHopSwapCore(
 	}
 
 	bestRoute.write()
-	err = k.FractionalBanker.SendFractionalCoinsFromAccountToDex(
+	err = k.SendFractionalCoinsFromAccountToDex(
 		ctx,
 		callerAddr,
 		types.PrecDecCoins{initialInCoin},
@@ -55,7 +55,7 @@ func (k Keeper) MultiHopSwapCore(
 
 	// send both dust and coinOut to receiver
 	// note that dust can be multiple coins collected from multiple hops.
-	err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
+	err = k.SendFractionalCoinsFromDexToAccount(
 		ctx,
 		receiverAddr,
 		bestRoute.dust.Add(bestRoute.coinOut),
