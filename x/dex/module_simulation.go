@@ -8,9 +8,9 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/neutron-org/neutron/v9/testutil/common/sample"
-	dexsimulation "github.com/neutron-org/neutron/v9/x/dex/simulation"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	"github.com/neutron-org/neutron/v10/testutil/common/sample"
+	dexsimulation "github.com/neutron-org/neutron/v10/x/dex/simulation"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // avoid unused import issue

@@ -7,11 +7,11 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/neutron-org/neutron/v10/x/coinfactory/types"
 	"github.com/neutron-org/neutron/v9/utils"
-	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
 
 	errorsmod "cosmossdk.io/errors"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 )
 
 func (k Keeper) setBeforeSendHook(ctx sdk.Context, denom, contractAddr string) error {
@@ -90,12 +90,12 @@ func (k Keeper) AssertIsHookWhitelisted(ctx sdk.Context, denom string, contractA
 	return types.ErrBeforeSendHookNotWhitelisted.Wrapf("no whitelist for contract with codeID (%d) and denomCreator (%s) ", codeID, denomCreator)
 }
 
-// TrackBeforeSend calls the before send listener contract suppresses any errors
+// TrackBeforeSend calls the before send listener contract but does not return any errors
 func (h Hooks) TrackBeforeSend(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	_ = h.k.callBeforeSendListener(ctx, from, to, amount, false)
 }
 
-// TrackBeforeSend calls the before send listener contract returns any errors
+// BlockBeforeSend calls the before send listener contract and returns any errors
 func (h Hooks) BlockBeforeSend(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
 	return h.k.callBeforeSendListener(ctx, from, to, amount, true)
 }

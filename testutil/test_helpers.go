@@ -9,20 +9,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
+	tmrand "github.com/cometbft/cometbft/libs/rand"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	types2 "github.com/cosmos/cosmos-sdk/crypto/types"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
 
-	tmrand "github.com/cometbft/cometbft/libs/rand"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	"github.com/neutron-org/neutron/v10/utils"
 
-	"github.com/neutron-org/neutron/v9/utils"
-
-	"github.com/neutron-org/neutron/v9/app/config"
+	"github.com/neutron-org/neutron/v10/app/config"
 
 	"cosmossdk.io/log"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -30,18 +30,18 @@ import (
 	db2 "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v9/app/params"
-	tokenfactorytypes "github.com/neutron-org/neutron/v9/x/tokenfactory/types"
+	appparams "github.com/neutron-org/neutron/v10/app/params"
+	tokenfactorytypes "github.com/neutron-org/neutron/v10/x/tokenfactory/types"
 
 	//nolint:staticcheck
-	"github.com/neutron-org/neutron/v9/app"
-	ictxstypes "github.com/neutron-org/neutron/v9/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v10/app"
+	ictxstypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
 )
 
 var (
@@ -74,10 +74,9 @@ type IBCConnectionTestSuite struct {
 	Coordinator *ibctesting.Coordinator
 
 	// testing chains used for convenience and readability
-	ChainProvider *ibctesting.TestChain
-	ChainA        *ibctesting.TestChain
-	ChainB        *ibctesting.TestChain
-	ChainC        *ibctesting.TestChain
+	ChainA *ibctesting.TestChain
+	ChainB *ibctesting.TestChain
+	ChainC *ibctesting.TestChain
 
 	Path         *ibctesting.Path
 	TransferPath *ibctesting.Path
@@ -89,27 +88,28 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	// we need to redefine this variable to make tests work cause we use untrn as default bond denom in neutron
 	sdk.DefaultBondDenom = appparams.DefaultDenom
 
-	suite.Coordinator = NewProviderConsumerCoordinator(suite.T())
-	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
+	suite.Coordinator = NewCoordinator(suite.T())
+
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
 	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
 
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
-
-	suite.Coordinator.SetupConnections(suite.Path)
+	suite.Path.SetupConnections()
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
 	suite.TransferPathAC = NewTransferPath(suite.ChainA, suite.ChainC)
-	suite.Coordinator.SetupConnections(suite.TransferPathAC)
+	suite.TransferPathAC.SetupConnections()
+
 	err := SetupTransferPath(suite.TransferPathAC)
 	suite.Require().NoError(err)
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB)
-	suite.Coordinator.SetupConnections(suite.TransferPath)
+	suite.TransferPath.SetupConnections()
+
 	err := SetupTransferPath(suite.TransferPath)
 	suite.Require().NoError(err)
 }
@@ -137,28 +137,26 @@ func testHomeDir(chainID string) string {
 	return path.Join(projectRoot, ".testchains", chainID)
 }
 
-// NewProviderConsumerCoordinator initializes Coordinator with interchain security dummy provider and 3 neutron consumer chains
-func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
+// NewCoordinator initializes Coordinator with 4 neutron chains
+func NewCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 0)
-	chainID := ibctesting.GetChainID(1)
-
-	ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
-	providerChain := coordinator.GetChain(chainID)
 
 	_ = config.GetDefaultConfig()
 	sdk.SetAddrCacheEnabled(false)
+
+	ibctesting.DefaultTestingAppInit = SetupTestingApp()
+
+	chainID := ibctesting.GetChainID(1)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
+
 	chainID = ibctesting.GetChainID(2)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
-		chainID, providerChain.Vals, providerChain.Signers)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 
 	chainID = ibctesting.GetChainID(3)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
-		chainID, providerChain.Vals, providerChain.Signers)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 
 	chainID = ibctesting.GetChainID(4)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
-		chainID, providerChain.Vals, providerChain.Signers)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 
 	return coordinator
 }
@@ -175,7 +173,7 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 func (suite *IBCConnectionTestSuite) StoreTestCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
 	// wasm file built with https://github.com/neutron-org/neutron-sdk/tree/main/contracts/reflect
 	// wasm file built with https://github.com/neutron-org/neutron-dev-contracts/tree/feat/ica-register-fee-update/contracts/neutron_interchain_txs
-	wasmCode, err := os.ReadFile(path)
+	wasmCode, err := os.ReadFile(path) //nolint:gosec
 	suite.Require().NoError(err)
 
 	codeID, _, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody})
@@ -204,7 +202,7 @@ func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 
 	// trustingPeriodFraction := chainProvider.App.(*app.App).GetStakingKeeper().(stakingkeeper.Keeper).GetUnbonding(chainProvider.GetContext())
 	trustingPeriodFraction := 0.66
-	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointA.Chain.GetContext())
+	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointA.Chain.GetContext())
 	if err != nil {
 		panic(err)
 	}
@@ -213,7 +211,7 @@ func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodA
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingA
 
-	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointB.Chain.GetContext())
+	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().GetParams(path.EndpointB.Chain.GetContext())
 	if err != nil {
 		panic(err)
 	}
@@ -312,57 +310,37 @@ func SetupTestingApp() func() (ibctesting.TestingApp, map[string]json.RawMessage
 
 func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
-	path.EndpointA.ChannelConfig.PortID = types.PortID
-	path.EndpointB.ChannelConfig.PortID = types.PortID
+	path.EndpointA.ChannelConfig.PortID = ibctesting.TransferPort
+	path.EndpointB.ChannelConfig.PortID = ibctesting.TransferPort
 	path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
 	path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
-	path.EndpointA.ChannelConfig.Version = types.Version
-	path.EndpointB.ChannelConfig.Version = types.Version
-
-	trustingPeriodFraction := 0.66
-	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointA.Chain.GetContext())
-	if err != nil {
-		panic(err)
-	}
-	UnbondingPeriodA := paramsA.UnbondingTime
-	trustingA := time.Duration(float64(UnbondingPeriodA.Nanoseconds()) * trustingPeriodFraction)
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodA
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingA
-
-	paramsB, err := path.EndpointB.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointB.Chain.GetContext())
-	if err != nil {
-		panic(err)
-	}
-	UnbondingPeriodB := paramsB.UnbondingTime
-	trustingB := time.Duration(float64(UnbondingPeriodB.Nanoseconds()) * trustingPeriodFraction)
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = UnbondingPeriodB
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = trustingB
+	path.EndpointA.ChannelConfig.Version = types.V1
+	path.EndpointB.ChannelConfig.Version = types.V1
 
 	return path
 }
 
-// SetupTransferPath
 func SetupTransferPath(path *ibctesting.Path) error {
-	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointA.Chain.GetContext())
-	channelSequenceB := path.EndpointB.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointB.Chain.GetContext())
-
-	// update port/channel ids
-	path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
-	path.EndpointB.ChannelID = channeltypes.FormatChannelIdentifier(channelSequenceB)
-
 	if err := path.EndpointA.ChanOpenInit(); err != nil {
 		return err
 	}
-
 	if err := path.EndpointB.ChanOpenTry(); err != nil {
 		return err
 	}
-
 	if err := path.EndpointA.ChanOpenAck(); err != nil {
 		return err
 	}
+	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
+		return err
+	}
+	if err := path.EndpointA.UpdateClient(); err != nil {
+		return err
+	}
+	if err := path.EndpointB.UpdateClient(); err != nil {
+		return err
+	}
 
-	return path.EndpointB.ChanOpenConfirm()
+	return nil
 }
 
 // SendMsgsNoCheck is an alternative to ibctesting.TestChain.SendMsgs so that it doesn't check for errors. That should be handled by the caller
@@ -378,7 +356,7 @@ func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain
 		}
 	}()
 
-	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.CurrentHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
+	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.ProposedHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
 	if err != nil {
 		return nil, err
 	}
@@ -450,28 +428,36 @@ func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAdd
 
 func (suite *IBCConnectionTestSuite) commitBlock(res *cometbfttypes.ResponseFinalizeBlock, chain *ibctesting.TestChain) {
 	_, err := chain.App.Commit()
-	suite.Require().NoError(err)
+	require.NoError(chain.TB, err)
 
 	// set the last header to the current header
 	// use nil trusted fields
-	chain.LastHeader = chain.CurrentTMClientHeader()
+	chain.LatestCommittedHeader = chain.CurrentTMClientHeader()
+	// set the trusted validator set to the next validator set
+	// The latest trusted validator set is the next validator set
+	// associated with the header being committed in storage. This will
+	// allow for header updates to be proved against these validators.
+	//nolint:gosec // G115: This conversion is intentional to observe wrap-around for demonstration.
+	chain.TrustedValidators[uint64(chain.ProposedHeader.Height)] = chain.NextVals
 
 	// val set changes returned from previous block get applied to the next validators
 	// of this block. See tendermint spec for details.
 	chain.Vals = chain.NextVals
-
 	chain.NextVals = ibctesting.ApplyValSetChanges(chain, chain.Vals, res.ValidatorUpdates)
 
+	// increment the proposer priority of validators
+	chain.Vals.IncrementProposerPriority(1)
+
 	// increment the current header
-	chain.CurrentHeader = cmtproto.Header{
+	chain.ProposedHeader = cmtproto.Header{
 		ChainID: chain.ChainID,
 		Height:  chain.App.LastBlockHeight() + 1,
 		AppHash: chain.App.LastCommitID().Hash,
 		// NOTE: the time is increased by the coordinator to maintain time synchrony amongst
 		// chains.
-		Time:               chain.CurrentHeader.Time,
+		Time:               chain.ProposedHeader.Time,
 		ValidatorsHash:     chain.Vals.Hash(),
 		NextValidatorsHash: chain.NextVals.Hash(),
-		ProposerAddress:    chain.CurrentHeader.ProposerAddress,
+		ProposerAddress:    chain.Vals.Proposer.Address,
 	}
 }

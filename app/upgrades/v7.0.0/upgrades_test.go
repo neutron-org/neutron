@@ -8,9 +8,9 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	v700 "github.com/neutron-org/neutron/v9/app/upgrades/v7.0.0"
-	"github.com/neutron-org/neutron/v9/testutil"
-	tokenfactorytypes "github.com/neutron-org/neutron/v9/x/tokenfactory/types"
+	v700 "github.com/neutron-org/neutron/v10/app/upgrades/v7.0.0"
+	"github.com/neutron-org/neutron/v10/testutil"
+	tokenfactorytypes "github.com/neutron-org/neutron/v10/x/tokenfactory/types"
 )
 
 type UpgradeTestSuite struct {

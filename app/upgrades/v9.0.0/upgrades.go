@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/app/upgrades"
+	"github.com/neutron-org/neutron/v10/app/upgrades"
 )
 
 func CreateUpgradeHandler(

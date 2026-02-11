@@ -6,9 +6,9 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
-	"github.com/neutron-org/neutron/v9/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
+	"github.com/neutron-org/neutron/v10/x/dex/utils"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ func (k Keeper) GetCurrTickIndexTakerToMakerNormalized(
 
 func (k Keeper) GetCurrLiq(ctx sdk.Context, tradePairID *types.TradePairID) *types.TickLiquidity {
 	ti := k.NewTickIterator(ctx, tradePairID)
-	defer ti.Close()
+	defer ti.Close() //nolint:errcheck
 	for ; ti.Valid(); ti.Next() {
 		tick := ti.Value()
 		trancheMaybe := tick.GetLimitOrderTranche()

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	revenuetypes "github.com/neutron-org/neutron/v9/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
 )
 
 type queryServer struct {
