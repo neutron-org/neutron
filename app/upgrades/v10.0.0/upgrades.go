@@ -32,6 +32,9 @@ func CreateUpgradeHandler(
 		}
 
 		err = wasmBurnerPerms(c, keepers)
+		if err != nil {
+			return vm, err
+		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
