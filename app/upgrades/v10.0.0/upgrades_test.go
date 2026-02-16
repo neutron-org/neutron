@@ -33,5 +33,6 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 		Info:   "some text here",
 		Height: 100,
 	}
+
 	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
 }
