@@ -15,7 +15,7 @@ require (
 	cosmossdk.io/x/tx v0.14.0
 	cosmossdk.io/x/upgrade v0.2.0
 	github.com/CosmWasm/wasmd v0.61.0
-	github.com/CosmWasm/wasmvm/v3 v3.0.2
+	github.com/CosmWasm/wasmvm/v3 v3.0.3
 	github.com/cometbft/cometbft v0.38.21
 	github.com/cosmos/admin-module/v2 v2.0.0
 	github.com/cosmos/cosmos-db v1.1.3
