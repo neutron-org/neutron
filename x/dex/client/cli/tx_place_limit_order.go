@@ -12,8 +12,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 func CmdPlaceLimitOrder() *cobra.Command {

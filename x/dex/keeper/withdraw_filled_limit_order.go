@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // WithdrawFilledLimitOrderCore handles MsgWithdrawFilledLimitOrder including bank operations and event emissions.
@@ -28,7 +28,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	// ExecuteWithdrawFilledLimitOrder ensures that at least one of these has am amount > 0.
 	coins := types.NewPrecDecCoins(takerCoinOut, makerCoinOut)
 	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(takerCoinOut.TruncateToCoin())))
-	if err := k.FractionalBanker.SendFractionalCoinsFromDexToAccount(ctx, callerAddr, coins); err != nil {
+	if err := k.SendFractionalCoinsFromDexToAccount(ctx, callerAddr, coins); err != nil {
 		return types.PrecDecCoin{}, types.PrecDecCoin{}, err
 	}
 

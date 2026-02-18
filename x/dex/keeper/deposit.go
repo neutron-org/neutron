@@ -7,10 +7,10 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/utils"
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v9/x/dex/utils"
+	"github.com/neutron-org/neutron/v10/utils"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v10/x/dex/utils"
 )
 
 // DepositCore handles core logic for MsgDeposit including bank operations and event emissions
@@ -48,7 +48,7 @@ func (k Keeper) DepositCore(
 	coinsToSend := types.NewPrecDecCoins(coin0, coin1)
 
 	if !coinsToSend.Empty() {
-		if err := k.FractionalBanker.SendFractionalCoinsFromAccountToDex(ctx, callerAddr, coinsToSend); err != nil {
+		if err := k.SendFractionalCoinsFromAccountToDex(ctx, callerAddr, coinsToSend); err != nil {
 			return nil, nil, nil, nil, err
 		}
 	}

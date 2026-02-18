@@ -15,15 +15,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	"github.com/neutron-org/neutron/v9/x/harpoon/client/cli"
-	"github.com/neutron-org/neutron/v9/x/harpoon/keeper"
-	"github.com/neutron-org/neutron/v9/x/harpoon/types"
+	"github.com/neutron-org/neutron/v10/x/harpoon/client/cli"
+	"github.com/neutron-org/neutron/v10/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v10/x/harpoon/types"
 )
 
 var (
 	_ module.AppModuleBasic      = (*AppModule)(nil)
 	_ module.HasGenesis          = (*AppModule)(nil)
-	_ module.HasInvariants       = (*AppModule)(nil)
+	_ module.HasInvariants       = (*AppModule)(nil) //nolint:staticcheck
 	_ module.HasConsensusVersion = (*AppModule)(nil)
 
 	_ appmodule.AppModule       = (*AppModule)(nil)
@@ -109,7 +109,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // RegisterInvariants registers the invariants of the module. If an invariant deviates from its predicted value, the InvariantRegistry triggers appropriate logic (most often the chain will be halted)
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {} //nolint:staticcheck
 
 // InitGenesis performs the module's genesis initialization. It returns no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) {

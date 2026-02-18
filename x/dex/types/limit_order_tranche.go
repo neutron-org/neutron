@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/utils"
 )
 
 func NewLimitOrderTranche(
@@ -96,7 +96,7 @@ func (t LimitOrderTranche) HasExpiration() bool {
 }
 
 func (t LimitOrderTranche) IsJIT() bool {
-	return t.ExpirationTime != nil && *t.ExpirationTime == JITGoodTilTime()
+	return t.ExpirationTime.Equal(JITGoodTilTime())
 }
 
 func (t LimitOrderTranche) IsExpired(ctx sdk.Context) bool {

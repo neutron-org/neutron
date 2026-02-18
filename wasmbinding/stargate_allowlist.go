@@ -7,29 +7,29 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/gogoproto/proto"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	coinfactorytypes "github.com/neutron-org/neutron/v9/x/coinfactory/types"
-	crontypes "github.com/neutron-org/neutron/v9/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v9/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v9/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v9/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v9/x/interchaintxs/types"
-	stateverifiertypes "github.com/neutron-org/neutron/v9/x/state-verifier/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v9/x/tokenfactory/types"
+	coinfactorytypes "github.com/neutron-org/neutron/v10/x/coinfactory/types"
+	crontypes "github.com/neutron-org/neutron/v10/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v10/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
+	stateverifiertypes "github.com/neutron-org/neutron/v10/x/state-verifier/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v10/x/tokenfactory/types"
 
-	harpoontypes "github.com/neutron-org/neutron/v9/x/harpoon/types"
+	harpoontypes "github.com/neutron-org/neutron/v10/x/harpoon/types"
 
-	globalfeetypes "github.com/neutron-org/neutron/v9/x/globalfee/types"
+	globalfeetypes "github.com/neutron-org/neutron/v10/x/globalfee/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v9/x/dynamicfees/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v10/x/dynamicfees/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
@@ -58,7 +58,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": func() proto.Message { return &icacontrollertypes.QueryInterchainAccountResponse{} },
 
 		// transfer
-		"/ibc.applications.transfer.v1.Query/DenomTrace":    func() proto.Message { return &ibctransfertypes.QueryDenomTraceResponse{} },
+		"/ibc.applications.transfer.v1.Query/Denom":         func() proto.Message { return &ibctransfertypes.QueryDenomResponse{} },
 		"/ibc.applications.transfer.v1.Query/EscrowAddress": func() proto.Message { return &ibctransfertypes.QueryEscrowAddressResponse{} },
 
 		// auth

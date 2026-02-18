@@ -7,8 +7,8 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	v800rc0 "github.com/neutron-org/neutron/v9/app/upgrades/v8.0.0-rc0"
-	"github.com/neutron-org/neutron/v9/testutil"
+	v800rc0 "github.com/neutron-org/neutron/v10/app/upgrades/v8.0.0-rc0"
+	"github.com/neutron-org/neutron/v10/testutil"
 )
 
 type UpgradeTestSuite struct {

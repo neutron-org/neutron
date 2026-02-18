@@ -7,22 +7,22 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neutron-org/neutron/v9/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/neutron-org/neutron/v9/testutil"
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/contractmanager/types"
+	"github.com/neutron-org/neutron/v10/testutil"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/contractmanager/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v9/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v9/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v9/x/contractmanager/types"
+	keepertest "github.com/neutron-org/neutron/v10/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v10/x/contractmanager/types"
 )
 
 // Prevent strconv unused error
@@ -35,7 +35,10 @@ func createNFailure(k *keeper.Keeper, ctx sdk.Context, addresses, failures int) 
 	items := make([][]types.Failure, addresses)
 	for i := range items {
 		items[i] = make([]types.Failure, failures)
-		rand.Read(pub.Key) //nolint:errcheck
+		_, err := rand.Read(pub.Key)
+		if err != nil {
+			panic(err)
+		}
 		acc := sdk.AccAddress(pub.Address())
 
 		for c := range items[i] {

@@ -2,11 +2,11 @@ package stateverification
 
 import (
 	"cosmossdk.io/errors"
-	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ics23 "github.com/cosmos/ics23/go"
 
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 // ExtraVerifier is a type describing a function that will be called for each storage value from the []StorageValue slice with an index of the value in the slice
@@ -29,7 +29,7 @@ func VerifyStorageValues(stValues []*types.StorageValue, root exported.Root, pro
 			}
 		}
 
-		path := ibccommitmenttypes.NewMerklePath(value.StoragePrefix, string(value.Key))
+		path := ibccommitmenttypes.NewMerklePath([]byte(value.StoragePrefix), value.Key)
 		// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
 		// and call corresponding method to verify it
 		switch proof.GetProofs()[0].GetProof().(type) {

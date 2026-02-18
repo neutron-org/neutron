@@ -10,21 +10,20 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/testutil"
+	"github.com/neutron-org/neutron/v10/testutil"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v9/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v10/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {
@@ -102,7 +101,7 @@ func (suite *MiddlewareTestSuite) FullSendBToA(msg sdk.Msg) (*abci.ExecTxResult,
 	sendResult, err := suite.SendMsgsNoCheck(suite.ChainB, msg)
 	suite.Require().NoError(err)
 
-	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents()) //nolint:staticcheck
 	suite.Require().NoError(err)
 
 	err = suite.TransferPath.EndpointA.UpdateClient()
@@ -128,7 +127,7 @@ func (suite *MiddlewareTestSuite) FullSendAToB(msg sdk.Msg) (*abci.ExecTxResult,
 		return nil, "", err
 	}
 
-	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents()) //nolint:staticcheck
 	if err != nil {
 		return nil, "", err
 	}
@@ -164,7 +163,7 @@ func (suite *MiddlewareTestSuite) FullSendAToC(msg sdk.Msg) (*abci.ExecTxResult,
 		return nil, "", err
 	}
 
-	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents()) //nolint:staticcheck
 	if err != nil {
 		return nil, "", err
 	}
@@ -279,8 +278,7 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	// Get the denom and amount to send
 	denom := sdk.DefaultBondDenom
 	if !native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, denom))
-		denom = denomTrace.IBCDenom()
+		denom = transfertypes.NewDenom(denom, transfertypes.NewHop("transfer", suite.TransferPath.EndpointA.ChannelID)).IBCDenom()
 	}
 
 	app := suite.GetNeutronZoneApp(suite.ChainA)
@@ -355,6 +353,9 @@ func (suite *MiddlewareTestSuite) TestSendTransferReset() {
 	oneSecAfterReset := resetTime.Add(time.Second)
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
 
+	// Move chainA forward one block
+	suite.ChainA.NextBlock()
+
 	// Sending should succeed again
 	_, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
 	suite.Require().NoError(err)
@@ -419,6 +420,9 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	// Reset time + one second
 	oneSecAfterReset := resetTime.Add(time.Second)
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
+	suite.ChainA.NextBlock()
+
+	suite.ChainA.ProposedHeader.Time = suite.Coordinator.CurrentTime.UTC()
 
 	// Sending should succeed again. It hits daily quota for the second time & weekly quota at the same time
 	r, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sendAmount))
@@ -449,6 +453,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	oneSecAfterResetDayTwo := resetTime.Add(time.Second)
 	// Now we're waiting for the second 'day' to expire
 	suite.Coordinator.IncrementTimeBy(oneSecAfterResetDayTwo.Sub(suite.Coordinator.CurrentTime))
+	suite.ChainA.NextBlock()
 
 	// Sending should fail. Daily quota is refreshed but weekly is over
 	_, err = suite.AssertSend(false, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
@@ -463,11 +468,9 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	sendDenom := sdk.DefaultBondDenom
 	localDenom := sdk.DefaultBondDenom
 	if native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, localDenom))
-		localDenom = denomTrace.IBCDenom()
+		localDenom = transfertypes.NewDenom(localDenom, transfertypes.NewHop("transfer", suite.TransferPath.EndpointA.ChannelID)).IBCDenom()
 	} else {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", suite.TransferPath.EndpointA.ChannelID, sendDenom))
-		sendDenom = denomTrace.IBCDenom()
+		sendDenom = transfertypes.NewDenom(sendDenom, transfertypes.NewHop("transfer", suite.TransferPath.EndpointB.ChannelID)).IBCDenom()
 	}
 
 	app := suite.GetNeutronZoneApp(suite.ChainA)
@@ -581,7 +584,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	// Execute the acknowledgement from chain B in chain A
 
 	// extract the sent packet
-	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
+	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents()) //nolint:staticcheck
 	suite.Require().NoError(err)
 
 	// recv in chain b
@@ -630,7 +633,7 @@ func (suite *MiddlewareTestSuite) TestNonICS20() {
 	suite.RegisterRateLimitingContract(addr)
 
 	data := []byte("{}")
-	_, err := app.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), capabilitytypes.NewCapability(1), "wasm.neutron1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
+	_, err := app.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), "wasm.neutron1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
 
 	suite.Require().Error(err)
 	// This will error out, but not because of rate limiting

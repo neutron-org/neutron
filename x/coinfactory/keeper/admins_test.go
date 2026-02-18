@@ -6,8 +6,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/app/params"
-	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
+	"github.com/neutron-org/neutron/v10/app/params"
+	"github.com/neutron-org/neutron/v10/x/coinfactory/types"
 )
 
 func (suite *KeeperTestSuite) TestAdminMsgs() {

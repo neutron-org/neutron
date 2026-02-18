@@ -7,10 +7,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v9/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/keeper"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v10/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/keeper"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {

@@ -13,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/pflag"
 
-	"github.com/neutron-org/neutron/v9/utils"
+	"github.com/neutron-org/neutron/v10/utils"
 )
 
 // Parses arguments 1-1 from args
@@ -250,14 +250,14 @@ func ParseFieldFromArg(fVal reflect.Value, fType reflect.StructField, arg string
 		var v any
 		var err error
 
-		switch {
-		case typeStr == "types.Coin":
+		switch typeStr {
+		case "types.Coin":
 			v, err = ParseCoin(arg, fType.Name)
-		case typeStr == "types.Int":
+		case "types.Int":
 			v, err = ParseSdkInt(arg, fType.Name)
-		case typeStr == "time.Time":
+		case "time.Time":
 			v, err = ParseUnixTime(arg, fType.Name)
-		case typeStr == "math.LegacyDec":
+		case "math.LegacyDec":
 			v, err = ParseSdkDec(arg, fType.Name)
 		default:
 			return fmt.Errorf("struct field type not recognized. Got type %v", fType)

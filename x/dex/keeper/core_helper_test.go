@@ -8,10 +8,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	neutronapp "github.com/neutron-org/neutron/v9/app"
-	"github.com/neutron-org/neutron/v9/testutil"
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v10/app"
+	"github.com/neutron-org/neutron/v10/testutil"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // Test Suite ///////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ func (s *CoreHelpersTestSuite) SetupTest() {
 	// is NewContext tries to pass `app.finalizeBlockState.ms` as first argument while  app.finalizeBlockState is nil at this stage,
 	// and we get nil pointer exception
 	// when NewUncachedContext passes `app.cms` (multistore) as an argument to `sdk.NewContext`
-	ctx := app.(*neutronapp.App).BaseApp.NewUncachedContext(false, cmtproto.Header{})
+	ctx := app.(*neutronapp.App).NewUncachedContext(false, cmtproto.Header{})
 
 	accAlice := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accAlice)

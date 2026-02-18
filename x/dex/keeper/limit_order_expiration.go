@@ -7,7 +7,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // Creates a new LimitOrderExpiration struct based on a LimitOrderTranche
@@ -96,7 +96,7 @@ func (k Keeper) GetAllLimitOrderExpiration(ctx sdk.Context) (list []*types.Limit
 	)
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		val := &types.LimitOrderExpiration{}
@@ -116,7 +116,7 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 	inGoodTilSegment := false
 
 	archivedTranches := make(map[string]bool)
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 	gasCutoff := ctx.GasMeter().GasConsumed() + k.GetGoodTilPurgeAllowance(ctx)
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.LimitOrderExpiration

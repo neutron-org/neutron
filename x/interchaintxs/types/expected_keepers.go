@@ -5,11 +5,11 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	connectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v9/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v10/x/feerefunder/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -51,5 +51,5 @@ type FeeRefunderKeeper interface {
 type ChannelKeeper interface {
 	GetChannel(ctx sdk.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
 	GetNextSequenceSend(ctx sdk.Context, portID, channelID string) (uint64, bool)
-	GetConnection(ctx sdk.Context, connectionID string) (ibcexported.ConnectionI, error)
+	GetConnection(ctx sdk.Context, connectionID string) (connectiontypes.ConnectionEnd, error)
 }

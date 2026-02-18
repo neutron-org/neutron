@@ -6,21 +6,21 @@ import (
 	"cosmossdk.io/math"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibcerrors "github.com/cosmos/ibc-go/v8/modules/core/errors"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
+	ibcerrors "github.com/cosmos/ibc-go/v10/modules/core/errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v9/app/params"
-	"github.com/neutron-org/neutron/v9/testutil"
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/transfer/types"
-	"github.com/neutron-org/neutron/v9/testutil/transfer/keeper"
-	feetypes "github.com/neutron-org/neutron/v9/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v9/x/transfer/types"
+	"github.com/neutron-org/neutron/v10/app/params"
+	"github.com/neutron-org/neutron/v10/testutil"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/transfer/types"
+	"github.com/neutron-org/neutron/v10/testutil/transfer/keeper"
+	feetypes "github.com/neutron-org/neutron/v10/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v10/x/transfer/types"
 )
 
 const (
@@ -531,7 +531,7 @@ func TestMsgTransferValidate(t *testing.T) {
 					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 				},
 			},
-			transfertypes.ErrInvalidDenomForTransfer,
+			ibcerrors.ErrInvalidCoins,
 		},
 		{
 			"invalid token denom prefix format with separator",
@@ -550,7 +550,7 @@ func TestMsgTransferValidate(t *testing.T) {
 					TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100))),
 				},
 			},
-			transfertypes.ErrInvalidDenomForTransfer,
+			ibcerrors.ErrInvalidCoins,
 		},
 	}
 

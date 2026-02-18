@@ -8,29 +8,29 @@ import (
 	"strings"
 	"time"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v9/x/contractmanager/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/cosmos/gogoproto/proto"
 
 	"golang.org/x/exp/maps"
 
-	dexkeeper "github.com/neutron-org/neutron/v9/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v9/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v9/x/dex/utils"
+	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v10/x/dex/utils"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v9/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v10/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v9/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -38,21 +38,21 @@ import (
 	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v9/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v9/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v9/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v9/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v9/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v9/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v9/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v9/x/transfer/types"
+	"github.com/neutron-org/neutron/v10/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v10/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v10/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v10/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v9/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v9/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v10/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v10/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(

@@ -7,8 +7,8 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/v9/testutil/dynamicfees/keeper"
-	"github.com/neutron-org/neutron/v9/x/dynamicfees/types"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/dynamicfees/keeper"
+	"github.com/neutron-org/neutron/v10/x/dynamicfees/types"
 )
 
 func TestParamsQuery(t *testing.T) {

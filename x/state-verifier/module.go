@@ -20,9 +20,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/x/state-verifier/client/cli"
-	"github.com/neutron-org/neutron/v9/x/state-verifier/keeper"
-	"github.com/neutron-org/neutron/v9/x/state-verifier/types"
+	"github.com/neutron-org/neutron/v10/x/state-verifier/client/cli"
+	"github.com/neutron-org/neutron/v10/x/state-verifier/keeper"
+	"github.com/neutron-org/neutron/v10/x/state-verifier/types"
 )
 
 var (
@@ -129,7 +129,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // RegisterInvariants registers the invariants of the module. If an invariant deviates from its predicted value, the InvariantRegistry triggers appropriate logic (most often the chain will be halted)
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {} //nolint:staticcheck
 
 // InitGenesis performs the module's genesis initialization. It returns no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {

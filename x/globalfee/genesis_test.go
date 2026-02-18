@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
 
-	globalfeekeeper "github.com/neutron-org/neutron/v9/x/globalfee/keeper"
+	globalfeekeeper "github.com/neutron-org/neutron/v10/x/globalfee/keeper"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,8 +21,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	gaiaparams "github.com/neutron-org/neutron/v9/app/params"
-	"github.com/neutron-org/neutron/v9/x/globalfee/types"
+	gaiaparams "github.com/neutron-org/neutron/v10/app/params"
+	"github.com/neutron-org/neutron/v10/x/globalfee/types"
 )
 
 func TestDefaultGenesis(t *testing.T) {

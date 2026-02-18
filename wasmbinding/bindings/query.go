@@ -6,19 +6,19 @@ import (
 	"cosmossdk.io/math"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v9/x/contractmanager/types"
-	dextypes "github.com/neutron-org/neutron/v9/x/dex/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
+	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v9/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v10/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
 
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.

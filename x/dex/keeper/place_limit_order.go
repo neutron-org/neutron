@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // PlaceLimitOrderCore handles the logic for MsgPlaceLimitOrder including bank operations and event emissions.
@@ -47,7 +47,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	}
 
 	if swapOutCoin.IsPositive() {
-		err = k.FractionalBanker.SendFractionalCoinsFromDexToAccount(
+		err = k.SendFractionalCoinsFromDexToAccount(
 			ctx,
 			receiverAddr,
 			[]types.PrecDecCoin{swapOutCoin},
@@ -60,7 +60,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	if totalIn.IsPositive() {
 		totalInCoin = types.NewPrecDecCoin(tokenIn, totalIn)
 
-		err = k.FractionalBanker.SendFractionalCoinsFromAccountToDex(
+		err = k.SendFractionalCoinsFromAccountToDex(
 			ctx,
 			callerAddr,
 			[]types.PrecDecCoin{totalInCoin},
