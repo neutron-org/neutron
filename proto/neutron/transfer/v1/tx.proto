@@ -50,6 +50,9 @@ message MsgTransfer {
   string memo = 8;
 
   neutron.feerefunder.Fee fee = 9 [(gogoproto.nullable) = false];
+
+  // optional encoding
+  string encoding = 10;
 }
 
 // MsgTransferResponse is the modified response type for
