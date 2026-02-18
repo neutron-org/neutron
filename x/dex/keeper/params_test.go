@@ -103,15 +103,18 @@ func (s *DexTestSuite) TestPauseDex() {
 func (s *DexTestSuite) TestWithdrawOnlyDex() {
 	s.fundAliceBalances(100, 100)
 	trancheKey1 := s.aliceLimitSells("TokenA", 0, 10, types.LimitOrderType_GOOD_TIL_CANCELLED)
-	trancheKey2 := s.aliceLimitSells("TokenA", -2, 1, types.LimitOrderType_GOOD_TIL_CANCELLED)
+	trancheKey2 := s.aliceLimitSells("TokenA", -2, 10, types.LimitOrderType_GOOD_TIL_CANCELLED)
 
 	// By default all messages succeed
-	s.aliceDeposits(NewDeposit(0, 10, 0, 1))
-	s.aliceWithdraws(NewWithdrawal(5, 0, 1))
-	s.aliceLimitSells("TokenB", -2, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.aliceDeposits(NewDeposit(0, 15, 5, 1))
+	s.aliceWithdraws(NewWithdrawal(5, 5, 1))
+	s.aliceLimitSells("TokenB", -3, 5, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 	s.aliceWithdrawsLimitSell(trancheKey1)
 	s.aliceCancelsLimitSell(trancheKey1)
 	s.aliceMultiHopSwaps([][]string{{"TokenA", "TokenB"}}, 5, math_utils.MustNewPrecDecFromStr("0.01"), false)
+
+	// partially fill second LO
+	s.aliceLimitSells("TokenB", -6, 5, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 
 	// WHEN params.withdrawOnly is set to true
 	params := types.DefaultParams()
@@ -127,8 +130,8 @@ func (s *DexTestSuite) TestWithdrawOnlyDex() {
 
 	// Withdraws / Cancels still work
 
-	s.aliceWithdraws(NewWithdrawal(5, 0, 1))
+	s.aliceWithdraws(NewWithdrawal(5, 5, 1))
 	s.withdrawsWithShares(s.alice, sdk.Coins{types.NewPoolShares(0, sdkmath.NewInt(5))})
-	s.aliceCancelsLimitSell(trancheKey2)
 	s.aliceWithdrawsLimitSell(trancheKey2)
+	s.aliceCancelsLimitSell(trancheKey2)
 }
