@@ -596,6 +596,7 @@ func (s *DexTestSuite) TestCanceLimitOrderClearsPosition() {
 			TrancheKey:            trancheKey,
 		},
 	)
+	s.True(found)
 
 	// NOTE: we are using the Int fields just to ensure only dust is left
 	s.Assert().Equal(tranche.ReservesTakerDenom, sdkmath.ZeroInt())
