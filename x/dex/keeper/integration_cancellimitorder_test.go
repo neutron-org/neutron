@@ -555,7 +555,6 @@ func (s *DexTestSuite) TestWrongSharesProtectionCancel() {
 }
 
 func (s *DexTestSuite) TestCanceLimitOrderClearsPosition() {
-
 	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(10_000), sdkmath.ZeroInt())
 	s.fundAccountBalancesInt(s.bob, sdkmath.NewInt(500_000), sdkmath.ZeroInt())
 	s.fundAccountBalancesInt(s.carol, sdkmath.ZeroInt(), sdkmath.NewInt(22_015))
