@@ -1,4 +1,4 @@
-package v6_test
+package v7_test
 
 import (
 	"testing"
