@@ -16,7 +16,7 @@ const (
 
 func ParseUint64SliceFromString(s, separator string) ([]uint64, error) {
 	var parsedInts []uint64
-	for _, s := range strings.Split(s, separator) {
+	for s := range strings.SplitSeq(s, separator) {
 		s = strings.TrimSpace(s)
 
 		parsed, err := strconv.ParseUint(s, base, bitlen)
@@ -30,7 +30,7 @@ func ParseUint64SliceFromString(s, separator string) ([]uint64, error) {
 
 func ParseSdkIntFromString(s, separator string) ([]math.Int, error) {
 	var parsedInts []math.Int
-	for _, weightStr := range strings.Split(s, separator) {
+	for weightStr := range strings.SplitSeq(s, separator) {
 		weightStr = strings.TrimSpace(weightStr)
 
 		parsed, err := strconv.ParseUint(weightStr, base, bitlen)
@@ -44,7 +44,7 @@ func ParseSdkIntFromString(s, separator string) ([]math.Int, error) {
 
 func ParseSdkDecFromString(s, separator string) ([]math.LegacyDec, error) {
 	var parsedDec []math.LegacyDec
-	for _, weightStr := range strings.Split(s, separator) {
+	for weightStr := range strings.SplitSeq(s, separator) {
 		weightStr = strings.TrimSpace(weightStr)
 
 		parsed, err := math.LegacyNewDecFromStr(weightStr)
