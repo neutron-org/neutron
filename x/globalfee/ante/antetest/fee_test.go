@@ -5,7 +5,6 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/cosmos/admin-module/v2/x/adminmodule/types"
 
 	"github.com/stretchr/testify/suite"
 
@@ -15,6 +14,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	v1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
 	gaiafeeante "github.com/neutron-org/neutron/v10/x/globalfee/ante"
 	globfeetypes "github.com/neutron-org/neutron/v10/x/globalfee/types"
@@ -725,14 +725,14 @@ func (s *IntegrationTestSuite) TestContainsOnlyBypassMinFeeMsgs() {
 			"msgs contain not only bypass msg - should not pass",
 			[]sdk.Msg{
 				ibcchanneltypes.NewMsgRecvPacket(ibcchanneltypes.Packet{}, nil, ibcclienttypes.Height{}, ""),
-				&types.MsgSubmitProposal{},
+				&v1types.MsgSubmitProposal{},
 			},
 			false,
 		},
 		{
 			"msgs contain only non-bypass msgs - should not pass",
 			[]sdk.Msg{
-				&types.MsgSubmitProposal{},
+				&v1types.MsgSubmitProposal{},
 			},
 			false,
 		},

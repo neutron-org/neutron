@@ -64,7 +64,7 @@ func TestManageHookSubscription(t *testing.T) {
 		{
 			"non unique hooks",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED},
@@ -77,7 +77,7 @@ func TestManageHookSubscription(t *testing.T) {
 		{
 			"non existing hook type",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{types.HookType(100)},
@@ -90,21 +90,21 @@ func TestManageHookSubscription(t *testing.T) {
 		{
 			"bad case - non-existing contract",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
-					ContractAddress: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+					ContractAddress: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED},
 				},
 			},
 			func(ctx context.Context, mockWasmKeeper *mock_types.MockWasmKeeper) {
-				mockWasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32("neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")).Return(false)
+				mockWasmKeeper.EXPECT().HasContractInfo(ctx, types2.MustAccAddressFromBech32("neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5")).Return(false)
 			},
 			errors.ErrInvalidAddress.Error(),
 		},
 		{
 			"good case - empty hooks",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{},
@@ -118,7 +118,7 @@ func TestManageHookSubscription(t *testing.T) {
 		{
 			"good case - some hooks present",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_CREATED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED},

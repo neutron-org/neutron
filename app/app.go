@@ -10,6 +10,10 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/mint"
+	nextupgrade "github.com/neutron-org/neutron/v10/app/upgrades/nextupgrade"
 	v10_0_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
 	v700 "github.com/neutron-org/neutron/v10/app/upgrades/v7.0.0"
 	v800 "github.com/neutron-org/neutron/v10/app/upgrades/v8.0.0"
@@ -23,8 +27,6 @@ import (
 	stateverifier "github.com/neutron-org/neutron/v10/x/state-verifier"
 	svkeeper "github.com/neutron-org/neutron/v10/x/state-verifier/keeper"
 	stateverifiertypes "github.com/neutron-org/neutron/v10/x/state-verifier/types"
-
-	"github.com/neutron-org/neutron/v10/x/harpoon"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -100,6 +102,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
+	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -127,14 +135,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-
-	"github.com/neutron-org/neutron/v10/x/revenue"
-	revenuekeeper "github.com/neutron-org/neutron/v10/x/revenue/keeper"
-	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
 
 	// "github.com/cosmos/gaia/v11/x/globalfee"
 	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
@@ -160,8 +163,6 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/spf13/cast"
 
-	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-
 	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
 	crontypes "github.com/neutron-org/neutron/v10/x/cron/types"
 
@@ -172,22 +173,12 @@ import (
 
 	coinfactorytypes "github.com/neutron-org/neutron/v10/x/coinfactory/types"
 
-	"github.com/cosmos/admin-module/v2/x/adminmodule"
-	adminmodulecli "github.com/cosmos/admin-module/v2/x/adminmodule/client/cli"
-	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
-	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-
 	appparams "github.com/neutron-org/neutron/v10/app/params"
 	"github.com/neutron-org/neutron/v10/wasmbinding"
 	"github.com/neutron-org/neutron/v10/x/contractmanager"
 	contractmanagermodulekeeper "github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
 	contractmanagermoduletypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v10/x/dynamicfees/keeper"
-	"github.com/neutron-org/neutron/v10/x/feeburner"
-	feeburnerkeeper "github.com/neutron-org/neutron/v10/x/feeburner/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v10/x/feeburner/types"
 	"github.com/neutron-org/neutron/v10/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/v10/x/feerefunder/keeper"
 	ibchooks "github.com/neutron-org/neutron/v10/x/ibc-hooks"
@@ -228,9 +219,6 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	harpoonkeeper "github.com/neutron-org/neutron/v10/x/harpoon/keeper"
-	harpoontypes "github.com/neutron-org/neutron/v10/x/harpoon/types"
-
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
@@ -249,6 +237,7 @@ var (
 		v900.Upgrade,
 		v910.Upgrade,
 		v10_0_0.Upgrade,
+		nextupgrade.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
@@ -266,6 +255,9 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
+		gov.AppModuleBasic{},
+		mint.AppModuleBasic{},
+		distribution.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		ica.AppModuleBasic{},
 		tendermint.AppModuleBasic{},
@@ -280,21 +272,8 @@ var (
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
 		feerefunder.AppModuleBasic{},
-		feeburner.AppModuleBasic{},
-		revenue.AppModuleBasic{},
 		contractmanager.AppModuleBasic{},
 		cron.AppModuleBasic{},
-		adminmodule.NewAppModuleBasic(
-			govclient.NewProposalHandler(
-				adminmodulecli.NewSubmitParamChangeProposalTxCmd,
-			),
-			govclient.NewProposalHandler(
-				adminmodulecli.NewCmdSubmitUpgradeProposal,
-			),
-			govclient.NewProposalHandler(
-				adminmodulecli.NewCmdSubmitCancelUpgradeProposal,
-			),
-		),
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		ibcratelimit.AppModuleBasic{},
@@ -305,31 +284,28 @@ var (
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
 		consensus.AppModuleBasic{},
-		harpoon.AppModuleBasic{},
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:                  nil,
-		ibctransfertypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
-		icatypes.ModuleName:                         nil,
-		wasmtypes.ModuleName:                        {authtypes.Burner},
-		interchainqueriesmoduletypes.ModuleName:     nil,
-		feetypes.ModuleName:                         nil,
-		feeburnertypes.ModuleName:                   nil,
-		stakingtypes.BondedPoolName:                 {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName:              {authtypes.Burner, authtypes.Staking},
-		tokenfactorytypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
-		coinfactorytypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
-		crontypes.ModuleName:                        nil,
-		dextypes.ModuleName:                         {authtypes.Minter, authtypes.Burner},
-		oracletypes.ModuleName:                      nil,
-		marketmaptypes.ModuleName:                   nil,
-		feemarkettypes.FeeCollectorName:             nil,
-		harpoontypes.ModuleName:                     nil,
-		revenuetypes.RevenueFeeRedistributePoolName: {authtypes.Burner},
-		revenuetypes.RevenueTreasuryPoolName:        nil,
-		revenuetypes.RevenueStakingRewardsPoolName:  nil,
+		authtypes.FeeCollectorName:              nil,
+		ibctransfertypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		icatypes.ModuleName:                     nil,
+		wasmtypes.ModuleName:                    {authtypes.Burner},
+		interchainqueriesmoduletypes.ModuleName: nil,
+		feetypes.ModuleName:                     nil,
+		stakingtypes.BondedPoolName:             {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName:          {authtypes.Burner, authtypes.Staking},
+		tokenfactorytypes.ModuleName:            {authtypes.Minter, authtypes.Burner},
+		coinfactorytypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		crontypes.ModuleName:                    nil,
+		dextypes.ModuleName:                     {authtypes.Minter, authtypes.Burner},
+		oracletypes.ModuleName:                  nil,
+		marketmaptypes.ModuleName:               nil,
+		feemarkettypes.FeeCollectorName:         nil,
+		govtypes.ModuleName:                     nil,
+		minttypes.ModuleName:                    {authtypes.Minter},
+		distributiontypes.ModuleName:            nil,
 	}
 )
 
@@ -373,7 +349,6 @@ type App struct {
 
 	// keepers
 	AccountKeeper       authkeeper.AccountKeeper
-	AdminmoduleKeeper   adminmodulekeeper.Keeper
 	AuthzKeeper         authzkeeper.Keeper
 	BankKeeper          bankkeeper.BaseKeeper
 	SlashingKeeper      slashingkeeper.Keeper
@@ -389,7 +364,6 @@ type App struct {
 	FeeMarkerKeeper     *feemarketkeeper.Keeper
 	DynamicFeesKeeper   *dynamicfeeskeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
-	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	StakingKeeper       *stakingkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 	CoinfactoryKeeper   *coinfactorykeeper.Keeper
@@ -397,8 +371,9 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	GlobalFeeKeeper     globalfeekeeper.Keeper
-	HarpoonKeeper       *harpoonkeeper.Keeper
-	RevenueKeeper       *revenuekeeper.Keeper
+	GovKeeper           *govkeeper.Keeper
+	MintKeeper          mintkeeper.Keeper
+	DistributionKeeper  distributionkeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -493,10 +468,11 @@ func New(
 		paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey, icahosttypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, tokenfactorytypes.StoreKey, coinfactorytypes.StoreKey, pfmtypes.StoreKey,
+		tokenfactorytypes.StoreKey, coinfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey,
-		ibcratelimittypes.ModuleName, harpoontypes.StoreKey, revenuetypes.StoreKey, stateverifiertypes.StoreKey,
+		ibcratelimittypes.ModuleName, stateverifiertypes.StoreKey,
+		govtypes.StoreKey, minttypes.StoreKey, distributiontypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(feetypes.MemStoreKey)
@@ -516,7 +492,7 @@ func New(
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), runtime.EventService{})
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), authtypes.NewModuleAddress(govtypes.ModuleName).String(), runtime.EventService{})
 	bApp.SetParamStore(&app.ConsensusParamsKeeper.ParamsStore)
 
 	// add keepers
@@ -527,7 +503,7 @@ func New(
 		maccPerms,
 		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
@@ -539,18 +515,51 @@ func New(
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		app.AccountKeeper,
 		app.BlockedAddrs(),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		logger,
 	)
 
-	app.StakingKeeper = stakingkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[stakingtypes.StoreKey]), app.AccountKeeper, app.BankKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), interfaceRegistry.SigningContext().ValidatorAddressCodec(), authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()))
+	app.StakingKeeper = stakingkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[stakingtypes.StoreKey]), app.AccountKeeper, app.BankKeeper, authtypes.NewModuleAddress(govtypes.ModuleName).String(), interfaceRegistry.SigningContext().ValidatorAddressCodec(), authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()))
+
+	// Create DistributionKeeper
+	app.DistributionKeeper = distributionkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[distributiontypes.StoreKey]),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	// Create MintKeeper
+	app.MintKeeper = mintkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[minttypes.StoreKey]),
+		app.StakingKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	app.GovKeeper = govkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[govtypes.StoreKey]),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
+		app.DistributionKeeper, app.MsgServiceRouter(),
+		govtypes.DefaultConfig(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec,
 		legacyAmino,
 		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
 		app.StakingKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.CrisisKeeper = *crisiskeeper.NewKeeper( //nolint:staticcheck
 		appCodec,
@@ -558,7 +567,7 @@ func New(
 		invCheckPeriod,
 		&app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 	)
 
@@ -569,18 +578,18 @@ func New(
 		appCodec,
 		homePath,
 		app.BaseApp,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	app.DynamicFeesKeeper = dynamicfeeskeeper.NewKeeper(appCodec, keys[dynamicfeestypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+	app.DynamicFeesKeeper = dynamicfeeskeeper.NewKeeper(appCodec, keys[dynamicfeestypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
 	app.FeeMarkerKeeper = feemarketkeeper.NewKeeper(
 		appCodec,
 		keys[feemarkettypes.StoreKey],
 		app.AccountKeeper,
 		app.DynamicFeesKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		revenuetypes.RevenueFeeRedistributePoolName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.FeeCollectorName,
 	)
 
 	// Create IBC Keeper
@@ -589,7 +598,7 @@ func New(
 		runtime.NewKVStoreService(keys[ibchost.StoreKey]),
 		app.GetSubspace(ibchost.ModuleName),
 		app.UpgradeKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// Feekeeper needs to be initialized before middlewares injection
@@ -599,7 +608,7 @@ func New(
 		memKeys[feetypes.MemStoreKey],
 		app.IBCKeeper.ChannelKeeper,
 		app.BankKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
@@ -608,7 +617,7 @@ func New(
 		keys[contractmanagermoduletypes.StoreKey],
 		keys[contractmanagermoduletypes.MemStoreKey],
 		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
@@ -618,7 +627,7 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
 
@@ -629,7 +638,7 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.CoinfactoryKeeper = &coinfactoryKeeper
 
@@ -643,7 +652,7 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.MsgServiceRouter(),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
@@ -655,23 +664,12 @@ func New(
 		app.AccountKeeper,
 		app.MsgServiceRouter(),
 		app.GRPCQueryRouter(),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
-		appCodec,
-		keys[feeburnertypes.StoreKey],
-		keys[feeburnertypes.MemStoreKey],
-		app.AccountKeeper,
-		&app.BankKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		revenuetypes.RevenueFeeRedistributePoolName,
-	)
-	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
+	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
-	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-
-	app.StateVerifierKeeper = svkeeper.NewKeeper(appCodec, keys[stateverifiertypes.StoreKey], runtime.ProvideCometInfoService(), runtime.ProvideHeaderInfoService(nil), authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+	app.StateVerifierKeeper = svkeeper.NewKeeper(appCodec, keys[stateverifiertypes.StoreKey], runtime.ProvideCometInfoService(), runtime.ProvideHeaderInfoService(nil), authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -695,7 +693,7 @@ func New(
 		keys[dextypes.MemStoreKey],
 		tkeys[dextypes.TStoreKey],
 		app.BankKeeper.WithMintCoinsRestriction(dextypes.NewDexDenomMintCoinsRestriction()),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
@@ -706,22 +704,6 @@ func New(
 		panic(fmt.Sprintf("error while reading wasm node config: %s", err))
 	}
 
-	// register the proposal types
-	adminRouterLegacy := govv1beta1.NewRouter()
-	adminRouterLegacy.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
-		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)) //nolint:staticcheck
-
-	app.AdminmoduleKeeper = *adminmodulekeeper.NewKeeper(
-		appCodec,
-		keys[adminmoduletypes.StoreKey],
-		keys[adminmoduletypes.MemStoreKey],
-		adminRouterLegacy,
-		app.MsgServiceRouter(),
-		IsConsumerProposalAllowlisted,
-		isSdkMessageWhitelisted,
-	)
-	adminModule := adminmodule.NewAppModule(appCodec, app.AdminmoduleKeeper)
-
 	app.InterchainQueriesKeeper = *interchainqueriesmodulekeeper.NewKeeper(
 		appCodec,
 		keys[interchainqueriesmoduletypes.StoreKey],
@@ -731,7 +713,7 @@ func New(
 		app.ContractManagerKeeper,
 		interchainqueriesmodulekeeper.Verifier{},
 		interchainqueriesmodulekeeper.TransactionVerifier{},
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
@@ -743,21 +725,21 @@ func New(
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		app.FeeKeeper,
 		app.BankKeeper,
-		func(ctx sdk.Context) string { return app.FeeBurnerKeeper.GetParams(ctx).TreasuryAddress },
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		func(ctx sdk.Context) string { return authtypes.NewModuleAddress(authtypes.FeeCollectorName).String() },
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	app.MarketMapKeeper = marketmapkeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[marketmaptypes.StoreKey]),
 		appCodec,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName),
+		authtypes.NewModuleAddress(govtypes.ModuleName),
 	)
 	marketmapModule := marketmap.NewAppModule(appCodec, app.MarketMapKeeper)
 
 	oracleKeeper := oraclekeeper.NewKeeper(runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
 		app.MarketMapKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName))
+		authtypes.NewModuleAddress(govtypes.ModuleName))
 	app.OracleKeeper = &oracleKeeper
 	oracleModule := oracle.NewAppModule(appCodec, *app.OracleKeeper)
 
@@ -768,14 +750,12 @@ func New(
 		keys[crontypes.StoreKey],
 		keys[crontypes.MemStoreKey],
 		app.AccountKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(
 		&app.InterchainTxsKeeper,
 		&app.InterchainQueriesKeeper,
 		app.TransferKeeper,
-		&app.AdminmoduleKeeper,
-		app.FeeBurnerKeeper,
 		app.FeeKeeper,
 		&app.BankKeeper,
 		app.TokenFactoryKeeper,
@@ -799,7 +779,7 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		app.StakingKeeper,
-		nil,                           // distrKeeper
+		nil,                           // app.DistributionKeeper,        // distrKeeper - DistributionKeeper interface not compatible with wasmkeeper
 		app.RateLimitingICS4Wrapper,   // ics4Wrapper
 		app.IBCKeeper.ChannelKeeper,   // channelKeeper
 		app.IBCKeeper.ChannelKeeperV2, // channelKeeperV2
@@ -812,19 +792,11 @@ func New(
 		// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
 		// however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
 		append(wasmkeeper.BuiltInCapabilities(), "neutron", "cosmwasm_3_0"),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		wasmOpts...,
 	)
 
-	app.HarpoonKeeper = harpoonkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
-		&app.WasmKeeper,
-		logger,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	multiStakingHooks := stakingtypes.NewMultiStakingHooks(app.SlashingKeeper.Hooks(), app.HarpoonKeeper.Hooks())
+	multiStakingHooks := stakingtypes.NewMultiStakingHooks(app.SlashingKeeper.Hooks(), app.DistributionKeeper.Hooks())
 	app.StakingKeeper.SetHooks(multiStakingHooks)
 
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
@@ -866,14 +838,6 @@ func New(
 		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.TransferKeeper.Keeper, app.IBCKeeper.ChannelKeeper))
 	app.IBCKeeper.SetRouter(ibcRouter)
 
-	app.RevenueKeeper = revenuekeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[revenuetypes.StoreKey]),
-		&app.BankKeeper,
-		app.OracleKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
 	clientKeeper := app.IBCKeeper.ClientKeeper
 	tmLightClientModule := tendermint.NewLightClientModule(appCodec, clientKeeper.GetStoreProvider())
 	clientKeeper.AddRoute(tendermint.ModuleName, &tmLightClientModule)
@@ -901,21 +865,20 @@ func New(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper), //nolint:staticcheck
-		harpoon.NewAppModule(appCodec, app.HarpoonKeeper),
 		transferModule,
 		stakingModule,
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
+		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
+		distribution.NewAppModule(appCodec, app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distributiontypes.ModuleName)),
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, encodingConfig.TxConfig),
 		icaModule,
 		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeModule,
-		feeBurnerModule,
 		contractManagerModule,
-		adminModule,
 		ibcRateLimitmodule,
 		ibcHooksModule,
-		revenue.NewAppModule(appCodec, app.RevenueKeeper),
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		coinfactory.NewAppModule(appCodec, *app.CoinfactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
@@ -964,8 +927,9 @@ func New(
 		contractmanagermoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		feetypes.ModuleName,
-		feeburnertypes.ModuleName,
-		adminmoduletypes.ModuleName,
+		govtypes.ModuleName,
+		minttypes.ModuleName,
+		distributiontypes.ModuleName,
 		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
@@ -975,7 +939,6 @@ func New(
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
 		dextypes.ModuleName,
-		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		stateverifiertypes.ModuleName,
 	)
@@ -1002,9 +965,9 @@ func New(
 		contractmanagermoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		feetypes.ModuleName,
-		feeburnertypes.ModuleName,
-		revenuetypes.ModuleName,
-		adminmoduletypes.ModuleName,
+		govtypes.ModuleName,
+		minttypes.ModuleName,
+		distributiontypes.ModuleName,
 		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
@@ -1014,7 +977,6 @@ func New(
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
 		dextypes.ModuleName,
-		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		stateverifiertypes.ModuleName,
 	)
@@ -1033,8 +995,8 @@ func New(
 		upgradetypes.ModuleName,
 		feegrant.ModuleName,
 		wasmtypes.ModuleName,
-		harpoontypes.ModuleName,
 		stakingtypes.ModuleName,
+		distributiontypes.ModuleName,
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		tokenfactorytypes.ModuleName,
@@ -1044,8 +1006,8 @@ func New(
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
 		feetypes.ModuleName,
-		feeburnertypes.ModuleName,
-		adminmoduletypes.ModuleName,
+		govtypes.ModuleName,
+		minttypes.ModuleName,
 		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName, // after auth keeper
 		pfmtypes.ModuleName,
@@ -1059,7 +1021,6 @@ func New(
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		stateverifiertypes.ModuleName,
-		revenuetypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper) //nolint:staticcheck
@@ -1089,7 +1050,6 @@ func New(
 		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
-		feeBurnerModule,
 		cronModule,
 		dexModule,
 	)
@@ -1250,21 +1210,7 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
-	// Create a pre-finalize block hook that will be used to record validators' participation
-	// in network operations and distribute revenue to validators.
-	revenuePreBlockHandler := revenue.NewPreBlockHandler(
-		app.RevenueKeeper,
-		app.StakingKeeper,
-		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
-		),
-		compression.NewCompressionExtendedCommitCodec(
-			compression.NewDefaultExtendedCommitCodec(),
-			compression.NewZStdCompressor(),
-		),
-	)
-	app.SetPreBlocker(revenuePreBlockHandler.WrappedPreBlocker(oraclePreBlockHandler.WrappedPreBlocker(app.mm)))
+	app.SetPreBlocker(oraclePreBlockHandler.WrappedPreBlocker(app.mm))
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
@@ -1363,14 +1309,15 @@ func (app *App) setupUpgradeHandlers() {
 				&upgrades.UpgradeKeepers{
 					BankKeeper:         app.BankKeeper,
 					AccountKeeper:      app.AccountKeeper,
-					FeeBurnerKeeper:    app.FeeBurnerKeeper,
 					CronKeeper:         app.CronKeeper,
 					IcqKeeper:          app.InterchainQueriesKeeper,
 					TokenFactoryKeeper: app.TokenFactoryKeeper,
 					SlashingKeeper:     app.SlashingKeeper,
 					ParamsKeeper:       app.ParamsKeeper,
 					ContractManager:    app.ContractManagerKeeper,
-					AdminModule:        app.AdminmoduleKeeper,
+					GovKeeper:          *app.GovKeeper,
+					MintKeeper:         app.MintKeeper,
+					DistributionKeeper: app.DistributionKeeper,
 					ConsensusKeeper:    &app.ConsensusParamsKeeper,
 					MarketmapKeeper:    app.MarketMapKeeper,
 					FeeMarketKeeper:    app.FeeMarkerKeeper,
@@ -1381,8 +1328,6 @@ func (app *App) setupUpgradeHandlers() {
 					ChannelKeeper:      app.IBCKeeper.ChannelKeeper,
 					TransferKeeper:     app.TransferKeeper.Keeper,
 					WasmKeeper:         &app.WasmKeeper,
-					HarpoonKeeper:      app.HarpoonKeeper,
-					RevenueKeeper:      app.RevenueKeeper,
 					FeerefunderKeeper:  app.FeeKeeper,
 					GlobalFeeSubspace:  app.GetSubspace(globalfee.ModuleName),
 				},
@@ -1587,7 +1532,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	// MOTE: legacy subspaces for migration sdk47 only //nolint:staticcheck
 	paramsKeeper.Subspace(crontypes.StoreKey).WithKeyTable(crontypes.ParamKeyTable())
-	paramsKeeper.Subspace(feeburnertypes.StoreKey).WithKeyTable(feeburnertypes.ParamKeyTable())
 	paramsKeeper.Subspace(feetypes.StoreKey).WithKeyTable(feetypes.ParamKeyTable())
 	paramsKeeper.Subspace(tokenfactorytypes.StoreKey).WithKeyTable(tokenfactorytypes.ParamKeyTable())
 	paramsKeeper.Subspace(coinfactorytypes.StoreKey).WithKeyTable(coinfactorytypes.ParamKeyTable())
@@ -1665,7 +1609,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.IBCKeeper.ChannelKeeper,
 		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
@@ -1676,7 +1620,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		&wasmHooks,
 	)
 
-	ibcratelimitKeeper := ibcratelimitkeeper.NewKeeper(appCodec, app.keys[ibcratelimittypes.ModuleName], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+	ibcratelimitKeeper := ibcratelimitkeeper.NewKeeper(appCodec, app.keys[ibcratelimittypes.ModuleName], authtypes.NewModuleAddress(govtypes.ModuleName).String())
 	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
 	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
 		app.HooksICS4Wrapper,
@@ -1700,7 +1644,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		&app.BankKeeper,
 		app.FeeKeeper,
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)

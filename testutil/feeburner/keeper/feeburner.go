@@ -5,7 +5,6 @@ import (
 
 	"cosmossdk.io/log"
 	metrics2 "cosmossdk.io/store/metrics"
-	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	db2 "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
 	revenuetypes "github.com/neutron-org/neutron/v10/x/revenue/types"
@@ -46,7 +46,7 @@ func FeeburnerKeeperWithDeps(t testing.TB, accountKeeper types.AccountKeeper, ba
 		memStoreKey,
 		accountKeeper,
 		bankkeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		revenuetypes.RevenueFeeRedistributePoolName,
 	)
 

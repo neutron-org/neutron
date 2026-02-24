@@ -79,7 +79,7 @@ func TestUpdateParams(t *testing.T) {
 		{
 			"Unauthorized",
 			&revenuetypes.MsgUpdateParams{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				Params: revenuetypes.Params{
 					TwapWindow:  3600 * 24,
 					RewardAsset: params.DefaultDenom,
@@ -99,7 +99,7 @@ func TestUpdateParams(t *testing.T) {
 					},
 				},
 			},
-			"invalid authority; expected neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a, got neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+			"invalid authority; expected neutron159kr6k0y4f43dsrdyqlm9x23jajunegal4nglw044u7zl72u0eeqharq3a, got neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 		},
 		{
 			"TooLowPerformanceRequirement",

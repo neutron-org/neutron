@@ -119,8 +119,8 @@ func (qp QueryPlugin) GetBeforeSendHook(ctx sdk.Context, denom string) (*binding
 }
 
 func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {
-	grpcResp := qp.feeBurnerKeeper.GetTotalBurnedNeutronsAmount(ctx)
-	return &bindings.QueryTotalBurnedNeutronsAmountResponse{Coin: grpcResp.Coin}, nil
+	// FeeBurnerKeeper removed - feeburner module no longer supported
+	return nil, errors.Wrap(ErrModuleNotSupported, "feeburner module is no longer supported")
 }
 
 func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeRequest) (*bindings.QueryMinIbcFeeResponse, error) {

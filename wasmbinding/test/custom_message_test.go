@@ -6,22 +6,16 @@ import (
 	"testing"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
-	types2 "github.com/neutron-org/neutron/v10/x/cron/types"
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-
-	feeburnertypes "github.com/neutron-org/neutron/v10/x/feeburner/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
 	ictxtypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
-
-	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
 	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
 
@@ -69,12 +63,10 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(suite.neutron.InterchainTxsKeeper)
 	suite.messenger.Keeper = suite.neutron.InterchainTxsKeeper
 	suite.messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(suite.neutron.InterchainQueriesKeeper)
-	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.messenger.Bank = &suite.neutron.BankKeeper
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
 	suite.messenger.CronMsgServer = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
 	suite.messenger.CronQueryServer = suite.neutron.CronKeeper
-	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.messenger.ContractmanagerMsgServer = contractmanagerkeeper.NewMsgServerImpl(suite.neutron.ContractManagerKeeper)
 	suite.messenger.ContractmanagerQueryServer = contractmanagerkeeper.NewQueryServerImpl(suite.neutron.ContractManagerKeeper)
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
@@ -95,12 +87,6 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
-	err := suite.neutron.FeeBurnerKeeper.SetParams(suite.ctx, feeburnertypes.Params{
-		NeutronDenom:    "untrn",
-		TreasuryAddress: "neutron13jrwrtsyjjuynlug65r76r2zvfw5xjcq6532h2",
-	})
-	suite.Require().NoError(err)
-
 	// Craft RegisterInterchainAccount message
 	msg := bindings.NeutronMsg{
 		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
@@ -113,7 +99,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	bankKeeper := suite.neutron.BankKeeper
 	channelKeeper := suite.neutron.IBCKeeper.ChannelKeeper
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
@@ -150,12 +136,6 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountUnordered() {
-	err := suite.neutron.FeeBurnerKeeper.SetParams(suite.ctx, feeburnertypes.Params{
-		NeutronDenom:    "untrn",
-		TreasuryAddress: "neutron13jrwrtsyjjuynlug65r76r2zvfw5xjcq6532h2",
-	})
-	suite.Require().NoError(err)
-
 	// Craft RegisterInterchainAccount message
 	msg := bindings.NeutronMsg{
 		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
@@ -169,7 +149,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountUnordered() 
 	bankKeeper := suite.neutron.BankKeeper
 	channelKeeper := suite.neutron.IBCKeeper.ChannelKeeper
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
@@ -567,171 +547,6 @@ func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 		suite.craftMarshaledMsgSubmitTxWithNumMsgs(20),
 	)
 	suite.ErrorContains(err, "MsgSubmitTx contains more messages than allowed")
-}
-
-func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
-	// Set admin so that we can execute this proposal without permission error
-	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
-
-	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	anotherContract := suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
-	suite.Require().NotEqual(anotherContract, suite.contractAddress)
-
-	executeMsg := fmt.Sprintf(`
-{
-  "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
-  "authority": "%s",
-  "plan": {
-    "name": "TestPlane",
-    "height": "150",
-    "info": "TestInfo"
-  }
-}
-`, suite.neutron.BankKeeper.GetAuthority())
-	// Craft SubmitAdminProposal message
-	msg := bindings.NeutronMsg{
-		SubmitAdminProposal: &bindings.SubmitAdminProposal{
-			AdminProposal: bindings.AdminProposal{
-				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{
-					Message: executeMsg,
-				},
-			},
-		},
-	}
-
-	// Dispatch SubmitAdminProposal message
-	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.NoError(err)
-
-	var expected admintypes.MsgSubmitProposalResponse
-	err = expected.Unmarshal(data)
-	suite.NoError(err)
-	suite.Equal(expected.ProposalId, uint64(1))
-
-	// Test with other proposer that is not admin should return failure
-	_, err = suite.executeNeutronMsg(anotherContract, msg)
-	suite.Error(err)
-
-	// Check CancelSubmitAdminProposal
-
-	executeMsg = fmt.Sprintf(`
-				{
-                "@type": "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
-                "authority": "%s"
-}
-`, suite.neutron.BankKeeper.GetAuthority())
-	// Craft CancelSubmitAdminProposal message
-	msg = bindings.NeutronMsg{
-		SubmitAdminProposal: &bindings.SubmitAdminProposal{
-			AdminProposal: bindings.AdminProposal{ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg}},
-		},
-	}
-
-	// Dispatch SubmitAdminProposal message
-	data, err = suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.NoError(err)
-
-	var expected2 admintypes.MsgSubmitProposalResponse
-	err = expected2.Unmarshal(data)
-	suite.NoError(err)
-	suite.Equal(expected2.ProposalId, uint64(2))
-}
-
-func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
-	// Store code and instantiate reflect contract
-	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
-	suite.Require().NotEmpty(suite.contractAddress)
-
-	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
-	suite.Require().NoError(err)
-
-	executeMsg := fmt.Sprintf(`
-				{
-                "@type": "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
-                "authority": "%s"
-}
-`, suite.neutron.BankKeeper.GetAuthority())
-
-	// Craft  message with 2 proposals
-	msg, err := json.Marshal(bindings.NeutronMsg{
-		SubmitAdminProposal: &bindings.SubmitAdminProposal{
-			AdminProposal: bindings.AdminProposal{
-				ParamChangeProposal: &bindings.ParamChangeProposal{
-					Title:        "aaa",
-					Description:  "ddafds",
-					ParamChanges: nil,
-				},
-				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg},
-			},
-		},
-	})
-	suite.NoError(err)
-
-	cosmosMsg := types.CosmosMsg{Custom: msg}
-
-	// Dispatch SubmitAdminProposal message
-	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg) //nolint:dogsled
-
-	suite.ErrorContains(err, "more than one admin proposal type is present in message")
-}
-
-func (suite *CustomMessengerTestSuite) TestNoProposals() {
-	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
-	suite.Require().NoError(err)
-
-	// Craft  message with 0 proposals
-	msg, err := json.Marshal(bindings.NeutronMsg{
-		SubmitAdminProposal: &bindings.SubmitAdminProposal{
-			AdminProposal: bindings.AdminProposal{},
-		},
-	})
-	suite.NoError(err)
-
-	cosmosMsg := types.CosmosMsg{Custom: msg}
-
-	// Dispatch SubmitAdminProposal message
-	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg) //nolint:dogsled
-
-	suite.ErrorContains(err, "no admin proposal type is present in message")
-}
-
-func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
-	// Set admin so that we can execute this proposal without permission error
-	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
-
-	// Craft AddSchedule message
-	msg := bindings.NeutronMsg{
-		AddSchedule: &bindings.AddSchedule{
-			Name:   "schedule1",
-			Period: 5,
-			Msgs: []bindings.MsgExecuteContract{
-				{
-					Contract: suite.contractAddress.String(),
-					Msg:      "{\"send\": { \"to\": \"asdf\", \"amount\": 1000 }}",
-				},
-			},
-		},
-	}
-
-	// Dispatch AddSchedule message
-	_, err := suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.NoError(err)
-
-	// Craft RemoveSchedule message
-	msg = bindings.NeutronMsg{
-		RemoveSchedule: &bindings.RemoveSchedule{
-			Name: "schedule1",
-		},
-	}
-
-	schedule, ok := suite.neutron.CronKeeper.GetSchedule(suite.ctx, "schedule1")
-	suite.True(ok)
-	suite.Equal(types2.ExecutionStage_EXECUTION_STAGE_END_BLOCKER, schedule.ExecutionStage)
-
-	// Dispatch AddSchedule message
-	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.NoError(err)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {

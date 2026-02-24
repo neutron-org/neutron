@@ -30,7 +30,7 @@ func TestMsgManageHookSubscriptionValidate(t *testing.T) {
 		{
 			"non unique hooks",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{types.HOOK_TYPE_AFTER_VALIDATOR_BONDED, types.HOOK_TYPE_AFTER_DELEGATION_MODIFIED, types.HOOK_TYPE_AFTER_VALIDATOR_BONDED},
@@ -41,7 +41,7 @@ func TestMsgManageHookSubscriptionValidate(t *testing.T) {
 		{
 			"non existing hook type",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{types.HookType(100)},
@@ -52,7 +52,7 @@ func TestMsgManageHookSubscriptionValidate(t *testing.T) {
 		{
 			"unspecified hook type",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{types.HOOK_TYPE_UNSPECIFIED},
@@ -63,7 +63,7 @@ func TestMsgManageHookSubscriptionValidate(t *testing.T) {
 		{
 			"all good",
 			types.MsgManageHookSubscription{
-				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				Authority: "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{types.HOOK_TYPE_BEFORE_DELEGATION_REMOVED},

@@ -5,9 +5,9 @@ import (
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store/metrics"
-	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	cosmosdb "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"cosmossdk.io/store"
 	storetypes "cosmossdk.io/store/types"
@@ -35,7 +35,7 @@ func DynamicFeesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

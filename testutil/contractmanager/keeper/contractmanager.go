@@ -5,9 +5,9 @@ import (
 
 	"cosmossdk.io/log"
 	metrics2 "cosmossdk.io/store/metrics"
-	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	db2 "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"cosmossdk.io/store"
 	storetypes "cosmossdk.io/store/types"
@@ -39,7 +39,7 @@ func ContractManagerKeeper(t testing.TB, wasmKeeper types.WasmKeeper) (*keeper.K
 		storeKey,
 		memStoreKey,
 		wasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

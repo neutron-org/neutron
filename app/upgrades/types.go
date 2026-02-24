@@ -4,7 +4,9 @@ import (
 	store "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
+	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -19,8 +21,6 @@ import (
 
 	feerefunderkeeper "github.com/neutron-org/neutron/v10/x/feerefunder/keeper"
 
-	harpoonkeeper "github.com/neutron-org/neutron/v10/x/harpoon/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v10/x/revenue/keeper"
 
 	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v10/x/ibc-rate-limit/keeper"
@@ -29,7 +29,6 @@ import (
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v10/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/v10/x/tokenfactory/keeper"
 
@@ -60,11 +59,12 @@ type UpgradeKeepers struct {
 	IcqKeeper          icqkeeper.Keeper
 	CronKeeper         cronkeeper.Keeper
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper
-	FeeBurnerKeeper    *feeburnerkeeper.Keeper
 	SlashingKeeper     slashingkeeper.Keeper
 	ParamsKeeper       paramskeeper.Keeper //nolint:staticcheck
 	ContractManager    contractmanagerkeeper.Keeper
-	AdminModule        adminmodulekeeper.Keeper
+	GovKeeper          govkeeper.Keeper
+	MintKeeper         mintkeeper.Keeper
+	DistributionKeeper distributionkeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper
 	MarketmapKeeper    *marketmapkeeper.Keeper
 	FeeMarketKeeper    *feemarketkeeper.Keeper
@@ -74,8 +74,6 @@ type UpgradeKeepers struct {
 	IbcRateLimitKeeper *ibcratelimitkeeper.Keeper
 	ChannelKeeper      *channelkeeper.Keeper
 	WasmKeeper         *wasmkeeper.Keeper
-	HarpoonKeeper      *harpoonkeeper.Keeper
-	RevenueKeeper      *revenuekeeper.Keeper
 	FeerefunderKeeper  *feerefunderkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace paramtypes.Subspace

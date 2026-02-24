@@ -39,6 +39,8 @@ func (k SudoLimitWrapper) Sudo(ctx context.Context, contractAddress sdk.AccAddre
 		// maybe later we'll retrieve actual errors from events
 		resp, err = k.WasmKeeper.Sudo(cacheCtx, contractAddress, msg)
 	}()
+	fmt.Println("resp for ", contractAddress.String(), " is ", string(resp))
+	fmt.Println("err for ", contractAddress.String(), " is ", err)
 	if err != nil { // the contract either returned an error or panicked with `out of gas`
 		failure := k.contractManager.AddContractFailure(
 			ctx,

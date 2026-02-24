@@ -8,12 +8,12 @@ import (
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	db2 "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v10/x/dex/keeper"
@@ -40,7 +40,7 @@ func DexKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		tStoreKey,
 		nil,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
