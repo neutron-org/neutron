@@ -1,3 +1,3 @@
 package types
 
-const ConsensusVersion = 6
+const ConsensusVersion = 7
