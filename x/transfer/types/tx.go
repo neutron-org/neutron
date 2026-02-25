@@ -46,6 +46,7 @@ func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(inter
 		TimeoutTimestamp: in.TimeoutTimestamp,
 		Memo:             in.Memo,
 		Fee:              feerefundertypes.Fee{},
+		Encoding:         in.Encoding,
 	}
 	if interceptor == nil {
 		return srv.(MsgServer).Transfer(ctx, conv)
@@ -66,6 +67,7 @@ func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(inter
 			TimeoutTimestamp: reqT.TimeoutTimestamp,
 			Memo:             reqT.Memo,
 			Fee:              feerefundertypes.Fee{},
+			Encoding:         reqT.Encoding,
 		}
 		return srv.(MsgServer).Transfer(ctx, convReq)
 	}
