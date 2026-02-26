@@ -14,6 +14,13 @@ import (
 	"github.com/neutron-org/neutron/v10/app/upgrades"
 )
 
+/*
+TODO:
+define modules parameters
+sort out the revenue module's rewards
+sort out the ibc rate limit contract
+*/
+
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
