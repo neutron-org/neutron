@@ -40,4 +40,7 @@ message Params {
   string fee_collector_address = 3;
   // whitelisted_hooks is the list of hooks which are allowed to be added and executed
   repeated WhitelistedHook whitelisted_hooks = 4;
+
+  // Sets a limit on the gas that can be consumed by the before_send hook.
+  uint64 track_before_send_gas_limit = 5;
 }

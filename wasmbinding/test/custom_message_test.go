@@ -86,6 +86,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 		0,
 		FeeCollectorAddress,
 		tokenfactorytypes.DefaultWhitelistedHooks,
+		tokenfactorytypes.DefaultTrackBeforeSendGasLimit,
 	))
 	suite.Require().NoError(err)
 
