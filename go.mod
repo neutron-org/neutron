@@ -1,6 +1,6 @@
 module github.com/neutron-org/neutron/v10
 
-go 1.24.10
+go 1.25.6
 
 require (
 	cosmossdk.io/api v0.9.2
