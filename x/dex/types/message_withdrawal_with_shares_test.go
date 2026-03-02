@@ -97,6 +97,17 @@ func TestMsgWithdrawalWithShares_Validate(t *testing.T) {
 			nil,
 		},
 		{
+			"invalid share denom",
+			dextypes.MsgWithdrawalWithShares{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				SharesToRemove: sdk.Coins{
+					sdk.NewCoin("neutron/pool/01", sdkmath.OneInt()),
+				},
+			},
+			dextypes.ErrInvalidPoolDenom,
+		},
+		{
 			"invalid creator and receiver addresses",
 			dextypes.MsgWithdrawalWithShares{
 				Creator:        "invalid_creator",
