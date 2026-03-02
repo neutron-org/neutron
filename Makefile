@@ -51,6 +51,7 @@ ifeq ($(WITH_CLEVELDB),yes)
   build_tags += gcc
 endif
 build_tags += $(BUILD_TAGS)
+build_tags += pebbledb
 build_tags := $(strip $(build_tags))
 
 build_tags_test_binary = $(build_tags)

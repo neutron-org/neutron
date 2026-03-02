@@ -14,13 +14,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v9/testutil/apptesting"
-	"github.com/neutron-org/neutron/v9/testutil/common/sample"
-	testkeeper "github.com/neutron-org/neutron/v9/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v9/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v9/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v9/x/dex/types"
+	"github.com/neutron-org/neutron/v10/testutil/apptesting"
+	"github.com/neutron-org/neutron/v10/testutil/common/sample"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v10/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // Test suite
@@ -2499,6 +2499,26 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("-0.5"),
 			},
 			types.ErrZeroExitPrice,
+		},
+		{
+			"single hop",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes:   []*types.MultiHopRoute{{Hops: []string{"TokenA"}}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrRouteWithoutExitToken,
+		},
+		{
+			"no hops",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes:   []*types.MultiHopRoute{{Hops: []string{}}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrRouteWithoutExitToken,
 		},
 	}
 

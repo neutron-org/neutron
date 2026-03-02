@@ -3,7 +3,7 @@ package v910
 import (
 	storetypes "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v9/app/upgrades"
+	"github.com/neutron-org/neutron/v10/app/upgrades"
 )
 
 const (

@@ -19,9 +19,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/x/coinfactory/client/cli"
-	"github.com/neutron-org/neutron/v9/x/coinfactory/keeper"
-	"github.com/neutron-org/neutron/v9/x/coinfactory/types"
+	"github.com/neutron-org/neutron/v10/x/coinfactory/client/cli"
+	"github.com/neutron-org/neutron/v10/x/coinfactory/keeper"
+	"github.com/neutron-org/neutron/v10/x/coinfactory/types"
 )
 
 var (

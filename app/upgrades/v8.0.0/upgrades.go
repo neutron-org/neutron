@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	"github.com/neutron-org/neutron/v9/app/upgrades"
+	"github.com/neutron-org/neutron/v10/app/upgrades"
 )
 
 func CreateUpgradeHandler(

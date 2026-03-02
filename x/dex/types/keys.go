@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/x/dex/utils"
+	"github.com/neutron-org/neutron/v10/x/dex/utils"
 )
 
 const (

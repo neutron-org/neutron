@@ -8,10 +8,10 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/testutil"
-	testkeeper "github.com/neutron-org/neutron/v9/testutil/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v9/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v10/testutil"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
 )
 
 func TestMsgRegisterInterchainQueryValidate(t *testing.T) {

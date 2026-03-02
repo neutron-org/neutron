@@ -9,15 +9,15 @@ import (
 	errors2 "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/golang/mock/gomock"
 
-	"github.com/neutron-org/neutron/v9/app/config"
-	mock_types "github.com/neutron-org/neutron/v9/testutil/mocks/harpoon/types"
-	"github.com/neutron-org/neutron/v9/x/harpoon"
+	"github.com/neutron-org/neutron/v10/app/config"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/harpoon/types"
+	"github.com/neutron-org/neutron/v10/x/harpoon"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v9/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v9/testutil/harpoon/keeper"
-	"github.com/neutron-org/neutron/v9/x/harpoon/types"
+	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v10/testutil/harpoon/keeper"
+	"github.com/neutron-org/neutron/v10/x/harpoon/types"
 )
 
 const (

@@ -8,7 +8,7 @@ import (
 	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
 )
 
 // Shared Attributes
@@ -69,6 +69,7 @@ const (
 	AttributeTakerDenom            = "TakerDenom"
 	AttributeSharesOwned           = "SharesOwned"
 	AttributeSharesWithdrawn       = "SharesWithdrawn"
+	AttributeDecSharesWithdrawn    = "DecSharesWithdrawn"
 	AttributeMinAvgSellPrice       = "MinAvgSellPrice"
 	AttributeMaxAmountOut          = "MaxAmountOut"
 	AttributeRequestAmountIn       = "RequestAmountIn"
@@ -521,6 +522,7 @@ func TrancheUserUpdateEvent(trancheUser LimitOrderTrancheUser) sdk.Event {
 		sdk.NewAttribute(AttributeTokenIn, trancheUser.TradePairId.MakerDenom),
 		sdk.NewAttribute(AttributeSharesOwned, trancheUser.SharesOwned.String()),
 		sdk.NewAttribute(AttributeSharesWithdrawn, trancheUser.SharesWithdrawn.String()),
+		sdk.NewAttribute(AttributeDecSharesWithdrawn, trancheUser.DecSharesWithdrawn.String()),
 	}
 	return sdk.NewEvent(EventTypeTrancheUserUpdate, attrs...)
 }

@@ -21,9 +21,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/x/feerefunder/client/cli"
-	"github.com/neutron-org/neutron/v9/x/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v9/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v10/x/feerefunder/client/cli"
+	"github.com/neutron-org/neutron/v10/x/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v10/x/feerefunder/types"
 )
 
 var (

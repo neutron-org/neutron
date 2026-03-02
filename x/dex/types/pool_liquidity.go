@@ -1,7 +1,7 @@
 package types
 
 import (
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
 )
 
 type PoolLiquidity struct {

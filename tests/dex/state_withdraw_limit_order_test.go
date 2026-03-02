@@ -11,8 +11,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v9/utils/math"
-	dextypes "github.com/neutron-org/neutron/v9/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 type withdrawLimitOrderTestParams struct {
@@ -187,8 +187,10 @@ func (s *DexStateTestSuite) assertWithdrawFilledAmount(params withdrawLimitOrder
 			s.False(found)
 		} else {
 			s.True(found)
-			remainingShares := ut.SharesOwned.Sub(ut.SharesWithdrawn)
-			s.True(expectedBalanceA.Equal(remainingShares), "Expected Balance A %v != Actual %v", expectedBalanceA, remainingShares)
+			sharesOwnedDec := math_utils.NewPrecDecFromInt(ut.SharesOwned)
+			remainingShares := sharesOwnedDec.Sub(ut.DecSharesWithdrawn)
+			expectedBalanceADec := math_utils.NewPrecDecFromInt(expectedBalanceA)
+			s.True(expectedBalanceADec.Equal(remainingShares), "Expected Balance A %v != Actual %v", expectedBalanceA, remainingShares)
 		}
 	}
 }

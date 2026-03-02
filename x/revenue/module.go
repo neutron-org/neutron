@@ -20,9 +20,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v9/x/revenue/client/cli"
-	"github.com/neutron-org/neutron/v9/x/revenue/keeper"
-	"github.com/neutron-org/neutron/v9/x/revenue/types"
+	"github.com/neutron-org/neutron/v10/x/revenue/client/cli"
+	"github.com/neutron-org/neutron/v10/x/revenue/keeper"
+	"github.com/neutron-org/neutron/v10/x/revenue/types"
 )
 
 var (

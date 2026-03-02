@@ -8,7 +8,7 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v9/wasmbinding/bindings"
+	"github.com/neutron-org/neutron/v10/wasmbinding/bindings"
 )
 
 // CustomQuerier returns a function that is an implementation of custom querier mechanism for specific messages
