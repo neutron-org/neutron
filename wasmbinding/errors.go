@@ -8,10 +8,8 @@ import (
 
 // x/dex module sentinel errors
 
-var (
-	ErrModuleNotSupported = sdkerrors.Register(
-		"wasmbinding",
-		100,
-		"module is no longer supported",
-	)
+var ErrModuleNotSupported = sdkerrors.Register(
+	"wasmbinding",
+	100,
+	"module is no longer supported",
 )

@@ -811,34 +811,6 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 	return response, nil
 }
 
-func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) error {
-	qty := 0
-	if proposal.ParamChangeProposal != nil {
-		qty++
-	}
-	if proposal.ProposalExecuteMessage != nil {
-		qty++
-	}
-
-	switch qty {
-	case 1:
-		return nil
-	case 0:
-		return fmt.Errorf("no admin proposal type is present in message")
-	default:
-		return fmt.Errorf("more than one admin proposal type is present in message")
-	}
-}
-
-func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) bool {
-	switch {
-	case proposal.ParamChangeProposal != nil:
-		return true
-	default:
-		return false
-	}
-}
-
 func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	// Admin check removed - adminmodule no longer supported
 	if false {

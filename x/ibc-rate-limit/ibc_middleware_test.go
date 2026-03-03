@@ -39,7 +39,7 @@ func TestMiddlewareTestSuite(t *testing.T) {
 func (suite *MiddlewareTestSuite) SetupTest() {
 	suite.IBCConnectionTestSuite.SetupTest()
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	app.MintKeeper.Params.Set(suite.ChainA.GetContext(), minttypes.Params{
+	err := app.MintKeeper.Params.Set(suite.ChainA.GetContext(), minttypes.Params{
 		MintDenom:           "stake", // minting untrn brakes some ratelimit tests, so we disable untrn mint by changing mint denom at the mint module
 		InflationRateChange: sdkmath.LegacyZeroDec(),
 		InflationMax:        sdkmath.LegacyOneDec(),
@@ -47,6 +47,9 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 		GoalBonded:          sdkmath.LegacyOneDec(),
 		BlocksPerYear:       1,
 	})
+	if err != nil {
+		return
+	}
 }
 
 // Helpers

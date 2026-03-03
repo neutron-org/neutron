@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
+
 	nextupgrade "github.com/neutron-org/neutron/v10/app/upgrades/nextupgrade"
 	v10_0_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
 	v700 "github.com/neutron-org/neutron/v10/app/upgrades/v7.0.0"
