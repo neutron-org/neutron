@@ -7,10 +7,10 @@ type IBCRateLimitsExecuteMessage struct {
 
 type GrantRole struct {
 	Signer string   `json:"signer"`
-	Roles  []string `json:"role"`
+	Roles  []string `json:"roles"`
 }
 
 type RevokeRole struct {
 	Signer string   `json:"signer"`
-	Roles  []string `json:"role"`
+	Roles  []string `json:"roles"`
 }
