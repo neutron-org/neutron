@@ -13,7 +13,7 @@ import (
 
 const (
 	PoolDenomPrefix    = "neutron/pool/"
-	PoolDenomRegexpStr = "^" + PoolDenomPrefix + `(\d+)` + "$"
+	PoolDenomRegexpStr = "^" + PoolDenomPrefix + `(0|[1-9]\d*)` + "$"
 )
 
 var PoolDenomRegexp = regexp.MustCompile(PoolDenomRegexpStr)
