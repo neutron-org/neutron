@@ -122,7 +122,7 @@ func validateHops(hops []string) error {
 	if len(hops) < 2 {
 		return ErrRouteWithoutExitToken
 	}
-	if len(hops) > MaxRoutesPerRequest {
+	if len(hops) > MaxHopsPerRoute {
 		return ErrMaxHopsPerRouteReached
 	}
 
