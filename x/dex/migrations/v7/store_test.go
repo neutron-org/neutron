@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	v7 "github.com/neutron-org/neutron/v10/x/dex/migrations/v7"
 	"github.com/stretchr/testify/suite"
+
+	v7 "github.com/neutron-org/neutron/v10/x/dex/migrations/v7"
 
 	"github.com/neutron-org/neutron/v10/testutil"
 	math_utils "github.com/neutron-org/neutron/v10/utils/math"

@@ -2520,6 +2520,54 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 			},
 			types.ErrRouteWithoutExitToken,
 		},
+		{
+			"too many routes",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+				},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrMaxRoutesPerRequestReached,
+		},
+		{
+			"too many hops",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{{
+					Hops: []string{
+						"TokenA", "TokenB", "TokenC",
+						"TokenD", "TokenE", "TokenF",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+					},
+				}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrMaxHopsPerRouteReached,
+		},
 	}
 
 	for _, tt := range tests {

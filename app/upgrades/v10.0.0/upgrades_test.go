@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
+	v10_0_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
 	"github.com/neutron-org/neutron/v10/testutil"
 )
 
