@@ -88,6 +88,10 @@ func validateRoutes(routes []*MultiHopRoute) error {
 	if len(routes) == 0 {
 		return ErrMissingMultihopRoute
 	}
+	if len(routes) > MaxRoutesPerRequest {
+		return ErrMaxRoutesPerRequestReached
+	}
+
 	expectedExitToken := ""
 	expectedEntryToken := ""
 
@@ -118,6 +122,10 @@ func validateHops(hops []string) error {
 	if len(hops) < 2 {
 		return ErrRouteWithoutExitToken
 	}
+	if len(hops) > MaxHopsPerRoute {
+		return ErrMaxHopsPerRouteReached
+	}
+
 	existingHops := make(map[string]bool, len(hops))
 	for _, hop := range hops {
 		// check if we find cycles in the route
