@@ -20,8 +20,11 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	appparams "github.com/neutron-org/neutron/v10/app/params"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+
+	appparams "github.com/neutron-org/neutron/v10/app/params"
+	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
+	"github.com/neutron-org/neutron/v10/x/cron/types"
 
 	"github.com/neutron-org/neutron/v10/app/upgrades"
 )
@@ -48,11 +51,20 @@ const (
 	// CommunityDelegationsOwner is the address of the Community Delegations owner. It is the Drop
 	// puppeteer contract, it owns all delegations including the DAO funds in Drop.
 	CommunityDelegationsOwner = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3"
+
+	// PuppeteerAdmin is an admin address of the Drop's puppeteer contract
+	PuppeteerAdmin = "neutron1zhhww6gaysxs5vf94xsz2cpfznwgjatsxrnl8239555mfttzlxwqaagcfn"
+
+	// ProxyContractCodeID is the code id of the auth proxy contract code
+	ProxyContractCodeID = 5213
+
+	// UndelegationsManagerContract is the address of the undelegations manager contract
+	UndelegationsManagerContract = "neutron1..."
 )
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
 // TODO: fill in real validator addresses before deployment.
-var NewValidatorSet = []sdk.ValAddress{}
+var NewValidatorSet = []string{"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva"}
 
 /*
 TODO:
@@ -140,6 +152,55 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 		return err
 	}
 	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
+	if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Registering cron schedules")
+	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	return nil
+}
+
+func MigratePuppeteer(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
+	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
+	if _, err := wasmSrv.MigrateContract(ctx, &wasmTypes.MsgMigrateContract{
+		Sender:   PuppeteerAdmin,
+		Contract: CommunityDelegationsOwner,
+		CodeID:   ProxyContractCodeID,
+		Msg: []byte(fmt.Sprintf(`
+			{
+				"owner": "%s",
+			}
+			`, UndelegationsManagerContract)),
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RegisterCronSchedules(ctx sdk.Context, ck *cronkeeper.Keeper) error {
+	if err := ck.AddSchedule(ctx, "undelegations manager contract tick & burn", 1,
+		[]types.MsgExecuteContract{
+			{
+				Contract: UndelegationsManagerContract,
+				Msg:      `{"tick": {}}`,
+			},
+			{
+				Contract: UndelegationsManagerContract,
+				Msg:      `{"burn": {}}`,
+			},
+		},
+		types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -297,7 +358,16 @@ func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
 		return fmt.Errorf("failed to get all delegator delegations: %w", err)
 	}
 
-	redelegations := calcRedelegations(delegations, NewValidatorSet, appparams.DefaultDenom)
+	valAddresses := make([]sdk.ValAddress, len(NewValidatorSet))
+
+	for i, addr := range NewValidatorSet {
+		valAddresses[i], err = sdk.ValAddressFromBech32(addr)
+		if err != nil {
+			return err
+		}
+	}
+
+	redelegations := calcRedelegations(delegations, valAddresses, appparams.DefaultDenom)
 
 	stakingMsgServer := stakingkeeper.NewMsgServerImpl(sk)
 	for _, redelegation := range redelegations {
