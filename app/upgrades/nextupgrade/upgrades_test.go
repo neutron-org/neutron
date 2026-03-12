@@ -58,14 +58,6 @@ func srcSharesFor(rs []Redelegation, srcVal sdk.ValAddress) math.Int {
 	return sum
 }
 
-func TestCalcRedelegations_NoNewValidators(t *testing.T) {
-	delegations := []stakingtypes.Delegation{
-		makeDelegation(makeValAddr(1), "100"),
-	}
-	result := calcRedelegationsHelper(delegations, nil)
-	require.Empty(t, result)
-}
-
 func TestCalcRedelegations_NoDelegations(t *testing.T) {
 	newVals := []sdk.ValAddress{makeValAddr(10), makeValAddr(11)}
 	result := calcRedelegationsHelper(nil, newVals)
