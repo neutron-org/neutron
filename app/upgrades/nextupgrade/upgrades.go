@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
@@ -59,7 +60,7 @@ const (
 	ProxyContractCodeID = 5213
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
-	UndelegationsManagerContract = "neutron1..."
+	UndelegationsManagerContract = "neutron1nrcun8vymlnwpkh8t86l3ggzwyy8ptrhv5m9dnm67tpq8np463lqy22ztx"
 )
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
@@ -307,20 +308,28 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 }
 
 func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
-	revenueBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(RevenueModuleAccount), appparams.DefaultDenom)
+	revenueBalance := bk.GetBalance(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), appparams.DefaultDenom)
 	if revenueBalance.IsZero() {
 		return fmt.Errorf("revenue treasury %s balance is not expected to be zero", RevenueModuleAccount)
 	}
-	if err := bk.BurnCoins(ctx, RevenueModuleAccount, sdk.NewCoins(revenueBalance)); err != nil {
-		return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
+	if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), banktypes.ModuleName, sdk.Coins{revenueBalance}); err != nil {
+		return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
 	}
-	ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
 
 	rewardsBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), appparams.DefaultDenom)
 	if rewardsBalance.IsZero() {
 		return fmt.Errorf("staking rewards contract %s balance is not expected to be zero", StakingRewardsContractAddress)
 	}
-	if err := bk.BurnCoins(ctx, StakingRewardsContractAddress, sdk.NewCoins(rewardsBalance)); err != nil {
+	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), banktypes.ModuleName, sdk.Coins{revenueBalance}); err != nil {
+		return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+	}
+
+	if err := bk.BurnCoins(ctx, banktypes.ModuleName, sdk.NewCoins(revenueBalance)); err != nil {
+		return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
+	}
+	ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
+
+	if err := bk.BurnCoins(ctx, banktypes.ModuleName, sdk.NewCoins(rewardsBalance)); err != nil {
 		return fmt.Errorf("failed to burn staking rewards entire balance: %w", err)
 	}
 	ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
