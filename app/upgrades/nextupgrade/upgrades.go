@@ -41,7 +41,7 @@ const (
 	IBCRateLimitsContractAddress = "neutron15aqgplxcavqhurr0g5wwtdw6025dknkqwkfh0n46gp2qjl6236cs2yd3nl"
 
 	// RevenueModuleAccount is the address of the Revenue module account
-	RevenueModuleAccount = "neutron1k5d2e2572uf85wa6ek0yv24ezw26z6n5rnfkad"
+	RevenueModuleAccount = "revenue-treasury"
 
 	// StakingRewardsContractAddress is the address of the Staking Rewards contract
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
