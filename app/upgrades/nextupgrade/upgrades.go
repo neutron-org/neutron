@@ -14,7 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
@@ -47,7 +47,7 @@ const (
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
 
 	// NewMaxValidators is the new maximum number of validators
-	NewMaxValidators = 5
+	NewMaxValidators = 1
 
 	// CommunityDelegationsOwner is the address of the Community Delegations owner. It is the Drop
 	// puppeteer contract, it owns all delegations including the DAO funds in Drop.
@@ -65,7 +65,7 @@ const (
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
 // TODO: fill in real validator addresses before deployment.
-var NewValidatorSet = []string{"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva"}
+var NewValidatorSet = []string{"neutronvaloper14xcrdjwwxtf9zr7dvaa97wy056se6r5eez2u8d"}
 
 /*
 TODO:
@@ -123,12 +123,18 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	}
 	ctx.Logger().Info("Set default parameters for distribution module")
 
-	// revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
-	ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
-	if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
+	ctx.Logger().Info("Initializing distribution state from staking (validators + all delegations)")
+	if err := InitializeDistributionStateFromStaking(ctx, keepers.DistributionKeeper, keepers.StakingKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
+
+	// // revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
+	// ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
+	// if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
+	// 	return err
+	// }
+	// ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Setting up Feemarket params")
 	if err := SetupFeeMarket(ctx, keepers.FeeMarketKeeper); err != nil {
@@ -136,36 +142,185 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	}
 	ctx.Logger().Info("Done.")
 
-	ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
-	if err := BurnFunds(ctx, keepers.BankKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
+	// ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
+	// if err := BurnFunds(ctx, keepers.BankKeeper); err != nil {
+	// 	return err
+	// }
+	// ctx.Logger().Info("Done.")
 
-	ctx.Logger().Info("Setting up staking module")
-	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
+	// ctx.Logger().Info("Setting up staking module")
+	// if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
+	// 	return err
+	// }
+	// ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Redelegating DAO funds to new validator set")
-	if err := RedelegateDaoFunds(ctx, keepers.StakingKeeper); err != nil {
+	if err := RedelegateDaoFunds(ctx, keepers.StakingKeeper, keepers.DistributionKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
 
-	ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
-	if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
+	// ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
+	// if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
+	// 	return err
+	// }
+	// ctx.Logger().Info("Done.")
+
+	// ctx.Logger().Info("Registering cron schedules")
+	// if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
+	// 	return err
+	// }
+	// ctx.Logger().Info("Done.")
+
+	return nil
+}
+
+func SetupDistribution(ctx sdk.Context, dk distributionkeeper.Keeper, sk *stakingkeeper.Keeper) error {
+	validators, err := sk.GetAllValidators(ctx)
+	if err != nil {
 		return err
 	}
-	ctx.Logger().Info("Done.")
 
-	ctx.Logger().Info("Registering cron schedules")
-	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
+	for _, val := range validators {
+		err = SetupDistributionForValidator(ctx, dk, sk, val)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func SetupDistributionForValidator(ctx sdk.Context, dk distributionkeeper.Keeper, sk *stakingkeeper.Keeper, val stakingtypes.Validator) error {
+	// initialize rewards for a new validator
+	valBz, err := sk.ValidatorAddressCodec().StringToBytes(val.GetOperator())
+	if err != nil {
 		return err
 	}
-	ctx.Logger().Info("Done.")
+	// set initial historical rewards (period 0) with reference count of 1
+	err = dk.SetValidatorHistoricalRewards(ctx, valBz, 0, distributiontypes.NewValidatorHistoricalRewards(sdk.DecCoins{}, 1))
+	if err != nil {
+		return err
+	}
 
+	// set current rewards (starting at period 1)
+	err = dk.SetValidatorCurrentRewards(ctx, valBz, distributiontypes.NewValidatorCurrentRewards(sdk.DecCoins{}, 1))
+	if err != nil {
+		return err
+	}
+
+	// set accumulated commission
+	err = dk.SetValidatorAccumulatedCommission(ctx, valBz, distributiontypes.InitialValidatorAccumulatedCommission())
+	if err != nil {
+		return err
+	}
+
+	// set outstanding rewards
+	err = dk.SetValidatorOutstandingRewards(ctx, valBz, distributiontypes.ValidatorOutstandingRewards{Rewards: sdk.DecCoins{}})
+	return err
+}
+
+// InitializeDistributionStateFromStaking fills distribution module state the same way
+// InitGenesis does: set validator records, then set DelegatorStartingInfo for each delegation.
+// ValidatorHistoricalRewards(period 0) reference count is set once to the number of
+// delegations per validator (no per-delegation increment). See distribution keeper InitGenesis.
+func InitializeDistributionStateFromStaking(ctx sdk.Context, dk distributionkeeper.Keeper, sk *stakingkeeper.Keeper) error {
+	// 1) Validator state (like InitGenesis ValidatorHistoricalRewards / ValidatorCurrentRewards / etc.)
+	if err := SetupDistribution(ctx, dk, sk); err != nil {
+		return fmt.Errorf("setting up distribution for validators: %w", err)
+	}
+
+	// 2) Count delegations per validator (for period 0 reference count)
+	delegationsPerValidator := make(map[string]uint32)
+	var iterErr error
+	err := sk.IterateAllDelegations(ctx, func(delegation stakingtypes.Delegation) bool {
+		if iterErr != nil {
+			return true
+		}
+		valAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
+		if err != nil {
+			iterErr = fmt.Errorf("invalid validator %s: %w", delegation.ValidatorAddress, err)
+			return true
+		}
+		hasInfo, err := dk.HasDelegatorStartingInfo(ctx, valAddr, sdk.MustAccAddressFromBech32(delegation.DelegatorAddress))
+		if err != nil {
+			iterErr = err
+			return true
+		}
+		if !hasInfo {
+			delegationsPerValidator[delegation.ValidatorAddress]++
+		}
+		return false
+	})
+	if err != nil {
+		return fmt.Errorf("counting delegations: %w", err)
+	}
+	if iterErr != nil {
+		return fmt.Errorf("counting delegations: %w", iterErr)
+	}
+
+	// 3) Set ValidatorHistoricalRewards(period 0) reference count in one go (like genesis)
+	for valStr, count := range delegationsPerValidator {
+		valAddr, err := sdk.ValAddressFromBech32(valStr)
+		if err != nil {
+			return fmt.Errorf("validator address %s: %w", valStr, err)
+		}
+		historical, err := dk.GetValidatorHistoricalRewards(ctx, valAddr, 0)
+		if err != nil {
+			return fmt.Errorf("get historical rewards %s: %w", valStr, err)
+		}
+		historical.ReferenceCount = count
+		if err := dk.SetValidatorHistoricalRewards(ctx, valAddr, 0, historical); err != nil {
+			return fmt.Errorf("set historical rewards %s: %w", valStr, err)
+		}
+	}
+
+	// 4) Set DelegatorStartingInfo for each delegation (like InitGenesis DelegatorStartingInfos)
+	var setCount int
+	iterErr = nil
+	err = sk.IterateAllDelegations(ctx, func(delegation stakingtypes.Delegation) bool {
+		if iterErr != nil {
+			return true
+		}
+		delAddr, err := sdk.AccAddressFromBech32(delegation.DelegatorAddress)
+		if err != nil {
+			iterErr = fmt.Errorf("invalid delegator %s: %w", delegation.DelegatorAddress, err)
+			return true
+		}
+		valAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
+		if err != nil {
+			iterErr = fmt.Errorf("invalid validator %s: %w", delegation.ValidatorAddress, err)
+			return true
+		}
+		if hasInfo, _ := dk.HasDelegatorStartingInfo(ctx, valAddr, delAddr); hasInfo {
+			return false
+		}
+		validator, err := sk.Validator(ctx, valAddr)
+		if err != nil {
+			iterErr = fmt.Errorf("get validator %s: %w", delegation.ValidatorAddress, err)
+			return true
+		}
+		del, err := sk.Delegation(ctx, delAddr, valAddr)
+		if err != nil {
+			iterErr = fmt.Errorf("get delegation: %w", err)
+			return true
+		}
+		stake := validator.TokensFromSharesTruncated(del.GetShares())
+		info := distributiontypes.NewDelegatorStartingInfo(0, stake, uint64(ctx.BlockHeight()))
+		if err := dk.SetDelegatorStartingInfo(ctx, valAddr, delAddr, info); err != nil {
+			iterErr = fmt.Errorf("set delegator starting info: %w", err)
+			return true
+		}
+		setCount++
+		return false
+	})
+	if err != nil {
+		return fmt.Errorf("iterating delegations: %w", err)
+	}
+	if iterErr != nil {
+		return fmt.Errorf("setting delegator starting infos: %w", iterErr)
+	}
+	ctx.Logger().Info("Initialized distribution from staking (genesis-style)", "delegations", setCount)
 	return nil
 }
 
@@ -177,7 +332,7 @@ func MigratePuppeteer(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 		CodeID:   ProxyContractCodeID,
 		Msg: []byte(fmt.Sprintf(`
 			{
-				"owner": "%s",
+				"owner": "%s"
 			}
 			`, UndelegationsManagerContract)),
 	}); err != nil {
@@ -312,7 +467,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	if revenueBalance.IsZero() {
 		return fmt.Errorf("revenue treasury %s balance is not expected to be zero", RevenueModuleAccount)
 	}
-	if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), banktypes.ModuleName, sdk.Coins{revenueBalance}); err != nil {
+	if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
 		return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
 	}
 
@@ -320,16 +475,16 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	if rewardsBalance.IsZero() {
 		return fmt.Errorf("staking rewards contract %s balance is not expected to be zero", StakingRewardsContractAddress)
 	}
-	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), banktypes.ModuleName, sdk.Coins{revenueBalance}); err != nil {
+	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{revenueBalance}); err != nil {
 		return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
 	}
 
-	if err := bk.BurnCoins(ctx, banktypes.ModuleName, sdk.NewCoins(revenueBalance)); err != nil {
+	if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(revenueBalance)); err != nil {
 		return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
 	}
 	ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
 
-	if err := bk.BurnCoins(ctx, banktypes.ModuleName, sdk.NewCoins(rewardsBalance)); err != nil {
+	if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(rewardsBalance)); err != nil {
 		return fmt.Errorf("failed to burn staking rewards entire balance: %w", err)
 	}
 	ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
@@ -361,8 +516,9 @@ func SetupStaking(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
 	return nil
 }
 
-func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
-	delegations, err := sk.GetAllDelegatorDelegations(ctx, sdk.MustAccAddressFromBech32(CommunityDelegationsOwner))
+func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper, dk distributionkeeper.Keeper) error {
+	delegatorAddr := sdk.MustAccAddressFromBech32(CommunityDelegationsOwner)
+	delegations, err := sk.GetAllDelegatorDelegations(ctx, delegatorAddr)
 	if err != nil {
 		return fmt.Errorf("failed to get all delegator delegations: %w", err)
 	}
