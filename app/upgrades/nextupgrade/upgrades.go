@@ -57,15 +57,15 @@ const (
 	PuppeteerAdmin = "neutron1zhhww6gaysxs5vf94xsz2cpfznwgjatsxrnl8239555mfttzlxwqaagcfn"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
-	ProxyContractCodeID = 5213
+	ProxyContractCodeID = 5216
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
-	UndelegationsManagerContract = "neutron1nrcun8vymlnwpkh8t86l3ggzwyy8ptrhv5m9dnm67tpq8np463lqy22ztx"
+	UndelegationsManagerContract = "neutron17zvhn7s3tw72a5vvdeaj2h7nj9yg5fj70992e2pq3rhv0tx4dxnsxftv7r"
 )
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
 // TODO: fill in real validator addresses before deployment.
-var NewValidatorSet = []string{"neutronvaloper14xcrdjwwxtf9zr7dvaa97wy056se6r5eez2u8d"}
+var NewValidatorSet = []string{"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva"}
 
 /*
 TODO:
@@ -130,11 +130,11 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Done.")
 
 	// // revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
-	// ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
-	// if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
-	// 	return err
-	// }
-	// ctx.Logger().Info("Done.")
+	ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
+	if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Setting up Feemarket params")
 	if err := SetupFeeMarket(ctx, keepers.FeeMarketKeeper); err != nil {
@@ -142,17 +142,17 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	}
 	ctx.Logger().Info("Done.")
 
-	// ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
-	// if err := BurnFunds(ctx, keepers.BankKeeper); err != nil {
-	// 	return err
-	// }
-	// ctx.Logger().Info("Done.")
+	ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
+	if err := BurnFunds(ctx, keepers.BankKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
 
-	// ctx.Logger().Info("Setting up staking module")
-	// if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
-	// 	return err
-	// }
-	// ctx.Logger().Info("Done.")
+	ctx.Logger().Info("Setting up staking module")
+	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Redelegating DAO funds to new validator set")
 	if err := RedelegateDaoFunds(ctx, keepers.StakingKeeper, keepers.DistributionKeeper); err != nil {
@@ -160,17 +160,17 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	}
 	ctx.Logger().Info("Done.")
 
-	// ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
-	// if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
-	// 	return err
-	// }
-	// ctx.Logger().Info("Done.")
+	ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
+	if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
 
-	// ctx.Logger().Info("Registering cron schedules")
-	// if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
-	// 	return err
-	// }
-	// ctx.Logger().Info("Done.")
+	ctx.Logger().Info("Registering cron schedules")
+	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
 
 	return nil
 }
@@ -475,7 +475,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	if rewardsBalance.IsZero() {
 		return fmt.Errorf("staking rewards contract %s balance is not expected to be zero", StakingRewardsContractAddress)
 	}
-	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{revenueBalance}); err != nil {
+	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{rewardsBalance}); err != nil {
 		return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
 	}
 
