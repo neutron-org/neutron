@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	testDelegator = sdk.AccAddress(make([]byte, 20)).String()
-)
+var testDelegator = sdk.AccAddress(make([]byte, 20)).String()
 
 // makeValAddr creates a deterministic sdk.ValAddress from a small integer, useful for tests.
 func makeValAddr(n byte) sdk.ValAddress {
