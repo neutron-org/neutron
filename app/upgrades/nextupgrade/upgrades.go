@@ -60,7 +60,7 @@ const (
 	ProxyContractCodeID = 5216
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
-	UndelegationsManagerContract = "neutron17zvhn7s3tw72a5vvdeaj2h7nj9yg5fj70992e2pq3rhv0tx4dxnsxftv7r"
+	UndelegationsManagerContract = "neutron1zd4xuzvx4kexjctwde8lh907jyvvma5lj0ydn8c5s0rlp0yzzweqy9z8ee"
 )
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
@@ -184,109 +184,40 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	return nil
 }
 
-func SetupDistribution(ctx sdk.Context, dk distributionkeeper.Keeper, sk *stakingkeeper.Keeper) error {
+// InitializeDistributionStateFromStaking initializes distribution module state for all existing
+// validators and delegations by calling the distribution module's own hooks. This is equivalent
+// to what the staking module does during normal operation when validators are created and
+// delegations are modified, ensuring correct state (historical rewards, reference counts,
+// delegator starting info) without manual bookkeeping.
+func InitializeDistributionStateFromStaking(ctx sdk.Context, dk distributionkeeper.Keeper, sk *stakingkeeper.Keeper) error {
+	hooks := dk.Hooks()
+
+	// 1) Initialize distribution state for each validator via AfterValidatorCreated.
+	// This sets up: historical rewards (period 0, refcount 1), current rewards (period 1),
+	// accumulated commission, and outstanding rewards.
 	validators, err := sk.GetAllValidators(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("getting all validators: %w", err)
 	}
-
 	for _, val := range validators {
-		err = SetupDistributionForValidator(ctx, dk, sk, val)
+		valAddr, err := sdk.ValAddressFromBech32(val.GetOperator())
 		if err != nil {
-			return err
+			return fmt.Errorf("invalid validator operator %s: %w", val.GetOperator(), err)
+		}
+		if err := hooks.AfterValidatorCreated(ctx, valAddr); err != nil {
+			return fmt.Errorf("AfterValidatorCreated for %s: %w", val.GetOperator(), err)
 		}
 	}
 
-	return nil
-}
-
-func SetupDistributionForValidator(ctx sdk.Context, dk distributionkeeper.Keeper, sk *stakingkeeper.Keeper, val stakingtypes.Validator) error {
-	// initialize rewards for a new validator
-	valBz, err := sk.ValidatorAddressCodec().StringToBytes(val.GetOperator())
-	if err != nil {
-		return err
-	}
-	// set initial historical rewards (period 0) with reference count of 1
-	err = dk.SetValidatorHistoricalRewards(ctx, valBz, 0, distributiontypes.NewValidatorHistoricalRewards(sdk.DecCoins{}, 1))
-	if err != nil {
-		return err
-	}
-
-	// set current rewards (starting at period 1)
-	err = dk.SetValidatorCurrentRewards(ctx, valBz, distributiontypes.NewValidatorCurrentRewards(sdk.DecCoins{}, 1))
-	if err != nil {
-		return err
-	}
-
-	// set accumulated commission
-	err = dk.SetValidatorAccumulatedCommission(ctx, valBz, distributiontypes.InitialValidatorAccumulatedCommission())
-	if err != nil {
-		return err
-	}
-
-	// set outstanding rewards
-	err = dk.SetValidatorOutstandingRewards(ctx, valBz, distributiontypes.ValidatorOutstandingRewards{Rewards: sdk.DecCoins{}})
-	return err
-}
-
-// InitializeDistributionStateFromStaking fills distribution module state the same way
-// InitGenesis does: set validator records, then set DelegatorStartingInfo for each delegation.
-// ValidatorHistoricalRewards(period 0) reference count is set once to the number of
-// delegations per validator (no per-delegation increment). See distribution keeper InitGenesis.
-func InitializeDistributionStateFromStaking(ctx sdk.Context, dk distributionkeeper.Keeper, sk *stakingkeeper.Keeper) error {
-	// 1) Validator state (like InitGenesis ValidatorHistoricalRewards / ValidatorCurrentRewards / etc.)
-	if err := SetupDistribution(ctx, dk, sk); err != nil {
-		return fmt.Errorf("setting up distribution for validators: %w", err)
-	}
-
-	// 2) Count delegations per validator (for period 0 reference count)
-	delegationsPerValidator := make(map[string]uint32)
-	var iterErr error
-	err := sk.IterateAllDelegations(ctx, func(delegation stakingtypes.Delegation) bool {
-		if iterErr != nil {
-			return true
-		}
-		valAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
-		if err != nil {
-			iterErr = fmt.Errorf("invalid validator %s: %w", delegation.ValidatorAddress, err)
-			return true
-		}
-		hasInfo, err := dk.HasDelegatorStartingInfo(ctx, valAddr, sdk.MustAccAddressFromBech32(delegation.DelegatorAddress))
-		if err != nil {
-			iterErr = err
-			return true
-		}
-		if !hasInfo {
-			delegationsPerValidator[delegation.ValidatorAddress]++
-		}
-		return false
-	})
-	if err != nil {
-		return fmt.Errorf("counting delegations: %w", err)
-	}
-	if iterErr != nil {
-		return fmt.Errorf("counting delegations: %w", iterErr)
-	}
-
-	// 3) Set ValidatorHistoricalRewards(period 0) reference count in one go (like genesis)
-	for valStr, count := range delegationsPerValidator {
-		valAddr, err := sdk.ValAddressFromBech32(valStr)
-		if err != nil {
-			return fmt.Errorf("validator address %s: %w", valStr, err)
-		}
-		historical, err := dk.GetValidatorHistoricalRewards(ctx, valAddr, 0)
-		if err != nil {
-			return fmt.Errorf("get historical rewards %s: %w", valStr, err)
-		}
-		historical.ReferenceCount = count
-		if err := dk.SetValidatorHistoricalRewards(ctx, valAddr, 0, historical); err != nil {
-			return fmt.Errorf("set historical rewards %s: %w", valStr, err)
-		}
-	}
-
-	// 4) Set DelegatorStartingInfo for each delegation (like InitGenesis DelegatorStartingInfos)
-	var setCount int
-	iterErr = nil
+	// 2) Initialize delegator starting info for each delegation, mirroring the staking
+	// module's hook sequence for new delegations:
+	//   - BeforeDelegationCreated: increments the validator period
+	//   - AfterDelegationModified: calls initializeDelegation which increments the period
+	//     again, sets DelegatorStartingInfo, and manages reference counts
+	var (
+		delegationCount int
+		iterErr         error
+	)
 	err = sk.IterateAllDelegations(ctx, func(delegation stakingtypes.Delegation) bool {
 		if iterErr != nil {
 			return true
@@ -301,35 +232,28 @@ func InitializeDistributionStateFromStaking(ctx sdk.Context, dk distributionkeep
 			iterErr = fmt.Errorf("invalid validator %s: %w", delegation.ValidatorAddress, err)
 			return true
 		}
-		if hasInfo, _ := dk.HasDelegatorStartingInfo(ctx, valAddr, delAddr); hasInfo {
-			return false
-		}
-		validator, err := sk.Validator(ctx, valAddr)
-		if err != nil {
-			iterErr = fmt.Errorf("get validator %s: %w", delegation.ValidatorAddress, err)
+		if err := hooks.BeforeDelegationCreated(ctx, delAddr, valAddr); err != nil {
+			iterErr = fmt.Errorf("BeforeDelegationCreated for del=%s val=%s: %w",
+				delegation.DelegatorAddress, delegation.ValidatorAddress, err)
 			return true
 		}
-		del, err := sk.Delegation(ctx, delAddr, valAddr)
-		if err != nil {
-			iterErr = fmt.Errorf("get delegation: %w", err)
+		if err := hooks.AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
+			iterErr = fmt.Errorf("AfterDelegationModified for del=%s val=%s: %w",
+				delegation.DelegatorAddress, delegation.ValidatorAddress, err)
 			return true
 		}
-		stake := validator.TokensFromSharesTruncated(del.GetShares())
-		info := distributiontypes.NewDelegatorStartingInfo(0, stake, uint64(ctx.BlockHeight()))
-		if err := dk.SetDelegatorStartingInfo(ctx, valAddr, delAddr, info); err != nil {
-			iterErr = fmt.Errorf("set delegator starting info: %w", err)
-			return true
-		}
-		setCount++
+		delegationCount++
 		return false
 	})
 	if err != nil {
 		return fmt.Errorf("iterating delegations: %w", err)
 	}
 	if iterErr != nil {
-		return fmt.Errorf("setting delegator starting infos: %w", iterErr)
+		return iterErr
 	}
-	ctx.Logger().Info("Initialized distribution from staking (genesis-style)", "delegations", setCount)
+
+	ctx.Logger().Info("Initialized distribution from staking via hooks",
+		"validators", len(validators), "delegations", delegationCount)
 	return nil
 }
 
