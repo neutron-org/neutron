@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"cosmossdk.io/math"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -106,20 +107,38 @@ func CreateUpgradeHandler(
 // setDefaultParams sets default parameters for gov, mint, and distribution modules
 func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	// TODO: finalize
-	govparams := govtypesv1.DefaultParams()
-	govparams.MinDeposit = []sdk.Coin{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000))}
-	govparams.ExpeditedMinDeposit = []sdk.Coin{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(5_000_000))}
+	govparams := govtypesv1.NewParams(
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
+		7*24*time.Hour,
+		14*24*time.Hour,
+		3*24*time.Hour,
+		math.LegacyNewDecWithPrec(45, 2).String(),
+		math.LegacyNewDecWithPrec(5, 1).String(),
+		math.LegacyNewDecWithPrec(67, 2).String(),
+		math.LegacyNewDecWithPrec(33, 2).String(),
+		math.LegacyOneDec().String(),
+		math.LegacyZeroDec().String(),
+		"",
+		false,
+		false,
+		true,
+		math.LegacyMustNewDecFromStr("0.1").String(),
+	)
+
 	if err := keepers.GovKeeper.Params.Set(ctx, govparams); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Set default parameters for gov module")
 
 	// Set default parameters for mint module
-	// TODO: finalize
+	// TODO: finalize BlocksPerYear
 	mintParams := minttypes.DefaultParams()
 	mintParams.MintDenom = appparams.DefaultDenom
 	mintParams.InflationMax = math.LegacyNewDecWithPrec(30, 2)
 	mintParams.InflationMin = math.LegacyNewDecWithPrec(1, 2)
+	mintParams.InflationRateChange = math.LegacyNewDecWithPrec(2, 1)
+	mintParams.GoalBonded = math.LegacyNewDecWithPrec(67, 2)
 	if err := keepers.MintKeeper.Params.Set(ctx, mintParams); err != nil {
 		return err
 	}
@@ -127,6 +146,7 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 
 	// Set default parameters for distribution module
 	distrParams := distributiontypes.DefaultParams()
+	distrParams.CommunityTax = math.LegacyZeroDec()
 	if err := keepers.DistributionKeeper.Params.Set(ctx, distrParams); err != nil {
 		return err
 	}
