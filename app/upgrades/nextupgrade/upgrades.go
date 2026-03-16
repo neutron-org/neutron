@@ -105,12 +105,21 @@ func CreateUpgradeHandler(
 
 // setDefaultParams sets default parameters for gov, mint, and distribution modules
 func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+	// TODO: finalize
 	govparams := govtypesv1.DefaultParams()
+	govparams.MinDeposit = []sdk.Coin{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000))}
+	govparams.ExpeditedMinDeposit = []sdk.Coin{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(5_000_000))}
 	if err := keepers.GovKeeper.Params.Set(ctx, govparams); err != nil {
 		return err
 	}
+	ctx.Logger().Info("Set default parameters for gov module")
+
 	// Set default parameters for mint module
+	// TODO: finalize
 	mintParams := minttypes.DefaultParams()
+	mintParams.MintDenom = appparams.DefaultDenom
+	mintParams.InflationMax = math.LegacyNewDecWithPrec(30, 2)
+	mintParams.InflationMin = math.LegacyNewDecWithPrec(1, 2)
 	if err := keepers.MintKeeper.Params.Set(ctx, mintParams); err != nil {
 		return err
 	}
