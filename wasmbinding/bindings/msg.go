@@ -29,8 +29,6 @@ type NeutronMsg struct {
 	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
 	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
-	SubmitAdminProposal       *SubmitAdminProposal              `json:"submit_admin_proposal,omitempty"`
-
 	// Token factory types
 	/// Contracts can create denoms, namespaced under the contract's address.
 	/// A contract may create any number of independent sub-denoms.

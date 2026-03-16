@@ -118,11 +118,6 @@ func (qp QueryPlugin) GetBeforeSendHook(ctx sdk.Context, denom string) (*binding
 	return &bindings.BeforeSendHookResponse{ContractAddr: contractAddr}, nil
 }
 
-func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {
-	// FeeBurnerKeeper removed - feeburner module no longer supported
-	return nil, errors.Wrap(ErrModuleNotSupported, "feeburner module is no longer supported")
-}
-
 func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeRequest) (*bindings.QueryMinIbcFeeResponse, error) {
 	fee := qp.feeRefunderKeeper.GetMinFee(ctx)
 	return &bindings.QueryMinIbcFeeResponse{MinFee: fee}, nil

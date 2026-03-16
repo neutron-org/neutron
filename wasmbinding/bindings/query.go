@@ -31,8 +31,7 @@ type NeutronQuery struct {
 	RegisteredInterchainQueries *QueryRegisteredQueriesRequest `json:"registered_interchain_queries,omitempty"`
 	// RegisteredInterchainQuery
 	RegisteredInterchainQuery *QueryRegisteredQueryRequest `json:"registered_interchain_query,omitempty"`
-	// TotalBurnedNeutronsAmount
-	TotalBurnedNeutronsAmount *QueryTotalBurnedNeutronsAmountRequest `json:"total_burned_neutrons_amount,omitempty"`
+
 	// MinIbcFee
 	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
 	// Token Factory queries

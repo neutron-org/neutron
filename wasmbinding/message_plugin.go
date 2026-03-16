@@ -130,9 +130,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.IBCTransfer != nil {
 		return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 	}
-	if contractMsg.SubmitAdminProposal != nil {
-		return nil, nil, nil, errors.Wrap(ErrModuleNotSupported, "adminmodule is no longer supported, use gov module instead")
-	}
 
 	if contractMsg.CreateDenom != nil {
 		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
