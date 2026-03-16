@@ -58,22 +58,15 @@ const (
 	PuppeteerAdmin = "neutron1zhhww6gaysxs5vf94xsz2cpfznwgjatsxrnl8239555mfttzlxwqaagcfn"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
-	ProxyContractCodeID = 5216
+	ProxyContractCodeID = 00000 // TODO
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
-	UndelegationsManagerContract = "neutron1zd4xuzvx4kexjctwde8lh907jyvvma5lj0ydn8c5s0rlp0yzzweqy9z8ee"
+	UndelegationsManagerContract = "TODO"
 )
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
 // TODO: fill in real validator addresses before deployment.
 var NewValidatorSet = []string{"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva"}
-
-/*
-TODO:
-define modules parameters
-sort out the revenue module's rewards
-sort out the ibc rate limit contract
-*/
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
@@ -106,7 +99,6 @@ func CreateUpgradeHandler(
 
 // setDefaultParams sets default parameters for gov, mint, and distribution modules
 func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
-	// TODO: finalize
 	govparams := govtypesv1.NewParams(
 		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
 		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
@@ -158,7 +150,7 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	}
 	ctx.Logger().Info("Done.")
 
-	// // revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
+	// revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
 	ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
 	if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
 		return err
