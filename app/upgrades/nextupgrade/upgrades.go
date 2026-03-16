@@ -58,7 +58,7 @@ const (
 	PuppeteerAdmin = "TODO"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
-	ProxyContractCodeID = 00000 // TODO
+	ProxyContractCodeID = 0o0000 // TODO
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
 	UndelegationsManagerContract = "TODO"
