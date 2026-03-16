@@ -50,12 +50,12 @@ const (
 	// NewMaxValidators is the new maximum number of validators
 	NewMaxValidators = 1
 
-	// CommunityDelegationsOwner is the address of the Community Delegations owner. It is the Drop
-	// puppeteer contract, it owns all delegations including the DAO funds in Drop.
-	CommunityDelegationsOwner = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3"
+	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
+	// It owns all delegations including the DAO funds in Drop.
+	PuppeteerContractAddress = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3"
 
 	// PuppeteerAdmin is an admin address of the Drop's puppeteer contract
-	PuppeteerAdmin = "neutron1zhhww6gaysxs5vf94xsz2cpfznwgjatsxrnl8239555mfttzlxwqaagcfn"
+	PuppeteerAdmin = "TODO"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
 	ProxyContractCodeID = 00000 // TODO
@@ -176,7 +176,7 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Redelegating DAO funds to new validator set")
-	if err := RedelegateDaoFunds(ctx, keepers.StakingKeeper, keepers.DistributionKeeper); err != nil {
+	if err := RedelegateDaoFunds(ctx, keepers.StakingKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -273,7 +273,7 @@ func MigratePuppeteer(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
 	if _, err := wasmSrv.MigrateContract(ctx, &wasmTypes.MsgMigrateContract{
 		Sender:   PuppeteerAdmin,
-		Contract: CommunityDelegationsOwner,
+		Contract: PuppeteerContractAddress,
 		CodeID:   ProxyContractCodeID,
 		Msg: []byte(fmt.Sprintf(`
 			{
@@ -461,8 +461,8 @@ func SetupStaking(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
 	return nil
 }
 
-func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper, dk distributionkeeper.Keeper) error {
-	delegatorAddr := sdk.MustAccAddressFromBech32(CommunityDelegationsOwner)
+func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
+	delegatorAddr := sdk.MustAccAddressFromBech32(PuppeteerContractAddress)
 	delegations, err := sk.GetAllDelegatorDelegations(ctx, delegatorAddr)
 	if err != nil {
 		return fmt.Errorf("failed to get all delegator delegations: %w", err)
