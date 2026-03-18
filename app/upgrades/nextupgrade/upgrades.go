@@ -569,8 +569,7 @@ func calcRedelegations(
 			DelegatorAddress:    delegation.Delegation.DelegatorAddress,
 			ValidatorSrcAddress: delegation.Delegation.ValidatorAddress,
 			ValidatorDstAddress: newVal,
-			// TODO: check can we just truncate shares to tokens?
-			Amount: sdk.NewCoin(denom, take),
+			Amount:              sdk.NewCoin(denom, take),
 		})
 		DebitCredit[delegation.Delegation.ValidatorAddress] = DebitCredit[delegation.Delegation.ValidatorAddress].Sub(take)
 		DebitCredit[newVal] = DebitCredit[newVal].Add(take)
