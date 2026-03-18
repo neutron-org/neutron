@@ -206,7 +206,7 @@ func TestCalcRedelegations_UnevenTotal_LastValidatorAbsorbsRemainder(t *testing.
 	expectedLast := math.NewInt(100).Sub(expectedAmountPer).Sub(expectedAmountPer)
 	require.Equal(t, expectedLast, result[2].Amount.Amount)
 
-	// Conservation: 99 tokens must be accounted for.
+	// Conservation: 100 tokens must be accounted for.
 	require.Equal(t, math.NewInt(100), totalRedelegated(result))
 }
 
