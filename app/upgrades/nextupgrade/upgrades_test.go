@@ -6,8 +6,9 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	appparams "github.com/neutron-org/neutron/v10/app/params"
 	"github.com/stretchr/testify/require"
+
+	appparams "github.com/neutron-org/neutron/v10/app/params"
 )
 
 var testDelegator = sdk.AccAddress(make([]byte, 20)).String()
@@ -68,6 +69,7 @@ func dstTokensFor(rs []stakingtypes.MsgBeginRedelegate, dstVal string) math.Int 
 	}
 	return sum
 }
+
 func TestCalcRedelegations_NoDelegations(t *testing.T) {
 	newVals := []sdk.ValAddress{makeValAddr(10), makeValAddr(11)}
 	result := calcRedelegationsHelper(nil, newVals)
