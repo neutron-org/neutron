@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
@@ -176,7 +177,7 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Redelegating DAO funds to new validator set")
-	if err := RedelegateDaoFunds(ctx, keepers.StakingKeeper); err != nil {
+	if err := RedelegateDaoFunds(ctx, keepers.AccountKeeper, keepers.StakingKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -443,29 +444,25 @@ func SetupStaking(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
 		return fmt.Errorf("failed to get staking module params: %w", err)
 	}
 
+	ctx.Logger().Info("Setting up staking module params with max_validators updated", "max_validators", NewMaxValidators)
 	stakingParams.MaxValidators = NewMaxValidators
 	if err := sk.SetParams(ctx, stakingParams); err != nil {
 		return fmt.Errorf("failed to set staking module params: %w", err)
 	}
 
-	ctx.Logger().Info("Setting up staking module params with max_validators updated", "max_validators", NewMaxValidators)
-	stakingMsgServer := stakingkeeper.NewMsgServerImpl(sk)
-	_, err = stakingMsgServer.UpdateParams(ctx, &stakingtypes.MsgUpdateParams{
-		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		Params:    stakingParams,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to update staking module params: %w", err)
-	}
-
 	return nil
 }
 
-func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
+func RedelegateDaoFunds(ctx sdk.Context, a authkeeper.AccountKeeper, sk *stakingkeeper.Keeper) error {
 	delegatorAddr := sdk.MustAccAddressFromBech32(PuppeteerContractAddress)
 	delegations, err := sk.GetAllDelegatorDelegations(ctx, delegatorAddr)
 	if err != nil {
 		return fmt.Errorf("failed to get all delegator delegations: %w", err)
+	}
+
+	delegationsResponses, err := delegationsToDelegationResponses(ctx, a, sk, delegations)
+	if err != nil {
+		return fmt.Errorf("failed to get delegations responses: %w", err)
 	}
 
 	valAddresses := make([]sdk.ValAddress, len(NewValidatorSet))
@@ -477,16 +474,13 @@ func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
 		}
 	}
 
-	redelegations := calcRedelegations(delegations, valAddresses, appparams.DefaultDenom)
+	redelegationsMsgs := calcRedelegations(delegationsResponses, valAddresses, appparams.DefaultDenom)
 
 	stakingMsgServer := stakingkeeper.NewMsgServerImpl(sk)
-	for _, redelegation := range redelegations {
-		for i := range redelegation.RedelegationMsgs {
-			msg := &redelegation.RedelegationMsgs[i]
-			_, err := stakingMsgServer.BeginRedelegate(ctx, msg)
-			if err != nil {
-				return fmt.Errorf("failed to redelegate from %s to %s: %w", msg.ValidatorSrcAddress, msg.ValidatorDstAddress, err)
-			}
+	for _, msg := range redelegationsMsgs {
+		_, err := stakingMsgServer.BeginRedelegate(ctx, &msg)
+		if err != nil {
+			return fmt.Errorf("failed to redelegate from %s to %s: %w", msg.ValidatorSrcAddress, msg.ValidatorDstAddress, err)
 		}
 	}
 
@@ -500,59 +494,137 @@ func RedelegateDaoFunds(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
 // Each returned Redelegation corresponds to one new validator. Its RedelegationMsgs contains
 // fully-populated MsgBeginRedelegate messages ready to be submitted to the staking message server.
 func calcRedelegations(
-	delegations []stakingtypes.Delegation,
+	delegations []stakingtypes.DelegationResponse,
 	newValidators []sdk.ValAddress,
 	denom string,
-) []Redelegation {
-	redelegations := make([]Redelegation, len(newValidators))
-	for i, val := range newValidators {
-		redelegations[i] = Redelegation{
-			ValidatorAddress: val,
-			RedelegationMsgs: make([]stakingtypes.MsgBeginRedelegate, 0),
-			Redelegated:      math.LegacyZeroDec(),
-		}
+) []stakingtypes.MsgBeginRedelegate {
+	redelegationsMsgs := make([]stakingtypes.MsgBeginRedelegate, 0)
+
+	newValidatorsStack := NewStack()
+	for _, val := range newValidators {
+		newValidatorsStack.Push(val)
 	}
 
-	totalDelegatedAmount := math.LegacyZeroDec()
+	// positive means we must redelegate from this validator
+	// negative means we must delegate to this validator
+	DebitCredit := make(map[string]math.Int)
+	totalDelegatedAmount := math.NewInt(0)
 	for _, delegation := range delegations {
-		totalDelegatedAmount = totalDelegatedAmount.Add(delegation.Shares)
-	}
-	amountPerValidator := totalDelegatedAmount.Quo(math.LegacyNewDec(int64(len(newValidators))))
-
-	newValIdx := 0
-	for _, delegation := range delegations {
-		remaining := delegation.Shares
-		for remaining.IsPositive() && newValIdx < len(newValidators) {
-			isLastValidator := newValIdx == len(newValidators)-1
-			needed := amountPerValidator.Sub(redelegations[newValIdx].Redelegated)
-
-			// The last validator absorbs all remaining shares so that rounding remainders
-			// are not lost. For other validators, cap the take at what is still needed.
-			var take math.LegacyDec
-			if isLastValidator || remaining.LTE(needed) {
-				take = remaining
-			} else {
-				take = needed
-			}
-
-			redelegations[newValIdx].RedelegationMsgs = append(
-				redelegations[newValIdx].RedelegationMsgs,
-				stakingtypes.MsgBeginRedelegate{
-					DelegatorAddress:    delegation.DelegatorAddress,
-					ValidatorSrcAddress: delegation.ValidatorAddress,
-					ValidatorDstAddress: redelegations[newValIdx].ValidatorAddress.String(),
-					Amount:              sdk.NewCoin(denom, take.TruncateInt()),
-				},
-			)
-			redelegations[newValIdx].Redelegated = redelegations[newValIdx].Redelegated.Add(take)
-			remaining = remaining.Sub(take)
-
-			// Move to the next new validator once the current one is fully funded.
-			if !isLastValidator && redelegations[newValIdx].Redelegated.GTE(amountPerValidator) {
-				newValIdx++
-			}
+		totalDelegatedAmount = totalDelegatedAmount.Add(delegation.Balance.Amount)
+		dc := DebitCredit[delegation.Delegation.ValidatorAddress]
+		if dc.IsNil() {
+			dc = math.ZeroInt()
 		}
+		DebitCredit[delegation.Delegation.ValidatorAddress] = dc.Add(delegation.Balance.Amount)
+	}
+	amountPerValidator := totalDelegatedAmount.Quo(math.NewInt(int64(len(newValidators))))
+	for _, val := range newValidators {
+		dc := DebitCredit[val.String()]
+		if dc.IsNil() {
+			dc = math.ZeroInt()
+		}
+		DebitCredit[val.String()] = dc.Sub(amountPerValidator)
+	}
+	// allocate reminder as last validator debt
+	reminder := totalDelegatedAmount.Mod(math.NewInt(int64(len(newValidators))))
+	DebitCredit[newValidators[len(newValidators)-1].String()] = DebitCredit[newValidators[len(newValidators)-1].String()].Sub(reminder)
+
+	delIdx := 0
+	for delIdx < len(delegations) {
+		delegation := delegations[delIdx]
+		newVal := newValidatorsStack.Peek()
+		if newVal == nil {
+			break
+		}
+		recvVal := newVal.String()
+
+		remaining := DebitCredit[delegation.Delegation.ValidatorAddress]
+		needed := DebitCredit[recvVal].Neg()
+		if !needed.IsPositive() {
+			newValidatorsStack.Pop()
+			continue
+		}
+		if !remaining.IsPositive() {
+			delIdx++
+			continue
+		}
+		if delegation.Delegation.ValidatorAddress == newVal.String() {
+			if delIdx == len(delegations)-1 && newValidatorsStack.Size() == 1 {
+				// if only one delegation and one new validator, and they are "the same validator",
+				// just exit the loop
+				break
+			}
+			// skip new validator to not delegate to itself and process later
+			newValidatorsStack.Pop()
+			newValidatorsStack.Push(newVal)
+			continue
+		}
+
+		isLastValidator := newValidatorsStack.Size() == 1
+
+		// The last validator absorbs all remaining shares so that rounding remainders
+		// are not lost. For other validators, cap the take at what is still needed.
+		var take math.Int
+		if isLastValidator || remaining.LTE(needed) {
+			take = remaining
+		} else {
+			take = needed
+		}
+
+		redelegationsMsgs = append(redelegationsMsgs, stakingtypes.MsgBeginRedelegate{
+			DelegatorAddress:    delegation.Delegation.DelegatorAddress,
+			ValidatorSrcAddress: delegation.Delegation.ValidatorAddress,
+			ValidatorDstAddress: newVal.String(),
+			// TODO: check can we just truncate shares to tokens?
+			Amount: sdk.NewCoin(denom, take),
+		})
+		DebitCredit[delegation.Delegation.ValidatorAddress] = DebitCredit[delegation.Delegation.ValidatorAddress].Sub(take)
+		DebitCredit[recvVal] = DebitCredit[recvVal].Add(take)
 	}
 
-	return redelegations
+	return redelegationsMsgs
+}
+
+func delegationToDelegationResponse(ctx context.Context, a authkeeper.AccountKeeper, k *stakingkeeper.Keeper, del stakingtypes.Delegation) (stakingtypes.DelegationResponse, error) {
+	valAddr, err := k.ValidatorAddressCodec().StringToBytes(del.GetValidatorAddr())
+	if err != nil {
+		return stakingtypes.DelegationResponse{}, err
+	}
+
+	val, err := k.GetValidator(ctx, valAddr)
+	if err != nil {
+		return stakingtypes.DelegationResponse{}, err
+	}
+
+	_, err = a.AddressCodec().StringToBytes(del.DelegatorAddress)
+	if err != nil {
+		return stakingtypes.DelegationResponse{}, err
+	}
+
+	bondDenom, err := k.BondDenom(ctx)
+	if err != nil {
+		return stakingtypes.DelegationResponse{}, err
+	}
+
+	return stakingtypes.NewDelegationResp(
+		del.DelegatorAddress,
+		del.GetValidatorAddr(),
+		del.Shares,
+		sdk.NewCoin(bondDenom, val.TokensFromShares(del.Shares).TruncateInt()),
+	), nil
+}
+
+func delegationsToDelegationResponses(ctx context.Context, a authkeeper.AccountKeeper, k *stakingkeeper.Keeper, delegations stakingtypes.Delegations) (stakingtypes.DelegationResponses, error) {
+	resp := make(stakingtypes.DelegationResponses, len(delegations))
+
+	for i, del := range delegations {
+		delResp, err := delegationToDelegationResponse(ctx, a, k, del)
+		if err != nil {
+			return nil, err
+		}
+
+		resp[i] = delResp
+	}
+
+	return resp, nil
 }
