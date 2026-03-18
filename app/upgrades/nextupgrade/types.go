@@ -1,9 +1,5 @@
 package nextupgrade
 
-import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
-
 type IBCRateLimitsExecuteMessage struct {
 	GrantRole  *GrantRole  `json:"grant_role,omitempty"`
 	RevokeRole *RevokeRole `json:"revoke_role,omitempty"`
@@ -20,35 +16,35 @@ type RevokeRole struct {
 }
 
 type Stack struct {
-	elements []sdk.ValAddress
+	elements []string
 }
 
 // NewStack creates a new stack instance
 func NewStack() *Stack {
 	return &Stack{
-		elements: make([]sdk.ValAddress, 0),
+		elements: make([]string, 0),
 	}
 }
 
-func (s *Stack) Push(data sdk.ValAddress) {
+func (s *Stack) Push(data string) {
 	s.elements = append(s.elements, data)
 }
 
 // Pop Data from the stack:
-func (s *Stack) Pop() sdk.ValAddress {
+func (s *Stack) Pop() string {
 	if len(s.elements) == 0 {
-		return nil
+		return ""
 	}
 
 	data := s.elements[0]
-	s.elements[0] = nil
+	s.elements[0] = ""
 	s.elements = s.elements[1:]
 	return data
 }
 
-func (s *Stack) Peek() sdk.ValAddress {
+func (s *Stack) Peek() string {
 	if len(s.elements) == 0 {
-		return nil
+		return ""
 	}
 	return s.elements[0]
 }

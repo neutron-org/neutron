@@ -499,7 +499,7 @@ func calcRedelegations(
 
 	newValidatorsStack := NewStack()
 	for _, val := range newValidators {
-		newValidatorsStack.Push(val)
+		newValidatorsStack.Push(val.String())
 	}
 
 	// positive means we must redelegate from this validator
@@ -530,13 +530,12 @@ func calcRedelegations(
 	for delIdx < len(delegations) {
 		delegation := delegations[delIdx]
 		newVal := newValidatorsStack.Peek()
-		if newVal == nil {
+		if newVal == "" {
 			break
 		}
-		recvVal := newVal.String()
 
 		remaining := DebitCredit[delegation.Delegation.ValidatorAddress]
-		needed := DebitCredit[recvVal].Neg()
+		needed := DebitCredit[newVal].Neg()
 		if !needed.IsPositive() {
 			// new validator full
 			newValidatorsStack.Pop()
@@ -547,7 +546,7 @@ func calcRedelegations(
 			delIdx++
 			continue
 		}
-		if delegation.Delegation.ValidatorAddress == newVal.String() {
+		if delegation.Delegation.ValidatorAddress == newVal {
 			if delIdx == len(delegations)-1 && newValidatorsStack.Size() == 1 {
 				// if only one delegation and one new validator, and they are "the same validator",
 				// just exit the loop
@@ -569,12 +568,12 @@ func calcRedelegations(
 		redelegationsMsgs = append(redelegationsMsgs, stakingtypes.MsgBeginRedelegate{
 			DelegatorAddress:    delegation.Delegation.DelegatorAddress,
 			ValidatorSrcAddress: delegation.Delegation.ValidatorAddress,
-			ValidatorDstAddress: newVal.String(),
+			ValidatorDstAddress: newVal,
 			// TODO: check can we just truncate shares to tokens?
 			Amount: sdk.NewCoin(denom, take),
 		})
 		DebitCredit[delegation.Delegation.ValidatorAddress] = DebitCredit[delegation.Delegation.ValidatorAddress].Sub(take)
-		DebitCredit[recvVal] = DebitCredit[recvVal].Add(take)
+		DebitCredit[newVal] = DebitCredit[newVal].Add(take)
 	}
 
 	return redelegationsMsgs
