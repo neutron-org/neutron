@@ -488,11 +488,8 @@ func RedelegateDaoFunds(ctx sdk.Context, a authkeeper.AccountKeeper, sk *staking
 }
 
 // calcRedelegations computes how to redistribute existing delegations across a new validator set
-// so that each new validator receives an even distribution of shares. When the total shares do not
+// so that each new validator receives an even distribution of tokens. When the total tokens do not
 // divide evenly, the last new validator absorbs the remainder.
-//
-// Each returned Redelegation corresponds to one new validator. Its RedelegationMsgs contains
-// fully-populated MsgBeginRedelegate messages ready to be submitted to the staking message server.
 func calcRedelegations(
 	delegations []stakingtypes.DelegationResponse,
 	newValidators []sdk.ValAddress,
@@ -525,7 +522,7 @@ func calcRedelegations(
 		}
 		DebitCredit[val.String()] = dc.Sub(amountPerValidator)
 	}
-	// allocate reminder as last validator debt
+	// allocate the remainder as the last validator’s debt
 	reminder := totalDelegatedAmount.Mod(math.NewInt(int64(len(newValidators))))
 	DebitCredit[newValidators[len(newValidators)-1].String()] = DebitCredit[newValidators[len(newValidators)-1].String()].Sub(reminder)
 
@@ -541,10 +538,12 @@ func calcRedelegations(
 		remaining := DebitCredit[delegation.Delegation.ValidatorAddress]
 		needed := DebitCredit[recvVal].Neg()
 		if !needed.IsPositive() {
+			// new validator full
 			newValidatorsStack.Pop()
 			continue
 		}
 		if !remaining.IsPositive() {
+			// no more tokens to redelegate from this validator
 			delIdx++
 			continue
 		}
@@ -554,18 +553,16 @@ func calcRedelegations(
 				// just exit the loop
 				break
 			}
-			// skip new validator to not delegate to itself and process later
+			// push new validator to the end of queue to not delegate to itself and process later
 			newValidatorsStack.Pop()
 			newValidatorsStack.Push(newVal)
 			continue
 		}
 
-		isLastValidator := newValidatorsStack.Size() == 1
-
 		// The last validator absorbs all remaining shares so that rounding remainders
 		// are not lost. For other validators, cap the take at what is still needed.
 		var take math.Int
-		if isLastValidator || remaining.LTE(needed) {
+		if remaining.LTE(needed) {
 			take = remaining
 		} else {
 			take = needed
