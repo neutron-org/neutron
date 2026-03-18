@@ -559,8 +559,6 @@ func calcRedelegations(
 			continue
 		}
 
-		// The last validator absorbs all remaining shares so that rounding remainders
-		// are not lost. For other validators, cap the take at what is still needed.
 		var take math.Int
 		if remaining.LTE(needed) {
 			take = remaining
