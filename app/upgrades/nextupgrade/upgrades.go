@@ -582,6 +582,7 @@ func calcRedelegations(
 	return redelegationsMsgs
 }
 
+// copied from staking keeper
 func delegationToDelegationResponse(ctx context.Context, a authkeeper.AccountKeeper, k *stakingkeeper.Keeper, del stakingtypes.Delegation) (stakingtypes.DelegationResponse, error) {
 	valAddr, err := k.ValidatorAddressCodec().StringToBytes(del.GetValidatorAddr())
 	if err != nil {
