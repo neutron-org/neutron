@@ -438,6 +438,7 @@ func SetupMarketMap(ctx context.Context, mmk *marketmapkeeper.Keeper) error {
 	}
 
 	params.Admin = authtypes.NewModuleAddress(govtypes.ModuleName).String()
+	params.MarketAuthorities = []string{authtypes.NewModuleAddress(govtypes.ModuleName).String()}
 	if err := mmk.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
 		return err
 	}
