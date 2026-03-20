@@ -38,7 +38,7 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 		},
 		{
 			desc: "-200100",
-			tick: -2000100,
+			tick: -200100,
 		},
 		{
 			desc: "400000",
