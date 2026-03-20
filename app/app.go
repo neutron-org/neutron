@@ -1289,7 +1289,7 @@ func New(
 		time.Second,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewVoteExtensionCodecWithSizeCheck(),
 			compression.NewZLibCompressor(),
 		),
 		aggregator.NewOraclePriceApplier(
