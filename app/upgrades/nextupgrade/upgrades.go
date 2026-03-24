@@ -169,6 +169,12 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	}
 	ctx.Logger().Info("Done.")
 
+	ctx.Logger().Info("Taking back funds from legacy module accounts")
+	if err := TakeFundsFromLegacyAccounts(ctx, keepers.BankKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
 	ctx.Logger().Info("Setting up staking module")
 	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
 		return err
@@ -434,6 +440,22 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	}
 	ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
 
+	return nil
+}
+
+func TakeFundsFromLegacyAccounts(ctx sdk.Context, bk bankkeeper.Keeper) error {
+	legacy := append(Deleted, "revenue-fee-redistribute", "revenue-staking-rewards")
+	for _, accName := range legacy {
+		moduleAddr := authtypes.NewModuleAddress(accName)
+		balances := bk.GetAllBalances(ctx, moduleAddr)
+		if balances.Empty() {
+			continue
+		}
+		err := bk.SendCoins(ctx, moduleAddr, sdk.MustAccAddressFromBech32(MainDAOContractAddress), balances)
+		if err != nil {
+			return fmt.Errorf("failed to send coins from %s to main DAO: %w", accName, err)
+		}
+	}
 	return nil
 }
 
