@@ -780,13 +780,13 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		app.StakingKeeper,
-		nil,                           // app.DistributionKeeper,        // distrKeeper - DistributionKeeper interface not compatible with wasmkeeper
-		app.RateLimitingICS4Wrapper,   // ics4Wrapper
-		app.IBCKeeper.ChannelKeeper,   // channelKeeper
-		app.IBCKeeper.ChannelKeeperV2, // channelKeeperV2
-		app.TransferKeeper.Keeper,     // portSource
-		app.MsgServiceRouter(),        // router
-		app.GRPCQueryRouter(),         // grpcQueryRouter
+		distributionkeeper.NewQuerier(app.DistributionKeeper), // app.DistributionKeeper
+		app.RateLimitingICS4Wrapper,                           // ics4Wrapper
+		app.IBCKeeper.ChannelKeeper,                           // channelKeeper
+		app.IBCKeeper.ChannelKeeperV2,                         // channelKeeperV2
+		app.TransferKeeper.Keeper,                             // portSource
+		app.MsgServiceRouter(),                                // router
+		app.GRPCQueryRouter(),                                 // grpcQueryRouter
 		wasmDir,
 		nodeConfig,
 		wasmtypes.VMConfig{},
