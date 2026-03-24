@@ -790,8 +790,6 @@ func New(
 		wasmDir,
 		nodeConfig,
 		wasmtypes.VMConfig{},
-		// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
-		// however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
 		append(wasmkeeper.BuiltInCapabilities(), "neutron", "cosmwasm_3_0"),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		wasmOpts...,
