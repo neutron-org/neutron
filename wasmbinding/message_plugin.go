@@ -152,7 +152,7 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.SetDenomMetadata != nil {
 		return m.setDenomMetadata(ctx, contractAddr, contractMsg.SetDenomMetadata)
 	}
-	
+
 	if contractMsg.RemoveSchedule != nil {
 		return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 	}
@@ -436,8 +436,6 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 	msgResponses := [][]*types.Any{{anyResp}}
 	return nil, [][]byte{data}, msgResponses, nil
 }
-
-// submitAdminProposal removed - adminmodule no longer supported, use gov module instead
 
 // createDenom creates a new token denom
 func (m *CustomMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -812,9 +810,8 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
 	}
 
-	// Admin check removed - adminmodule no longer supported
 	if contractAddr.String() != params.Params.SecurityAddress {
-		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
+		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only the security dao can remove schedule")
 	}
 
 	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
@@ -879,8 +876,6 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 	msgResponses := [][]*types.Any{{anyResp}}
 	return nil, [][]byte{data}, msgResponses, nil
 }
-
-// isAdmin removed - adminmodule no longer supported
 
 func getRegisterFee(fee sdk.Coins) sdk.Coins {
 	if fee == nil {
