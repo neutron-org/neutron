@@ -18,6 +18,7 @@ var (
 	DefaultDenomCreationGasConsume uint64
 	DefaultFeeCollectorAddress     = ""
 	DefaultWhitelistedHooks        = []*WhitelistedHook{}
+	DefaultTrackBeforeSendGasLimit = uint64(500_000)
 )
 
 // ParamKeyTable the param key table for tokenfactory module.
@@ -25,18 +26,19 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64, feeCollectorAddress string, whitelistedHooks []*WhitelistedHook) Params {
+func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64, feeCollectorAddress string, whitelistedHooks []*WhitelistedHook, trackBeforeSendGasLimit uint64) Params {
 	return Params{
 		DenomCreationFee:        denomCreationFee,
 		DenomCreationGasConsume: denomCreationGasConsume,
 		FeeCollectorAddress:     feeCollectorAddress,
 		WhitelistedHooks:        whitelistedHooks,
+		TrackBeforeSendGasLimit: trackBeforeSendGasLimit,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultDenomCreationFee, DefaultDenomCreationGasConsume, DefaultFeeCollectorAddress, DefaultWhitelistedHooks)
+	return NewParams(DefaultDenomCreationFee, DefaultDenomCreationGasConsume, DefaultFeeCollectorAddress, DefaultWhitelistedHooks, DefaultTrackBeforeSendGasLimit)
 }
 
 // Validate validates params
