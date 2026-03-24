@@ -79,15 +79,13 @@ func CreateUpgradeHandler(
 		ctx := sdk.UnwrapSDKContext(c)
 
 		ctx.Logger().Info("Starting module migrations...")
-
 		vm, err := mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {
 			return vm, err
 		}
 
-		ctx.Logger().Info("Configuring parameters for new modules...")
-
-		err = setDefaultParams(ctx, keepers)
+		ctx.Logger().Info("Starting migration steps...")
+		err = executeUpgradeSteps(ctx, keepers)
 		if err != nil {
 			return vm, err
 		}
@@ -97,52 +95,13 @@ func CreateUpgradeHandler(
 	}
 }
 
-// setDefaultParams sets default parameters for gov, mint, and distribution modules
-func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
-	govparams := govtypesv1.NewParams(
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
-		7*24*time.Hour,
-		14*24*time.Hour,
-		3*24*time.Hour,
-		math.LegacyNewDecWithPrec(45, 2).String(),
-		math.LegacyNewDecWithPrec(5, 1).String(),
-		math.LegacyNewDecWithPrec(67, 2).String(),
-		math.LegacyNewDecWithPrec(33, 2).String(),
-		math.LegacyOneDec().String(),
-		math.LegacyZeroDec().String(),
-		"",
-		false,
-		false,
-		true,
-		math.LegacyMustNewDecFromStr("0.1").String(),
-	)
-
-	if err := keepers.GovKeeper.Params.Set(ctx, govparams); err != nil {
+// executeUpgradeSteps sets default parameters for gov, mint, and distribution modules
+func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+	ctx.Logger().Info("Configuring parameters for new modules...")
+	if err := setModuleParams(ctx, keepers); err != nil {
 		return err
 	}
-	ctx.Logger().Info("Set default parameters for gov module")
-
-	// Set default parameters for mint module
-	// TODO: finalize BlocksPerYear
-	mintParams := minttypes.DefaultParams()
-	mintParams.MintDenom = appparams.DefaultDenom
-	mintParams.InflationMax = math.LegacyNewDecWithPrec(30, 2)
-	mintParams.InflationMin = math.LegacyNewDecWithPrec(1, 2)
-	mintParams.InflationRateChange = math.LegacyNewDecWithPrec(2, 1)
-	mintParams.GoalBonded = math.LegacyNewDecWithPrec(67, 2)
-	if err := keepers.MintKeeper.Params.Set(ctx, mintParams); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Set default parameters for mint module")
-
-	// Set default parameters for distribution module
-	distrParams := distributiontypes.DefaultParams()
-	distrParams.CommunityTax = math.LegacyZeroDec()
-	if err := keepers.DistributionKeeper.Params.Set(ctx, distrParams); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Set default parameters for distribution module")
+	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Initializing distribution state from staking (validators + all delegations)")
 	if err := InitializeDistributionStateFromStaking(ctx, keepers.DistributionKeeper, keepers.StakingKeeper); err != nil {
@@ -199,6 +158,54 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	}
 	ctx.Logger().Info("Done.")
 
+	return nil
+}
+
+func setModuleParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+	govparams := govtypesv1.NewParams(
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
+		7*24*time.Hour,
+		14*24*time.Hour,
+		3*24*time.Hour,
+		math.LegacyNewDecWithPrec(45, 2).String(),
+		math.LegacyNewDecWithPrec(5, 1).String(),
+		math.LegacyNewDecWithPrec(67, 2).String(),
+		math.LegacyNewDecWithPrec(33, 2).String(),
+		math.LegacyOneDec().String(),
+		math.LegacyZeroDec().String(),
+		"",
+		false,
+		false,
+		true,
+		math.LegacyMustNewDecFromStr("0.1").String(),
+	)
+
+	if err := keepers.GovKeeper.Params.Set(ctx, govparams); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Set default parameters for gov module")
+
+	// Set default parameters for mint module
+	// TODO: finalize BlocksPerYear
+	mintParams := minttypes.DefaultParams()
+	mintParams.MintDenom = appparams.DefaultDenom
+	mintParams.InflationMax = math.LegacyNewDecWithPrec(30, 2)
+	mintParams.InflationMin = math.LegacyNewDecWithPrec(1, 2)
+	mintParams.InflationRateChange = math.LegacyNewDecWithPrec(2, 1)
+	mintParams.GoalBonded = math.LegacyNewDecWithPrec(67, 2)
+	if err := keepers.MintKeeper.Params.Set(ctx, mintParams); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Set default parameters for mint module")
+
+	// Set default parameters for distribution module
+	distrParams := distributiontypes.DefaultParams()
+	distrParams.CommunityTax = math.LegacyZeroDec()
+	if err := keepers.DistributionKeeper.Params.Set(ctx, distrParams); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Set default parameters for distribution module")
 	return nil
 }
 
