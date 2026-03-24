@@ -304,7 +304,7 @@ var (
 		oracletypes.ModuleName:                  nil,
 		marketmaptypes.ModuleName:               nil,
 		feemarkettypes.FeeCollectorName:         nil,
-		govtypes.ModuleName:                     nil,
+		govtypes.ModuleName:                     {authtypes.Burner},
 		minttypes.ModuleName:                    {authtypes.Minter},
 		distributiontypes.ModuleName:            nil,
 	}
