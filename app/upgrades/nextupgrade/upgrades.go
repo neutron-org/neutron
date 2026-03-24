@@ -290,6 +290,14 @@ func MigratePuppeteer(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 		return err
 	}
 
+	if _, err := wasmSrv.UpdateAdmin(ctx, &wasmTypes.MsgUpdateAdmin{
+		Sender:   PuppeteerAdmin,
+		NewAdmin: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		Contract: PuppeteerContractAddress,
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
