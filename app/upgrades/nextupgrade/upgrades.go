@@ -431,7 +431,7 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	revenueBalance := bk.GetBalance(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), appparams.DefaultDenom)
 	if revenueBalance.IsZero() {
-		return fmt.Errorf("revenue treasury %s balance is not expected to be zero", RevenueModuleAccount)
+		return fmt.Errorf("revenue treasury %s balance is not expected to be zero", authtypes.NewModuleAddress(RevenueModuleAccount))
 	}
 	if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
 		return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
