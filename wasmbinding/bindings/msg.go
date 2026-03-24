@@ -53,7 +53,6 @@ type NeutronMsg struct {
 	SetDenomMetadata *SetDenomMetadata `json:"set_denom_metadata,omitempty"`
 
 	// Cron types
-	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
 	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
 
 	// Contractmanager types

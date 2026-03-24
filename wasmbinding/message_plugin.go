@@ -152,10 +152,7 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.SetDenomMetadata != nil {
 		return m.setDenomMetadata(ctx, contractAddr, contractMsg.SetDenomMetadata)
 	}
-
-	if contractMsg.AddSchedule != nil {
-		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
-	}
+	
 	if contractMsg.RemoveSchedule != nil {
 		return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 	}
@@ -806,47 +803,6 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 	}
 
 	return response, nil
-}
-
-func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	// Admin check removed - adminmodule no longer supported
-	if false {
-		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
-	}
-
-	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
-
-	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
-	for _, msg := range addSchedule.Msgs {
-		msgs = append(msgs, crontypes.MsgExecuteContract{
-			Contract: msg.Contract,
-			Msg:      msg.Msg,
-		})
-	}
-
-	_, err := m.CronMsgServer.AddSchedule(ctx, &crontypes.MsgAddSchedule{
-		Authority:      authority.String(),
-		Name:           addSchedule.Name,
-		Period:         addSchedule.Period,
-		Msgs:           msgs,
-		ExecutionStage: crontypes.ExecutionStage(crontypes.ExecutionStage_value[addSchedule.ExecutionStage]),
-	})
-	if err != nil {
-		ctx.Logger().Error("failed to addSchedule",
-			"from_address", contractAddr.String(),
-			"name", addSchedule.Name,
-			"error", err,
-		)
-		return nil, nil, nil, errors.Wrapf(err, "failed to add %s schedule", addSchedule.Name)
-	}
-
-	ctx.Logger().Debug("schedule added",
-		"from_address", contractAddr.String(),
-		"name", addSchedule.Name,
-		"period", addSchedule.Period,
-	)
-
-	return nil, nil, nil, nil
 }
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
