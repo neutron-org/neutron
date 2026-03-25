@@ -430,30 +430,32 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 
 func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	revenueBalance := bk.GetBalance(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), appparams.DefaultDenom)
-	if revenueBalance.IsZero() {
-		return fmt.Errorf("revenue treasury %s balance is not expected to be zero", authtypes.NewModuleAddress(RevenueModuleAccount))
-	}
-	if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
-		return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
+	if revenueBalance.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
+			return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
+		}
+
+		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(revenueBalance)); err != nil {
+			return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
+		}
+		ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
+	} else {
+		ctx.Logger().Info("nothing to burn from revenue treasury (%s) module account", authtypes.NewModuleAddress(RevenueModuleAccount))
 	}
 
 	rewardsBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), appparams.DefaultDenom)
-	if rewardsBalance.IsZero() {
-		return fmt.Errorf("staking rewards contract %s balance is not expected to be zero", StakingRewardsContractAddress)
-	}
-	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{rewardsBalance}); err != nil {
-		return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
-	}
+	if rewardsBalance.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{rewardsBalance}); err != nil {
+			return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+		}
 
-	if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(revenueBalance)); err != nil {
-		return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
+		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(rewardsBalance)); err != nil {
+			return fmt.Errorf("failed to burn staking rewards entire balance: %w", err)
+		}
+		ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
+	} else {
+		ctx.Logger().Info("nothing to burn from staking rewards contract", StakingRewardsContractAddress)
 	}
-	ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
-
-	if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(rewardsBalance)); err != nil {
-		return fmt.Errorf("failed to burn staking rewards entire balance: %w", err)
-	}
-	ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
 
 	return nil
 }
