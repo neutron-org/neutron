@@ -459,6 +459,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 }
 
 func TakeFundsFromLegacyAccounts(ctx sdk.Context, bk bankkeeper.Keeper) error {
+	//nolint:gocritic // legacy intentionally keeps new slice
 	legacy := append(Deleted, "revenue-fee-redistribute", "revenue-staking-rewards")
 	for _, accName := range legacy {
 		moduleAddr := authtypes.NewModuleAddress(accName)

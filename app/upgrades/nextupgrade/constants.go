@@ -11,14 +11,12 @@ const (
 	UpgradeName = "nextupgrade"
 )
 
-var (
-	Deleted = []string{
-		"adminmodule",
-		"harpoon",
-		"revenue",
-		"feeburner",
-	}
-)
+var Deleted = []string{
+	"adminmodule",
+	"harpoon",
+	"revenue",
+	"feeburner",
+}
 
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
