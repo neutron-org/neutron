@@ -497,11 +497,6 @@ func calcRedelegations(
 ) []stakingtypes.MsgBeginRedelegate {
 	redelegationsMsgs := make([]stakingtypes.MsgBeginRedelegate, 0)
 
-	newValidatorsStack := NewStack()
-	for _, val := range newValidators {
-		newValidatorsStack.Push(val.String())
-	}
-
 	// positive means we must redelegate from this validator
 	// negative means we must delegate to this validator
 	DebitCredit := make(map[string]math.Int)
@@ -527,34 +522,21 @@ func calcRedelegations(
 	DebitCredit[newValidators[len(newValidators)-1].String()] = DebitCredit[newValidators[len(newValidators)-1].String()].Sub(reminder)
 
 	delIdx := 0
-	for delIdx < len(delegations) {
+	newValIdx := 0
+	for delIdx < len(delegations) && newValIdx < len(newValidators) {
 		delegation := delegations[delIdx]
-		newVal := newValidatorsStack.Peek()
-		if newVal == "" {
-			break
-		}
+		newVal := newValidators[newValIdx].String()
 
 		remaining := DebitCredit[delegation.Delegation.ValidatorAddress]
 		needed := DebitCredit[newVal].Neg()
 		if !needed.IsPositive() {
 			// new validator full
-			newValidatorsStack.Pop()
+			newValIdx++
 			continue
 		}
 		if !remaining.IsPositive() {
 			// no more tokens to redelegate from this validator
 			delIdx++
-			continue
-		}
-		if delegation.Delegation.ValidatorAddress == newVal {
-			if delIdx == len(delegations)-1 && newValidatorsStack.Size() == 1 {
-				// if only one delegation and one new validator, and they are "the same validator",
-				// just exit the loop
-				break
-			}
-			// push new validator to the end of queue to not delegate to itself and process later
-			newValidatorsStack.Pop()
-			newValidatorsStack.Push(newVal)
 			continue
 		}
 
