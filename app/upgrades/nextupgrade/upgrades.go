@@ -32,6 +32,7 @@ import (
 )
 
 const (
+	DNTRNDenom = "factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn"
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
 	MainDAOContractAddress = "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
 
@@ -455,6 +456,19 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 		ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
 	} else {
 		ctx.Logger().Info("nothing to burn from staking rewards contract", StakingRewardsContractAddress)
+	}
+
+	dntrnBalance := bk.GetBalance(ctx, sdk.AccAddress(MainDAOContractAddress), DNTRNDenom)
+	if dntrnBalance.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{dntrnBalance}); err != nil {
+			return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+		}
+		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(dntrnBalance)); err != nil {
+			return fmt.Errorf("failed to burn DNTRN entire balance: %w", err)
+		}
+		ctx.Logger().Info("Burned DNTRN entire balance", "amount", dntrnBalance)
+	} else {
+		ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to burn", MainDAOContractAddress))
 	}
 
 	return nil
