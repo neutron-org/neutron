@@ -458,7 +458,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 		ctx.Logger().Info("nothing to burn from staking rewards contract", StakingRewardsContractAddress)
 	}
 
-	dntrnBalance := bk.GetBalance(ctx, sdk.AccAddress(MainDAOContractAddress), DNTRNDenom)
+	dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
 	if dntrnBalance.IsPositive() {
 		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{dntrnBalance}); err != nil {
 			return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
