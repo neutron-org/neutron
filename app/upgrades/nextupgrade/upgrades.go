@@ -481,7 +481,8 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 		ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to burn", MainDAOContractAddress))
 	}
 
-	astroportBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(AstroPortContractAddress), AstroportShareDenom)
+	ntrnBalanceBefore := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+	astroportBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), AstroportShareDenom)
 	if astroportBalance.IsPositive() {
 		ws := wasmkeeper.NewMsgServerImpl(wk)
 		_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
@@ -509,15 +510,17 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 			}
 			ctx.Logger().Info("Swapped DNTRN to NTRN", "amount", dntrnBalance)
 
-			ntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
-			if ntrnBalance.IsPositive() {
-				if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnBalance}); err != nil {
+			ntrnBalanceAfter := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+			ntrnToBurn := ntrnBalanceAfter.Sub(ntrnBalanceBefore)
+			ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
+			if ntrnToBurn.IsPositive() {
+				if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
 					return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
 				}
-				if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnBalance)); err != nil {
+				if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
 					return fmt.Errorf("failed to burn NTRN entire balance: %w", err)
 				}
-				ctx.Logger().Info("Burned NTRN entire balance", "amount", ntrnBalance)
+				ctx.Logger().Info("Burned NTRN entire balance", "amount", ntrnToBurn)
 			} else {
 				ctx.Logger().Info(fmt.Sprintf("No NTRN balance on %s found to burn", MainDAOContractAddress))
 			}
