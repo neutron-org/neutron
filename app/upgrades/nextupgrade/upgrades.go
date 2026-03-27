@@ -32,6 +32,10 @@ import (
 )
 
 const (
+	AstroportShareDenom      = "factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share"
+	AstroPortContractAddress = "neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz"
+	DropSwapContractAddress  = "neutron1xng27d3t2jnqx5s7m4ru4m3avqcqzlac96yk9srjf90cnm5sc2xqmj35wf"
+
 	DNTRNDenom = "factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn"
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
 	MainDAOContractAddress = "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
@@ -124,7 +128,7 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
-	if err := BurnFunds(ctx, keepers.BankKeeper); err != nil {
+	if err := BurnFunds(ctx, keepers.BankKeeper, keepers.WasmKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -429,7 +433,7 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 	return nil
 }
 
-func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
+func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) error {
 	revenueBalance := bk.GetBalance(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), appparams.DefaultDenom)
 	if revenueBalance.IsPositive() {
 		if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
@@ -458,6 +462,12 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 		ctx.Logger().Info("nothing to burn from staking rewards contract", StakingRewardsContractAddress)
 	}
 
+	/*
+		1. all the dNTRN (200M+) on the Main DAO must be burned;
+		2. withdraw DAO’s liquidity from dNTRN-NTRN pool;
+		3. convert all withdrawn dNTRN to NTRN via the converter contract;
+		4. burn all NTRNs you got from steps 2 & 3;
+	*/
 	dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
 	if dntrnBalance.IsPositive() {
 		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{dntrnBalance}); err != nil {
@@ -469,6 +479,53 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
 		ctx.Logger().Info("Burned DNTRN entire balance", "amount", dntrnBalance)
 	} else {
 		ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to burn", MainDAOContractAddress))
+	}
+
+	astroportBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(AstroPortContractAddress), AstroportShareDenom)
+	if astroportBalance.IsPositive() {
+		ws := wasmkeeper.NewMsgServerImpl(wk)
+		_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+			Sender:   MainDAOContractAddress,
+			Contract: AstroPortContractAddress,
+			Msg:      []byte(`{"withdraw_liquidity": {}}`),
+			Funds:    sdk.NewCoins(astroportBalance),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to withdraw liquidity from Astroport: %w", err)
+		}
+		ctx.Logger().Info("Withdrew DAO liquidity from Astroport", "amount", astroportBalance)
+
+		dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
+		if dntrnBalance.IsPositive() {
+			ws := wasmkeeper.NewMsgServerImpl(wk)
+			_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+				Sender:   MainDAOContractAddress,
+				Contract: DropSwapContractAddress,
+				Msg:      fmt.Appendf(nil, `{"swap": {"receiver":"%s"}}`, MainDAOContractAddress),
+				Funds:    sdk.NewCoins(dntrnBalance),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to swap DNTRN to NTRN: %w", err)
+			}
+			ctx.Logger().Info("Swapped DNTRN to NTRN", "amount", dntrnBalance)
+
+			ntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+			if ntrnBalance.IsPositive() {
+				if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnBalance}); err != nil {
+					return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+				}
+				if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnBalance)); err != nil {
+					return fmt.Errorf("failed to burn NTRN entire balance: %w", err)
+				}
+				ctx.Logger().Info("Burned NTRN entire balance", "amount", ntrnBalance)
+			} else {
+				ctx.Logger().Info(fmt.Sprintf("No NTRN balance on %s found to burn", MainDAOContractAddress))
+			}
+		} else {
+			ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to swap to NTRN", MainDAOContractAddress))
+		}
+	} else {
+		ctx.Logger().Info(fmt.Sprintf("No DAO Astroport balance on %s found to withdraw liquidity from", AstroPortContractAddress))
 	}
 
 	return nil
