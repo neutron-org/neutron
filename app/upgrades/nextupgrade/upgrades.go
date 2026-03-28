@@ -468,6 +468,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 		3. convert all withdrawn dNTRN to NTRN via the converter contract;
 		4. burn all NTRNs you got from steps 2 & 3;
 	*/
+	// 1.
 	dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
 	if dntrnBalance.IsPositive() {
 		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{dntrnBalance}); err != nil {
@@ -483,6 +484,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 
 	ntrnBalanceBefore := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
 	astroportBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), AstroportShareDenom)
+	// 2.
 	if astroportBalance.IsPositive() {
 		ws := wasmkeeper.NewMsgServerImpl(wk)
 		_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
@@ -497,6 +499,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 		ctx.Logger().Info("Withdrew DAO liquidity from Astroport", "amount", astroportBalance)
 
 		dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
+		// 3.
 		if dntrnBalance.IsPositive() {
 			ws := wasmkeeper.NewMsgServerImpl(wk)
 			_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
@@ -513,6 +516,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 			ntrnBalanceAfter := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
 			ntrnToBurn := ntrnBalanceAfter.Sub(ntrnBalanceBefore)
 			ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
+			// 4.
 			if ntrnToBurn.IsPositive() {
 				if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
 					return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
