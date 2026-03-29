@@ -522,9 +522,9 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 					return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
 				}
 				if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
-					return fmt.Errorf("failed to burn NTRN entire balance: %w", err)
+					return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
 				}
-				ctx.Logger().Info("Burned NTRN entire balance", "amount", ntrnToBurn)
+				ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
 			} else {
 				ctx.Logger().Info(fmt.Sprintf("No NTRN balance on %s found to burn", MainDAOContractAddress))
 			}
