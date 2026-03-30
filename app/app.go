@@ -1201,7 +1201,7 @@ func New(
 		baseapp.NoOpProcessProposal(),
 		ve.NewDefaultValidateVoteExtensionsFn(app.StakingKeeper),
 		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewVoteExtensionCodecWithSizeCheck(),
 			compression.NewZLibCompressor(),
 		),
 		compression.NewCompressionExtendedCommitCodec(
