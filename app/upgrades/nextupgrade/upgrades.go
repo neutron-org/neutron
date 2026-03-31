@@ -164,7 +164,7 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 func setModuleParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	govparams := govtypesv1.NewParams(
 		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(3_000_000_000_000))),
 		7*24*time.Hour,
 		14*24*time.Hour,
 		3*24*time.Hour,
