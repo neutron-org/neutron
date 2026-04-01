@@ -23,6 +23,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
 	appparams "github.com/neutron-org/neutron/v10/app/params"
 	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
@@ -159,6 +160,18 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 
 	ctx.Logger().Info("Setting up Feemarket params")
 	if err := SetupFeeMarket(ctx, keepers.FeeMarketKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up Cron params")
+	if err := SetupCron(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up MarketMap params")
+	if err := SetupMarketMap(ctx, keepers.MarketmapKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -401,6 +414,32 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 	params.SendTipToProposer = true
 	err = fk.SetParams(sdk.UnwrapSDKContext(ctx), params)
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetupCron(ctx context.Context, ck *cronkeeper.Keeper) error {
+	params := ck.GetParams(sdk.UnwrapSDKContext(ctx))
+
+	params.SecurityAddress = authtypes.NewModuleAddress(govtypes.ModuleName).String()
+	if err := ck.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetupMarketMap(ctx context.Context, mmk *marketmapkeeper.Keeper) error {
+	params, err := mmk.GetParams(sdk.UnwrapSDKContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	params.Admin = authtypes.NewModuleAddress(govtypes.ModuleName).String()
+	params.MarketAuthorities = []string{authtypes.NewModuleAddress(govtypes.ModuleName).String()}
+	if err := mmk.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
 		return err
 	}
 
