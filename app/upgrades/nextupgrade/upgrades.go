@@ -34,6 +34,11 @@ import (
 )
 
 const (
+	AstroportShareDenom      = "factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share"
+	AstroPortContractAddress = "neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz"
+	DropSwapContractAddress  = "neutron1xng27d3t2jnqx5s7m4ru4m3avqcqzlac96yk9srjf90cnm5sc2xqmj35wf"
+
+	DNTRNDenom = "factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn"
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
 	MainDAOContractAddress = "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
 
@@ -81,15 +86,13 @@ func CreateUpgradeHandler(
 		ctx := sdk.UnwrapSDKContext(c)
 
 		ctx.Logger().Info("Starting module migrations...")
-
 		vm, err := mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {
 			return vm, err
 		}
 
-		ctx.Logger().Info("Configuring parameters for new modules...")
-
-		err = setDefaultParams(ctx, keepers)
+		ctx.Logger().Info("Starting migration steps...")
+		err = executeUpgradeSteps(ctx, keepers)
 		if err != nil {
 			return vm, err
 		}
@@ -99,11 +102,88 @@ func CreateUpgradeHandler(
 	}
 }
 
-// setDefaultParams sets default parameters for gov, mint, and distribution modules
-func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+// executeUpgradeSteps sets default parameters for gov, mint, and distribution modules
+func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+	ctx.Logger().Info("Configuring parameters for new modules...")
+	if err := setModuleParams(ctx, keepers); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Initializing distribution state from staking (validators + all delegations)")
+	if err := InitializeDistributionStateFromStaking(ctx, keepers.DistributionKeeper, keepers.StakingKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	// revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
+	ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
+	if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up Feemarket params")
+	if err := SetupFeeMarket(ctx, keepers.FeeMarketKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
+	if err := BurnFunds(ctx, keepers.BankKeeper, keepers.WasmKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up Cron params")
+	if err := SetupCron(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up MarketMap params")
+	if err := SetupMarketMap(ctx, keepers.MarketmapKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Taking back funds from legacy module accounts")
+	if err := TakeFundsFromLegacyAccounts(ctx, keepers.BankKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up staking module")
+	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Redelegating DAO funds to new validator set")
+	if err := RedelegateDaoFunds(ctx, keepers.AccountKeeper, keepers.StakingKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
+	if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Registering cron schedules")
+	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	return nil
+}
+
+func setModuleParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	govparams := govtypesv1.NewParams(
 		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
+		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(3_000_000_000_000))),
 		7*24*time.Hour,
 		14*24*time.Hour,
 		3*24*time.Hour,
@@ -145,68 +225,6 @@ func setDefaultParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 		return err
 	}
 	ctx.Logger().Info("Set default parameters for distribution module")
-
-	ctx.Logger().Info("Initializing distribution state from staking (validators + all delegations)")
-	if err := InitializeDistributionStateFromStaking(ctx, keepers.DistributionKeeper, keepers.StakingKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	// revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
-	ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
-	if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Setting up Feemarket params")
-	if err := SetupFeeMarket(ctx, keepers.FeeMarketKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Setting up Cron params")
-	if err := SetupCron(ctx, &keepers.CronKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Setting up MarketMap params")
-	if err := SetupMarketMap(ctx, keepers.MarketmapKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
-	if err := BurnFunds(ctx, keepers.BankKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Setting up staking module")
-	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Redelegating DAO funds to new validator set")
-	if err := RedelegateDaoFunds(ctx, keepers.AccountKeeper, keepers.StakingKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
-	if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Registering cron schedules")
-	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
 	return nil
 }
 
@@ -294,6 +312,14 @@ func MigratePuppeteer(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 				"owner": "%s"
 			}
 			`, UndelegationsManagerContract)),
+	}); err != nil {
+		return err
+	}
+
+	if _, err := wasmSrv.UpdateAdmin(ctx, &wasmTypes.MsgUpdateAdmin{
+		Sender:   PuppeteerAdmin,
+		NewAdmin: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		Contract: PuppeteerContractAddress,
 	}); err != nil {
 		return err
 	}
@@ -447,33 +473,125 @@ func SetupMarketMap(ctx context.Context, mmk *marketmapkeeper.Keeper) error {
 	return nil
 }
 
-func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper) error {
+func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) error {
 	revenueBalance := bk.GetBalance(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), appparams.DefaultDenom)
-	if revenueBalance.IsZero() {
-		return fmt.Errorf("revenue treasury %s balance is not expected to be zero", RevenueModuleAccount)
-	}
-	if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
-		return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
+	if revenueBalance.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
+			return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
+		}
+
+		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(revenueBalance)); err != nil {
+			return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
+		}
+		ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
+	} else {
+		ctx.Logger().Info("nothing to burn from revenue treasury (%s) module account", authtypes.NewModuleAddress(RevenueModuleAccount))
 	}
 
 	rewardsBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), appparams.DefaultDenom)
-	if rewardsBalance.IsZero() {
-		return fmt.Errorf("staking rewards contract %s balance is not expected to be zero", StakingRewardsContractAddress)
-	}
-	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{rewardsBalance}); err != nil {
-		return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+	if rewardsBalance.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{rewardsBalance}); err != nil {
+			return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+		}
+
+		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(rewardsBalance)); err != nil {
+			return fmt.Errorf("failed to burn staking rewards entire balance: %w", err)
+		}
+		ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
+	} else {
+		ctx.Logger().Info("nothing to burn from staking rewards contract", StakingRewardsContractAddress)
 	}
 
-	if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(revenueBalance)); err != nil {
-		return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
+	/*
+		1. all the dNTRN (200M+) on the Main DAO must be burned;
+		2. withdraw DAO’s liquidity from dNTRN-NTRN pool;
+		3. convert all withdrawn dNTRN to NTRN via the converter contract;
+		4. burn all NTRNs you got from steps 2 & 3;
+	*/
+	// 1.
+	dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
+	if dntrnBalance.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{dntrnBalance}); err != nil {
+			return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+		}
+		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(dntrnBalance)); err != nil {
+			return fmt.Errorf("failed to burn DNTRN entire balance: %w", err)
+		}
+		ctx.Logger().Info("Burned DNTRN entire balance", "amount", dntrnBalance)
+	} else {
+		ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to burn", MainDAOContractAddress))
 	}
-	ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
 
-	if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(rewardsBalance)); err != nil {
-		return fmt.Errorf("failed to burn staking rewards entire balance: %w", err)
+	ntrnBalanceBefore := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+	astroportBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), AstroportShareDenom)
+	// 2.
+	if astroportBalance.IsPositive() {
+		ws := wasmkeeper.NewMsgServerImpl(wk)
+		_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+			Sender:   MainDAOContractAddress,
+			Contract: AstroPortContractAddress,
+			Msg:      []byte(`{"withdraw_liquidity": {}}`),
+			Funds:    sdk.NewCoins(astroportBalance),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to withdraw liquidity from Astroport: %w", err)
+		}
+		ctx.Logger().Info("Withdrew DAO liquidity from Astroport", "amount", astroportBalance)
+
+		dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
+		// 3.
+		if dntrnBalance.IsPositive() {
+			ws := wasmkeeper.NewMsgServerImpl(wk)
+			_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+				Sender:   MainDAOContractAddress,
+				Contract: DropSwapContractAddress,
+				Msg:      fmt.Appendf(nil, `{"swap": {"receiver":"%s"}}`, MainDAOContractAddress),
+				Funds:    sdk.NewCoins(dntrnBalance),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to swap DNTRN to NTRN: %w", err)
+			}
+			ctx.Logger().Info("Swapped DNTRN to NTRN", "amount", dntrnBalance)
+
+			ntrnBalanceAfter := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+			ntrnToBurn := ntrnBalanceAfter.Sub(ntrnBalanceBefore)
+			ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
+			// 4.
+			if ntrnToBurn.IsPositive() {
+				if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
+					return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+				}
+				if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
+					return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
+				}
+				ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
+			} else {
+				ctx.Logger().Info(fmt.Sprintf("No NTRN balance on %s found to burn", MainDAOContractAddress))
+			}
+		} else {
+			ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to swap to NTRN", MainDAOContractAddress))
+		}
+	} else {
+		ctx.Logger().Info(fmt.Sprintf("No DAO Astroport balance on %s found to withdraw liquidity from", AstroPortContractAddress))
 	}
-	ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
 
+	return nil
+}
+
+func TakeFundsFromLegacyAccounts(ctx sdk.Context, bk bankkeeper.Keeper) error {
+	//nolint:gocritic // legacy intentionally keeps new slice
+	legacy := append(Deleted, "revenue-fee-redistribute", "revenue-staking-rewards")
+	for _, accName := range legacy {
+		moduleAddr := authtypes.NewModuleAddress(accName)
+		balances := bk.GetAllBalances(ctx, moduleAddr)
+		if balances.Empty() {
+			continue
+		}
+		err := bk.SendCoins(ctx, moduleAddr, sdk.MustAccAddressFromBech32(MainDAOContractAddress), balances)
+		if err != nil {
+			return fmt.Errorf("failed to send coins from %s to main DAO: %w", accName, err)
+		}
+	}
 	return nil
 }
 

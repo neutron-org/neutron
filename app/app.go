@@ -304,7 +304,7 @@ var (
 		oracletypes.ModuleName:                  nil,
 		marketmaptypes.ModuleName:               nil,
 		feemarkettypes.FeeCollectorName:         nil,
-		govtypes.ModuleName:                     nil,
+		govtypes.ModuleName:                     {authtypes.Burner},
 		minttypes.ModuleName:                    {authtypes.Minter},
 		distributiontypes.ModuleName:            nil,
 	}
@@ -780,18 +780,16 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		app.StakingKeeper,
-		nil,                           // app.DistributionKeeper,        // distrKeeper - DistributionKeeper interface not compatible with wasmkeeper
-		app.RateLimitingICS4Wrapper,   // ics4Wrapper
-		app.IBCKeeper.ChannelKeeper,   // channelKeeper
-		app.IBCKeeper.ChannelKeeperV2, // channelKeeperV2
-		app.TransferKeeper.Keeper,     // portSource
-		app.MsgServiceRouter(),        // router
-		app.GRPCQueryRouter(),         // grpcQueryRouter
+		distributionkeeper.NewQuerier(app.DistributionKeeper), // app.DistributionKeeper
+		app.RateLimitingICS4Wrapper,                           // ics4Wrapper
+		app.IBCKeeper.ChannelKeeper,                           // channelKeeper
+		app.IBCKeeper.ChannelKeeperV2,                         // channelKeeperV2
+		app.TransferKeeper.Keeper,                             // portSource
+		app.MsgServiceRouter(),                                // router
+		app.GRPCQueryRouter(),                                 // grpcQueryRouter
 		wasmDir,
 		nodeConfig,
 		wasmtypes.VMConfig{},
-		// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
-		// however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
 		append(wasmkeeper.BuiltInCapabilities(), "neutron", "cosmwasm_3_0"),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		wasmOpts...,
@@ -907,9 +905,11 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
-		upgradetypes.ModuleName,
+		minttypes.ModuleName,
+		distributiontypes.ModuleName,
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
+		stakingtypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -919,7 +919,6 @@ func New(
 		crisistypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
-		stakingtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		coinfactorytypes.ModuleName,
 		icatypes.ModuleName,
@@ -929,8 +928,6 @@ func New(
 		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		govtypes.ModuleName,
-		minttypes.ModuleName,
-		distributiontypes.ModuleName,
 		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,

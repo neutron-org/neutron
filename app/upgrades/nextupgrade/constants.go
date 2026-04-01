@@ -11,6 +11,13 @@ const (
 	UpgradeName = "nextupgrade"
 )
 
+var Deleted = []string{
+	"adminmodule",
+	"harpoon",
+	"revenue",
+	"feeburner",
+}
+
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
@@ -20,11 +27,6 @@ var Upgrade = upgrades.Upgrade{
 			"mint",
 			"distribution",
 		},
-		Deleted: []string{
-			"adminmodule",
-			"harpoon",
-			"revenue",
-			"feeburner",
-		},
+		Deleted: Deleted,
 	},
 }

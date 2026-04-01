@@ -153,9 +153,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		return m.setDenomMetadata(ctx, contractAddr, contractMsg.SetDenomMetadata)
 	}
 
-	if contractMsg.AddSchedule != nil {
-		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
-	}
 	if contractMsg.RemoveSchedule != nil {
 		return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 	}
@@ -439,8 +436,6 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 	msgResponses := [][]*types.Any{{anyResp}}
 	return nil, [][]byte{data}, msgResponses, nil
 }
-
-// submitAdminProposal removed - adminmodule no longer supported, use gov module instead
 
 // createDenom creates a new token denom
 func (m *CustomMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -808,47 +803,6 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 	return response, nil
 }
 
-func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	// Admin check removed - adminmodule no longer supported
-	if false {
-		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
-	}
-
-	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
-
-	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
-	for _, msg := range addSchedule.Msgs {
-		msgs = append(msgs, crontypes.MsgExecuteContract{
-			Contract: msg.Contract,
-			Msg:      msg.Msg,
-		})
-	}
-
-	_, err := m.CronMsgServer.AddSchedule(ctx, &crontypes.MsgAddSchedule{
-		Authority:      authority.String(),
-		Name:           addSchedule.Name,
-		Period:         addSchedule.Period,
-		Msgs:           msgs,
-		ExecutionStage: crontypes.ExecutionStage(crontypes.ExecutionStage_value[addSchedule.ExecutionStage]),
-	})
-	if err != nil {
-		ctx.Logger().Error("failed to addSchedule",
-			"from_address", contractAddr.String(),
-			"name", addSchedule.Name,
-			"error", err,
-		)
-		return nil, nil, nil, errors.Wrapf(err, "failed to add %s schedule", addSchedule.Name)
-	}
-
-	ctx.Logger().Debug("schedule added",
-		"from_address", contractAddr.String(),
-		"name", addSchedule.Name,
-		"period", addSchedule.Period,
-	)
-
-	return nil, nil, nil, nil
-}
-
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	params, err := m.CronQueryServer.Params(ctx, &crontypes.QueryParamsRequest{})
 	if err != nil {
@@ -856,9 +810,8 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
 	}
 
-	// Admin check removed - adminmodule no longer supported
 	if contractAddr.String() != params.Params.SecurityAddress {
-		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
+		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only the security dao can remove schedule")
 	}
 
 	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
@@ -923,8 +876,6 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 	msgResponses := [][]*types.Any{{anyResp}}
 	return nil, [][]byte{data}, msgResponses, nil
 }
-
-// isAdmin removed - adminmodule no longer supported
 
 func getRegisterFee(fee sdk.Coins) sdk.Coins {
 	if fee == nil {
