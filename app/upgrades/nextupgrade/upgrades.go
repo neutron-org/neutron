@@ -135,6 +135,18 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	}
 	ctx.Logger().Info("Done.")
 
+	ctx.Logger().Info("Setting up Cron params")
+	if err := SetupCron(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up MarketMap params")
+	if err := SetupMarketMap(ctx, keepers.MarketmapKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
 	ctx.Logger().Info("Taking back funds from legacy module accounts")
 	if err := TakeFundsFromLegacyAccounts(ctx, keepers.BankKeeper); err != nil {
 		return err
@@ -148,7 +160,7 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Redelegating DAO funds to new validator set")
-	if err := RedelegateDaoFunds(ctx, keepers.StakingKeeper); err != nil {
+	if err := RedelegateDaoFunds(ctx, keepers.AccountKeeper, keepers.StakingKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
