@@ -1342,8 +1342,8 @@ github.com/neutron-org/cosmos-sdk v0.53.4-neutron h1:3z0d40L5laEf6y33hg7wq4lHisD
 github.com/neutron-org/cosmos-sdk v0.53.4-neutron/go.mod h1:BfzD9aPWrgLTApLzpm0vsNOSLu4J4SNSW+GFzPO4jxg=
 github.com/neutron-org/feemarket v1.2.0 h1:8WlDaslu9RiXzNvrNZgkm0UISeVd+pAw+KDxNTP2MN8=
 github.com/neutron-org/feemarket v1.2.0/go.mod h1:sCt2ocmA9eyif865cUfpe8BPI4pxjxIlybUukWr74AE=
-github.com/neutron-org/wasmd v0.61.8-neutron.0.20260401145349-092b0f1a1f95 h1:FXjzLQgWugKdriBM0I3vyYn7bOmDzlOrgu8a3HDSOnE=
-github.com/neutron-org/wasmd v0.61.8-neutron.0.20260401145349-092b0f1a1f95/go.mod h1:GMPqtsb1T8FvaKpQGJmGuj/JMPXBauk4ZhUErgmtEus=
+github.com/neutron-org/wasmd v0.61.10-neutron h1:fq38Sjt3gNzcT8LSDZT607zSHSDcZmDUaktqChxUpUo=
+github.com/neutron-org/wasmd v0.61.10-neutron/go.mod h1:GMPqtsb1T8FvaKpQGJmGuj/JMPXBauk4ZhUErgmtEus=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.11 h1:8feyoE3OzPrcshW5/MJ4sGESc5cqmGkGCWlco4l0bqY=

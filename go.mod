@@ -242,7 +242,7 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.61.8-neutron.0.20260401145349-092b0f1a1f95
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.61.10-neutron
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.1.0
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.53.4-neutron
