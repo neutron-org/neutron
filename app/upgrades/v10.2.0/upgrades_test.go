@@ -1,13 +1,13 @@
-package v10_0_0_test
+package v10_2_0_test
 
 import (
 	"testing"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	v10_2_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.2.0"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	v10_0_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
 	"github.com/neutron-org/neutron/v10/testutil"
 )
 
@@ -29,7 +29,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
-		Name:   v10_0_0.UpgradeName,
+		Name:   v10_2_0.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}

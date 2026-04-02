@@ -3,6 +3,8 @@ package types
 // DONTCOVER
 
 import (
+	"fmt"
+
 	sdkerrors "cosmossdk.io/errors"
 )
 
@@ -277,9 +279,19 @@ var (
 		1174,
 		"Pool not found", // poolId: "%d"
 	)
-	ErrDexWithdrawOnly = sdkerrors.Register(
+	ErrMaxRoutesPerRequestReached = sdkerrors.Register(
 		ModuleName,
 		1175,
+		fmt.Sprintf("A number of routes per request must be less or equal to %d", MaxRoutesPerRequest),
+	)
+	ErrMaxHopsPerRouteReached = sdkerrors.Register(
+		ModuleName,
+		1176,
+		fmt.Sprintf("A number of hops per route must be less or equal to %d", MaxHopsPerRoute),
+	)
+	ErrDexWithdrawOnly = sdkerrors.Register(
+		ModuleName,
+		1177,
 		"Dex is in withdraw only mode, all messages except withdrawals are disabled at this time",
 	)
 )

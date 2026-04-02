@@ -187,8 +187,10 @@ func (s *DexStateTestSuite) assertWithdrawFilledAmount(params withdrawLimitOrder
 			s.False(found)
 		} else {
 			s.True(found)
-			remainingShares := ut.SharesOwned.Sub(ut.SharesWithdrawn)
-			s.True(expectedBalanceA.Equal(remainingShares), "Expected Balance A %v != Actual %v", expectedBalanceA, remainingShares)
+			sharesOwnedDec := math_utils.NewPrecDecFromInt(ut.SharesOwned)
+			remainingShares := sharesOwnedDec.Sub(ut.DecSharesWithdrawn)
+			expectedBalanceADec := math_utils.NewPrecDecFromInt(expectedBalanceA)
+			s.True(expectedBalanceADec.Equal(remainingShares), "Expected Balance A %v != Actual %v", expectedBalanceA, remainingShares)
 		}
 	}
 }

@@ -58,20 +58,21 @@ func (msg *MsgWithdrawalWithShares) Validate() error {
 		return sdkerrors.Wrapf(ErrZeroWithdraw, "shares to remove is empty")
 	}
 
-	poolsSeen := make(map[string]bool)
+	poolsSeen := make(map[uint64]bool)
 	for _, share := range msg.SharesToRemove {
 
 		if !share.Amount.IsPositive() {
 			return sdkerrors.Wrapf(ErrZeroWithdraw, "share amount is zero for share %s", share.Denom)
 		}
 
-		if err := ValidatePoolDenom(share.Denom); err != nil {
+		poolId, err := ParsePoolIDFromDenom(share.Denom)
+		if err != nil {
 			return sdkerrors.Wrapf(ErrInvalidPoolDenom, "invalid share denom (%s)", err)
 		}
-		if _, ok := poolsSeen[share.Denom]; ok {
+		if _, ok := poolsSeen[poolId]; ok {
 			return sdkerrors.Wrapf(ErrDuplicatePoolWithdraw, "pool with denom %s is duplicated", share.Denom)
 		}
-		poolsSeen[share.Denom] = true
+		poolsSeen[poolId] = true
 	}
 
 	return nil
