@@ -236,7 +236,8 @@ import (
 )
 
 const (
-	Name = "neutrond"
+	Name               = "neutrond"
+	VoteExtensionLimit = 100 * 1024
 )
 
 var (
@@ -1204,7 +1205,7 @@ func New(
 		ve.NewDefaultValidateVoteExtensionsFn(app.StakingKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		compression.NewCompressionExtendedCommitCodec(
 			compression.NewDefaultExtendedCommitCodec(),
@@ -1245,7 +1246,7 @@ func New(
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		compression.NewCompressionExtendedCommitCodec(
 			compression.NewDefaultExtendedCommitCodec(),
@@ -1259,7 +1260,7 @@ func New(
 		app.StakingKeeper,
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		compression.NewCompressionExtendedCommitCodec(
 			compression.NewDefaultExtendedCommitCodec(),
@@ -1272,7 +1273,7 @@ func New(
 	// vote extensions (i.e. oracle data).
 	veCodec := compression.NewCompressionVoteExtensionCodec(
 		compression.NewDefaultVoteExtensionCodec(),
-		compression.NewZLibCompressor(),
+		compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 	)
 	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
 		compression.NewDefaultExtendedCommitCodec(),
@@ -1292,7 +1293,7 @@ func New(
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		aggregator.NewOraclePriceApplier(
 			voteAggregator,
