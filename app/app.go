@@ -1204,7 +1204,7 @@ func New(
 		baseapp.NoOpProcessProposal(),
 		ve.NewDefaultValidateVoteExtensionsFn(app.StakingKeeper),
 		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewVoteExtensionCodecWithSizeCheck(),
 			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		compression.NewCompressionExtendedCommitCodec(
@@ -1292,7 +1292,7 @@ func New(
 		time.Second,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewVoteExtensionCodecWithSizeCheck(),
 			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		aggregator.NewOraclePriceApplier(
