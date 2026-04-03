@@ -34,9 +34,12 @@ import (
 )
 
 const (
-	AstroportShareDenom      = "factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share"
+	// AstroportShareDenom is the denom that represents share in the Astroport's NTRN-dNTRN pool
+	AstroportShareDenom = "factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share"
+	// AstroPortContractAddress is the NTRN-dNTRN pool contract
 	AstroPortContractAddress = "neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz"
-	DropSwapContractAddress  = "neutron1xng27d3t2jnqx5s7m4ru4m3avqcqzlac96yk9srjf90cnm5sc2xqmj35wf"
+	// DropSwapContractAddress is the Drop's contract that converts dNTRN to NTRN on a fixed rate
+	DropSwapContractAddress = "neutron1xng27d3t2jnqx5s7m4ru4m3avqcqzlac96yk9srjf90cnm5sc2xqmj35wf"
 
 	DNTRNDenom = "factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn"
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
