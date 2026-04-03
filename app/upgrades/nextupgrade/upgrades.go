@@ -185,24 +185,27 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 }
 
 func setModuleParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
-	govparams := govtypesv1.NewParams(
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
-		sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(3_000_000_000_000))),
-		7*24*time.Hour,
-		14*24*time.Hour,
-		3*24*time.Hour,
-		math.LegacyNewDecWithPrec(45, 2).String(),
-		math.LegacyNewDecWithPrec(5, 1).String(),
-		math.LegacyNewDecWithPrec(67, 2).String(),
-		math.LegacyNewDecWithPrec(33, 2).String(),
-		math.LegacyOneDec().String(),
-		math.LegacyZeroDec().String(),
-		"",
-		false,
-		false,
-		true,
-		math.LegacyMustNewDecFromStr("0.1").String(),
-	)
+	maxDepositPeriod := 7 * 24 * time.Hour
+	votingPeriod := 14 * 24 * time.Hour
+	expeditedVotingPeriod := 3 * 24 * time.Hour
+	govparams := govtypesv1.Params{
+		MinDeposit:                 sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
+		ExpeditedMinDeposit:        sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(3_000_000_000_000))),
+		MaxDepositPeriod:           &maxDepositPeriod,
+		VotingPeriod:               &votingPeriod,
+		ExpeditedVotingPeriod:      &expeditedVotingPeriod,
+		Quorum:                     math.LegacyNewDecWithPrec(45, 2).String(),
+		Threshold:                  math.LegacyNewDecWithPrec(5, 1).String(),
+		ExpeditedThreshold:         math.LegacyNewDecWithPrec(67, 2).String(),
+		VetoThreshold:              math.LegacyNewDecWithPrec(33, 2).String(),
+		MinInitialDepositRatio:     math.LegacyOneDec().String(),
+		ProposalCancelRatio:        math.LegacyZeroDec().String(),
+		ProposalCancelDest:         "",
+		BurnProposalDepositPrevote: false,
+		BurnVoteQuorum:             false,
+		BurnVoteVeto:               true,
+		MinDepositRatio:            math.LegacyMustNewDecFromStr("0.1").String(),
+	}
 
 	if err := keepers.GovKeeper.Params.Set(ctx, govparams); err != nil {
 		return err
@@ -595,6 +598,7 @@ func TakeFundsFromLegacyAccounts(ctx sdk.Context, bk bankkeeper.Keeper) error {
 		if err != nil {
 			return fmt.Errorf("failed to send coins from %s to main DAO: %w", accName, err)
 		}
+		ctx.Logger().Info("Sent coins from module account to main DAO", "module", accName, "amount", balances)
 	}
 	return nil
 }

@@ -1043,6 +1043,9 @@ func New(
 		params.NewAppModule(app.ParamsKeeper), //nolint:staticcheck
 		transferModule,
 		stakingModule,
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
+		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
+		distribution.NewAppModule(appCodec, app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distributiontypes.ModuleName)),
 		ibcRateLimitmodule,
 		icaModule,
 		app.PFMModule,
