@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	v10_2_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.2.0"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	v10_2_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.2.0"
 
 	"github.com/neutron-org/neutron/v10/testutil"
 )
