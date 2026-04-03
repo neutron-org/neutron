@@ -560,7 +560,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 			// 4.
 			if ntrnToBurn.IsPositive() {
 				if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
-					return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
+					return fmt.Errorf("failed to send ntrn from DAO for burning: %w", err)
 				}
 				if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
 					return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
