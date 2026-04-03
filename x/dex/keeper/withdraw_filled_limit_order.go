@@ -4,7 +4,6 @@ import (
 	"context"
 
 	sdkerrors "cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v10/utils/math"
@@ -82,7 +81,7 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 	remainingTokenIn := math_utils.ZeroPrecDec()
 	// It's possible that a TrancheUser exists but tranche does not if LO was filled entirely through a swap
 	if found {
-		var amountOutTokenIn math.Int
+		var amountOutTokenIn math_utils.PrecDec
 		amountOutTokenIn, amountOutTokenOut, err = tranche.Withdraw(trancheUser)
 		if err != nil {
 			return types.PrecDecCoin{}, types.PrecDecCoin{}, err
@@ -97,12 +96,13 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 			k.UpdateInactiveTranche(ctx, tranche)
 
 			// Since the order has already been filled we treat this as a complete withdrawal
-			trancheUser.SharesWithdrawn = trancheUser.SharesOwned
+			trancheUser.SetSharesWithdrawn(math_utils.NewPrecDecFromInt(trancheUser.SharesOwned))
 
 		} else {
 			// This was an active tranche (still has MakerReserves) and we have only removed TakerReserves; we will save it as an active tranche
 			k.UpdateTranche(ctx, tranche)
-			trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
+			totalSharesWithdrawn := trancheUser.DecSharesWithdrawn.Add(amountOutTokenIn)
+			trancheUser.SetSharesWithdrawn(totalSharesWithdrawn)
 		}
 
 	}

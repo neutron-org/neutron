@@ -18,7 +18,10 @@ message LimitOrderTrancheUser {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_owned"
   ];
+
+  // DEPRECATED: shares_withdrawn will be removed in a future release, `dec_shares_withdrawn` should be used
   string shares_withdrawn = 6 [
+    deprecated = true,
     (gogoproto.moretags) = "yaml:\"shares_withdrawn\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -32,4 +35,10 @@ message LimitOrderTrancheUser {
     (gogoproto.jsontag) = "shares_cancelled"
   ];
   LimitOrderType order_type = 8;
+  string dec_shares_withdrawn = 9 [
+    (gogoproto.moretags) = "yaml:\"dec_shares_withdrawn\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v10/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "dec_shares_withdrawn"
+  ];
 }

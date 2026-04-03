@@ -7,6 +7,7 @@ import (
 	v4 "github.com/neutron-org/neutron/v10/x/dex/migrations/v4"
 	v5 "github.com/neutron-org/neutron/v10/x/dex/migrations/v5"
 	v6 "github.com/neutron-org/neutron/v10/x/dex/migrations/v6"
+	v7 "github.com/neutron-org/neutron/v10/x/dex/migrations/v7"
 )
 
 // Migrator is a struct for handling in-place store migrations.
@@ -37,4 +38,9 @@ func (m Migrator) Migrate4to5(ctx sdk.Context) error {
 // Migrate5to6 migrates from version 5 to 6.
 func (m Migrator) Migrate5to6(ctx sdk.Context) error {
 	return v6.MigrateStore(ctx, m.keeper.cdc, m.keeper.storeKey)
+}
+
+// Migrate6to7 migrates from version 6 to 7.
+func (m Migrator) Migrate6to7(ctx sdk.Context) error {
+	return v7.MigrateStore(ctx, m.keeper.cdc, m.keeper.storeKey)
 }

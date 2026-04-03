@@ -3,13 +3,13 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
 	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
@@ -47,7 +47,7 @@ func (k Keeper) LimitOrderTrancheUserAll(
 	}, nil
 }
 
-func (k Keeper) CalcWithdrawableShares(ctx sdk.Context, trancheUser types.LimitOrderTrancheUser) (amount math.Int, err error) {
+func (k Keeper) CalcWithdrawableShares(ctx sdk.Context, trancheUser types.LimitOrderTrancheUser) (amount math_utils.PrecDec, err error) {
 	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
 
 	tranche, _, found := k.FindLimitOrderTranche(
@@ -60,7 +60,7 @@ func (k Keeper) CalcWithdrawableShares(ctx sdk.Context, trancheUser types.LimitO
 	)
 
 	if !found {
-		return math.ZeroInt(), status.Error(codes.NotFound, "Tranche not found")
+		return math_utils.ZeroPrecDec(), status.Error(codes.NotFound, "Tranche not found")
 	}
 	withdrawableShares, _ := tranche.CalcWithdrawAmount(&trancheUser)
 
@@ -89,7 +89,8 @@ func (k Keeper) LimitOrderTrancheUser(c context.Context,
 		if err != nil {
 			return nil, err
 		}
-		resp.WithdrawableShares = &withdrawAmt
+		withdrawAmtInt := withdrawAmt.TruncateInt()
+		resp.WithdrawableShares = &withdrawAmtInt
 	}
 
 	return resp, nil
