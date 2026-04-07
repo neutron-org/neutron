@@ -1,4 +1,4 @@
-package v10_2_0_test
+package v10_3_0_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	v10_2_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.2.0"
+	v10_3_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.3.0"
 
 	"github.com/neutron-org/neutron/v10/testutil"
 )
@@ -30,7 +30,7 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
-		Name:   v10_2_0.UpgradeName,
+		Name:   v10_3_0.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}

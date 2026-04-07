@@ -13,6 +13,7 @@ import (
 	v10_0_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
 	v10_1_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.1.0"
 	v10_2_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.2.0"
+	v10_3_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.3.0"
 	v700 "github.com/neutron-org/neutron/v10/app/upgrades/v7.0.0"
 	v800 "github.com/neutron-org/neutron/v10/app/upgrades/v8.0.0"
 	v800_rc0 "github.com/neutron-org/neutron/v10/app/upgrades/v8.0.0-rc0"
@@ -254,6 +255,7 @@ var (
 		v10_0_0.Upgrade,
 		v10_1_0.Upgrade,
 		v10_2_0.Upgrade,
+		v10_3_0.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon

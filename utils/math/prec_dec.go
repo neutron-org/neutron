@@ -480,7 +480,7 @@ func (d PrecDec) ApproxRoot(root uint64) (guess PrecDec, err error) {
 		if root == 2 {
 			delta.i.Rsh(delta.i, 1)
 		} else {
-			delta.QuoInt64Mut(int64(root))
+			delta.QuoInt64Mut(int64(root)) //nolint:gosec
 		}
 
 		guess.AddMut(delta)
@@ -562,7 +562,7 @@ func (d PrecDec) String() string {
 
 		// set relevant digits to 0
 		for i := 0; i < Precision-inputSize; i++ {
-			bzStr[i+2] = byte('0')
+			bzStr[i+2] = byte('0') //nolint:gosec
 		}
 
 		// set final digits
