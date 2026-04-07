@@ -18820,6 +18820,8 @@ definitions:
     properties:
       address:
         type: string
+      dec_shares_withdrawn:
+        type: string
       order_type:
         default: GOOD_TIL_CANCELLED
         enum:
@@ -18835,6 +18837,9 @@ definitions:
       shares_owned:
         type: string
       shares_withdrawn:
+        title: >-
+          DEPRECATED: shares_withdrawn will be removed in a future release,
+          `dec_shares_withdrawn` should be used
         type: string
       tick_index_taker_to_maker:
         format: int64
@@ -19356,6 +19361,8 @@ definitions:
         items:
           type: string
         type: array
+      withdraw_only:
+        type: boolean
     type: object
   neutron.dex.Pool:
     properties:
@@ -19734,6 +19741,8 @@ definitions:
           properties:
             address:
               type: string
+            dec_shares_withdrawn:
+              type: string
             order_type:
               default: GOOD_TIL_CANCELLED
               enum:
@@ -19749,6 +19758,9 @@ definitions:
             shares_owned:
               type: string
             shares_withdrawn:
+              title: >-
+                DEPRECATED: shares_withdrawn will be removed in a future
+                release, `dec_shares_withdrawn` should be used
               type: string
             tick_index_taker_to_maker:
               format: int64
@@ -19798,6 +19810,8 @@ definitions:
           properties:
             address:
               type: string
+            dec_shares_withdrawn:
+              type: string
             order_type:
               default: GOOD_TIL_CANCELLED
               enum:
@@ -19813,6 +19827,9 @@ definitions:
             shares_owned:
               type: string
             shares_withdrawn:
+              title: >-
+                DEPRECATED: shares_withdrawn will be removed in a future
+                release, `dec_shares_withdrawn` should be used
               type: string
             tick_index_taker_to_maker:
               format: int64
@@ -20492,6 +20509,8 @@ definitions:
         properties:
           address:
             type: string
+          dec_shares_withdrawn:
+            type: string
           order_type:
             default: GOOD_TIL_CANCELLED
             enum:
@@ -20507,6 +20526,9 @@ definitions:
           shares_owned:
             type: string
           shares_withdrawn:
+            title: >-
+              DEPRECATED: shares_withdrawn will be removed in a future release,
+              `dec_shares_withdrawn` should be used
             type: string
           tick_index_taker_to_maker:
             format: int64
@@ -20621,6 +20643,8 @@ definitions:
             items:
               type: string
             type: array
+          withdraw_only:
+            type: boolean
         type: object
     type: object
   neutron.dex.QueryPoolResponse:
@@ -49196,6 +49220,8 @@ paths:
                   properties:
                     address:
                       type: string
+                    dec_shares_withdrawn:
+                      type: string
                     order_type:
                       default: GOOD_TIL_CANCELLED
                       enum:
@@ -49211,6 +49237,9 @@ paths:
                     shares_owned:
                       type: string
                     shares_withdrawn:
+                      title: >-
+                        DEPRECATED: shares_withdrawn will be removed in a future
+                        release, `dec_shares_withdrawn` should be used
                       type: string
                     tick_index_taker_to_maker:
                       format: int64
@@ -49305,6 +49334,8 @@ paths:
                 properties:
                   address:
                     type: string
+                  dec_shares_withdrawn:
+                    type: string
                   order_type:
                     default: GOOD_TIL_CANCELLED
                     enum:
@@ -49320,6 +49351,9 @@ paths:
                   shares_owned:
                     type: string
                   shares_withdrawn:
+                    title: >-
+                      DEPRECATED: shares_withdrawn will be removed in a future
+                      release, `dec_shares_withdrawn` should be used
                     type: string
                   tick_index_taker_to_maker:
                     format: int64
@@ -49398,6 +49432,8 @@ paths:
                     items:
                       type: string
                     type: array
+                  withdraw_only:
+                    type: boolean
                 type: object
             type: object
         default:
@@ -51556,6 +51592,8 @@ paths:
                   properties:
                     address:
                       type: string
+                    dec_shares_withdrawn:
+                      type: string
                     order_type:
                       default: GOOD_TIL_CANCELLED
                       enum:
@@ -51571,6 +51609,9 @@ paths:
                     shares_owned:
                       type: string
                     shares_withdrawn:
+                      title: >-
+                        DEPRECATED: shares_withdrawn will be removed in a future
+                        release, `dec_shares_withdrawn` should be used
                       type: string
                     tick_index_taker_to_maker:
                       format: int64
