@@ -16,6 +16,11 @@ import (
 	"github.com/neutron-org/neutron/v10/x/tokenfactory/types"
 )
 
+const (
+	infiniteTrackBeforeSendContract = "./testdata/infinite_track_beforesend.wasm" // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/infinite-track-beforesend
+	no100Contract                   = "./testdata/no100.wasm"                     // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/no100
+)
+
 func (suite *KeeperTestSuite) initBalanceTrackContract(denom string) (sdk.AccAddress, uint64, string) {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
@@ -167,6 +172,15 @@ func (suite *KeeperTestSuite) TestBeforeSendHook() {
 				} else {
 					suite.Require().Error(err, "test: %v", sendTc.desc)
 				}
+
+				// this is a check to ensure bank keeper wired in token factory keeper has hooks properly set
+				// to check this, we try triggering bank hooks via token factory keeper
+				for _, coin := range sendTc.msg(denom).Amount {
+					_, err = suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(coin.Denom, coin.Amount.Int64())))
+					if sendTc.desc == "sending 100 of factorydenom should error" {
+						suite.Require().Error(err, "test: %v", sendTc.desc)
+					}
+				}
 			}
 		})
 	}
@@ -244,36 +258,78 @@ func (suite *KeeperTestSuite) TestNonWhitelistedHooksNotCalled() {
 
 // TestInfiniteTrackBeforeSend tests gas metering with infinite loop contract
 // to properly test if we are gas metering trackBeforeSend properly.
-func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
+func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSendOutOfGas() {
 	for _, tc := range []struct {
-		name            string
-		wasmFile        string
-		tokenToSend     sdk.Coins
-		useFactoryDenom bool
+		name string
+		// wasmFile defines contract that's being used for tracking
+		wasmFile string
+		// useHookedDenom defines whether we use denom that is being subscribed to track/block contract.
+		useHookedDenom bool
+		// blockBeforeSend defines whether to use a block before send or track before send.
+		// In case of track before send, the transfer is done between module accounts because
+		// then it doesn't call blockBeforeSend, so we can test out
+		// case where trackBeforeSend does not block send
 		blockBeforeSend bool
-		expectedError   bool
+		// defines outer context gas limit
+		// controlled to test case when there is out of gas for outer gas limit
+		// but no out of gas for inner gas limit
+		outerGasLimit uint64
+		expectedError bool
+		expectedPanic bool
 	}{
 		{
-			name:            "sending tokenfactory denom from module to module with infinite contract should panic",
-			wasmFile:        "./testdata/infinite_track_beforesend.wasm", // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/infinite-track-beforesend
-			useFactoryDenom: true,
+			name:            "sending tokenfactory denom from module to module with infinite contract should not return error on trackBeforeSend",
+			wasmFile:        infiniteTrackBeforeSendContract,
+			blockBeforeSend: false,
+			useHookedDenom:  true,
+			outerGasLimit:   30_000_000,
+			expectedError:   false,
+			expectedPanic:   false,
 		},
 		{
-			name:            "sending tokenfactory denom from account to account with infinite contract should panic",
-			wasmFile:        "./testdata/infinite_track_beforesend.wasm",
-			useFactoryDenom: true,
+			name:            "sending tokenfactory denom with infinite contract should return error on blockBeforeSend",
+			wasmFile:        infiniteTrackBeforeSendContract,
 			blockBeforeSend: true,
+			useHookedDenom:  true,
+			outerGasLimit:   30_000_000,
+			expectedError:   true,
+			expectedPanic:   false,
 		},
 		{
-			name:            "sending non-tokenfactory denom from module to module with infinite contract should not panic",
-			wasmFile:        "./testdata/infinite_track_beforesend.wasm",
-			tokenToSend:     sdk.NewCoins(sdk.NewInt64Coin("foo", 1000000)),
-			useFactoryDenom: false,
+			name:            "track_before_send: sending tokenfactory denom from module to module with infinite contract should panic when outer layer gas limit is breached on trackBeforeSend",
+			wasmFile:        infiniteTrackBeforeSendContract,
+			blockBeforeSend: false,
+			useHookedDenom:  true,
+			outerGasLimit:   300_000, // lower than 500_000 inner constant, so it should trigger outer context outOfGas panic
+			expectedError:   false,
+			expectedPanic:   true,
 		},
 		{
-			name:            "Try using no 100",
-			wasmFile:        "./testdata/no100.wasm", // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/no100
-			useFactoryDenom: true,
+			name:            "block_before_send: sending tokenfactory denom with infinite contract should return error when outer layer gas is breached on blockBeforeSend since it will limit the inner limit as well",
+			wasmFile:        infiniteTrackBeforeSendContract,
+			blockBeforeSend: true,
+			useHookedDenom:  true,
+			outerGasLimit:   300_000, // lower than 500_000 inner constant, so it should trigger outer context outOfGas panic
+			expectedError:   true,
+			expectedPanic:   false,
+		},
+		{
+			name:            "sending non subscribed denom from module to module with infinite contract should not panic or return error",
+			wasmFile:        infiniteTrackBeforeSendContract,
+			useHookedDenom:  false,
+			blockBeforeSend: false,
+			outerGasLimit:   30_000_000,
+			expectedError:   false,
+			expectedPanic:   false,
+		},
+		{
+			name:            "sending tokenfactory denom with amount more that contract allows should return error and block transaction",
+			wasmFile:        no100Contract,
+			useHookedDenom:  true,
+			blockBeforeSend: true,
+			outerGasLimit:   30_000_000,
+			expectedError:   true,
+			expectedPanic:   false,
 		},
 	} {
 		suite.Run(fmt.Sprintf("Case %suite", tc.name), func() {
@@ -301,13 +357,14 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 			factoryDenom := res.GetNewTokenDenom()
 
 			var tokenToSend sdk.Coins
-			if tc.useFactoryDenom {
+			if tc.useHookedDenom {
 				tokenToSend = sdk.NewCoins(sdk.NewInt64Coin(factoryDenom, 100))
 			} else {
-				tokenToSend = tc.tokenToSend
+				// denom without hook attached
+				tokenToSend = sdk.NewCoins(sdk.NewInt64Coin("foo", 1000000))
 			}
 
-			// send the mint module tokenToSend
+			// fund sender account
 			if tc.blockBeforeSend {
 				suite.FundAcc(suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress(), tokenToSend)
 			} else {
@@ -319,20 +376,50 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 			_, err = suite.msgServer.SetBeforeSendHook(suite.ChainA.GetContext(), types.NewMsgSetBeforeSendHook(suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress().String(), factoryDenom, cosmwasmAddress.String()))
 			suite.Require().NoError(err, "test: %v", tc.name)
 
-			ctx := suite.ChainA.GetContext().WithGasMeter(storetypes.NewGasMeter(30_000_000))
+			ctx := suite.ChainA.GetContext().WithGasMeter(storetypes.NewGasMeter(tc.outerGasLimit))
 
 			if tc.blockBeforeSend {
-				err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(ctx, suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress(), suite.ChainA.SenderAccounts[1].SenderAccount.GetAddress(), tokenToSend)
-				suite.Require().Error(err)
+				if tc.expectedPanic {
+					suite.Require().Panics(func() {
+						err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(
+							ctx,
+							suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress(),
+							suite.ChainA.SenderAccounts[1].SenderAccount.GetAddress(),
+							tokenToSend,
+						)
+					})
+				} else {
+					err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(
+						ctx,
+						suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress(),
+						suite.ChainA.SenderAccounts[1].SenderAccount.GetAddress(),
+						tokenToSend,
+					)
+				}
+
+				if tc.expectedError {
+					suite.Require().Error(err)
+				} else {
+					suite.Require().NoError(err)
+				}
 			} else {
-				// track before send suppresses in any case, thus we expect no error
-				err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoinsFromModuleToModule(ctx, icqtypes.ModuleName, dextypes.ModuleName, tokenToSend)
+				if tc.expectedPanic {
+					suite.Require().Panics(func() {
+						err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoinsFromModuleToModule(ctx, icqtypes.ModuleName, dextypes.ModuleName, tokenToSend)
+					})
+				} else {
+					err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoinsFromModuleToModule(ctx, icqtypes.ModuleName, dextypes.ModuleName, tokenToSend)
+				}
+
 				suite.Require().NoError(err)
 
 				// send should happen regardless of trackBeforeSend results
-				distributionModuleAddress := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress(dextypes.ModuleName)
-				distributionModuleBalances := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetAllBalances(suite.ChainA.GetContext(), distributionModuleAddress)
-				suite.Require().True(distributionModuleBalances.Equal(tokenToSend))
+				// except if panics
+				if !tc.expectedPanic {
+					receiverModuleAddress := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress(dextypes.ModuleName)
+					receiverModuleBalances := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetAllBalances(suite.ChainA.GetContext(), receiverModuleAddress)
+					suite.Require().True(receiverModuleBalances.Equal(tokenToSend))
+				}
 			}
 		})
 	}
