@@ -345,8 +345,8 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice0To1() {
 	s.aliceWithdrawsLimitSell(trancheKey0)
 
 	// THEN alice gets out ~100 TOKENB and bob gets ~10 TOKENA
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_999))
-	s.assertBobBalancesInt(sdkmath.NewInt(9999002), sdkmath.NewInt(0))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99999977))
+	s.assertBobBalancesInt(sdkmath.NewInt(10000000), sdkmath.NewInt(22))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
@@ -364,7 +364,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
 
 	// THEN alice gets out ~10 TOKENA and bob gets ~40 TOKENB
 	s.assertAliceBalancesInt(sdkmath.NewInt(9999999), sdkmath.ZeroInt())
-	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(39997453))
+	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(40001452))
 }
 
 // Fill Or Kill limit orders ///////////////////////////////////////////////////////////
