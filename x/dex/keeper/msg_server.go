@@ -37,6 +37,10 @@ func (k MsgServer) Deposit(
 		return nil, err
 	}
 
+	if err := k.AssertNotWithdrawOnly(goCtx); err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -171,6 +175,10 @@ func (k MsgServer) PlaceLimitOrder(
 		return nil, err
 	}
 
+	if err := k.AssertNotWithdrawOnly(goCtx); err != nil {
+		return nil, err
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
@@ -289,6 +297,10 @@ func (k MsgServer) MultiHopSwap(
 		return nil, err
 	}
 
+	if err := k.AssertNotWithdrawOnly(goCtx); err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -337,6 +349,16 @@ func (k MsgServer) AssertNotPaused(goCtx context.Context) error {
 
 	if paused {
 		return types.ErrDexPaused
+	}
+	return nil
+}
+
+func (k MsgServer) AssertNotWithdrawOnly(goCtx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	withdrawOnly := k.GetParams(ctx).WithdrawOnly
+
+	if withdrawOnly {
+		return types.ErrDexWithdrawOnly
 	}
 	return nil
 }

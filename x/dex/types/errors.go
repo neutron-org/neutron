@@ -289,4 +289,9 @@ var (
 		1176,
 		fmt.Sprintf("A number of hops per route must be less or equal to %d", MaxHopsPerRoute),
 	)
+	ErrDexWithdrawOnly = sdkerrors.Register(
+		ModuleName,
+		1177,
+		"Dex is in withdraw only mode, all messages except withdrawals are disabled at this time",
+	)
 )
