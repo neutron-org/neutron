@@ -75,10 +75,6 @@ const (
 	UndelegationsManagerContract = "TODO"
 )
 
-// NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
-// TODO: fill in real validator addresses before deployment.
-var NewValidatorSet = []string{"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva"}
-
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
