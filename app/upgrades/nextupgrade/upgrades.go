@@ -58,7 +58,6 @@ const (
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
 
 	// NewMaxValidators is the new maximum number of validators
-	// TODO: set the proper value
 	NewMaxValidators = 14
 
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
