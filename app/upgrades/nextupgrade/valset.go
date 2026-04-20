@@ -76,10 +76,8 @@ package nextupgrade
 */
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
-// TODO: remove fake validator and commented out validators before deployment.
 // we keep all set except allnodes, informal systems, p2p.org and stakecito.
 var NewValidatorSet = []string{
-	// "neutronvaloper1pypmhaet69f57ymv526e78em6n9u9dshkx0npn", // stakecito
 	"neutronvaloper1pggzzg4wzsyxpcg9g57h5hkwumf3507yvcf4u6", // sg-1
 	"neutronvaloper1rlyy2ltkc9t9s8gp2tmqxk6guggf6h9g6xj26y", // 01node
 	"neutronvaloper1xvl6sq77k6eq8kg9pyjyt8dzxzpyv9ukuuvsay", // polkachu.com
@@ -89,12 +87,9 @@ var NewValidatorSet = []string{
 	"neutronvaloper1jkva4td5hfmmpdtjuxdk2yxg2q2pvslr287hg9", // smart stake
 	"neutronvaloper15mfl7wxqww7zrvq2zw3d76mwsdxxff8cju5h5c", // crosnest
 	"neutronvaloper1kfqxeuqx2rxp0q6yh299737676r274398twxz8", // 🐹 Quokka Stake
-	// "neutronvaloper1ksuxjvl70y9a60prfa4drqztsx8g7yuhvf36q6", // allnodes
 	"neutronvaloper1cvwrxye2g79ggstv403rn7tu952hs88udwclch", // newt node
 	"neutronvaloper1c0rct7nkj4evl3j3s5sqzky4str95yr4fsg2mk", // golden ratio staking
-	// "neutronvaloper1ekvdq09eczgjuv2yh86pesjkh6lt805dpw2qrw", // informal systems
 	"neutronvaloper1e6rw7a7ngjmn8qjqfymu4en0px7hlr27fpf55k", // solva (cryptocrew)
 	"neutronvaloper1md0k6m8y58w8u98x82kjah7r5zcajw7c5v5ypa", // posthuman (stakedrop)
-	// "neutronvaloper1uaz9tnrxlvad37t8d7vcevwd7z7xlp7lmu5pjv", // p2p.org
 	"neutronvaloper1ap2gshzfwglun4y2gpz6meugggat42s7vndhsw", // cosmostation
 }
