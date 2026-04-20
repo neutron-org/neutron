@@ -59,7 +59,7 @@ const (
 
 	// NewMaxValidators is the new maximum number of validators
 	// TODO: set the proper value
-	NewMaxValidators = 1
+	NewMaxValidators = 14
 
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
 	// It owns all delegations including the DAO funds in Drop.
