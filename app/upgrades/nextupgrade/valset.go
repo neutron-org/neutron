@@ -79,7 +79,6 @@ package nextupgrade
 // TODO: remove fake validator and commented out validators before deployment.
 // we keep all set except allnodes, informal systems, p2p.org and stakecito.
 var NewValidatorSet = []string{
-	"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva", // fake validator, TODO: remove this
 	// "neutronvaloper1pypmhaet69f57ymv526e78em6n9u9dshkx0npn", // stakecito
 	"neutronvaloper1pggzzg4wzsyxpcg9g57h5hkwumf3507yvcf4u6", // sg-1
 	"neutronvaloper1rlyy2ltkc9t9s8gp2tmqxk6guggf6h9g6xj26y", // 01node
