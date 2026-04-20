@@ -611,8 +611,10 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 			return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
 		}
 		ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
+	} else if reserve.IsEqual(ntrnBalance) {
+		ctx.Logger().Info("Reserve is equal to NTRN balance on DAO, skipping burn", "reserve", reserve, "ntrnBalance", ntrnBalance)
 	} else {
-		ctx.Logger().Info("Reserve is greater than or equal to NTRN balance on DAO, skipping burn", "reserve", reserve, "ntrnBalance", ntrnBalance)
+		return fmt.Errorf("Amount we want to reserve is greater than NTRN balance on DAO, cannot burn")
 	}
 
 	// 6.
