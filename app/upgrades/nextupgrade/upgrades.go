@@ -647,15 +647,15 @@ func TakeFundsFromLegacyAccounts(ctx sdk.Context, bk bankkeeper.Keeper) error {
 
 func ClaimPointsAndVestingSurplus(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	if err := bk.SendCoins(ctx, sdk.MustAccAddressFromBech32(PointsContractAddress), sdk.MustAccAddressFromBech32(MainDAOContractAddress), sdk.Coins{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(PointsSuprlusAmount))}); err != nil {
-		return fmt.Errorf("failed to send points from contract for burning: %w", err)
+		return fmt.Errorf("failed to send slurps from points contract for burning: %w", err)
 	}
 
 	if err := bk.SendCoins(ctx, sdk.MustAccAddressFromBech32(Vesting1ContractAddress), sdk.MustAccAddressFromBech32(MainDAOContractAddress), sdk.Coins{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(Vesting1SuprlusAmount))}); err != nil {
-		return fmt.Errorf("failed to send vesting1 from contract for burning: %w", err)
+		return fmt.Errorf("failed to send slurps from vesting1 contract for burning: %w", err)
 	}
 
 	if err := bk.SendCoins(ctx, sdk.MustAccAddressFromBech32(Vesting2ContractAddress), sdk.MustAccAddressFromBech32(MainDAOContractAddress), sdk.Coins{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(Vesting2SuprlusAmount))}); err != nil {
-		return fmt.Errorf("failed to send vesting2 from contract for burning: %w", err)
+		return fmt.Errorf("failed to send slurps from vesting2 contract for burning: %w", err)
 	}
 	return nil
 }
