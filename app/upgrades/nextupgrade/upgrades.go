@@ -600,7 +600,8 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 
 	ntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
 	reserve := sdk.NewCoin(appparams.DefaultDenom, math.NewInt(DAOReserveAmount))
-	if reserve.IsLT(ntrnBalance) {
+	switch {
+	case reserve.IsLT(ntrnBalance):
 		ntrnToBurn := ntrnBalance.Sub(reserve)
 		ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
 		// 5.
@@ -611,10 +612,10 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 			return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
 		}
 		ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
-	} else if reserve.IsEqual(ntrnBalance) {
+	case reserve.IsEqual(ntrnBalance):
 		ctx.Logger().Info("Reserve is equal to NTRN balance on DAO, skipping burn", "reserve", reserve, "ntrnBalance", ntrnBalance)
-	} else {
-		return fmt.Errorf("Amount we want to reserve is greater than NTRN balance on DAO, cannot burn")
+	default:
+		return fmt.Errorf("amount we want to reserve is greater than NTRN balance on DAO, cannot burn")
 	}
 
 	// 6.
