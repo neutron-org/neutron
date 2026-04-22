@@ -615,7 +615,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 	case reserve.IsEqual(ntrnBalance):
 		ctx.Logger().Info("Reserve is equal to NTRN balance on DAO, skipping burn", "reserve", reserve, "ntrnBalance", ntrnBalance)
 	default:
-		return fmt.Errorf("amount we want to reserve is greater than NTRN balance on DAO, cannot burn")
+		return fmt.Errorf("DAO balance is less than the amount required for reservation: %s < %s", ntrnBalance, reserve)
 	}
 
 	// 6.
