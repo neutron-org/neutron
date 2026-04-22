@@ -22,6 +22,9 @@ var Analyzer = &analysis.Analyzer{
 				if !ok {
 					return true
 				}
+				if hasIgnoreComment(pass, f, r) {
+					return true
+				}
 				t := pass.TypesInfo.TypeOf(r.X)
 				if t != nil {
 					if _, ok := t.Underlying().(*types.Map); ok {
@@ -33,4 +36,22 @@ var Analyzer = &analysis.Analyzer{
 		}
 		return nil, nil
 	},
+}
+
+func hasIgnoreComment(pass *analysis.Pass, file *ast.File, rangeStmt *ast.RangeStmt) bool {
+	forLine := pass.Fset.Position(rangeStmt.For).Line
+	for _, group := range file.Comments {
+		for _, comment := range group.List {
+			text := comment.Text
+			if !strings.Contains(text, "nolint:mapiter") && !strings.Contains(text, "mapiter:ignore") {
+				continue
+			}
+
+			commentLine := pass.Fset.Position(comment.Slash).Line
+			if commentLine == forLine || commentLine == forLine-1 {
+				return true
+			}
+		}
+	}
+	return false
 }

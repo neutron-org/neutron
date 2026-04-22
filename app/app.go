@@ -446,7 +446,7 @@ type App struct {
 // AutoCLIOpts returns options based upon the modules in the neutron v5 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule)
-	for _, m := range app.mm.Modules {
+	for _, m := range app.mm.Modules { //nolint:mapiter
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
 			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
@@ -1402,7 +1402,7 @@ func (app *App) setupUpgradeHandlers() {
 
 func (app *App) AutoCliOpts() autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule, 0)
-	for _, m := range app.mm.Modules {
+	for _, m := range app.mm.Modules { //nolint:mapiter
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
 			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
@@ -1487,7 +1487,7 @@ func (app *App) LoadHeight(height int64) error {
 // ModuleAccountAddrs returns all the app's module account addresses.
 func (app *App) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
-	for acc := range maccPerms {
+	for acc := range maccPerms { //nolint:mapiter
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
 

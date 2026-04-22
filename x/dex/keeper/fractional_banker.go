@@ -74,7 +74,7 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.Prec
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, balances BalanceMap) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	sortedBalances := make([]string, 0, len(balances))
-	for denom := range balances {
+	for denom := range balances { //nolint:mapiter
 		sortedBalances = append(sortedBalances, denom)
 	}
 	sort.Strings(sortedBalances)

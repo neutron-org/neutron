@@ -119,7 +119,7 @@ func main() {
 // mergeMarketMaps merges the two market maps together. If a market already exists in one of the maps, we
 // merge based on the provider set.
 func mergeMarketMaps(this, other mmtypes.MarketMap) mmtypes.MarketMap {
-	for name, otherMarket := range other.Markets {
+	for name, otherMarket := range other.Markets { //nolint:mapiter
 		// If the market does not exist in this map, we add it.
 		thisMarket, ok := this.Markets[name]
 		if !ok {
@@ -159,7 +159,7 @@ func filterToOnlyCMCMarkets(marketmap mmtypes.MarketMap) mmtypes.MarketMap {
 	}
 
 	// Filter out all markets that are not from CoinMarketCap.
-	for _, market := range marketmap.Markets {
+	for _, market := range marketmap.Markets { //nolint:mapiter
 		var meta tickermetadata.DyDx
 		if err := json.Unmarshal([]byte(market.Ticker.Metadata_JSON), &meta); err != nil {
 			continue
@@ -198,7 +198,7 @@ func filterToOnlyCMCMarkets(marketmap mmtypes.MarketMap) mmtypes.MarketMap {
 
 // enableAllMarkets is a helper function that enables all markets in the market map.
 func enableAllMarkets(marketmap mmtypes.MarketMap) mmtypes.MarketMap {
-	for name, market := range marketmap.Markets {
+	for name, market := range marketmap.Markets { //nolint:mapiter
 		market.Ticker.Enabled = true
 		marketmap.Markets[name] = market
 	}

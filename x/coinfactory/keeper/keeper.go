@@ -37,7 +37,7 @@ func NewKeeper(
 	authority string,
 ) Keeper {
 	sortedKnownModules := make([]string, 0, len(maccPerms))
-	for moduleName := range maccPerms {
+	for moduleName := range maccPerms { //nolint:mapiter
 		sortedKnownModules = append(sortedKnownModules, moduleName)
 	}
 	sort.Strings(sortedKnownModules)
