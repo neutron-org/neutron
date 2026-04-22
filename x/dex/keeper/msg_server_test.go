@@ -14,13 +14,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v8/testutil/apptesting"
-	"github.com/neutron-org/neutron/v8/testutil/common/sample"
-	testkeeper "github.com/neutron-org/neutron/v8/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v8/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v8/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	"github.com/neutron-org/neutron/v10/testutil/apptesting"
+	"github.com/neutron-org/neutron/v10/testutil/common/sample"
+	testkeeper "github.com/neutron-org/neutron/v10/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v10/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 // Test suite
@@ -777,6 +777,24 @@ func (s *DexTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*Withdra
 		Fees:            fee,
 	})
 	s.Assert().Nil(err)
+}
+
+func (s *DexTestSuite) withdrawsWithShares(account sdk.AccAddress, sharesToRemove sdk.Coins) {
+	_, err := s.msgServer.WithdrawalWithShares(s.Ctx, &types.MsgWithdrawalWithShares{
+		Creator:        account.String(),
+		Receiver:       account.String(),
+		SharesToRemove: sharesToRemove,
+	})
+	s.Assert().Nil(err)
+}
+
+func (s *DexTestSuite) withdrawsWithSharesFails(account sdk.AccAddress, expectedErr error, sharesToRemove sdk.Coins) {
+	_, err := s.msgServer.WithdrawalWithShares(s.Ctx, &types.MsgWithdrawalWithShares{
+		Creator:        account.String(),
+		Receiver:       account.String(),
+		SharesToRemove: sharesToRemove,
+	})
+	s.Assert().ErrorIs(err, expectedErr)
 }
 
 func (s *DexTestSuite) aliceWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
@@ -2019,6 +2037,80 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 	}
 }
 
+func TestMsgWithdrawalWithSharesValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	tests := []struct {
+		name        string
+		msg         types.MsgWithdrawalWithShares
+		expectedErr error
+	}{
+		{
+			"invalid creator",
+			types.MsgWithdrawalWithShares{
+				Creator:        "invalid_address",
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.OneInt())},
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid receiver",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       "invalid_address",
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.OneInt())},
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"empty shares to remove",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{},
+			},
+			types.ErrZeroWithdraw,
+		},
+		{
+			"invalid share amount",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.ZeroInt())},
+			},
+			types.ErrZeroWithdraw,
+		},
+		{
+			"invalid share denom",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{sdk.NewCoin("invalid_denom", sdkmath.OneInt())},
+			},
+			types.ErrInvalidPoolDenom,
+		},
+		{
+			"duplicate share denom",
+			types.MsgWithdrawalWithShares{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				SharesToRemove: sdk.Coins{types.NewPoolShares(0, sdkmath.OneInt()), types.NewPoolShares(0, sdkmath.OneInt())},
+			},
+			types.ErrDuplicatePoolWithdraw,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.WithdrawalWithShares(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
 func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 	k, ctx := testkeeper.DexKeeper(t)
 	msgServer := dexkeeper.NewMsgServerImpl(*k)
@@ -2407,6 +2499,74 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("-0.5"),
 			},
 			types.ErrZeroExitPrice,
+		},
+		{
+			"single hop",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes:   []*types.MultiHopRoute{{Hops: []string{"TokenA"}}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrRouteWithoutExitToken,
+		},
+		{
+			"no hops",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes:   []*types.MultiHopRoute{{Hops: []string{}}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrRouteWithoutExitToken,
+		},
+		{
+			"too many routes",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+				},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrMaxRoutesPerRequestReached,
+		},
+		{
+			"too many hops",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{{
+					Hops: []string{
+						"TokenA", "TokenB", "TokenC",
+						"TokenD", "TokenE", "TokenF",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+						"TokenG", "TokenH", "TokenJ",
+					},
+				}},
+				AmountIn: sdkmath.OneInt(),
+			},
+			types.ErrMaxHopsPerRouteReached,
 		},
 	}
 

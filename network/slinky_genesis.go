@@ -33,13 +33,13 @@ func main() {
 
 	if *isMMDeployment {
 		if *marketFile == "" {
-			fmt.Fprintf(flag.CommandLine.Output(), "market map config path (market-cfg-path) cannot be empty\n")
+			fmt.Fprintf(flag.CommandLine.Output(), "market map config path (market-cfg-path) cannot be empty\n") //nolint:errcheck
 			panic("market map config path (market-cfg-path) cannot be empty")
 		}
 
 		marketMap, err := mmtypes.ReadMarketMapFromFile(*marketFile)
 		if err != nil {
-			fmt.Fprintf(flag.CommandLine.Output(), "failed to read market map from file: %s\n", err)
+			fmt.Fprintf(flag.CommandLine.Output(), "failed to read market map from file: %s\n", err) //nolint:errcheck
 			panic(err)
 		}
 
@@ -53,7 +53,7 @@ func main() {
 
 		// Write the market map back to the original file.
 		if err := mmtypes.WriteMarketMapToFile(marketMap, *marketFile); err != nil {
-			fmt.Fprintf(flag.CommandLine.Output(), "failed to write market map to file: %s\n", err)
+			fmt.Fprintf(flag.CommandLine.Output(), "failed to write market map to file: %s\n", err) //nolint:errcheck
 			panic(err)
 		}
 
@@ -65,53 +65,53 @@ func main() {
 	}
 
 	if *useCore {
-		fmt.Fprintf(flag.CommandLine.Output(), "Using core markets\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Using core markets\n") //nolint:errcheck
 		marketMap = mergeMarketMaps(marketMap, marketmaps.CoreMarketMap)
 	}
 
 	if *useRaydium {
-		fmt.Fprintf(flag.CommandLine.Output(), "Using raydium markets\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Using raydium markets\n") //nolint:errcheck
 		marketMap = mergeMarketMaps(marketMap, marketmaps.RaydiumMarketMap)
 	}
 
 	if *useUniswapV3Base {
-		fmt.Fprintf(flag.CommandLine.Output(), "Using uniswapv3 base markets\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Using uniswapv3 base markets\n") //nolint:errcheck
 		marketMap = mergeMarketMaps(marketMap, marketmaps.UniswapV3BaseMarketMap)
 	}
 
 	if *useCoinGecko {
-		fmt.Fprintf(flag.CommandLine.Output(), "Using coingecko markets\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Using coingecko markets\n") //nolint:errcheck
 		marketMap = mergeMarketMaps(marketMap, marketmaps.CoinGeckoMarketMap)
 	}
 
 	if *useCoinMarketCap {
-		fmt.Fprintf(flag.CommandLine.Output(), "Using coinmarketcap markets\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Using coinmarketcap markets\n") //nolint:errcheck
 		marketMap = mergeMarketMaps(marketMap, marketmaps.CoinMarketCapMarketMap)
 	}
 
 	if *useOsmosis {
-		fmt.Fprintf(flag.CommandLine.Output(), "Using osmosis markets\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Using osmosis markets\n") //nolint:errcheck
 		marketMap = mergeMarketMaps(marketMap, marketmaps.OsmosisMarketMap)
 	}
 
 	if *usePolymarket {
-		fmt.Fprintf(flag.CommandLine.Output(), "Using polymarket markets\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Using polymarket markets\n") //nolint:errcheck
 		marketMap = mergeMarketMaps(marketMap, marketmaps.PolymarketMarketMap)
 	}
 
 	if err := marketMap.ValidateBasic(); err != nil {
-		fmt.Fprintf(flag.CommandLine.Output(), "failed to validate market map: %s\n", err)
+		fmt.Fprintf(flag.CommandLine.Output(), "failed to validate market map: %s\n", err) //nolint:errcheck
 		panic(err)
 	}
 
 	// Write the market map to the temporary file.
 	if *tempFile == "" {
-		fmt.Fprintf(flag.CommandLine.Output(), "temp file cannot be empty\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "temp file cannot be empty\n") //nolint:errcheck
 		panic("temp file cannot be empty")
 	}
 
 	if err := mmtypes.WriteMarketMapToFile(marketMap, *tempFile); err != nil {
-		fmt.Fprintf(flag.CommandLine.Output(), "failed to write market map to file: %s\n", err)
+		fmt.Fprintf(flag.CommandLine.Output(), "failed to write market map to file: %s\n", err) //nolint:errcheck
 		panic(err)
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
 )
 
 const TypeMsgMultiHopSwap = "multi_hop_swap"
@@ -88,6 +88,10 @@ func validateRoutes(routes []*MultiHopRoute) error {
 	if len(routes) == 0 {
 		return ErrMissingMultihopRoute
 	}
+	if len(routes) > MaxRoutesPerRequest {
+		return ErrMaxRoutesPerRequestReached
+	}
+
 	expectedExitToken := ""
 	expectedEntryToken := ""
 
@@ -114,12 +118,16 @@ func validateRoutes(routes []*MultiHopRoute) error {
 }
 
 func validateHops(hops []string) error {
+	// check that route has at least entry and exit token
+	if len(hops) < 2 {
+		return ErrRouteWithoutExitToken
+	}
+	if len(hops) > MaxHopsPerRoute {
+		return ErrMaxHopsPerRouteReached
+	}
+
 	existingHops := make(map[string]bool, len(hops))
 	for _, hop := range hops {
-		// check that route has at least entry and exit token
-		if len(hop) < 2 {
-			return ErrRouteWithoutExitToken
-		}
 		// check if we find cycles in the route
 		if existingHops[hop] {
 			return ErrCycleInHops

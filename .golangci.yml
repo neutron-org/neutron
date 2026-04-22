@@ -1,42 +1,35 @@
+version: "2"
 run:
   tests: true
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
-  timeout: 10m
-
 linters:
-  disable-all: true
+  default: none
   enable:
+    - copyloopvar
     - dogsled
     - errcheck
-    - copyloopvar
     - goconst
     - gocritic
-    - gofumpt
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - misspell
     - nakedret
     - nolintlint
-    - revive
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
-
-issues:
-  max-issues-per-linter: 10000
-  max-same-issues: 10000
-
-linters-settings:
-  gofumpt:
-    # Choose whether to use the extra rules.
-    # Default: false
-    extra-rules: true
-  nolintlint:
-    allow-unused: true
-    require-explanation: false
-    require-specific: false
+  settings:
+    nolintlint:
+      require-explanation: false
+      require-specific: false
+      allow-unused: true
+  exclusions:
+    paths:
+      - '.*.pb.go'
+formatters:
+  enable:
+    - gofumpt
+  settings:
+    gofumpt:
+      extra-rules: true

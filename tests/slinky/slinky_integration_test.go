@@ -8,9 +8,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/gov"
-	"github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -29,7 +29,7 @@ var (
 	image = ibc.DockerImage{
 		Repository: "neutron-node",
 		Version:    "latest",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	numValidators = 4
@@ -40,7 +40,7 @@ var (
 	oracleImage = ibc.DockerImage{
 		Repository: "ghcr.io/skip-mev/slinky-sidecar",
 		Version:    "v1.0.0",
-		UidGid:     "1000:1000",
+		UIDGID:     "1000:1000",
 	}
 	encodingConfig = testutil.MakeTestEncodingConfig(
 		bank.AppModuleBasic{},
@@ -101,8 +101,6 @@ func TestSlinkyOracleIntegration(t *testing.T) {
 	baseSuite := integration.NewSlinkyIntegrationSuite(
 		spec,
 		oracleImage,
-		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
-		integration.WithChainConstructor(integration.CCVChainConstructor),
 		integration.WithDenom(denom),
 	)
 

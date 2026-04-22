@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 type MsgServer struct {
@@ -34,6 +34,10 @@ func (k MsgServer) Deposit(
 	}
 
 	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
+	}
+
+	if err := k.AssertNotWithdrawOnly(goCtx); err != nil {
 		return nil, err
 	}
 
@@ -125,6 +129,40 @@ func (k MsgServer) Withdrawal(
 	}, nil
 }
 
+func (k MsgServer) WithdrawalWithShares(
+	goCtx context.Context,
+	msg *types.MsgWithdrawalWithShares,
+) (*types.MsgWithdrawalResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgWithdrawalWithShares")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
+	}
+
+	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
+	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
+
+	reserve0ToRemoved, reserve1ToRemoved, sharesBurned, err := k.WithdrawWithSharesCore(
+		goCtx,
+		callerAddr,
+		receiverAddr,
+		msg.SharesToRemove,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgWithdrawalResponse{
+		Reserve0Withdrawn:    reserve0ToRemoved.TruncateInt(),
+		Reserve1Withdrawn:    reserve1ToRemoved.TruncateInt(),
+		DecReserve0Withdrawn: reserve0ToRemoved,
+		DecReserve1Withdrawn: reserve1ToRemoved,
+		SharesBurned:         sharesBurned,
+	}, nil
+}
+
 func (k MsgServer) PlaceLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgPlaceLimitOrder,
@@ -134,6 +172,10 @@ func (k MsgServer) PlaceLimitOrder(
 	}
 
 	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
+	}
+
+	if err := k.AssertNotWithdrawOnly(goCtx); err != nil {
 		return nil, err
 	}
 
@@ -255,6 +297,10 @@ func (k MsgServer) MultiHopSwap(
 		return nil, err
 	}
 
+	if err := k.AssertNotWithdrawOnly(goCtx); err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -303,6 +349,16 @@ func (k MsgServer) AssertNotPaused(goCtx context.Context) error {
 
 	if paused {
 		return types.ErrDexPaused
+	}
+	return nil
+}
+
+func (k MsgServer) AssertNotWithdrawOnly(goCtx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	withdrawOnly := k.GetParams(ctx).WithdrawOnly
+
+	if withdrawOnly {
+		return types.ErrDexWithdrawOnly
 	}
 	return nil
 }

@@ -3,21 +3,25 @@ package transfer
 import (
 	"fmt"
 
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
-	wrapkeeper "github.com/neutron-org/neutron/v8/x/transfer/keeper"
-	neutrontypes "github.com/neutron-org/neutron/v8/x/transfer/types"
+	wrapkeeper "github.com/neutron-org/neutron/v10/x/transfer/keeper"
+	neutrontypes "github.com/neutron-org/neutron/v10/x/transfer/types"
 )
+
+var _ porttypes.IBCModule = IBCModule{}
 
 /*
 	In addition to original ack processing of ibc transfer acknowledgement we want to pass the acknowledgement to originating wasm contract.
@@ -29,17 +33,19 @@ type IBCModule struct {
 	keeper             keeper.Keeper
 	sudoKeeper         neutrontypes.WasmKeeper
 	tokenfactoryKeeper neutrontypes.TokenfactoryKeeper
+	coinfactoryKeeper  neutrontypes.TokenfactoryKeeper
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper, coinfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
 	return IBCModule{
 		wrappedKeeper:      k,
 		keeper:             k.Keeper,
 		sudoKeeper:         sudoKeeper,
 		IBCModule:          transfer.NewIBCModule(k.Keeper),
 		tokenfactoryKeeper: tokenfactoryKeeper,
+		coinfactoryKeeper:  coinfactoryKeeper,
 	}
 }
 
@@ -47,11 +53,12 @@ func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.Wa
 // Wrapper struct shadows(overrides) the OnAcknowledgementPacket method to achieve the package's purpose.
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	err := im.IBCModule.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer)
 	if err != nil {
 		return errors.Wrap(err, "failed to process original OnAcknowledgementPacket")
 	}
@@ -61,10 +68,11 @@ func (im IBCModule) OnAcknowledgementPacket(
 // OnTimeoutPacket implements the IBCModule interface.
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	err := im.IBCModule.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 	if err != nil {
 		return errors.Wrap(err, "failed to process original OnTimeoutPacket")
 	}
@@ -85,6 +93,7 @@ func (im IBCModule) OnChanOpenAck(
 
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+	im.coinfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
 
 	return nil
 }
@@ -102,6 +111,7 @@ func (im IBCModule) OnChanOpenConfirm(
 
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+	im.coinfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
 
 	return nil
 }
@@ -137,10 +147,6 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	cfg.MsgServer().RegisterService(&neutrontypes.MsgServiceDescOrig, am.keeper)
 
 	m := keeper.NewMigrator(am.keeper.Keeper)
-	if err := cfg.RegisterMigration(transfertypes.ModuleName, 1, m.MigrateTraces); err != nil {
-		panic(fmt.Sprintf("failed to migrate transfer app from version 1 to 2: %v", err))
-	}
-
 	if err := cfg.RegisterMigration(transfertypes.ModuleName, 2, m.MigrateTotalEscrowForDenom); err != nil {
 		panic(fmt.Sprintf("failed to migrate transfer app from version 2 to 3: %v", err))
 	}
@@ -151,6 +157,10 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 	if err := cfg.RegisterMigration(transfertypes.ModuleName, 4, m.MigrateDenomMetadata); err != nil {
 		panic(fmt.Sprintf("failed to migrate transfer app from version 4 to 5: %v", err))
+	}
+
+	if err := cfg.RegisterMigration(transfertypes.ModuleName, 5, m.MigrateDenomTraceToDenom); err != nil {
+		panic(fmt.Errorf("failed to migrate transfer app from version 5 to 6 (migrate DenomTrace to Denom): %v", err))
 	}
 }
 

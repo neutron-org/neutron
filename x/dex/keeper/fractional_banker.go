@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"sort"
 	"strings"
 
 	math "cosmossdk.io/math"
@@ -9,8 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v8/utils/math"
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 type (
@@ -53,7 +54,7 @@ func (k *FractionalBanker) GetFractionalBalances(ctx sdk.Context, address sdk.Ac
 func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.PrecDecCoins, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	balances := types.PrecDecCoins{}
 
@@ -72,7 +73,14 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.Prec
 
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, balances BalanceMap) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
-	for denom, amount := range balances {
+	sortedBalances := make([]string, 0, len(balances))
+	for denom := range balances {
+		sortedBalances = append(sortedBalances, denom)
+	}
+	sort.Strings(sortedBalances)
+
+	for _, denom := range sortedBalances {
+		amount := balances[denom]
 		if amount.IsPositive() {
 			bz, err := amount.Marshal()
 			// Marshal will NEVER actually return an error unless there are downstream code changes

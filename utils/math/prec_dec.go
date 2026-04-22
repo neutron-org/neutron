@@ -480,7 +480,7 @@ func (d PrecDec) ApproxRoot(root uint64) (guess PrecDec, err error) {
 		if root == 2 {
 			delta.i.Rsh(delta.i, 1)
 		} else {
-			delta.QuoInt64Mut(int64(root))
+			delta.QuoInt64Mut(int64(root)) //nolint:gosec
 		}
 
 		guess.AddMut(delta)
@@ -525,7 +525,7 @@ func (d PrecDec) IsInteger() bool {
 }
 
 // Format decimal state
-func (d PrecDec) Format(s fmt.State) {
+func (d PrecDec) Format(s fmt.State) { //nolint:govet
 	_, err := s.Write([]byte(d.String()))
 	if err != nil {
 		panic(err)
@@ -562,7 +562,7 @@ func (d PrecDec) String() string {
 
 		// set relevant digits to 0
 		for i := 0; i < Precision-inputSize; i++ {
-			bzStr[i+2] = byte('0')
+			bzStr[i+2] = byte('0') //nolint:gosec
 		}
 
 		// set final digits
@@ -771,9 +771,9 @@ func SortablePrecDecBytes(dec PrecDec) []byte {
 	}
 	// We move the negative sign to the front of all the left padded 0s, to make negative numbers come before positive numbers
 	if dec.IsNegative() {
-		return append([]byte("-"), []byte(fmt.Sprintf(fmt.Sprintf("%%0%ds", Precision*2+1), dec.Abs().String()))...)
+		return append([]byte("-"), fmt.Appendf(nil, fmt.Sprintf("%%0%ds", Precision*2+1), dec.Abs().String())...)
 	}
-	return []byte(fmt.Sprintf(fmt.Sprintf("%%0%ds", Precision*2+1), dec.String()))
+	return fmt.Appendf(nil, fmt.Sprintf("%%0%ds", Precision*2+1), dec.String())
 }
 
 // reuse nil values

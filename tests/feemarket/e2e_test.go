@@ -137,7 +137,7 @@ func TestE2ETestSuite(t *testing.T) {
 		oracleImage,
 		txCfg,
 		e2e.WithDenom(denom),
-		e2e.WithGasPrices(strings.Join([]string{"0.0uatom"}, ",")),
+		e2e.WithGasPrices(strings.Join([]string{"0.0untrn"}, ",")),
 	)
 	suite.Run(t, s)
 }

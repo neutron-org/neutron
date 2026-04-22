@@ -7,7 +7,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v8/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	"github.com/neutron-org/neutron/v10/x/dex/types"
 )
 
 func (k Keeper) GetOrInitLimitOrderTrancheUser(
@@ -33,6 +34,7 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 		Address:               receiver,
 		SharesOwned:           math.ZeroInt(),
 		SharesWithdrawn:       math.ZeroInt(),
+		DecSharesWithdrawn:    math_utils.ZeroPrecDec(),
 		TickIndexTakerToMaker: tickIndex,
 		TradePairId:           tradePairID,
 		OrderType:             orderType,
@@ -111,7 +113,7 @@ func (k Keeper) GetAllLimitOrderTrancheUser(ctx sdk.Context) (list []*types.Limi
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.LimitOrderTrancheUserKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		val := &types.LimitOrderTrancheUser{}
@@ -130,7 +132,7 @@ func (k Keeper) GetAllLimitOrderTrancheUserForAddress(
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), addressPrefix)
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
-	defer iterator.Close()
+	defer iterator.Close() //nolint:errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		val := &types.LimitOrderTrancheUser{}

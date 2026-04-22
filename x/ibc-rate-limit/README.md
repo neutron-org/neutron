@@ -89,11 +89,11 @@ The "Inflow" side of a rate limit is essentially protection against unforeseen b
 This can be quite conservative (e.g. bridged amount doubling in one week). This covers a few cases:
 
 * Counter-party chain B having a token theft attack
-   - TODO: description of how this looks
+   - A malicious actor gains control over tokens on the counter-party chain, leading to an unexpected and rapid increase in IBC inflow.
 * Counter-party chain B runaway mint
-   - TODO: description of how this looks
+   - A bug or governance failure on the counter-party chain causes uncontrolled minting, resulting in excessive tokens being bridged in.
 * IBC theft
-   - TODO: description of how this looks
+   - Exploitation of an IBC or application-level vulnerability that allows unauthorized transfers across the bridge.
 
 It does get more complex when the counterparty chain is itself a DEX, but this is still much more protection than nothing.
 

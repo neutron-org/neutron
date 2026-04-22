@@ -12,10 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v8/testutil"
-	testutil_keeper "github.com/neutron-org/neutron/v8/testutil/cron/keeper"
-	mock_types "github.com/neutron-org/neutron/v8/testutil/mocks/cron/types"
-	"github.com/neutron-org/neutron/v8/x/cron/types"
+	"github.com/neutron-org/neutron/v10/testutil"
+	testutil_keeper "github.com/neutron-org/neutron/v10/testutil/cron/keeper"
+	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/cron/types"
+	"github.com/neutron-org/neutron/v10/x/cron/types"
 )
 
 // ExecuteReadySchedules:
@@ -112,8 +112,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	}
 
 	for _, item := range schedules {
-		ctx = ctx.WithBlockHeight(int64(item.LastExecuteHeight)) //nolint:gosec
-		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.ExecutionStage)
+		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.LastExecuteHeight, item.ExecutionStage)
 		require.NoError(t, err)
 	}
 
@@ -218,7 +217,14 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 		LastExecuteHeight: 0,
 		ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
 	}
-	err = k.AddSchedule(ctx, everyTimeSchedule.Name, everyTimeSchedule.Period, everyTimeSchedule.Msgs, everyTimeSchedule.ExecutionStage)
+	err = k.AddSchedule(
+		ctx,
+		everyTimeSchedule.Name,
+		everyTimeSchedule.Period,
+		everyTimeSchedule.Msgs,
+		everyTimeSchedule.LastExecuteHeight,
+		everyTimeSchedule.ExecutionStage,
+	)
 
 	s, _ := k.GetSchedule(ctx, "every_block")
 	require.Equal(t, s.LastExecuteHeight, uint64(0))
@@ -260,7 +266,14 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 		LastExecuteHeight: 0,
 		ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
 	}
-	err = k.AddSchedule(ctx, onceTwoBlocksSchedule.Name, onceTwoBlocksSchedule.Period, onceTwoBlocksSchedule.Msgs, onceTwoBlocksSchedule.ExecutionStage)
+	err = k.AddSchedule(
+		ctx,
+		onceTwoBlocksSchedule.Name,
+		onceTwoBlocksSchedule.Period,
+		onceTwoBlocksSchedule.Msgs,
+		onceTwoBlocksSchedule.LastExecuteHeight,
+		onceTwoBlocksSchedule.ExecutionStage,
+	)
 
 	s, _ = k.GetSchedule(ctx, "once_in_two")
 	require.Equal(t, s.LastExecuteHeight, uint64(0))
@@ -314,7 +327,10 @@ func TestAddSchedule(t *testing.T) {
 			Contract: "c",
 			Msg:      "m",
 		},
-	}, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	},
+		uint64(ctx.BlockHeight()),
+		types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+	)
 	require.NoError(t, err)
 
 	err = k.AddSchedule(ctx, "b", 7, []types.MsgExecuteContract{
@@ -322,11 +338,21 @@ func TestAddSchedule(t *testing.T) {
 			Contract: "c",
 			Msg:      "m",
 		},
-	}, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
+	},
+		uint64(ctx.BlockHeight()),
+		types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER,
+	)
 	require.NoError(t, err)
 
 	// second time with same name returns error
-	err = k.AddSchedule(ctx, "a", 5, []types.MsgExecuteContract{}, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
+	err = k.AddSchedule(
+		ctx,
+		"a",
+		5,
+		[]types.MsgExecuteContract{},
+		uint64(ctx.BlockHeight()),
+		types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER,
+	)
 	require.Error(t, err)
 
 	scheduleA, found := k.GetSchedule(ctx, "a")
@@ -367,11 +393,11 @@ func TestGetAllSchedules(t *testing.T) {
 			Name:              strconv.Itoa(i),
 			Period:            5,
 			Msgs:              nil,
-			LastExecuteHeight: uint64(ctx.BlockHeight()), //nolint:gosec
+			LastExecuteHeight: uint64(i),
 			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER,
 		}
 		expectedSchedules = append(expectedSchedules, s)
-		err := k.AddSchedule(ctx, s.Name, s.Period, s.Msgs, s.ExecutionStage)
+		err := k.AddSchedule(ctx, s.Name, s.Period, s.Msgs, s.LastExecuteHeight, s.ExecutionStage)
 		require.NoError(t, err)
 	}
 

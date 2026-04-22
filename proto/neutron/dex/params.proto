@@ -3,7 +3,7 @@ package neutron.dex;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v8/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v10/x/dex/types";
 
 // Params defines the parameters for the module.
 message Params {
@@ -20,5 +20,9 @@ message Params {
   repeated string whitelisted_lps = 6 [
     // Adding jsontag prevents protoc from adding `omitempty` tag
     (gogoproto.jsontag) = "whitelisted_lps"
+  ];
+  bool withdraw_only = 7 [
+    // Adding jsontag prevents protoc from adding `omitempty` tag
+    (gogoproto.jsontag) = "withdraw_only"
   ];
 }
