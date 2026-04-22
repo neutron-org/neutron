@@ -55,8 +55,8 @@ const (
 	// ^^^^^^^^^^^^^^^^^^^^^^^^^
 	// Points surplus block ends
 
-	// Amount of tokens reserved for DAO operations and excluded from burning.
-	DAOReserveAmount = 1000000000000
+	// Amount of tokens reserved for governance operations and excluded from burning.
+	GovReserveAmount = 1000000000000
 
 	// AstroportShareDenom is the denom that represents share in the Astroport's NTRN-dNTRN pool
 	AstroportShareDenom = "factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share"
@@ -599,7 +599,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 	}
 
 	ntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
-	reserve := sdk.NewCoin(appparams.DefaultDenom, math.NewInt(DAOReserveAmount))
+	reserve := sdk.NewCoin(appparams.DefaultDenom, math.NewInt(GovReserveAmount))
 	switch {
 	case reserve.IsLT(ntrnBalance):
 		ntrnToBurn := ntrnBalance.Sub(reserve)
@@ -619,7 +619,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 	}
 
 	// 6.
-	// at this point the DAO balance is equal to the reserve or less.
+	// at this point the DAO balance is equal to the reserve.
 	daoBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
 	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), govtypes.ModuleName, sdk.Coins{daoBalance}); err != nil {
 		return fmt.Errorf("failed to send reserve to governance module: %w", err)
