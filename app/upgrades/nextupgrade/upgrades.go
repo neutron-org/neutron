@@ -34,6 +34,30 @@ import (
 )
 
 const (
+	// **************************
+	// Points surplus block starts
+	// to check all the surplus funds on the contracts you need:
+	// 1. Get all users balances on the contracts
+	// 2. Sum all users balances
+	// 3. Subtract the sum from the bank balance of the contract
+	// 4. The result is the surplus
+	// Surplus refers to funds sent to the contract in excess of the total users' balance on the contract.
+	PointsContractAddress = "neutron14lnmj4k0tqsfn3x8kmnmacg64ct2utyz0aaxtm5g3uwwp8kk4f6shcgrtt"
+	PointsSuprlusAmount   = 23159404417072
+
+	// Funds remaining on the contract after users executed force claim,
+	// when they agreed to instantly receive half of their vesting tokens.
+	Vesting1ContractAddress = "neutron1308jhptyepac60af2rh8486yw8xs44zshh7slyqqruly88dg0anqmgcagy"
+	Vesting1SuprlusAmount   = 302865298515
+
+	Vesting2ContractAddress = "neutron1dy2pa2tm24mr9z67v5kkf6f96yz2mj20k6te6derc4xr27qe38ks892qgv"
+	Vesting2SuprlusAmount   = 104422060470
+	// ^^^^^^^^^^^^^^^^^^^^^^^^^
+	// Points surplus block ends
+
+	// Amount of tokens reserved for governance operations and excluded from burning.
+	GovReserveAmount = 1000000000000
+
 	// AstroportShareDenom is the denom that represents share in the Astroport's NTRN-dNTRN pool
 	AstroportShareDenom = "factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share"
 	// AstroPortContractAddress is the NTRN-dNTRN pool contract
@@ -66,7 +90,7 @@ const (
 	PuppeteerContractAddress = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3"
 
 	// PuppeteerAdmin is an admin address of the Drop's puppeteer contract
-	PuppeteerAdmin = "TODO"
+	PuppeteerAdmin = "neutron1zhhww6gaysxs5vf94xsz2cpfznwgjatsxrnl8239555mfttzlxwqaagcfn"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
 	ProxyContractCodeID = 0o0000 // TODO
@@ -133,7 +157,13 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	}
 	ctx.Logger().Info("Done.")
 
-	ctx.Logger().Info("Burning funds from revenue treasury and staking rewards contract")
+	ctx.Logger().Info("Taking back funds from legacy module accounts")
+	if err := TakeFundsFromLegacyAccounts(ctx, keepers.BankKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Burning funds")
 	if err := BurnFunds(ctx, keepers.BankKeeper, keepers.WasmKeeper); err != nil {
 		return err
 	}
@@ -147,12 +177,6 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 
 	ctx.Logger().Info("Setting up MarketMap params")
 	if err := SetupMarketMap(ctx, keepers.MarketmapKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Taking back funds from legacy module accounts")
-	if err := TakeFundsFromLegacyAccounts(ctx, keepers.BankKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -510,12 +534,21 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 	}
 
 	/*
-		1. all the dNTRN (200M+) on the Main DAO must be burned;
-		2. withdraw DAO’s liquidity from dNTRN-NTRN pool;
-		3. convert all withdrawn dNTRN to NTRN via the converter contract;
-		4. burn all NTRNs you got from steps 2 & 3;
+		    1. Claim points and vesting surplus to DAO:
+			2. all the dNTRN (200M+) on the Main DAO must be burned;
+			3. withdraw DAO’s liquidity from dNTRN-NTRN pool;
+			4. convert all withdrawn dNTRN to NTRN via the converter contract;
+			5. burn all NTRNs except the reserve;
+			6. send the reserve to governance module.
 	*/
 	// 1.
+	err := ClaimPointsAndVestingSurplus(ctx, bk)
+	if err != nil {
+		return fmt.Errorf("failed to claim points and vesting surplus to DAO: %w", err)
+	}
+	ctx.Logger().Info("Claimed points and vesting surplus", "amount", sdk.NewCoin(appparams.DefaultDenom, math.NewInt(PointsSuprlusAmount+Vesting1SuprlusAmount+Vesting2SuprlusAmount)))
+
+	// 2.
 	dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
 	if dntrnBalance.IsPositive() {
 		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{dntrnBalance}); err != nil {
@@ -529,9 +562,8 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 		ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to burn", MainDAOContractAddress))
 	}
 
-	ntrnBalanceBefore := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
 	astroportBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), AstroportShareDenom)
-	// 2.
+	// 3.
 	if astroportBalance.IsPositive() {
 		ws := wasmkeeper.NewMsgServerImpl(wk)
 		_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
@@ -546,7 +578,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 		ctx.Logger().Info("Withdrew DAO liquidity from Astroport", "amount", astroportBalance)
 
 		dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
-		// 3.
+		// 4.
 		if dntrnBalance.IsPositive() {
 			ws := wasmkeeper.NewMsgServerImpl(wk)
 			_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
@@ -559,22 +591,6 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 				return fmt.Errorf("failed to swap DNTRN to NTRN: %w", err)
 			}
 			ctx.Logger().Info("Swapped DNTRN to NTRN", "amount", dntrnBalance)
-
-			ntrnBalanceAfter := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
-			ntrnToBurn := ntrnBalanceAfter.Sub(ntrnBalanceBefore)
-			ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
-			// 4.
-			if ntrnToBurn.IsPositive() {
-				if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
-					return fmt.Errorf("failed to send ntrn from DAO for burning: %w", err)
-				}
-				if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
-					return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
-				}
-				ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
-			} else {
-				ctx.Logger().Info(fmt.Sprintf("No NTRN balance on %s found to burn", MainDAOContractAddress))
-			}
 		} else {
 			ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to swap to NTRN", MainDAOContractAddress))
 		}
@@ -582,6 +598,32 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 		ctx.Logger().Info(fmt.Sprintf("No DAO Astroport balance on %s found to withdraw liquidity from", AstroPortContractAddress))
 	}
 
+	ntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+	reserve := sdk.NewCoin(appparams.DefaultDenom, math.NewInt(GovReserveAmount))
+	switch {
+	case reserve.IsLT(ntrnBalance):
+		ntrnToBurn := ntrnBalance.Sub(reserve)
+		ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
+		// 5.
+		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
+			return fmt.Errorf("failed to send ntrn from DAO for burning: %w", err)
+		}
+		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
+			return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
+		}
+		ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
+	case reserve.IsEqual(ntrnBalance):
+		ctx.Logger().Info("Reserve is equal to NTRN balance on DAO, skipping burn", "reserve", reserve, "ntrnBalance", ntrnBalance)
+	default:
+		return fmt.Errorf("DAO balance is less than the amount required for reservation: %s < %s", ntrnBalance, reserve)
+	}
+
+	// 6.
+	// at this point the DAO balance is equal to the reserve.
+	daoBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), govtypes.ModuleName, sdk.Coins{daoBalance}); err != nil {
+		return fmt.Errorf("failed to send reserve to governance module: %w", err)
+	}
 	return nil
 }
 
@@ -599,6 +641,21 @@ func TakeFundsFromLegacyAccounts(ctx sdk.Context, bk bankkeeper.Keeper) error {
 			return fmt.Errorf("failed to send coins from %s to main DAO: %w", accName, err)
 		}
 		ctx.Logger().Info("Sent coins from module account to main DAO", "module", accName, "amount", balances)
+	}
+	return nil
+}
+
+func ClaimPointsAndVestingSurplus(ctx sdk.Context, bk bankkeeper.Keeper) error {
+	if err := bk.SendCoins(ctx, sdk.MustAccAddressFromBech32(PointsContractAddress), sdk.MustAccAddressFromBech32(MainDAOContractAddress), sdk.Coins{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(PointsSuprlusAmount))}); err != nil {
+		return fmt.Errorf("failed to send slurps from points contract for burning: %w", err)
+	}
+
+	if err := bk.SendCoins(ctx, sdk.MustAccAddressFromBech32(Vesting1ContractAddress), sdk.MustAccAddressFromBech32(MainDAOContractAddress), sdk.Coins{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(Vesting1SuprlusAmount))}); err != nil {
+		return fmt.Errorf("failed to send slurps from vesting1 contract for burning: %w", err)
+	}
+
+	if err := bk.SendCoins(ctx, sdk.MustAccAddressFromBech32(Vesting2ContractAddress), sdk.MustAccAddressFromBech32(MainDAOContractAddress), sdk.Coins{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(Vesting2SuprlusAmount))}); err != nil {
+		return fmt.Errorf("failed to send slurps from vesting2 contract for burning: %w", err)
 	}
 	return nil
 }
