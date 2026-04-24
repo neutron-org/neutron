@@ -152,7 +152,7 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	ctx.Logger().Info("Done.")
 
 	ctx.Logger().Info("Disabling main DAO voting vaults and retiring voting registry")
-	if err := RemoveMainDAOVotingVaultsAndRegistry(ctx, keepers.WasmKeeper); err != nil {
+	if err := DeactivateMainDAOVotingVaults(ctx, keepers.WasmKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -469,7 +469,7 @@ func IBCRateLimitsChangeRoles(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 	return nil
 }
 
-func RemoveMainDAOVotingVaultsAndRegistry(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
+func DeactivateMainDAOVotingVaults(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 	registryQueryResp, err := wk.QuerySmart(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), []byte(`{"voting_module":{}}`))
 	if err != nil {
 		return fmt.Errorf("failed to query main dao voting module: %w", err)
@@ -510,35 +510,6 @@ func RemoveMainDAOVotingVaultsAndRegistry(ctx sdk.Context, wk *wasmkeeper.Keeper
 		}); err != nil {
 			return fmt.Errorf("failed to deactivate voting vault %s: %w", vault.Address, err)
 		}
-
-		if _, err := wasmSrv.ClearAdmin(ctx, &wasmTypes.MsgClearAdmin{
-			Sender:   MainDAOContractAddress,
-			Contract: vault.Address,
-		}); err != nil {
-			return fmt.Errorf("failed to clear admin for voting vault %s: %w", vault.Address, err)
-		}
-	}
-
-	updateRegistryOwnerMsg, err := json.Marshal(VotingRegistryExecuteMessage{
-		UpdateConfig: &UpdateConfig{Owner: authtypes.NewModuleAddress(govtypes.ModuleName).String()},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to marshal voting registry update config message: %w", err)
-	}
-	if _, err := wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
-		Sender:   MainDAOContractAddress,
-		Contract: votingRegistryAddress,
-		Msg:      updateRegistryOwnerMsg,
-		Funds:    nil,
-	}); err != nil {
-		return fmt.Errorf("failed to transfer voting registry ownership to gov module: %w", err)
-	}
-
-	if _, err := wasmSrv.ClearAdmin(ctx, &wasmTypes.MsgClearAdmin{
-		Sender:   MainDAOContractAddress,
-		Contract: votingRegistryAddress,
-	}); err != nil {
-		return fmt.Errorf("failed to clear admin for voting registry %s: %w", votingRegistryAddress, err)
 	}
 
 	ctx.Logger().Info("Retired main DAO voting registry", "registry", votingRegistryAddress, "vaults", len(votingVaults))
