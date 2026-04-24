@@ -90,7 +90,7 @@ const (
 	PuppeteerContractAddress = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3"
 
 	// PuppeteerAdmin is an admin address of the Drop's puppeteer contract
-	PuppeteerAdmin = "TODO"
+	PuppeteerAdmin = "neutron1zhhww6gaysxs5vf94xsz2cpfznwgjatsxrnl8239555mfttzlxwqaagcfn"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
 	ProxyContractCodeID = 0o0000 // TODO
