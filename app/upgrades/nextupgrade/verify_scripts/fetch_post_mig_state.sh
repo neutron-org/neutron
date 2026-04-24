@@ -97,6 +97,7 @@ staking_params="$(query_or_empty_object query staking params)"
 cron_schedules="$(query_or_empty_object query cron list-schedule)"
 
 main_dao_bal="$(query_or_empty_object query bank balances "$MAIN_DAO_CONTRACT")"
+gov_bal="$(query_or_empty_object query bank balances "$gov_addr")"
 staking_rewards_bal="$(query_or_empty_object query bank balances "$STAKING_REWARDS_CONTRACT")"
 if [[ -n "$revenue_addr" ]]; then
   revenue_bal="$(query_or_empty_object query bank balances "$revenue_addr")"
@@ -133,6 +134,7 @@ jq -n \
   --argjson staking_params "$staking_params" \
   --argjson cron_schedules "$cron_schedules" \
   --argjson main_dao_bal "$main_dao_bal" \
+  --argjson gov_bal "$gov_bal" \
   --argjson staking_rewards_bal "$staking_rewards_bal" \
   --argjson revenue_bal "$revenue_bal" \
   --arg puppeteer_admin "${puppeteer_admin:-}" \
@@ -180,6 +182,10 @@ jq -n \
       ($default_denom): (($main_dao_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0"),
       dntrn: (($main_dao_bal.balances // []) | map(select(.denom == $dntrn_denom)) | first | .amount // "0"),
       astroport_share: (($main_dao_bal.balances // []) | map(select(.denom == $astro_share_denom)) | first | .amount // "0")
+    },
+    gov_module: {
+      address: (if $gov_addr == "" then null else $gov_addr end),
+      ($default_denom): (($gov_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0")
     }
   },
   ibc_rate_limits: {
