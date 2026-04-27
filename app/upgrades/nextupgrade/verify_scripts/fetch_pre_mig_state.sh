@@ -107,6 +107,10 @@ puppeteer_delegations="$(query_or_empty_object query staking delegations "$PUPPE
 multisig_roles_json="$(roles_for_owner "$IBCRL_MULTISIG")"
 dao_roles_json="$(roles_for_owner "$MAIN_DAO_CONTRACT")"
 
+total_power="$(q q wasm cs smart "$MAIN_DAO_CONTRACT" '{"total_power_at_height":{}}' | jq -r '.data.power')"
+voting_registry="$(try_wasm_query "$MAIN_DAO_CONTRACT" '{"voting_module":{}}' | jq -r '.data')"
+active_voting_vaults_count="$(try_wasm_query "$voting_registry" '{"voting_vaults":{}}' | jq -r '[.data[] | select(.state == "Active")] | length')"
+
 jq -n \
   --arg default_denom "$DEFAULT_DENOM" \
   --arg dntrn_denom "$DNTRN_DENOM" \
@@ -130,6 +134,8 @@ jq -n \
   --argjson dao_roles "$dao_roles_json" \
   --arg puppeteer_admin "${puppeteer_admin:-}" \
   --argjson puppeteer_delegations "$puppeteer_delegations" \
+  --arg total_power "$total_power" \
+  --arg active_voting_vaults_count "$active_voting_vaults_count" \
   '
 {
   denoms: {
@@ -164,6 +170,10 @@ jq -n \
       ($default_denom): (($main_dao_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0"),
       dntrn: (($main_dao_bal.balances // []) | map(select(.denom == $dntrn_denom)) | first | .amount // "0")
     }
+  },
+  dao_setup: {
+    total_power: $total_power,
+    active_voting_vaults_count: $active_voting_vaults_count
   },
   ibc_rate_limits: {
     contract: $ibcrl,
