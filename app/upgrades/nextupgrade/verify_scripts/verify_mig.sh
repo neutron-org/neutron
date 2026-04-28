@@ -97,6 +97,9 @@ assert_eq "gov.expedited_threshold"             "0.670000000000000000"     "$(jq
 assert_eq "gov.veto_threshold"                  "0.330000000000000000"     "$(jq -r '.veto_threshold'                   <<<"$gov")"
 assert_eq "gov.min_initial_deposit_ratio"       "1.000000000000000000"     "$(jq -r '.min_initial_deposit_ratio'        <<<"$gov")"
 assert_eq "gov.proposal_cancel_ratio"           "0.000000000000000000"     "$(jq -r '.proposal_cancel_ratio'            <<<"$gov")"
+assert_eq "gov.proposal_cancel_dest"            null                       "$(jq -r '.proposal_cancel_dest'             <<<"$gov")"
+assert_eq "gov.burn_proposal_deposit_prevote"   null                       "$(jq -r '.burn_proposal_deposit_prevote'    <<<"$gov")"
+assert_eq "gov.burn_vote_quorum"                null                       "$(jq -r '.burn_vote_quorum'                 <<<"$gov")"
 assert_eq "gov.burn_vote_veto"                  "true"                     "$(jq -r '.burn_vote_veto'                   <<<"$gov")"
 assert_eq "gov.min_deposit_ratio"               "0.100000000000000000"     "$(jq -r '.min_deposit_ratio'                <<<"$gov")"
 
@@ -108,7 +111,10 @@ assert_eq "mint.inflation_rate_change" "0.200000000000000000"    "$(jq -r '.infl
 assert_eq "mint.goal_bonded"           "0.670000000000000000"    "$(jq -r '.goal_bonded'           <<<"$mint")"
 
 distr="$(post '.module_params.distribution.params')"
-assert_eq "distribution.community_tax" "0.000000000000000000" "$(jq -r '.community_tax' <<<"$distr")"
+assert_eq "distribution.community_tax"         "0.000000000000000000"   "$(jq -r '.community_tax'         <<<"$distr")"
+assert_eq "distribution.base_proposer_reward"  "0.000000000000000000"   "$(jq -r '.base_proposer_reward'  <<<"$distr")"
+assert_eq "distribution.bonus_proposer_reward" "0.000000000000000000"   "$(jq -r '.bonus_proposer_reward' <<<"$distr")"
+assert_eq "distribution.withdraw_addr_enabled" "true"                   "$(jq -r '.withdraw_addr_enabled' <<<"$distr")"
 
 # ─────────────────────────────────────────────────────────────────────────────
 printf '\n--- 2. IBC rate limiter roles ---\n'
@@ -167,15 +173,15 @@ note "All NTRN on the DAO burned except the governance reserve (1000000000000 un
 dntrn_pre="$(pre  '.balances.main_dao_contract.dntrn')"
 dntrn_post="$(post '.balances.main_dao_contract.dntrn')"
 info "main_dao.dntrn pre-migration balance" "$dntrn_pre"
-assert_eq "main_dao.dntrn (burned to zero)" "0" "$dntrn_post"
+assert_eq "main_dao.dntrn (burned)" "0" "$dntrn_post"
 
 astro_post="$(post '.balances.main_dao_contract.astroport_share')"
-assert_eq "main_dao.astroport_share (withdrawn and burned)" "0" "$astro_post"
+assert_eq "main_dao.astroport_share (withdrawn)" "0" "$astro_post"
 
 untrn_pre="$(pre  '.balances.main_dao_contract.untrn')"
 untrn_post="$(post '.balances.main_dao_contract.untrn')"
 info "main_dao.untrn pre-migration balance" "$untrn_pre"
-assert_eq "main_dao.untrn (burned to zero)" "0" "$untrn_post"
+assert_eq "main_dao.untrn (burned/transferred to gov module)" "0" "$untrn_post"
 
 gov_reserve_post="$(post '.balances.gov_module.untrn')"
 assert_eq "gov_module.untrn (received reserve)" "1000000000000" "$gov_reserve_post"
@@ -216,10 +222,10 @@ while IFS= read -r entry; do
     info "$name" "no on-chain address pre-migration, skipping"
     continue
   fi
-  pre_bal_count="$(jq -r --arg n "$name" '(.module_accounts[] | select(.name==$n) | .balances | length) // 0' "$PRE_FILE")"
-  post_bal_count="$(jq -r --arg n "$name" '(.module_accounts[] | select(.name==$n) | .balances | length) // 0' "$POST_FILE")"
-  info "$name pre-migration balance entries" "$pre_bal_count"
-  assert_eq "module_account.$name (drained, 0 balance entries)" "0" "$post_bal_count"
+  pre_bals="$(jq -c --arg n "$name" '(.module_accounts[] | select(.name==$n) | .balances) // []' "$PRE_FILE")"
+  post_bals="$(jq -c --arg n "$name" '(.module_accounts[] | select(.name==$n) | .balances) // []' "$POST_FILE")"
+  info "$name pre-migration balances" "$pre_bals"
+  assert_eq "module_account.$name (drained)" "[]" "$post_bals"
 done < <(jq -c '.module_accounts[]' "$PRE_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -255,7 +261,7 @@ done < <(jq -r '.puppeteer.delegations | keys[]' "$POST_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
 printf '\n--- 10. Delegation sum: pre = post + 14×500000000 ---\n'
-note "14 validators each have 500M untrn being unbonded; pre total should equal post total + those unbondings."
+note "14 validators each have 500M untrn being unbonded; pre total should equal post total + unbondings from UMC's \"tick\"."
 
 pre_sum="$(jq -r '[.puppeteer.delegations | to_entries[] | .value | tonumber] | add // 0' "$PRE_FILE")"
 post_sum="$(jq -r '[.puppeteer.delegations | to_entries[] | .value | tonumber] | add // 0' "$POST_FILE")"
