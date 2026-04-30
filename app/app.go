@@ -14,6 +14,8 @@ import (
 
 	v10_0_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.0.0"
 	v10_1_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.1.0"
+	v10_2_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.2.0"
+	v10_3_0 "github.com/neutron-org/neutron/v10/app/upgrades/v10.3.0"
 	v700 "github.com/neutron-org/neutron/v10/app/upgrades/v7.0.0"
 	v800 "github.com/neutron-org/neutron/v10/app/upgrades/v8.0.0"
 	v800_rc0 "github.com/neutron-org/neutron/v10/app/upgrades/v8.0.0-rc0"
@@ -238,7 +240,8 @@ import (
 )
 
 const (
-	Name = "neutrond"
+	Name               = "neutrond"
+	VoteExtensionLimit = 100 * 1024
 )
 
 var (
@@ -253,6 +256,8 @@ var (
 		v910.Upgrade,
 		v10_0_0.Upgrade,
 		v10_1_0.Upgrade,
+		v10_2_0.Upgrade,
+		v10_3_0.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
@@ -1205,8 +1210,8 @@ func New(
 		baseapp.NoOpProcessProposal(),
 		ve.NewDefaultValidateVoteExtensionsFn(app.StakingKeeper),
 		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewVoteExtensionCodecWithSizeCheck(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		compression.NewCompressionExtendedCommitCodec(
 			compression.NewDefaultExtendedCommitCodec(),
@@ -1247,7 +1252,7 @@ func New(
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		compression.NewCompressionExtendedCommitCodec(
 			compression.NewDefaultExtendedCommitCodec(),
@@ -1261,7 +1266,7 @@ func New(
 		app.StakingKeeper,
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		compression.NewCompressionExtendedCommitCodec(
 			compression.NewDefaultExtendedCommitCodec(),
@@ -1274,7 +1279,7 @@ func New(
 	// vote extensions (i.e. oracle data).
 	veCodec := compression.NewCompressionVoteExtensionCodec(
 		compression.NewDefaultVoteExtensionCodec(),
-		compression.NewZLibCompressor(),
+		compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 	)
 	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
 		compression.NewDefaultExtendedCommitCodec(),
@@ -1293,8 +1298,8 @@ func New(
 		time.Second,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+			compression.NewVoteExtensionCodecWithSizeCheck(),
+			compression.NewZLibCompressorWithLimit(VoteExtensionLimit),
 		),
 		aggregator.NewOraclePriceApplier(
 			voteAggregator,

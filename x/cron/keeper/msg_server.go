@@ -22,7 +22,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-// AddSchedule adds new schedule
+// AddSchedule adds new schedule. First schedule execution is supposed to be on `now + period` block.
 func (k msgServer) AddSchedule(goCtx context.Context, req *types.MsgAddSchedule) (*types.MsgAddScheduleResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgAddSchedule")
@@ -34,7 +34,14 @@ func (k msgServer) AddSchedule(goCtx context.Context, req *types.MsgAddSchedule)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.keeper.AddSchedule(ctx, req.Name, req.Period, req.Msgs, req.ExecutionStage); err != nil {
+	if err := k.keeper.AddSchedule(
+		ctx,
+		req.Name,
+		req.Period,
+		req.Msgs,
+		uint64(ctx.BlockHeight()), // this will make the first schedule execution on `now + period` block
+		req.ExecutionStage,
+	); err != nil {
 		return nil, errors.Wrap(err, "failed to add schedule")
 	}
 
