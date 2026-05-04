@@ -376,6 +376,7 @@ func RegisterCronSchedules(ctx sdk.Context, ck *cronkeeper.Keeper) error {
 				Msg:      `{"burn": {}}`,
 			},
 		},
+		uint64(ctx.BlockHeight()),
 		types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER); err != nil {
 		return err
 	}
