@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v10/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v11/x/tokenfactory/types"
 )
 
 type msgServer struct {

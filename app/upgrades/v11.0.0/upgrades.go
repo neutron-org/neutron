@@ -1,4 +1,4 @@
-package nextupgrade
+package v11_0_0
 
 import (
 	"context"
@@ -26,11 +26,11 @@ import (
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
-	appparams "github.com/neutron-org/neutron/v10/app/params"
-	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
-	"github.com/neutron-org/neutron/v10/x/cron/types"
+	appparams "github.com/neutron-org/neutron/v11/app/params"
+	cronkeeper "github.com/neutron-org/neutron/v11/x/cron/keeper"
+	"github.com/neutron-org/neutron/v11/x/cron/types"
 
-	"github.com/neutron-org/neutron/v10/app/upgrades"
+	"github.com/neutron-org/neutron/v11/app/upgrades"
 )
 
 const (

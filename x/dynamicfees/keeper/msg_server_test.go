@@ -8,8 +8,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v10/testutil"
-	"github.com/neutron-org/neutron/v10/x/dynamicfees/types"
+	"github.com/neutron-org/neutron/v11/testutil"
+	"github.com/neutron-org/neutron/v11/x/dynamicfees/types"
 )
 
 type KeeperTestSuite struct {
