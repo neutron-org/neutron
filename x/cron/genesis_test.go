@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v10/testutil/cron/keeper"
-	"github.com/neutron-org/neutron/v10/x/cron"
-	"github.com/neutron-org/neutron/v10/x/cron/types"
+	"github.com/neutron-org/neutron/v11/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v11/testutil/cron/keeper"
+	"github.com/neutron-org/neutron/v11/x/cron"
+	"github.com/neutron-org/neutron/v11/x/cron/types"
 )
 
 func TestGenesis(t *testing.T) {

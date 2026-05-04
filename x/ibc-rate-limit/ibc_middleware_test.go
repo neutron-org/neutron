@@ -13,7 +13,7 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/testutil"
+	"github.com/neutron-org/neutron/v11/testutil"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -24,7 +24,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v10/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v11/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {

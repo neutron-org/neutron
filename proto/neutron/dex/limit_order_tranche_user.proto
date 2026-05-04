@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "neutron/dex/trade_pair_id.proto";
 import "neutron/dex/tx.proto";
 
-option go_package = "github.com/neutron-org/neutron/v10/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v11/x/dex/types";
 
 message LimitOrderTrancheUser {
   TradePairID trade_pair_id = 1;
@@ -37,7 +37,7 @@ message LimitOrderTrancheUser {
   LimitOrderType order_type = 8;
   string dec_shares_withdrawn = 9 [
     (gogoproto.moretags) = "yaml:\"dec_shares_withdrawn\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v10/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v11/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "dec_shares_withdrawn"
   ];

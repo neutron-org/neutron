@@ -1,4 +1,4 @@
-package nextupgrade
+package v11_0_0
 
 type IBCRateLimitsExecuteMessage struct {
 	GrantRole  *GrantRole  `json:"grant_role,omitempty"`
