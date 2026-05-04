@@ -146,6 +146,12 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	}
 	ctx.Logger().Info("Done.")
 
+	ctx.Logger().Info("Disabling main DAO voting vaults and retiring voting registry")
+	if err := DeactivateMainDAOVotingVaults(ctx, keepers.WasmKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
 	ctx.Logger().Info("Setting up Feemarket params")
 	if err := SetupFeeMarket(ctx, keepers.FeeMarketKeeper); err != nil {
 		return err
@@ -365,6 +371,7 @@ func RegisterCronSchedules(ctx sdk.Context, ck *cronkeeper.Keeper) error {
 				Msg:      `{"burn": {}}`,
 			},
 		},
+		uint64(ctx.BlockHeight()),
 		types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER); err != nil {
 		return err
 	}
@@ -455,6 +462,53 @@ func IBCRateLimitsChangeRoles(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
 		return err
 	}
 
+	return nil
+}
+
+func DeactivateMainDAOVotingVaults(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
+	registryQueryResp, err := wk.QuerySmart(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), []byte(`{"voting_module":{}}`))
+	if err != nil {
+		return fmt.Errorf("failed to query main dao voting module: %w", err)
+	}
+
+	var votingRegistryAddress string
+	if err := json.Unmarshal(registryQueryResp, &votingRegistryAddress); err != nil {
+		return fmt.Errorf("failed to decode main dao voting module address: %w", err)
+	}
+	if votingRegistryAddress == "" {
+		return fmt.Errorf("main dao voting module address is empty")
+	}
+
+	vaultsQueryResp, err := wk.QuerySmart(ctx, sdk.MustAccAddressFromBech32(votingRegistryAddress), []byte(`{"voting_vaults":{}}`))
+	if err != nil {
+		return fmt.Errorf("failed to query voting vaults from registry %s: %w", votingRegistryAddress, err)
+	}
+
+	var votingVaults []VotingVault
+	if err := json.Unmarshal(vaultsQueryResp, &votingVaults); err != nil {
+		return fmt.Errorf("failed to decode voting vaults from registry %s: %w", votingRegistryAddress, err)
+	}
+
+	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
+	for _, vault := range votingVaults {
+		deactivateMsg, err := json.Marshal(VotingRegistryExecuteMessage{
+			DeactivateVotingVault: &DeactivateVotingVault{VotingVaultContract: vault.Address},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to marshal deactivate message for vault %s: %w", vault.Address, err)
+		}
+
+		if _, err := wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+			Sender:   MainDAOContractAddress,
+			Contract: votingRegistryAddress,
+			Msg:      deactivateMsg,
+			Funds:    nil,
+		}); err != nil {
+			return fmt.Errorf("failed to deactivate voting vault %s: %w", vault.Address, err)
+		}
+	}
+
+	ctx.Logger().Info("Retired main DAO voting registry", "registry", votingRegistryAddress, "vaults", len(votingVaults))
 	return nil
 }
 
