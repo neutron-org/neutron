@@ -112,6 +112,10 @@ puppeteer_unbonding="$(query_or_empty_object query staking unbonding-delegations
 gov_roles_json="$(roles_for_owner "$gov_addr")"
 multisig_roles_json="$(roles_for_owner "$IBCRL_MULTISIG")"
 dao_roles_json="$(roles_for_owner "$MAIN_DAO_CONTRACT")"
+total_power="$(q q wasm cs smart "$MAIN_DAO_CONTRACT" '{"total_power_at_height":{}}' | jq -r '.data.power')"
+voting_registry="$(try_wasm_query "$MAIN_DAO_CONTRACT" '{"voting_module":{}}' | jq -r '.data')"
+active_voting_vaults_count="$(try_wasm_query "$voting_registry" '{"voting_vaults":{}}' | jq -r '[.data[] | select(.state == "Active")] | length')"
+
 
 jq -n \
   --arg default_denom "$DEFAULT_DENOM" \
@@ -143,6 +147,8 @@ jq -n \
   --argjson gov_roles "$gov_roles_json" \
   --argjson multisig_roles "$multisig_roles_json" \
   --argjson dao_roles "$dao_roles_json" \
+  --arg total_power "$total_power" \
+  --arg active_voting_vaults_count "$active_voting_vaults_count" \
   '
 {
   denoms: {
@@ -187,6 +193,10 @@ jq -n \
       address: (if $gov_addr == "" then null else $gov_addr end),
       ($default_denom): (($gov_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0")
     }
+  },
+  dao_setup: {
+    total_power: $total_power,
+    active_voting_vaults_count: $active_voting_vaults_count
   },
   ibc_rate_limits: {
     contract: $ibcrl,

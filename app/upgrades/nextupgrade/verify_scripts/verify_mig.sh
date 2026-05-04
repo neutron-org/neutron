@@ -25,6 +25,13 @@ assert_eq() {
   fi
 }
 
+assert_gt() {
+  local name="$1" expected="$2" actual="$3"
+  if [[ "$actual" -gt "$expected" ]]; then ok "$name" "$actual"
+  else fail "$name" ">$expected" "$actual"
+  fi
+}
+
 # For structural pre-vs-post comparisons: shows what matched (or what differed).
 assert_unchanged() {
   local name="$1" pre_val="$2" post_val="$3"
@@ -315,3 +322,16 @@ if [[ "$FAIL_COUNT" -gt 0 ]]; then
   exit 1
 fi
 printf "${GREEN}=== Summary: PASSED — ✓ %d  ✗ %d ===${RESET}\n" "$PASS_COUNT" "$FAIL_COUNT"
+
+# ─────────────────────────────────────────────────────────────────────────────
+printf '\n--- 14. Dao voting power wipe ---\n'
+note "DAO voting power should be equal to zero after upgrade"
+
+pre_dao_vaults="$(pre '.dao_setup.active_voting_vaults_count')"
+post_dao_vaults="$(post '.dao_setup.active_voting_vaults_count')"
+pre_dao_power="$(pre '.dao_setup.total_power')"
+post_dao_power="$(post '.dao_setup.total_power')"
+assert_gt "DAO active vaults before upgrade" "0" "$pre_dao_vaults"
+assert_gt "DAO total power before upgrade" "0" "$pre_dao_power"
+assert_eq "DAO active vaults after upgrade" "0" "$post_dao_vaults"
+assert_eq "DAO total power after upgrade" "0" "$post_dao_power"
