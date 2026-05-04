@@ -79,12 +79,12 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.Exe
 }
 
 // AddSchedule adds a new schedule to be executed every certain number of blocks, specified in the `period`.
-// First schedule execution is supposed to be on `now + period` block.
 func (k *Keeper) AddSchedule(
 	ctx sdk.Context,
 	name string,
 	period uint64,
 	msgs []types.MsgExecuteContract,
+	lastExecuteHeight uint64,
 	executionStage types.ExecutionStage,
 ) error {
 	if k.scheduleExists(ctx, name) {
@@ -92,11 +92,10 @@ func (k *Keeper) AddSchedule(
 	}
 
 	schedule := types.Schedule{
-		Name:   name,
-		Period: period,
-		Msgs:   msgs,
-		// let's execute newly added schedule on `now + period` block
-		LastExecuteHeight: uint64(ctx.BlockHeight()), //nolint:gosec
+		Name:              name,
+		Period:            period,
+		Msgs:              msgs,
+		LastExecuteHeight: lastExecuteHeight,
 		ExecutionStage:    executionStage,
 	}
 
