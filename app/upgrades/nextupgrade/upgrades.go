@@ -2,6 +2,7 @@ package nextupgrade
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -65,6 +66,7 @@ const (
 	// DropSwapContractAddress is the Drop's contract that converts dNTRN to NTRN on a fixed rate
 	DropSwapContractAddress = "neutron1xng27d3t2jnqx5s7m4ru4m3avqcqzlac96yk9srjf90cnm5sc2xqmj35wf"
 
+	UsdcDenom  = "ibc/B559A80D62249C8AA07A380E2A2BEA6E5CA9A6F079C912C3A9E9B494105E4F81"
 	DNTRNDenom = "factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn"
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
 	MainDAOContractAddress = "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
@@ -97,6 +99,12 @@ const (
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
 	UndelegationsManagerContract = "TODO"
+
+	ValenceAuthorizationContractAddress = "neutron1rqpnfgwq03tdka6kqev5edrhcfymnnjz9psk52j7va7239rwx0fsl5kc7w"
+	ValenceProcessorContractAddress     = "neutron17he3md05wmp4e8s2sul8j9lpuaqmukucrkrz6xdsqdwk0aszvm7qvkew3s"
+	ValenceWithdrawReadyAccountAddress  = "neutron1406thv6pxhzsk6l5femp6af3t53hxas7cwe92dph32d9lk7seuwq2mzhqh"
+	ValenceProvideReadyAccountAddress   = "neutron1kzhld870xq4yrkzhh837wcqwg6t9q74cscnwjhdv6wgsl0wv0n6qeual3s"
+	AstroportNtrnUsdcPairShareDenom     = "factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share"
 )
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
@@ -207,6 +215,12 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 
 	ctx.Logger().Info("Registering cron schedules")
 	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Transferring funds from Valence to gov module")
+	if err := TakeFundsFromValence(ctx, keepers.WasmKeeper, keepers.BankKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -758,6 +772,220 @@ func RedelegateDaoFunds(ctx sdk.Context, a authkeeper.AccountKeeper, sk *staking
 			return fmt.Errorf("failed to redelegate from %s to %s: %w", msg.ValidatorSrcAddress, msg.ValidatorDstAddress, err)
 		}
 	}
+
+	return nil
+}
+
+func TakeFundsFromValence(ctx sdk.Context, wk *wasmkeeper.Keeper, bk bankkeeper.Keeper) error {
+	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
+	govAddr := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+
+	authorizeDaoForWraMsg := []byte(fmt.Sprintf(`{
+    "permissioned_action": {
+        "create_authorizations": {
+            "authorizations": [
+                {
+                    "label": "secure_withdraw_from_withdraw_ready_account",
+                    "mode": {
+                        "permissioned": {
+                            "without_call_limit": [
+                                "%s"
+                            ]
+                        }
+                    },
+                    "not_before": {
+                        "never": {}
+                    },
+                    "duration": "forever",
+                    "max_concurrent_executions": null,
+                    "subroutine": {
+                        "atomic": {
+                            "functions": [
+                                {
+                                    "domain": "main",
+                                    "message_details": {
+                                        "message_type": "cosmwasm_execute_msg",
+                                        "message": {
+                                            "name": "execute_msg",
+                                            "params_restrictions": null
+                                        }
+                                    },
+                                    "contract_address": {
+                                        "|library_account_addr|": "%s"
+                                    }
+                                }
+                            ],
+                            "retry_logic": null,
+                            "expiration_time": null
+                        }
+                    },
+                    "priority": null
+                }
+            ]
+        }
+    }
+}`, MainDAOContractAddress, ValenceWithdrawReadyAccountAddress))
+	_, err := wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+		Sender:   MainDAOContractAddress,
+		Contract: ValenceAuthorizationContractAddress,
+		Msg:      authorizeDaoForWraMsg,
+		Funds:    nil,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to authorize DAO to withdraw from Withdraw Ready Account: %w", err)
+	}
+	ctx.Logger().Info("Authorized DAO to withdraw from Withdraw Ready Account")
+
+	sharesToTransfer := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(ValenceWithdrawReadyAccountAddress), AstroportNtrnUsdcPairShareDenom)
+	sharesSendMsgJSON := fmt.Sprintf(
+		`{"execute_msg":{"msgs":[{"bank":{"send":{"to_address":"%s","amount":[{"denom":"%s","amount":"%s"}]}}}]}}`,
+		govAddr,
+		AstroportNtrnUsdcPairShareDenom,
+		sharesToTransfer.Amount.String(),
+	)
+	sharesSendActionMsg := []byte(fmt.Sprintf(`{
+    "permissionless_action": {
+        "send_msgs": {
+            "label": "secure_withdraw_from_withdraw_ready_account",
+            "messages": [
+                {
+                    "cosmwasm_execute_msg": {
+                        "msg": "%s"
+                    }
+                }
+            ],
+            "ttl": null
+        }
+    }
+}`, base64.StdEncoding.EncodeToString([]byte(sharesSendMsgJSON))))
+	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+		Sender:   MainDAOContractAddress,
+		Contract: ValenceAuthorizationContractAddress,
+		Msg:      sharesSendActionMsg,
+		Funds:    nil,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to transfer shares from Withdraw Ready Account: %w", err)
+	}
+	ctx.Logger().Info("Registered instruction to transfer shares from Withdraw Ready Account to gov module",
+		"amount", sharesToTransfer.Amount.String(),
+		"denom", AstroportNtrnUsdcPairShareDenom,
+	)
+
+	authorizeDaoForPraMsg := []byte(fmt.Sprintf(`{
+		"permissioned_action": {
+			"create_authorizations": {
+				"authorizations": [
+					{
+						"label": "secure_withdraw_from_provide_ready_account",
+						"mode": {
+							"permissioned": {
+								"without_call_limit": [
+									"%s"
+								]
+							}
+						},
+						"not_before": {
+							"never": {}
+						},
+						"duration": "forever",
+						"max_concurrent_executions": null,
+						"subroutine": {
+							"atomic": {
+								"functions": [
+									{
+										"domain": "main",
+										"message_details": {
+											"message_type": "cosmwasm_execute_msg",
+											"message": {
+												"name": "execute_msg",
+												"params_restrictions": null
+											}
+										},
+										"contract_address": {
+											"|library_account_addr|": "%s"
+										}
+									}
+								],
+								"retry_logic": null,
+								"expiration_time": null
+							}
+						},
+						"priority": null
+					}
+				]
+			}
+		}
+	}`, MainDAOContractAddress, ValenceProvideReadyAccountAddress))
+	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+		Sender:   MainDAOContractAddress,
+		Contract: ValenceAuthorizationContractAddress,
+		Msg:      authorizeDaoForPraMsg,
+		Funds:    nil,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to authorize DAO to withdraw from Provide Ready Account: %w", err)
+	}
+	ctx.Logger().Info("Authorized DAO to withdraw from Provide Ready Account")
+
+	usdcToTransfer := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(ValenceProvideReadyAccountAddress), UsdcDenom)
+	usdcSendMsgJSON := fmt.Sprintf(
+		`{"execute_msg":{"msgs":[{"bank":{"send":{"to_address":"%s","amount":[{"denom":"%s","amount":"%s"}]}}}]}}`,
+		govAddr,
+		UsdcDenom,
+		usdcToTransfer.Amount.String(),
+	)
+	usdcSendActionMsg := []byte(fmt.Sprintf(`{
+		"permissionless_action": {
+			"send_msgs": {
+				"label": "secure_withdraw_from_provide_ready_account",
+				"messages": [
+					{
+						"cosmwasm_execute_msg": {
+							"msg": "%s"
+						}
+					}
+				],
+				"ttl": null
+			}
+		}
+	}`, base64.StdEncoding.EncodeToString([]byte(usdcSendMsgJSON))))
+	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+		Sender:   MainDAOContractAddress,
+		Contract: ValenceAuthorizationContractAddress,
+		Msg:      usdcSendActionMsg,
+		Funds:    nil,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to transfer usdc from Provide Ready Account: %w", err)
+	}
+	ctx.Logger().Info("Registered instruction to transfer usdc from Provide Ready Account to gov module",
+		"amount", usdcToTransfer.Amount.String(),
+		"denom", UsdcDenom,
+	)
+
+	tickProcessorMsg := []byte(`{"permissionless_action": {"tick": {}}}`)
+	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+		Sender:   MainDAOContractAddress,
+		Contract: ValenceProcessorContractAddress,
+		Msg:      tickProcessorMsg,
+		Funds:    nil,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to process first tick: %w", err)
+	}
+	ctx.Logger().Info("Processed Valence first tick")
+
+	_, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
+		Sender:   MainDAOContractAddress,
+		Contract: ValenceProcessorContractAddress,
+		Msg:      tickProcessorMsg,
+		Funds:    nil,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to process second tick: %w", err)
+	}
+	ctx.Logger().Info("Processed Valence second tick")
 
 	return nil
 }

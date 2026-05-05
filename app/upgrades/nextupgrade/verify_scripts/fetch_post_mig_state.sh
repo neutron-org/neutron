@@ -8,7 +8,11 @@ PRE_FILE="${PRE_FILE:-pre_mig_state.json}"
 
 DEFAULT_DENOM="untrn"
 DNTRN_DENOM="${DNTRN_DENOM:-factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn}"
-ASTROPORT_SHARE_DENOM="${ASTROPORT_SHARE_DENOM:-factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share}"
+NTRN_DNTRN_PAIR_SHARE_DENOM="${NTRN_DNTRN_PAIR_SHARE_DENOM:-factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share}"
+USDC_DENOM="${USDC_DENOM:-ibc/B559A80D62249C8AA07A380E2A2BEA6E5CA9A6F079C912C3A9E9B494105E4F81}"
+NTRN_USDC_PAIR_SHARE_DENOM="${NTRN_USDC_PAIR_SHARE_DENOM:-factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share}"
+VALENCE_WITHDRAW_READY_ACCOUNT="${VALENCE_WITHDRAW_READY_ACCOUNT:-neutron1406thv6pxhzsk6l5femp6af3t53hxas7cwe92dph32d9lk7seuwq2mzhqh}"
+VALENCE_PROVIDE_READY_ACCOUNT="${VALENCE_PROVIDE_READY_ACCOUNT:-neutron1kzhld870xq4yrkzhh837wcqwg6t9q74cscnwjhdv6wgsl0wv0n6qeual3s}"
 
 MAIN_DAO_CONTRACT="${MAIN_DAO_CONTRACT:-neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff}"
 PUPPETEER_CONTRACT="${PUPPETEER_CONTRACT:-neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3}"
@@ -116,11 +120,15 @@ total_power="$(q q wasm cs smart "$MAIN_DAO_CONTRACT" '{"total_power_at_height":
 voting_registry="$(try_wasm_query "$MAIN_DAO_CONTRACT" '{"voting_module":{}}' | jq -r '.data')"
 active_voting_vaults_count="$(try_wasm_query "$voting_registry" '{"voting_vaults":{}}' | jq -r '[.data[] | select(.state == "Active")] | length')"
 
+valence_wra_bal="$(query_or_empty_object query bank balances "$VALENCE_WITHDRAW_READY_ACCOUNT")"
+valence_pra_bal="$(query_or_empty_object query bank balances "$VALENCE_PROVIDE_READY_ACCOUNT")"
 
 jq -n \
   --arg default_denom "$DEFAULT_DENOM" \
   --arg dntrn_denom "$DNTRN_DENOM" \
-  --arg astro_share_denom "$ASTROPORT_SHARE_DENOM" \
+  --arg ntrn_dntrn_pair_share_denom "$NTRN_DNTRN_PAIR_SHARE_DENOM" \
+  --arg usdc_denom "$USDC_DENOM" \
+  --arg ntrn_usdc_pair_share_denom "$NTRN_USDC_PAIR_SHARE_DENOM" \
   --arg main_dao "$MAIN_DAO_CONTRACT" \
   --arg staking_rewards "$STAKING_REWARDS_CONTRACT" \
   --arg puppeteer "$PUPPETEER_CONTRACT" \
@@ -128,6 +136,8 @@ jq -n \
   --arg ibcrl_multisig "$IBCRL_MULTISIG" \
   --arg gov_addr "$gov_addr" \
   --arg revenue_addr "${revenue_addr:-}" \
+  --arg valence_wra "$VALENCE_WITHDRAW_READY_ACCOUNT" \
+  --arg valence_pra "$VALENCE_PROVIDE_READY_ACCOUNT" \
   --argjson module_accounts "$module_accounts_json" \
   --argjson gov_params "$gov_params" \
   --argjson mint_params "$mint_params" \
@@ -141,6 +151,8 @@ jq -n \
   --argjson gov_bal "$gov_bal" \
   --argjson staking_rewards_bal "$staking_rewards_bal" \
   --argjson revenue_bal "$revenue_bal" \
+  --argjson valence_wra_bal "$valence_wra_bal" \
+  --argjson valence_pra_bal "$valence_pra_bal" \
   --arg puppeteer_admin "${puppeteer_admin:-}" \
   --argjson puppeteer_delegations "$puppeteer_delegations" \
   --argjson puppeteer_unbonding "$puppeteer_unbonding" \
@@ -153,7 +165,9 @@ jq -n \
 {
   denoms: {
     dntrn: $dntrn_denom,
-    astro_share: $astro_share_denom
+    ntrn_dntrn_pair_share: $ntrn_dntrn_pair_share_denom,
+    usdc: $usdc_denom,
+    ntrn_usdc_pair_share: $ntrn_usdc_pair_share_denom
   },
   addresses: {
     gov_module: (if $gov_addr == "" then null else $gov_addr end),
@@ -162,7 +176,9 @@ jq -n \
     staking_rewards_contract: $staking_rewards,
     puppeteer_contract: $puppeteer,
     ibc_rate_limits_contract: $ibcrl,
-    ibc_rate_limits_multisig: $ibcrl_multisig
+    ibc_rate_limits_multisig: $ibcrl_multisig,
+    valence_withdraw_ready_account: $valence_wra,
+    valence_provide_ready_account: $valence_pra
   },
   module_params: {
     gov: $gov_params,
@@ -187,11 +203,23 @@ jq -n \
       address: $main_dao,
       ($default_denom): (($main_dao_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0"),
       dntrn: (($main_dao_bal.balances // []) | map(select(.denom == $dntrn_denom)) | first | .amount // "0"),
-      astroport_share: (($main_dao_bal.balances // []) | map(select(.denom == $astro_share_denom)) | first | .amount // "0")
+      ntrn_dntrn_pair_share: (($main_dao_bal.balances // []) | map(select(.denom == $ntrn_dntrn_pair_share_denom)) | first | .amount // "0"),
+      ntrn_usdc_pair_share: (($main_dao_bal.balances // []) | map(select(.denom == $ntrn_usdc_pair_share_denom)) | first | .amount // "0"),
+      usdc: (($main_dao_bal.balances // []) | map(select(.denom == $usdc_denom)) | first | .amount // "0")
     },
     gov_module: {
       address: (if $gov_addr == "" then null else $gov_addr end),
-      ($default_denom): (($gov_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0")
+      ($default_denom): (($gov_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0"),
+      ntrn_usdc_pair_share: (($gov_bal.balances // []) | map(select(.denom == $ntrn_usdc_pair_share_denom)) | first | .amount // "0"),
+      usdc: (($gov_bal.balances // []) | map(select(.denom == $usdc_denom)) | first | .amount // "0")
+    },
+    valence_withdraw_ready_account: {
+      address: $valence_wra,
+      ntrn_usdc_pair_share: (($valence_wra_bal.balances // []) | map(select(.denom == $ntrn_usdc_pair_share_denom)) | first | .amount // "0")
+    },
+    valence_provide_ready_account: {
+      address: $valence_pra,
+      usdc: (($valence_pra_bal.balances // []) | map(select(.denom == $usdc_denom)) | first | .amount // "0")
     }
   },
   dao_setup: {
