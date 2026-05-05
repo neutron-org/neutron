@@ -158,8 +158,8 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 
 func setModuleParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	maxDepositPeriod := 3 * 24 * time.Hour
-	votingPeriod := 7 * 24 * time.Hour
-	expeditedVotingPeriod := 3 * 24 * time.Hour
+	votingPeriod := 24 * time.Hour
+	expeditedVotingPeriod := 24 * time.Hour
 	govparams := govtypesv1.Params{
 		MinDeposit:                 sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(300_000_000_000))),
 		ExpeditedMinDeposit:        sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
