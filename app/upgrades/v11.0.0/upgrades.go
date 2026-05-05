@@ -93,10 +93,31 @@ const (
 	PuppeteerAdmin = "neutron1zhhww6gaysxs5vf94xsz2cpfznwgjatsxrnl8239555mfttzlxwqaagcfn"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
-	ProxyContractCodeID = 0o0000 // TODO
+	ProxyContractCodeID = 5313
 
+	/*
+		commit b59e55f72a2f2a376b4fdfacb7e392977342dfad
+		proxy code id 5313
+		undelegation manager code id 5314
+		neutrond q staking delegations neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3 --output json | jq '[.delegation_responses[].balance.amount | tonumber] | add'
+		average delegation size after redelegations is 14810785695360 (207350999735038 / 14)
+		max 7 parallel undelegation delegator+validator with unbonding period 480hours
+		1 undelegation per 70hours hours (420 hours full cycle), when 8th delegation starts (490h) the first one already complete (480h)
+		180days days
+		180*24/70 = 61.71
+		61 unbonding events per validator
+		14810785695360/61 = 242799765498 per period
+		252000sec period length (70h)
+
+		{
+		"owner":"neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
+		"delegator_contract":"neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3",
+		"tick_undelegation_amount":"242799765498",
+		"tick_period_seconds":252000
+		}
+	*/
 	// UndelegationsManagerContract is the address of the undelegations manager contract
-	UndelegationsManagerContract = "TODO"
+	UndelegationsManagerContract = "neutron1mlsy7fegklu5msuadntdgz3j9p7gky0c73jwq5yfkhqwl900qfwqlnz90d"
 )
 
 // NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
