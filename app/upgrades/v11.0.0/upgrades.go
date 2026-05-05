@@ -215,20 +215,20 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 }
 
 func setModuleParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
-	maxDepositPeriod := 7 * 24 * time.Hour
-	votingPeriod := 14 * 24 * time.Hour
+	maxDepositPeriod := 3 * 24 * time.Hour
+	votingPeriod := 7 * 24 * time.Hour
 	expeditedVotingPeriod := 3 * 24 * time.Hour
 	govparams := govtypesv1.Params{
-		MinDeposit:                 sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
-		ExpeditedMinDeposit:        sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(3_000_000_000_000))),
+		MinDeposit:                 sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(300_000_000_000))),
+		ExpeditedMinDeposit:        sdk.NewCoins(sdk.NewCoin(appparams.DefaultDenom, math.NewInt(1_000_000_000_000))),
 		MaxDepositPeriod:           &maxDepositPeriod,
 		VotingPeriod:               &votingPeriod,
 		ExpeditedVotingPeriod:      &expeditedVotingPeriod,
-		Quorum:                     math.LegacyNewDecWithPrec(45, 2).String(),
+		Quorum:                     math.LegacyNewDecWithPrec(30, 2).String(),
 		Threshold:                  math.LegacyNewDecWithPrec(5, 1).String(),
 		ExpeditedThreshold:         math.LegacyNewDecWithPrec(67, 2).String(),
 		VetoThreshold:              math.LegacyNewDecWithPrec(33, 2).String(),
-		MinInitialDepositRatio:     math.LegacyOneDec().String(),
+		MinInitialDepositRatio:     math.LegacyNewDecWithPrec(5, 1).String(),
 		ProposalCancelRatio:        math.LegacyZeroDec().String(),
 		ProposalCancelDest:         "",
 		BurnProposalDepositPrevote: false,
