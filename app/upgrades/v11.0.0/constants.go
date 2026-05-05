@@ -1,14 +1,14 @@
-package nextupgrade
+package v11_0_0
 
 import (
 	storetypes "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v10/app/upgrades"
+	"github.com/neutron-org/neutron/v11/app/upgrades"
 )
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "nextupgrade"
+	UpgradeName = "v11.0.0"
 )
 
 var Deleted = []string{

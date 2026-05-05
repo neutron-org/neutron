@@ -16,8 +16,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/x/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v10/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v11/x/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v11/x/feerefunder/types"
 )
 
 func FeeKeeper(t testing.TB, channelKeeper types.ChannelKeeper, bankKeeper types.BankKeeper) (*keeper.Keeper, sdk.Context) {

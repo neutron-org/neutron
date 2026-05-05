@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"testing"
 
-	appparams "github.com/neutron-org/neutron/v10/app/params"
+	appparams "github.com/neutron-org/neutron/v11/app/params"
 
-	"github.com/neutron-org/neutron/v10/app/config"
+	"github.com/neutron-org/neutron/v11/app/config"
 
-	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v11/testutil/common/nullify"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -22,9 +22,9 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v10/testutil/contractmanager/network"
-	"github.com/neutron-org/neutron/v10/x/contractmanager/client/cli"
-	"github.com/neutron-org/neutron/v10/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v11/testutil/contractmanager/network"
+	"github.com/neutron-org/neutron/v11/x/contractmanager/client/cli"
+	"github.com/neutron-org/neutron/v11/x/contractmanager/types"
 )
 
 func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.Failure) {
