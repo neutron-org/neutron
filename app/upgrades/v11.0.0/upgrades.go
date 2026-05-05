@@ -185,13 +185,13 @@ func setModuleParams(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Set default parameters for gov module")
 
 	// Set default parameters for mint module
-	// TODO: finalize BlocksPerYear
 	mintParams := minttypes.DefaultParams()
 	mintParams.MintDenom = appparams.DefaultDenom
 	mintParams.InflationMax = math.LegacyNewDecWithPrec(30, 2)
 	mintParams.InflationMin = math.LegacyNewDecWithPrec(1, 2)
 	mintParams.InflationRateChange = math.LegacyNewDecWithPrec(2, 1)
 	mintParams.GoalBonded = math.LegacyNewDecWithPrec(67, 2)
+	mintParams.BlocksPerYear = uint64(60 * 60 * 8760 / 1) // assuming 1s per block
 	if err := keepers.MintKeeper.Params.Set(ctx, mintParams); err != nil {
 		return err
 	}
