@@ -67,24 +67,25 @@ const (
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
 	/*
-			undelegation manager code id 13993 (commit b59e55f72a2f2a376b4fdfacb7e392977342dfad)
-		max total undelegation size for a validator 3250061654993
+		commit b59e55f72a2f2a376b4fdfacb7e392977342dfad
+		proxy code id 13992
+		undelegation manager code id 13993
+		average delegation size after redelegations is 5357841846654 (sum current delegations / 11)
 		max 7 parallel undelegation delegator+validator with unbonding period 480hours
 		1 undelegation per 65hours hours
 		from may 6th to june 30th we have 30+22 days
 		52*24/65 = 19.2
 		19 unbonding periods
-		3250061654993/19 = 171055876579 per period
+		5357841846654/19 = 281991676140 per period
 		234000sec period length
 
-		{
-		"owner":"neutron19glux3jzdfyyz6ylmuksgxfj5phdaxfr2uhy86",
+		{"owner":"neutron19glux3jzdfyyz6ylmuksgxfj5phdaxfr2uhy86",
 		"delegator_contract":"neutron1jc4c43n36vkx7x0ke7lvhs2386ar9q4adevzpex650ff4zp0gfyq07xuea",
-		"tick_undelegation_amount":"171055876579",
-		"tick_period_seconds":234000
+		"tick_undelegation_amount":"281991676140",
+		"tick_period_seconds":234000}
 		}
 	*/
-	UndelegationsManagerContract = "neutron16m6t0tkp8a82x00wpmkxha6ya5nqs9x64nvlq8lqzxjytl0ahtjqmu2e3c"
+	UndelegationsManagerContract = "neutron1gd8l75s45zndwcafmeh2azgjgr2tku4mx0w9sh5772m95epmz7lqzqx25t"
 )
 
 func CreateUpgradeHandler(
