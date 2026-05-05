@@ -2,20 +2,16 @@ package v11_0_0
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"cosmossdk.io/math"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -27,30 +23,13 @@ import (
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
 	appparams "github.com/neutron-org/neutron/v11/app/params"
-	cronkeeper "github.com/neutron-org/neutron/v11/x/cron/keeper"
-	"github.com/neutron-org/neutron/v11/x/cron/types"
 
 	"github.com/neutron-org/neutron/v11/app/upgrades"
 )
 
 const (
-	// Amount of tokens reserved for governance operations and excluded from burning.
-	GovReserveAmount = 1000000000000
-
-	// DNTRNDenom is the denom of the dNTRN token
-	DNTRNDenom = "factory/neutron1ytalpjvxz7njekfep97sss2s83ezw6q8lt9spsvnd2d43ygys9gssy7ept/udntrn"
-
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
 	MainDAOContractAddress = "neutron1kvxlf27r0h7mzjqgdydqdf76dtlyvwz6u9q8tysfae53ajv8urtq4fdkvy"
-
-	// IBCRateLimitsContractAddress is the address of the IBC Rate Limits contract
-	IBCRateLimitsContractAddress = "neutron1ajezjq09w2ajc2j9656edmqaxsqpwmwmwrmmk5lnahmyvf2k68usqdytcx"
-
-	// RevenueModuleAccount is the address of the Revenue module account
-	RevenueModuleAccount = "revenue-treasury"
-
-	// StakingRewardsContractAddress is the address of the Staking Rewards contract
-	StakingRewardsContractAddress = "neutron1h62p45vv3fg2q6sm00r93gqgmhqt9tfgq5hz33qyrhq8f0pqqj0s36wgc3"
 
 	// NewMaxValidators is the new maximum number of validators
 	NewMaxValidators = 11
@@ -58,34 +37,6 @@ const (
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
 	// It owns all delegations including the DAO funds in Drop.
 	PuppeteerContractAddress = "neutron1jc4c43n36vkx7x0ke7lvhs2386ar9q4adevzpex650ff4zp0gfyq07xuea"
-
-	// PuppeteerAdmin is an admin address of the Drop's puppeteer contract
-	PuppeteerAdmin = "neutron1z5p7k08ndp87z5pnuh534rlqugy6v478t599qxd23hfc2xtsamjqrghjgn"
-
-	// ProxyContractCodeID is the code id of the auth proxy contract code
-	ProxyContractCodeID = 13992 // commit b59e55f72a2f2a376b4fdfacb7e392977342dfad
-
-	// UndelegationsManagerContract is the address of the undelegations manager contract
-	/*
-				commit b59e55f72a2f2a376b4fdfacb7e392977342dfad
-		proxy code id 13992
-		undelegation manager code id 13993
-		average delegation size after redelegations is 5357841846654 (sum current delegations / 11)
-		max 7 parallel undelegation delegator+validator with unbonding period 480hours
-		1 undelegation per 70hours hours (490 hours full cycle)
-		from may 6th to june 30th we have 30+22 days
-		52*24/70 = 17.8
-		17 unbonding periods
-		5357841846654/17 = 315167167451 per period
-		252000sec period length
-
-		{"owner":"neutron19glux3jzdfyyz6ylmuksgxfj5phdaxfr2uhy86",
-		"delegator_contract":"neutron1jc4c43n36vkx7x0ke7lvhs2386ar9q4adevzpex650ff4zp0gfyq07xuea",
-		"tick_undelegation_amount":"315167167450",
-		"tick_period_seconds":252000}
-				}
-	*/
-	UndelegationsManagerContract = "neutron1fvsnsx2w70almw3ady0d7k68yp83yknz4v56qe60n7mnmmeh2z5qg6hwr9"
 )
 
 func CreateUpgradeHandler(
@@ -280,161 +231,6 @@ func InitializeDistributionStateFromStaking(ctx sdk.Context, dk distributionkeep
 	return nil
 }
 
-func MigratePuppeteer(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
-	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
-	if _, err := wasmSrv.MigrateContract(ctx, &wasmTypes.MsgMigrateContract{
-		Sender:   PuppeteerAdmin,
-		Contract: PuppeteerContractAddress,
-		CodeID:   ProxyContractCodeID,
-		Msg: []byte(fmt.Sprintf(`
-			{
-				"owner": "%s"
-			}
-			`, UndelegationsManagerContract)),
-	}); err != nil {
-		return err
-	}
-
-	if _, err := wasmSrv.UpdateAdmin(ctx, &wasmTypes.MsgUpdateAdmin{
-		Sender:   PuppeteerAdmin,
-		NewAdmin: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		Contract: PuppeteerContractAddress,
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func RegisterCronSchedules(ctx sdk.Context, ck *cronkeeper.Keeper) error {
-	if err := ck.AddSchedule(ctx, "undelegations manager contract tick & burn", 1,
-		[]types.MsgExecuteContract{
-			{
-				Contract: UndelegationsManagerContract,
-				Msg:      `{"tick": {}}`,
-			},
-			{
-				Contract: UndelegationsManagerContract,
-				Msg:      `{"burn": {}}`,
-			},
-		},
-		uint64(ctx.BlockHeight()),
-		types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func IBCRateLimitsChangeRoles(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
-	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
-
-	grantGovRole, err := json.Marshal(IBCRateLimitsExecuteMessage{
-		GrantRole: &GrantRole{
-			Signer: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-			Roles: []string{
-				"AddRateLimit",
-				"RemoveRateLimit",
-				"ResetPathQuota",
-				"EditPathQuota",
-				"GrantRole",
-				"RevokeRole",
-				"RemoveMessage",
-				"SetTimelockDelay",
-				"ManageDenomRestrictions",
-			},
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if _, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
-		Sender:   MainDAOContractAddress,
-		Contract: IBCRateLimitsContractAddress,
-		Msg:      grantGovRole,
-		Funds:    nil,
-	}); err != nil {
-		return err
-	}
-
-	revokeDAORole, err := json.Marshal(IBCRateLimitsExecuteMessage{
-		RevokeRole: &RevokeRole{
-			Signer: MainDAOContractAddress,
-			Roles: []string{
-				"AddRateLimit",
-				"RemoveRateLimit",
-				"ResetPathQuota",
-				"EditPathQuota",
-				"GrantRole",
-				"RevokeRole",
-				"RemoveMessage",
-				"SetTimelockDelay",
-				"ManageDenomRestrictions",
-			},
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if _, err = wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
-		Sender:   MainDAOContractAddress,
-		Contract: IBCRateLimitsContractAddress,
-		Msg:      revokeDAORole,
-		Funds:    nil,
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func DeactivateMainDAOVotingVaults(ctx sdk.Context, wk *wasmkeeper.Keeper) error {
-	registryQueryResp, err := wk.QuerySmart(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), []byte(`{"voting_module":{}}`))
-	if err != nil {
-		return fmt.Errorf("failed to query main dao voting module: %w", err)
-	}
-
-	var votingRegistryAddress string
-	if err := json.Unmarshal(registryQueryResp, &votingRegistryAddress); err != nil {
-		return fmt.Errorf("failed to decode main dao voting module address: %w", err)
-	}
-	if votingRegistryAddress == "" {
-		return fmt.Errorf("main dao voting module address is empty")
-	}
-
-	vaultsQueryResp, err := wk.QuerySmart(ctx, sdk.MustAccAddressFromBech32(votingRegistryAddress), []byte(`{"voting_vaults":{}}`))
-	if err != nil {
-		return fmt.Errorf("failed to query voting vaults from registry %s: %w", votingRegistryAddress, err)
-	}
-
-	var votingVaults []VotingVault
-	if err := json.Unmarshal(vaultsQueryResp, &votingVaults); err != nil {
-		return fmt.Errorf("failed to decode voting vaults from registry %s: %w", votingRegistryAddress, err)
-	}
-
-	wasmSrv := wasmkeeper.NewMsgServerImpl(wk)
-	for _, vault := range votingVaults {
-		deactivateMsg, err := json.Marshal(VotingRegistryExecuteMessage{
-			DeactivateVotingVault: &DeactivateVotingVault{VotingVaultContract: vault.Address},
-		})
-		if err != nil {
-			return fmt.Errorf("failed to marshal deactivate message for vault %s: %w", vault.Address, err)
-		}
-
-		if _, err := wasmSrv.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
-			Sender:   MainDAOContractAddress,
-			Contract: votingRegistryAddress,
-			Msg:      deactivateMsg,
-			Funds:    nil,
-		}); err != nil {
-			return fmt.Errorf("failed to deactivate voting vault %s: %w", vault.Address, err)
-		}
-	}
-
-	ctx.Logger().Info("Retired main DAO voting registry", "registry", votingRegistryAddress, "vaults", len(votingVaults))
-	return nil
-}
-
 func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 	params, err := fk.GetParams(sdk.UnwrapSDKContext(ctx))
 	if err != nil {
@@ -444,17 +240,6 @@ func SetupFeeMarket(ctx context.Context, fk *feemarketkeeper.Keeper) error {
 	params.SendTipToProposer = true
 	err = fk.SetParams(sdk.UnwrapSDKContext(ctx), params)
 	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func SetupCron(ctx context.Context, ck *cronkeeper.Keeper) error {
-	params := ck.GetParams(sdk.UnwrapSDKContext(ctx))
-
-	params.SecurityAddress = authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	if err := ck.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
 		return err
 	}
 
@@ -473,150 +258,6 @@ func SetupMarketMap(ctx context.Context, mmk *marketmapkeeper.Keeper) error {
 		return err
 	}
 
-	return nil
-}
-
-func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) error {
-	revenueBalance := bk.GetBalance(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), appparams.DefaultDenom)
-	if revenueBalance.IsPositive() {
-		if err := bk.SendCoinsFromAccountToModule(ctx, authtypes.NewModuleAddress(RevenueModuleAccount), "wasm", sdk.Coins{revenueBalance}); err != nil {
-			return fmt.Errorf("failed to send coins from revenue treasury: %w", err)
-		}
-
-		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(revenueBalance)); err != nil {
-			return fmt.Errorf("failed to burn revenue treasury entire balance: %w", err)
-		}
-		ctx.Logger().Info("Burned revenue treasury entire balance", "amount", revenueBalance)
-	} else {
-		ctx.Logger().Info("nothing to burn from revenue treasury (%s) module account", authtypes.NewModuleAddress(RevenueModuleAccount))
-	}
-
-	rewardsBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), appparams.DefaultDenom)
-	if rewardsBalance.IsPositive() {
-		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(StakingRewardsContractAddress), "wasm", sdk.Coins{rewardsBalance}); err != nil {
-			return fmt.Errorf("failed to send coins from staking rewards contract: %w", err)
-		}
-
-		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(rewardsBalance)); err != nil {
-			return fmt.Errorf("failed to burn staking rewards entire balance: %w", err)
-		}
-		ctx.Logger().Info("Burned staking rewards contract entire balance", "amount", rewardsBalance)
-	} else {
-		ctx.Logger().Info("nothing to burn from staking rewards contract", StakingRewardsContractAddress)
-	}
-
-	// /*
-	// 	    1. Claim points and vesting surplus to DAO:
-	// 		2. all the dNTRN (200M+) on the Main DAO must be burned;
-	// 		3. withdraw DAO’s liquidity from dNTRN-NTRN pool;
-	// 		4. convert all withdrawn dNTRN to NTRN via the converter contract;
-	// 		5. burn all NTRNs except the reserve;
-	// 		6. send the reserve to governance module.
-	// */
-
-	// NOTHING TO CLAIM ON TESTNET
-	// // 1.
-	// err := ClaimPointsAndVestingSurplus(ctx, bk)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to claim points and vesting surplus to DAO: %w", err)
-	// }
-	// ctx.Logger().Info("Claimed points and vesting surplus", "amount", sdk.NewCoin(appparams.DefaultDenom, math.NewInt(PointsSuprlusAmount+Vesting1SuprlusAmount+Vesting2SuprlusAmount)))
-
-	// 2.
-	dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
-	if dntrnBalance.IsPositive() {
-		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{dntrnBalance}); err != nil {
-			return fmt.Errorf("failed to send dntrn from DAO for burning: %w", err)
-		}
-		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(dntrnBalance)); err != nil {
-			return fmt.Errorf("failed to burn DNTRN entire balance: %w", err)
-		}
-		ctx.Logger().Info("Burned DNTRN entire balance", "amount", dntrnBalance)
-	} else {
-		ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to burn", MainDAOContractAddress))
-	}
-
-	// NOTHING TO CLAIM ON TESTNET
-	// astroportBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), AstroportShareDenom)
-	// // 3.
-	// if astroportBalance.IsPositive() {
-	// 	ws := wasmkeeper.NewMsgServerImpl(wk)
-	// 	_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
-	// 		Sender:   MainDAOContractAddress,
-	// 		Contract: AstroPortContractAddress,
-	// 		Msg:      []byte(`{"withdraw_liquidity": {}}`),
-	// 		Funds:    sdk.NewCoins(astroportBalance),
-	// 	})
-	// 	if err != nil {
-	// 		return fmt.Errorf("failed to withdraw liquidity from Astroport: %w", err)
-	// 	}
-	// 	ctx.Logger().Info("Withdrew DAO liquidity from Astroport", "amount", astroportBalance)
-
-	// 	dntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), DNTRNDenom)
-	// 	// 4.
-	// 	if dntrnBalance.IsPositive() {
-	// 		ws := wasmkeeper.NewMsgServerImpl(wk)
-	// 		_, err := ws.ExecuteContract(ctx, &wasmTypes.MsgExecuteContract{
-	// 			Sender:   MainDAOContractAddress,
-	// 			Contract: DropSwapContractAddress,
-	// 			Msg:      fmt.Appendf(nil, `{"swap": {"receiver":"%s"}}`, MainDAOContractAddress),
-	// 			Funds:    sdk.NewCoins(dntrnBalance),
-	// 		})
-	// 		if err != nil {
-	// 			return fmt.Errorf("failed to swap DNTRN to NTRN: %w", err)
-	// 		}
-	// 		ctx.Logger().Info("Swapped DNTRN to NTRN", "amount", dntrnBalance)
-	// 	} else {
-	// 		ctx.Logger().Info(fmt.Sprintf("No DNTRN balance on %s found to swap to NTRN", MainDAOContractAddress))
-	// 	}
-	// } else {
-	// 	ctx.Logger().Info(fmt.Sprintf("No DAO Astroport balance on %s found to withdraw liquidity from", AstroPortContractAddress))
-	// }
-
-	ntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
-	reserve := sdk.NewCoin(appparams.DefaultDenom, math.NewInt(GovReserveAmount))
-	switch {
-	case reserve.IsLT(ntrnBalance):
-		ntrnToBurn := ntrnBalance.Sub(reserve)
-		ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
-		// 5.
-		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
-			return fmt.Errorf("failed to send ntrn from DAO for burning: %w", err)
-		}
-		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
-			return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
-		}
-		ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
-	case reserve.IsEqual(ntrnBalance):
-		ctx.Logger().Info("Reserve is equal to NTRN balance on DAO, skipping burn", "reserve", reserve, "ntrnBalance", ntrnBalance)
-	default:
-		return fmt.Errorf("DAO balance is less than the amount required for reservation: %s < %s", ntrnBalance, reserve)
-	}
-
-	// 6.
-	// at this point the DAO balance is equal to the reserve.
-	daoBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
-	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), govtypes.ModuleName, sdk.Coins{daoBalance}); err != nil {
-		return fmt.Errorf("failed to send reserve to governance module: %w", err)
-	}
-	return nil
-}
-
-func TakeFundsFromLegacyAccounts(ctx sdk.Context, bk bankkeeper.Keeper) error {
-	//nolint:gocritic // legacy intentionally keeps new slice
-	legacy := append(Deleted, "revenue-fee-redistribute", "revenue-staking-rewards")
-	for _, accName := range legacy {
-		moduleAddr := authtypes.NewModuleAddress(accName)
-		balances := bk.GetAllBalances(ctx, moduleAddr)
-		if balances.Empty() {
-			continue
-		}
-		err := bk.SendCoins(ctx, moduleAddr, sdk.MustAccAddressFromBech32(MainDAOContractAddress), balances)
-		if err != nil {
-			return fmt.Errorf("failed to send coins from %s to main DAO: %w", accName, err)
-		}
-		ctx.Logger().Info("Sent coins from module account to main DAO", "module", accName, "amount", balances)
-	}
 	return nil
 }
 
