@@ -129,39 +129,8 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	}
 	ctx.Logger().Info("Done.")
 
-	// revoke DAO and security multisig roles from IBC rate limits contract and grant root role to the gov module
-	ctx.Logger().Info("Revoking DAO and security multisig roles from IBC rate limits contract and granting root role to the gov module")
-	if err := IBCRateLimitsChangeRoles(ctx, keepers.WasmKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Disabling main DAO voting vaults and retiring voting registry")
-	if err := DeactivateMainDAOVotingVaults(ctx, keepers.WasmKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
 	ctx.Logger().Info("Setting up Feemarket params")
 	if err := SetupFeeMarket(ctx, keepers.FeeMarketKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Taking back funds from legacy module accounts")
-	if err := TakeFundsFromLegacyAccounts(ctx, keepers.BankKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Burning funds")
-	if err := BurnFunds(ctx, keepers.BankKeeper, keepers.WasmKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Setting up Cron params")
-	if err := SetupCron(ctx, &keepers.CronKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -180,18 +149,6 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 
 	ctx.Logger().Info("Redelegating DAO funds to new validator set")
 	if err := RedelegateDaoFunds(ctx, keepers.AccountKeeper, keepers.StakingKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Migrating puppeteer contract to auth proxy")
-	if err := MigratePuppeteer(ctx, keepers.WasmKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Registering cron schedules")
-	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
