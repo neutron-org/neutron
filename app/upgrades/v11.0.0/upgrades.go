@@ -63,11 +63,11 @@ const (
 	PuppeteerAdmin = "neutron1z5p7k08ndp87z5pnuh534rlqugy6v478t599qxd23hfc2xtsamjqrghjgn"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
-	ProxyContractCodeID = 13992
+	ProxyContractCodeID = 13992 // commit b59e55f72a2f2a376b4fdfacb7e392977342dfad
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
 	/*
-			undelegation manager code id 13993
+			undelegation manager code id 13993 (commit b59e55f72a2f2a376b4fdfacb7e392977342dfad)
 		max total undelegation size for a validator 3250061654993
 		max 7 parallel undelegation delegator+validator with unbonding period 480hours
 		1 undelegation per 65hours hours
