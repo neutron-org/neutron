@@ -63,14 +63,29 @@ const (
 	PuppeteerAdmin = "neutron1z5p7k08ndp87z5pnuh534rlqugy6v478t599qxd23hfc2xtsamjqrghjgn"
 
 	// ProxyContractCodeID is the code id of the auth proxy contract code
-	ProxyContractCodeID = 0o0000 // TODO
+	ProxyContractCodeID = 13992
 
 	// UndelegationsManagerContract is the address of the undelegations manager contract
-	UndelegationsManagerContract = "TODO"
-)
+	/*
+			undelegation manager code id 13993
+		max total undelegation size for a validator 3250061654993
+		max 7 parallel undelegation delegator+validator with unbonding period 480hours
+		1 undelegation per 65hours hours
+		from may 6th to june 30th we have 30+22 days
+		52*24/65 = 19.2
+		19 unbonding periods
+		3250061654993/19 = 171055876579 per period
+		234000sec period length
 
-// NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
-// TODO: fill in real validator addresses before deployment.
+		{
+		"owner":"neutron19glux3jzdfyyz6ylmuksgxfj5phdaxfr2uhy86",
+		"delegator_contract":"neutron1jc4c43n36vkx7x0ke7lvhs2386ar9q4adevzpex650ff4zp0gfyq07xuea",
+		"tick_undelegation_amount":"171055876579",
+		"tick_period_seconds":234000
+		}
+	*/
+	UndelegationsManagerContract = "neutron16m6t0tkp8a82x00wpmkxha6ya5nqs9x64nvlq8lqzxjytl0ahtjqmu2e3c"
+)
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
