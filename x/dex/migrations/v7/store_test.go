@@ -6,11 +6,11 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
-	v7 "github.com/neutron-org/neutron/v10/x/dex/migrations/v7"
+	v7 "github.com/neutron-org/neutron/v11/x/dex/migrations/v7"
 
-	"github.com/neutron-org/neutron/v10/testutil"
-	math_utils "github.com/neutron-org/neutron/v10/utils/math"
-	"github.com/neutron-org/neutron/v10/x/dex/types"
+	"github.com/neutron-org/neutron/v11/testutil"
+	math_utils "github.com/neutron-org/neutron/v11/utils/math"
+	"github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 type V7DexMigrationTestSuite struct {

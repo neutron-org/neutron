@@ -4,18 +4,18 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
-	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
-	feerefunderkeeper "github.com/neutron-org/neutron/v10/x/feerefunder/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v11/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v11/x/cron/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v11/x/dex/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v11/x/feerefunder/keeper"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
-	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v10/x/interchaintxs/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v10/x/tokenfactory/keeper"
-	transfer "github.com/neutron-org/neutron/v10/x/transfer/keeper"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v11/x/interchainqueries/keeper"
+	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v11/x/interchaintxs/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v11/x/tokenfactory/keeper"
+	transfer "github.com/neutron-org/neutron/v11/x/transfer/keeper"
 )
 
 // RegisterCustomPlugins returns wasmkeeper.Option that we can use to connect handlers for implemented custom queries and messages to the App

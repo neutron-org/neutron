@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/testutil/common/sample"
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	"github.com/neutron-org/neutron/v11/testutil/common/sample"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 func TestMsgWithdrawalWithShares_Validate(t *testing.T) {

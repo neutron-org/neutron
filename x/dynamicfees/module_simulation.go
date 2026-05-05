@@ -7,7 +7,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/neutron-org/neutron/v10/testutil/common/sample"
+	"github.com/neutron-org/neutron/v11/testutil/common/sample"
 )
 
 // avoid unused import issue

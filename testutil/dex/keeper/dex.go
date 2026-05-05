@@ -16,8 +16,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/x/dex/keeper"
-	"github.com/neutron-org/neutron/v10/x/dex/types"
+	"github.com/neutron-org/neutron/v11/x/dex/keeper"
+	"github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 func DexKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
