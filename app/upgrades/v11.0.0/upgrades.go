@@ -83,8 +83,7 @@ const (
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
 
 	// NewMaxValidators is the new maximum number of validators
-	// TODO: set the proper value
-	NewMaxValidators = 1
+	NewMaxValidators = 14
 
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
 	// It owns all delegations including the DAO funds in Drop.
@@ -120,10 +119,6 @@ const (
 	// UndelegationsManagerContract is the address of the undelegations manager contract
 	UndelegationsManagerContract = "neutron1mlsy7fegklu5msuadntdgz3j9p7gky0c73jwq5yfkhqwl900qfwqlnz90d"
 )
-
-// NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
-// TODO: fill in real validator addresses before deployment.
-var NewValidatorSet = []string{"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva"}
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
