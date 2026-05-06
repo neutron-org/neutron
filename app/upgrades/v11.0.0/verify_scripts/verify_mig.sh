@@ -73,7 +73,6 @@ NEW_VALIDATOR_SET=(
   "neutronvaloper1xvl6sq77k6eq8kg9pyjyt8dzxzpyv9ukuuvsay"  # polkachu.com
   "neutronvaloper12ysnwtjx5d87m0vffjerfu5vh2hm8qz6p4fppq"  # stake&relax
   "neutronvaloper1v2azgtqlaj5xxktswpclsgn8zrr4960vhu50r2"  # pro delegators
-  "neutronvaloper104du2yqarz2uhnkakmytfwc58e79dftkmf9xz8"  # hadron
   "neutronvaloper1jkva4td5hfmmpdtjuxdk2yxg2q2pvslr287hg9"  # smart stake
   "neutronvaloper15mfl7wxqww7zrvq2zw3d76mwsdxxff8cju5h5c"  # crosnest
   "neutronvaloper1kfqxeuqx2rxp0q6yh299737676r274398twxz8"  # quokka stake
