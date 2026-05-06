@@ -80,9 +80,6 @@ const (
 	// StakingRewardsContractAddress is the address of the Staking Rewards contract
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
 
-	// NewMaxValidators is the new maximum number of validators
-	NewMaxValidators = 13
-
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
 	// It owns all delegations including the DAO funds in Drop.
 	PuppeteerContractAddress = "neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3"
@@ -98,24 +95,24 @@ const (
 		proxy code id 5313
 		undelegation manager code id 5314
 		neutrond q staking delegations neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3 --output json | jq '[.delegation_responses[].balance.amount | tonumber] | add'
-		average delegation size after redelegations is 14810785695360 (207350999735038 / 14)
+		average delegation size after redelegations is 15950076902696 (207350999735038 / 13)
 		max 7 parallel undelegation delegator+validator with unbonding period 480hours
 		1 undelegation per 70hours hours (420 hours full cycle), when 8th delegation starts (490h) the first one already complete (480h)
 		180days days
 		180*24/70 = 61.71
 		61 unbonding events per validator
-		14810785695360/61 = 242799765498 per period
+		15950076902696/61 = 261476670536 per period
 		252000sec period length (70h)
 
 		{
 		"owner":"neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5",
 		"delegator_contract":"neutron17jsl4t4hhaw37tnhenskrfntm7mv44wzjr3f990hx4p9r5m0gzdqquhtd3",
-		"tick_undelegation_amount":"242799765498",
+		"tick_undelegation_amount":"261476670536",
 		"tick_period_seconds":252000
 		}
 	*/
 	// UndelegationsManagerContract is the address of the undelegations manager contract
-	UndelegationsManagerContract = "neutron1mlsy7fegklu5msuadntdgz3j9p7gky0c73jwq5yfkhqwl900qfwqlnz90d"
+	UndelegationsManagerContract = "neutron14esdupa76thkgnqdfy3w3enjlwzg20ry9y6n9jthrg274cpc3a2swzndw5"
 
 	// ValenceWithdrawReadyAccountAddress is the address of a Valence contract that holds NTRN-USDC
 	// Astroport pair share leftover.
@@ -765,8 +762,8 @@ func SetupStaking(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
 		return fmt.Errorf("failed to get staking module params: %w", err)
 	}
 
-	ctx.Logger().Info("Setting up staking module params with max_validators updated", "max_validators", NewMaxValidators)
-	stakingParams.MaxValidators = NewMaxValidators
+	ctx.Logger().Info("Setting up staking module params with max_validators updated", "max_validators", len(NewValidatorSet))
+	stakingParams.MaxValidators = uint32(len(NewValidatorSet))
 	if err := sk.SetParams(ctx, stakingParams); err != nil {
 		return fmt.Errorf("failed to set staking module params: %w", err)
 	}
