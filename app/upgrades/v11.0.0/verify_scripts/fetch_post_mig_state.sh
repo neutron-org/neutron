@@ -70,7 +70,18 @@ roles_for_owner() {
   printf '[]'
 }
 
-# TODO: healthcheck to node
+healthcheck() {
+  local status_out network
+  status_out="$("$BINARY" status --node "$NODE" -o json 2>&1)" || true
+  network="$(jq -r '.node_info.network // empty' <<<"$status_out" 2>/dev/null || true)"
+  if [[ -z "$network" ]]; then
+    printf 'Error: healthcheck failed — could not reach node at %s\n' "$NODE" >&2
+    exit 1
+  fi
+  printf '[healthcheck] node at %s is healthy (network: %s). Fetching state...\n' "$NODE" "$network" >&2
+}
+
+healthcheck
 
 # Read module account addresses from pre-migration state, query their post-migration balances.
 module_accounts_json='[]'
