@@ -233,11 +233,11 @@ done < <(jq -c '.module_accounts[]' "$PRE_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
 printf '\n--- 9. Staking: max_validators and new validator set ---\n'
-note "max_validators updated 18→14; all other staking params unchanged; delegations only to 14 new validators."
+note "max_validators updated 18→13; all other staking params unchanged; delegations only to 13 new validators."
 
 pre_max="$(pre '.module_params.staking.params.max_validators | tostring')"
 info "staking.max_validators pre-migration" "$pre_max"
-assert_eq "staking.max_validators (updated to 14)" "14" \
+assert_eq "staking.max_validators (updated to 13)" "13" \
   "$(post '.module_params.staking.params.max_validators | tostring')"
 assert_unchanged "staking.all_other_params" \
   "$(jq -cS 'del(.max_validators)' <<<"$(pre  '.module_params.staking.params')")" \
@@ -263,8 +263,8 @@ while IFS= read -r val; do
 done < <(jq -r '.puppeteer.delegations | keys[]' "$POST_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 10. Delegation sum: pre = post + 14×500000000 ---\n'
-note "14 validators each have 500M untrn being unbonded; pre total should equal post total + unbondings from UMC's \"tick\"."
+printf '\n--- 10. Delegation sum: pre = post + 13×500000000 ---\n'
+note "13 validators each have 500M untrn being unbonded; pre total should equal post total + unbondings from UMC's \"tick\"."
 
 pre_sum="$(jq -r '[.puppeteer.delegations | to_entries[] | .value | tonumber] | add // 0' "$PRE_FILE")"
 post_sum="$(jq -r '[.puppeteer.delegations | to_entries[] | .value | tonumber] | add // 0' "$POST_FILE")"
@@ -272,7 +272,7 @@ expected_post_sum=$(( pre_sum - UNBONDING_TOTAL ))
 
 info "delegations sum pre-migration"       "$pre_sum"
 info "delegations sum post-migration"      "$post_sum"
-info "unbonding total (14 × 500000000)"    "$UNBONDING_TOTAL"
+info "unbonding total (13 × 500000000)"    "$UNBONDING_TOTAL"
 info "expected post sum (pre − unbonding)" "$expected_post_sum"
 assert_eq "delegations.post_sum = pre_sum − unbonding_total" "$expected_post_sum" "$post_sum"
 
@@ -292,9 +292,9 @@ assert_eq "schedule msgs[1].msg" '{"burn": {}}' \
 
 # ─────────────────────────────────────────────────────────────────────────────
 printf '\n--- 12. Puppeteer unbonding delegations ---\n'
-note "14 unbonding delegations of 500000000 untrn each — one per new validator, created during redelegation."
+note "13 unbonding delegations of 500000000 untrn each — one per new validator, created during redelegation."
 
-assert_eq "puppeteer unbonding delegation count" "14" \
+assert_eq "puppeteer unbonding delegation count" "13" \
   "$(jq -r '.puppeteer.unbonding_delegations | length' "$POST_FILE")"
 
 while IFS= read -r entry; do
@@ -313,7 +313,7 @@ assert_eq "puppeteer.admin (set to gov module)" "$gov_addr" "$(post '.puppeteer.
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 14. Dao voting power wipe ---\n'
+printf '\n--- 13. Dao voting power wipe ---\n'
 note "DAO voting power should be equal to zero after upgrade"
 
 pre_dao_vaults="$(pre '.dao_setup.active_voting_vaults_count')"
