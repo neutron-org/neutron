@@ -31,9 +31,6 @@ const (
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
 	MainDAOContractAddress = "neutron1kvxlf27r0h7mzjqgdydqdf76dtlyvwz6u9q8tysfae53ajv8urtq4fdkvy"
 
-	// NewMaxValidators is the new maximum number of validators
-	NewMaxValidators = 11
-
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
 	// It owns all delegations including the DAO funds in Drop.
 	PuppeteerContractAddress = "neutron1jc4c43n36vkx7x0ke7lvhs2386ar9q4adevzpex650ff4zp0gfyq07xuea"
@@ -88,12 +85,6 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 
 	ctx.Logger().Info("Setting up MarketMap params")
 	if err := SetupMarketMap(ctx, keepers.MarketmapKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
-	ctx.Logger().Info("Setting up staking module")
-	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -256,21 +247,6 @@ func SetupMarketMap(ctx context.Context, mmk *marketmapkeeper.Keeper) error {
 	params.MarketAuthorities = []string{authtypes.NewModuleAddress(govtypes.ModuleName).String()}
 	if err := mmk.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func SetupStaking(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
-	stakingParams, err := sk.GetParams(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get staking module params: %w", err)
-	}
-
-	ctx.Logger().Info("Setting up staking module params with max_validators updated", "max_validators", NewMaxValidators)
-	stakingParams.MaxValidators = NewMaxValidators
-	if err := sk.SetParams(ctx, stakingParams); err != nil {
-		return fmt.Errorf("failed to set staking module params: %w", err)
 	}
 
 	return nil
