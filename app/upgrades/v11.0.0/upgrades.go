@@ -66,6 +66,7 @@ const (
 	// DropSwapContractAddress is the Drop's contract that converts dNTRN to NTRN on a fixed rate
 	DropSwapContractAddress = "neutron1xng27d3t2jnqx5s7m4ru4m3avqcqzlac96yk9srjf90cnm5sc2xqmj35wf"
 
+	UsdcDenom  = "ibc/B559A80D62249C8AA07A380E2A2BEA6E5CA9A6F079C912C3A9E9B494105E4F81"
 	DNTRNDenom = "factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn"
 	// MainDAOContractAddress is the address of the Neutron DAO core contract.
 	MainDAOContractAddress = "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
@@ -118,6 +119,14 @@ const (
 	*/
 	// UndelegationsManagerContract is the address of the undelegations manager contract
 	UndelegationsManagerContract = "neutron1mlsy7fegklu5msuadntdgz3j9p7gky0c73jwq5yfkhqwl900qfwqlnz90d"
+
+	// ValenceWithdrawReadyAccountAddress is the address of a Valence contract that holds NTRN-USDC
+	// Astroport pair share leftover.
+	ValenceWithdrawReadyAccountAddress = "neutron1406thv6pxhzsk6l5femp6af3t53hxas7cwe92dph32d9lk7seuwq2mzhqh"
+	// ValenceProvideReadyAccountAddress is the address of a Valence contract that holds USDC leftover.
+	ValenceProvideReadyAccountAddress = "neutron1kzhld870xq4yrkzhh837wcqwg6t9q74cscnwjhdv6wgsl0wv0n6qeual3s"
+	// AstroportNtrnUsdcPairShareDenom is the denom of the NTRN-USDC Astroport pair share.
+	AstroportNtrnUsdcPairShareDenom = "factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share"
 )
 
 func CreateUpgradeHandler(
@@ -230,6 +239,12 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 
 	ctx.Logger().Info("Registering cron schedules")
 	if err := RegisterCronSchedules(ctx, &keepers.CronKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Transferring funds from Valence to gov module")
+	if err := TakeFundsFromValence(ctx, keepers.BankKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -800,6 +815,56 @@ func RedelegateDaoFunds(ctx sdk.Context, a authkeeper.AccountKeeper, sk *staking
 		if err != nil {
 			return fmt.Errorf("failed to redelegate from %s to %s: %w", msg.ValidatorSrcAddress, msg.ValidatorDstAddress, err)
 		}
+	}
+
+	return nil
+}
+
+// TakeFundsFromValence transfers NTRN-USDC Astroport pair shares from Valence Withdraw Ready Account
+// and USDC from Valence Provide Ready Account to gov module.
+func TakeFundsFromValence(ctx sdk.Context, bk bankkeeper.Keeper) error {
+	sharesToTransfer := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(ValenceWithdrawReadyAccountAddress), AstroportNtrnUsdcPairShareDenom)
+	if sharesToTransfer.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(
+			ctx,
+			sdk.MustAccAddressFromBech32(ValenceWithdrawReadyAccountAddress),
+			govtypes.ModuleName,
+			sdk.Coins{sharesToTransfer},
+		); err != nil {
+			return fmt.Errorf("failed to send NTRN-USDC Astroport pair shares from Valence to gov module: %w", err)
+		}
+
+		ctx.Logger().Info("Transferred NTRN-USDC Astroport pair shares from Valence to gov module",
+			"amount", sharesToTransfer.Amount.String(),
+			"denom", sharesToTransfer.Denom,
+		)
+	} else {
+		ctx.Logger().Info("No NTRN-USDC Astroport pair shares found on Valence Withdraw Ready Account",
+			"denom", AstroportNtrnUsdcPairShareDenom,
+			"address", ValenceWithdrawReadyAccountAddress,
+		)
+	}
+
+	usdcToTransfer := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(ValenceProvideReadyAccountAddress), UsdcDenom)
+	if usdcToTransfer.IsPositive() {
+		if err := bk.SendCoinsFromAccountToModule(
+			ctx,
+			sdk.MustAccAddressFromBech32(ValenceProvideReadyAccountAddress),
+			govtypes.ModuleName,
+			sdk.Coins{usdcToTransfer},
+		); err != nil {
+			return fmt.Errorf("failed to send USDC from Valence to gov module: %w", err)
+		}
+
+		ctx.Logger().Info("Transferred USDC from Valence to gov module",
+			"amount", usdcToTransfer.Amount.String(),
+			"denom", usdcToTransfer.Denom,
+		)
+	} else {
+		ctx.Logger().Info("No USDC found on Valence Provide Ready Account",
+			"denom", UsdcDenom,
+			"address", ValenceProvideReadyAccountAddress,
+		)
 	}
 
 	return nil

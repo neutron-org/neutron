@@ -182,8 +182,8 @@ dntrn_post="$(post '.balances.main_dao_contract.dntrn')"
 info "main_dao.dntrn pre-migration balance" "$dntrn_pre"
 assert_eq "main_dao.dntrn (burned)" "0" "$dntrn_post"
 
-astro_post="$(post '.balances.main_dao_contract.astroport_share')"
-assert_eq "main_dao.astroport_share (withdrawn)" "0" "$astro_post"
+share_post="$(post '.balances.main_dao_contract.ntrn_dntrn_pair_share')"
+assert_eq "main_dao.ntrn_dntrn_pair_share (withdrawn)" "0" "$share_post"
 
 untrn_pre="$(pre  '.balances.main_dao_contract.untrn')"
 untrn_post="$(post '.balances.main_dao_contract.untrn')"
@@ -315,13 +315,6 @@ pre_puppeteer_admin="$(pre '.puppeteer.admin')"
 info "puppeteer admin pre-migration" "$pre_puppeteer_admin"
 assert_eq "puppeteer.admin (set to gov module)" "$gov_addr" "$(post '.puppeteer.admin')"
 
-# ─────────────────────────────────────────────────────────────────────────────
-printf '\n'
-if [[ "$FAIL_COUNT" -gt 0 ]]; then
-  printf "${RED}=== Summary: FAILED — ✓ %d  ✗ %d ===${RESET}\n" "$PASS_COUNT" "$FAIL_COUNT" >&2
-  exit 1
-fi
-printf "${GREEN}=== Summary: PASSED — ✓ %d  ✗ %d ===${RESET}\n" "$PASS_COUNT" "$FAIL_COUNT"
 
 # ─────────────────────────────────────────────────────────────────────────────
 printf '\n--- 14. Dao voting power wipe ---\n'
@@ -335,3 +328,32 @@ assert_gt "DAO active vaults before upgrade" "0" "$pre_dao_vaults"
 assert_gt "DAO total power before upgrade" "0" "$pre_dao_power"
 assert_eq "DAO active vaults after upgrade" "0" "$post_dao_vaults"
 assert_eq "DAO total power after upgrade" "0" "$post_dao_power"
+
+# ─────────────────────────────────────────────────────────────────────────────
+printf '\n--- 15. Valence funds transferred to gov module ---\n'
+note "Upgrade withdraws ntrn_usdc_pair_share from the Withdraw Ready Account and USDC from"
+note "the Provide Ready Account, then forwards both to the gov module."
+
+pre_wra_shares="$(pre  '.balances.valence_withdraw_ready_account.ntrn_usdc_pair_share')"
+post_wra_shares="$(post '.balances.valence_withdraw_ready_account.ntrn_usdc_pair_share')"
+pre_pra_usdc="$(pre  '.balances.valence_provide_ready_account.usdc')"
+post_pra_usdc="$(post '.balances.valence_provide_ready_account.usdc')"
+post_gov_shares="$(post '.balances.gov_module.ntrn_usdc_pair_share')"
+post_gov_usdc="$(post '.balances.gov_module.usdc')"
+
+info "valence_withdraw_ready_account.ntrn_usdc_pair_share pre-migration" "$pre_wra_shares"
+assert_eq "valence_withdraw_ready_account.ntrn_usdc_pair_share (drained)" "0" "$post_wra_shares"
+
+info "valence_provide_ready_account.usdc pre-migration" "$pre_pra_usdc"
+assert_eq "valence_provide_ready_account.usdc (drained)" "0" "$post_pra_usdc"
+
+assert_eq "gov_module.ntrn_usdc_pair_share (received from WRA)" "$pre_wra_shares" "$post_gov_shares"
+assert_eq "gov_module.usdc (received from PRA)" "$pre_pra_usdc" "$post_gov_usdc"
+
+# ─────────────────────────────────────────────────────────────────────────────
+printf '\n'
+if [[ "$FAIL_COUNT" -gt 0 ]]; then
+  printf "${RED}=== Summary: FAILED — ✓ %d  ✗ %d ===${RESET}\n" "$PASS_COUNT" "$FAIL_COUNT" >&2
+  exit 1
+fi
+printf "${GREEN}=== Summary: PASSED — ✓ %d  ✗ %d ===${RESET}\n" "$PASS_COUNT" "$FAIL_COUNT"

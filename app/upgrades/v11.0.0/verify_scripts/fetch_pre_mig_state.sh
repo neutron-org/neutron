@@ -14,6 +14,10 @@ STAKING_REWARDS_CONTRACT="${STAKING_REWARDS_CONTRACT:-neutron1gqq3c735pj6ese3yru
 IBCRL_CONTRACT="${IBCRL_CONTRACT:-neutron15aqgplxcavqhurr0g5wwtdw6025dknkqwkfh0n46gp2qjl6236cs2yd3nl}"
 IBCRL_MULTISIG="${IBCRL_MULTISIG:-neutron1el2rymcsg5wxth2fz2g5l08nue3xhyj3ny5wea3yxwr9f7es8d6smmwrck}"
 REVENUE_MODULE_NAME="${REVENUE_MODULE_NAME:-revenue-treasury}"
+VALENCE_WITHDRAW_READY_ACCOUNT="${VALENCE_WITHDRAW_READY_ACCOUNT:-neutron1406thv6pxhzsk6l5femp6af3t53hxas7cwe92dph32d9lk7seuwq2mzhqh}"
+VALENCE_PROVIDE_READY_ACCOUNT="${VALENCE_PROVIDE_READY_ACCOUNT:-neutron1kzhld870xq4yrkzhh837wcqwg6t9q74cscnwjhdv6wgsl0wv0n6qeual3s}"
+USDC_DENOM="${USDC_DENOM:-ibc/B559A80D62249C8AA07A380E2A2BEA6E5CA9A6F079C912C3A9E9B494105E4F81}"
+NTRN_USDC_PAIR_SHARE_DENOM="${NTRN_USDC_PAIR_SHARE_DENOM:-factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share}"
 
 LEGACY_ACCOUNTS=(
   "adminmodule"
@@ -111,9 +115,14 @@ total_power="$(q q wasm cs smart "$MAIN_DAO_CONTRACT" '{"total_power_at_height":
 voting_registry="$(try_wasm_query "$MAIN_DAO_CONTRACT" '{"voting_module":{}}' | jq -r '.data')"
 active_voting_vaults_count="$(try_wasm_query "$voting_registry" '{"voting_vaults":{}}' | jq -r '[.data[] | select(.state == "Active")] | length')"
 
+valence_wra_bal="$(query_or_empty_object query bank balances "$VALENCE_WITHDRAW_READY_ACCOUNT")"
+valence_pra_bal="$(query_or_empty_object query bank balances "$VALENCE_PROVIDE_READY_ACCOUNT")"
+
 jq -n \
   --arg default_denom "$DEFAULT_DENOM" \
   --arg dntrn_denom "$DNTRN_DENOM" \
+  --arg usdc_denom "$USDC_DENOM" \
+  --arg ntrn_usdc_pair_share_denom "$NTRN_USDC_PAIR_SHARE_DENOM" \
   --arg main_dao "$MAIN_DAO_CONTRACT" \
   --arg staking_rewards "$STAKING_REWARDS_CONTRACT" \
   --arg puppeteer "$PUPPETEER_CONTRACT" \
@@ -121,6 +130,8 @@ jq -n \
   --arg ibcrl_multisig "$IBCRL_MULTISIG" \
   --arg revenue_module "$REVENUE_MODULE_NAME" \
   --arg revenue_addr "${revenue_addr:-}" \
+  --arg valence_wra "$VALENCE_WITHDRAW_READY_ACCOUNT" \
+  --arg valence_pra "$VALENCE_PROVIDE_READY_ACCOUNT" \
   --argjson module_accounts "$module_accounts_json" \
   --argjson feemarket_params "$feemarket_params" \
   --argjson cron_params "$cron_params" \
@@ -130,6 +141,8 @@ jq -n \
   --argjson main_dao_bal "$main_dao_bal" \
   --argjson staking_rewards_bal "$staking_rewards_bal" \
   --argjson revenue_bal "$revenue_bal" \
+  --argjson valence_wra_bal "$valence_wra_bal" \
+  --argjson valence_pra_bal "$valence_pra_bal" \
   --argjson multisig_roles "$multisig_roles_json" \
   --argjson dao_roles "$dao_roles_json" \
   --arg puppeteer_admin "${puppeteer_admin:-}" \
@@ -139,7 +152,9 @@ jq -n \
   '
 {
   denoms: {
-    dntrn: $dntrn_denom
+    dntrn: $dntrn_denom,
+    usdc: $usdc_denom,
+    ntrn_usdc_pair_share: $ntrn_usdc_pair_share_denom
   },
   addresses: {
     revenue_treasury: (if $revenue_addr == "" then null else $revenue_addr end),
@@ -147,7 +162,9 @@ jq -n \
     staking_rewards_contract: $staking_rewards,
     puppeteer_contract: $puppeteer,
     ibc_rate_limits_contract: $ibcrl,
-    ibc_rate_limits_multisig: $ibcrl_multisig
+    ibc_rate_limits_multisig: $ibcrl_multisig,
+    valence_withdraw_ready_account: $valence_wra,
+    valence_provide_ready_account: $valence_pra
   },
   module_params: {
     feemarket: $feemarket_params,
@@ -168,7 +185,17 @@ jq -n \
     main_dao_contract: {
       address: $main_dao,
       ($default_denom): (($main_dao_bal.balances // []) | map(select(.denom == $default_denom)) | first | .amount // "0"),
-      dntrn: (($main_dao_bal.balances // []) | map(select(.denom == $dntrn_denom)) | first | .amount // "0")
+      dntrn: (($main_dao_bal.balances // []) | map(select(.denom == $dntrn_denom)) | first | .amount // "0"),
+      ntrn_usdc_pair_share: (($main_dao_bal.balances // []) | map(select(.denom == $ntrn_usdc_pair_share_denom)) | first | .amount // "0"),
+      usdc: (($main_dao_bal.balances // []) | map(select(.denom == $usdc_denom)) | first | .amount // "0")
+    },
+    valence_withdraw_ready_account: {
+      address: $valence_wra,
+      ntrn_usdc_pair_share: (($valence_wra_bal.balances // []) | map(select(.denom == $ntrn_usdc_pair_share_denom)) | first | .amount // "0")
+    },
+    valence_provide_ready_account: {
+      address: $valence_pra,
+      usdc: (($valence_pra_bal.balances // []) | map(select(.denom == $usdc_denom)) | first | .amount // "0")
     }
   },
   dao_setup: {
