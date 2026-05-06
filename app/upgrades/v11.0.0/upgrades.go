@@ -21,6 +21,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -83,8 +84,7 @@ const (
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
 
 	// NewMaxValidators is the new maximum number of validators
-	// TODO: set the proper value
-	NewMaxValidators = 1
+	NewMaxValidators = 14
 
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
 	// It owns all delegations including the DAO funds in Drop.
@@ -128,10 +128,6 @@ const (
 	// AstroportNtrnUsdcPairShareDenom is the denom of the NTRN-USDC Astroport pair share.
 	AstroportNtrnUsdcPairShareDenom = "factory/neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv/astroport/share"
 )
-
-// NewValidatorSet is the target set of validators the DAO funds will be redelegated to.
-// TODO: fill in real validator addresses before deployment.
-var NewValidatorSet = []string{"neutronvaloper1pfklq7pcazum67hackwxr70znp09fr54q9nnva"}
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
@@ -219,6 +215,12 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 
 	ctx.Logger().Info("Setting up staking module")
 	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
+		return err
+	}
+	ctx.Logger().Info("Done.")
+
+	ctx.Logger().Info("Setting up slashing module")
+	if err := SetupSlashing(ctx, keepers.SlashingKeeper); err != nil {
 		return err
 	}
 	ctx.Logger().Info("Done.")
@@ -588,6 +590,25 @@ func SetupMarketMap(ctx context.Context, mmk *marketmapkeeper.Keeper) error {
 	params.Admin = authtypes.NewModuleAddress(govtypes.ModuleName).String()
 	params.MarketAuthorities = []string{authtypes.NewModuleAddress(govtypes.ModuleName).String()}
 	if err := mmk.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetupSlashing(ctx context.Context, sk slashingkeeper.Keeper) error {
+	params, err := sk.GetParams(sdk.UnwrapSDKContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	params.SignedBlocksWindow = 10000
+	params.DowntimeJailDuration = time.Minute * 10
+	params.SlashFractionDowntime = math.LegacyNewDec(1).Quo(math.LegacyNewDec(100))  // 0.01%
+	params.MinSignedPerWindow = math.LegacyNewDec(1).Quo(math.LegacyNewDec(20))      // 5%
+	params.SlashFractionDoubleSign = math.LegacyNewDec(1).Quo(math.LegacyNewDec(20)) // 5%
+
+	if err := sk.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
 		return err
 	}
 
