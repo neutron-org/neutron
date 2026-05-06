@@ -81,7 +81,7 @@ const (
 	StakingRewardsContractAddress = "neutron1gqq3c735pj6ese3yru5xr6ud0fvxgltxesygvyyzpsrt74v6yg4sgkrgwq"
 
 	// NewMaxValidators is the new maximum number of validators
-	NewMaxValidators = 14
+	NewMaxValidators = 11
 
 	// PuppeteerContractAddress is the address of the Drop's Puppeteer Contract.
 	// It owns all delegations including the DAO funds in Drop.

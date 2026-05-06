@@ -83,7 +83,7 @@ NEW_VALIDATOR_SET=(
   "neutronvaloper1ap2gshzfwglun4y2gpz6meugggat42s7vndhsw"  # cosmostation
 )
 UNBONDING_PER_VALIDATOR="500000000"
-NEW_VALIDATOR_COUNT=14
+NEW_VALIDATOR_COUNT=13
 UNBONDING_TOTAL=$((UNBONDING_PER_VALIDATOR * NEW_VALIDATOR_COUNT))
 
 # ─────────────────────────────────────────────────────────────────────────────
