@@ -643,8 +643,7 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 			2. all the dNTRN (200M+) on the Main DAO must be burned;
 			3. withdraw DAO’s liquidity from dNTRN-NTRN pool;
 			4. convert all withdrawn dNTRN to NTRN via the converter contract;
-			5. burn all NTRNs except the reserve;
-			6. send the reserve to governance module.
+			5. burn all NTRNs.
 	*/
 	// 1.
 	err := ClaimPointsAndVestingSurplus(ctx, bk)
@@ -714,12 +713,6 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 	}
 	ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
 
-	// 6.
-	// at this point the DAO balance is equal to the reserve.
-	daoBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
-	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), govtypes.ModuleName, sdk.Coins{daoBalance}); err != nil {
-		return fmt.Errorf("failed to send reserve to governance module: %w", err)
-	}
 	return nil
 }
 
