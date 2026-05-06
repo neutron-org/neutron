@@ -173,9 +173,9 @@ info "staking_rewards_contract.$default_denom pre-migration balance" "$sr_pre"
 assert_eq "staking_rewards_contract.$default_denom (burned to zero)" "0" "$sr_post"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 5. Burns: DAO dNTRN, Astroport LP shares, and NTRN; reserve sent to governance ---\n'
+printf '\n--- 5. Burns: DAO dNTRN, Astroport LP shares, and NTRN;\n'
 note "dNTRN burned directly; LP shares withdrawn, converted to NTRN via Drop swap, then burned."
-note "All NTRN on the DAO burned except the governance reserve (1000000000000 untrn), which is sent to the gov module."
+note "All NTRN on the DAO burned."
 
 dntrn_pre="$(pre  '.balances.main_dao_contract.dntrn')"
 dntrn_post="$(post '.balances.main_dao_contract.dntrn')"
@@ -189,9 +189,6 @@ untrn_pre="$(pre  '.balances.main_dao_contract.untrn')"
 untrn_post="$(post '.balances.main_dao_contract.untrn')"
 info "main_dao.untrn pre-migration balance" "$untrn_pre"
 assert_eq "main_dao.untrn (burned/transferred to gov module)" "0" "$untrn_post"
-
-gov_reserve_post="$(post '.balances.gov_module.untrn')"
-assert_eq "gov_module.untrn (received reserve)" "1000000000000" "$gov_reserve_post"
 
 # ─────────────────────────────────────────────────────────────────────────────
 printf '\n--- 6. Cron params ---\n'

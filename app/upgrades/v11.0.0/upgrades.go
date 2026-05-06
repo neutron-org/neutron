@@ -56,9 +56,6 @@ const (
 	// ^^^^^^^^^^^^^^^^^^^^^^^^^
 	// Points surplus block ends
 
-	// Amount of tokens reserved for governance operations and excluded from burning.
-	GovReserveAmount = 1000000000000
-
 	// AstroportShareDenom is the denom that represents share in the Astroport's NTRN-dNTRN pool
 	AstroportShareDenom = "factory/neutron1pd9u7h4vf36vtj5lqlcp4376xf4wktdnhmzqtn8958wyh0nzwsmsavc2dz/astroport/share"
 	// AstroPortContractAddress is the NTRN-dNTRN pool contract
@@ -709,25 +706,16 @@ func BurnFunds(ctx sdk.Context, bk bankkeeper.Keeper, wk *wasmkeeper.Keeper) err
 		ctx.Logger().Info(fmt.Sprintf("No DAO Astroport balance on %s found to withdraw liquidity from", AstroPortContractAddress))
 	}
 
-	ntrnBalance := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
-	reserve := sdk.NewCoin(appparams.DefaultDenom, math.NewInt(GovReserveAmount))
-	switch {
-	case reserve.IsLT(ntrnBalance):
-		ntrnToBurn := ntrnBalance.Sub(reserve)
-		ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
-		// 5.
-		if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
-			return fmt.Errorf("failed to send ntrn from DAO for burning: %w", err)
-		}
-		if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
-			return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
-		}
-		ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
-	case reserve.IsEqual(ntrnBalance):
-		ctx.Logger().Info("Reserve is equal to NTRN balance on DAO, skipping burn", "reserve", reserve, "ntrnBalance", ntrnBalance)
-	default:
-		return fmt.Errorf("DAO balance is less than the amount required for reservation: %s < %s", ntrnBalance, reserve)
+	ntrnToBurn := bk.GetBalance(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), appparams.DefaultDenom)
+	ctx.Logger().Info("NTRN to burn", "amount", ntrnToBurn)
+	// 5.
+	if err := bk.SendCoinsFromAccountToModule(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress), "wasm", sdk.Coins{ntrnToBurn}); err != nil {
+		return fmt.Errorf("failed to send ntrn from DAO for burning: %w", err)
 	}
+	if err := bk.BurnCoins(ctx, "wasm", sdk.NewCoins(ntrnToBurn)); err != nil {
+		return fmt.Errorf("failed to burn withdrawn NTRN: %w", err)
+	}
+	ctx.Logger().Info("Burned withdrawn NTRN", "amount", ntrnToBurn)
 
 	// 6.
 	// at this point the DAO balance is equal to the reserve.
