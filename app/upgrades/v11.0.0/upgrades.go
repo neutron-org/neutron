@@ -592,9 +592,9 @@ func SetupSlashing(ctx context.Context, sk slashingkeeper.Keeper) error {
 
 	params.SignedBlocksWindow = 10000
 	params.DowntimeJailDuration = time.Minute * 10
-	params.SlashFractionDowntime = math.LegacyNewDec(1).Quo(math.LegacyNewDec(100))  // 0.01%
-	params.MinSignedPerWindow = math.LegacyNewDec(1).Quo(math.LegacyNewDec(20))      // 5%
-	params.SlashFractionDoubleSign = math.LegacyNewDec(1).Quo(math.LegacyNewDec(20)) // 5%
+	params.SlashFractionDowntime = math.LegacyNewDec(1).Quo(math.LegacyNewDec(10000)) // 0.01%
+	params.MinSignedPerWindow = math.LegacyNewDec(1).Quo(math.LegacyNewDec(20))       // 5%
+	params.SlashFractionDoubleSign = math.LegacyNewDec(1).Quo(math.LegacyNewDec(20))  // 5%
 
 	if err := sk.SetParams(sdk.UnwrapSDKContext(ctx), params); err != nil {
 		return err
