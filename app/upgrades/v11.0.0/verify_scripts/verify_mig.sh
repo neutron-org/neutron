@@ -232,18 +232,8 @@ while IFS= read -r entry; do
 done < <(jq -c '.module_accounts[]' "$PRE_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 9. Staking: max_validators and new validator set ---\n'
-note "max_validators updated 18→13; all other staking params unchanged; delegations only to 13 new validators."
-
-pre_max="$(pre '.module_params.staking.params.max_validators | tostring')"
-info "staking.max_validators pre-migration" "$pre_max"
-assert_eq "staking.max_validators (updated to 13)" "13" \
-  "$(post '.module_params.staking.params.max_validators | tostring')"
-assert_unchanged "staking.all_other_params" \
-  "$(jq -cS 'del(.max_validators)' <<<"$(pre  '.module_params.staking.params')")" \
-  "$(jq -cS 'del(.max_validators)' <<<"$(post '.module_params.staking.params')")"
-
-printf '\n'
+printf '\n--- 9. Staking: new validator set ---\n'
+note "delegations only to 13 new validators."
 note "Each validator in the new set must have a delegation from the puppeteer:"
 for val in "${NEW_VALIDATOR_SET[@]}"; do
   amt="$(jq -r --arg v "$val" '.puppeteer.delegations[$v] // "missing"' "$POST_FILE")"

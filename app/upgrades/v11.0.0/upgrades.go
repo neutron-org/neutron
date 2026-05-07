@@ -207,12 +207,6 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	}
 	ctx.Logger().Info("Done.")
 
-	ctx.Logger().Info("Setting up staking module")
-	if err := SetupStaking(ctx, keepers.StakingKeeper); err != nil {
-		return err
-	}
-	ctx.Logger().Info("Done.")
-
 	ctx.Logger().Info("Setting up slashing module")
 	if err := SetupSlashing(ctx, keepers.SlashingKeeper); err != nil {
 		return err
@@ -746,21 +740,6 @@ func ClaimPointsAndVestingSurplus(ctx sdk.Context, bk bankkeeper.Keeper) error {
 	if err := bk.SendCoins(ctx, sdk.MustAccAddressFromBech32(Vesting2ContractAddress), sdk.MustAccAddressFromBech32(MainDAOContractAddress), sdk.Coins{sdk.NewCoin(appparams.DefaultDenom, math.NewInt(Vesting2SuprlusAmount))}); err != nil {
 		return fmt.Errorf("failed to send slurps from vesting2 contract for burning: %w", err)
 	}
-	return nil
-}
-
-func SetupStaking(ctx sdk.Context, sk *stakingkeeper.Keeper) error {
-	stakingParams, err := sk.GetParams(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get staking module params: %w", err)
-	}
-
-	ctx.Logger().Info("Setting up staking module params with max_validators updated", "max_validators", len(NewValidatorSet))
-	stakingParams.MaxValidators = uint32(len(NewValidatorSet))
-	if err := sk.SetParams(ctx, stakingParams); err != nil {
-		return fmt.Errorf("failed to set staking module params: %w", err)
-	}
-
 	return nil
 }
 

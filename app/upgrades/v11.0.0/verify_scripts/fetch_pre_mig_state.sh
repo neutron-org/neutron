@@ -105,7 +105,6 @@ revenue_addr="$(module_address "$REVENUE_MODULE_NAME")"
 feemarket_params="$(query_or_empty_object query feemarket params)"
 cron_params="$(query_or_empty_object query cron params)"
 marketmap_params="$(query_or_empty_object query marketmap params)"
-staking_params="$(query_or_empty_object query staking params)"
 cron_schedules="$(query_or_empty_object query cron list-schedule)"
 
 main_dao_bal="$(query_or_empty_object query bank balances "$MAIN_DAO_CONTRACT")"
@@ -147,7 +146,6 @@ jq -n \
   --argjson feemarket_params "$feemarket_params" \
   --argjson cron_params "$cron_params" \
   --argjson marketmap_params "$marketmap_params" \
-  --argjson staking_params "$staking_params" \
   --argjson cron_schedules "$cron_schedules" \
   --argjson main_dao_bal "$main_dao_bal" \
   --argjson staking_rewards_bal "$staking_rewards_bal" \
@@ -180,8 +178,7 @@ jq -n \
   module_params: {
     feemarket: $feemarket_params,
     cron: $cron_params,
-    marketmap: $marketmap_params,
-    staking: $staking_params
+    marketmap: $marketmap_params
   },
   module_accounts: $module_accounts,
   balances: {
