@@ -721,3 +721,65 @@ func (s *DexTestSuite) TestPlaceLimitOrderMixedTypes() {
 	s.NotEqual(trancheKey2, trancheKey3, "GTC and JIT in same tranche")
 	s.Equal(trancheKey4, trancheKey3, "GTCs not combined")
 }
+
+func (s *DexTestSuite) TestTrancheKeysLexicographicOrdering() {
+	tomorrow := time.Now().AddDate(0, 0, 1)
+
+	// GIVEN
+	// bob has 10 units of TokenA for 10 GTT orders; alice has 1
+	s.fundBobBalances(10, 0)
+	s.fundAliceBalances(1, 0)
+	// carol (taker) has 3 units of TokenB to sweep exactly 3 maker tranches
+	s.fundCarolBalances(0, 3)
+
+	bobEarlyKey0 := s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow) // tk-...0
+	bobEarlyKey1 := s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow) // tk-...1
+	aliceKey := s.aliceLimitSellsGoodTil("TokenA", 0, 1, tomorrow)   // tk-...2
+	s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)                 // tk-...3
+	s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)                 // tk-...4
+	s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)                 // tk-...5
+	s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)                 // tk-...6
+	s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)                 // tk-...7
+	s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)                 // tk-...8
+	s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)                 // tk-...9
+	bobLateKey := s.bobLimitSellsGoodTil("TokenA", 0, 1, tomorrow)   // tk-...10
+
+	s.Assert().Equal(types.NewTrancheKey(0), bobEarlyKey0)
+	s.Assert().Equal(types.NewTrancheKey(1), bobEarlyKey1)
+	s.Assert().Equal(types.NewTrancheKey(2), aliceKey)
+	s.Assert().Equal(types.NewTrancheKey(10), bobLateKey)
+
+	// all 11 orders are visible in the orderbook
+	s.assertLimitLiquidityAtTick("TokenA", 0, 11)
+
+	// WHEN carol submits FILL_OR_KILL for 3 TokenB
+	// the swap iterator walks the KV store in key order:
+	//   tk-...0 → tk-...1 → tk-...2 → …
+	// so the three oldest tranches are consumed
+	s.carolLimitSells("TokenB", -1, 3, types.LimitOrderType_FILL_OR_KILL)
+
+	// THEN only 8 TokenA worth of maker liquidity remains
+	s.assertLimitLiquidityAtTick("TokenA", 0, 8)
+
+	// bob's two orders (tk-...0 and tk-...1) were filled
+	s.bobWithdrawsLimitSell(bobEarlyKey0)
+	s.bobWithdrawsLimitSell(bobEarlyKey1)
+	s.assertBobBalances(0, 2)
+
+	// alice's order (tk-...2) was the 3rd filled
+	s.aliceWithdrawsLimitSell(aliceKey)
+	s.assertAliceBalances(0, 1)
+
+	// bob's late order (tk-...10) was NOT filled: it still sits in the active store with full
+	// maker reserves because it sorts after alice's key
+	bobLateTranche := s.App.DexKeeper.GetLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
+		TradePairId:           defaultTradePairID1To0,
+		TickIndexTakerToMaker: 0,
+		TrancheKey:            bobLateKey,
+	})
+	s.Require().NotNil(bobLateTranche, "late-placed tranche must still exist in active store")
+	s.Assert().True(
+		bobLateTranche.ReservesMakerDenom.Equal(sdkmath.NewInt(1).Mul(denomMultiple)),
+		"late-placed order (tk-...10) must be unfilled while earlier orders remain",
+	)
+}
