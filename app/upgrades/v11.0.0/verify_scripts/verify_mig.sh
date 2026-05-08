@@ -163,7 +163,7 @@ assert_eq "slashing.signed_blocks_window (post, changed by upgrade)" \
 assert_eq "slashing.min_signed_per_window (post, changed by upgrade)" \
   "0.050000000000000000" "$(pre '.module_params.slashing.params.min_signed_per_window')"
 assert_eq "slashing.downtime_jail_duration (post, changed by upgrade)" \
-  "10m" "$(pre '.module_params.slashing.params.downtime_jail_duration')"
+  "10m0s" "$(pre '.module_params.slashing.params.downtime_jail_duration')"
 assert_eq "slashing.slash_fraction_double_sign (post, changed by upgrade)" \
   "0.000000000000000000" "$(pre '.module_params.slashing.params.slash_fraction_double_sign')"
 assert_eq "slashing.slash_fraction_downtime (post, changed by upgrade)" \
@@ -174,7 +174,7 @@ assert_eq "slashing.signed_blocks_window (post, changed by upgrade)" \
 assert_eq "slashing.min_signed_per_window (post, changed by upgrade)" \
   "0.050000000000000000" "$(post '.module_params.slashing.params.min_signed_per_window')"
 assert_eq "slashing.downtime_jail_duration (post, changed by upgrade)" \
-  "10m" "$(post '.module_params.slashing.params.downtime_jail_duration')"
+  "10m0s" "$(post '.module_params.slashing.params.downtime_jail_duration')"
 assert_eq "slashing.slash_fraction_double_sign (post, changed by upgrade)" \
   "0.050000000000000000" "$(post '.module_params.slashing.params.slash_fraction_double_sign')"
 assert_eq "slashing.slash_fraction_downtime (post, changed by upgrade)" \
