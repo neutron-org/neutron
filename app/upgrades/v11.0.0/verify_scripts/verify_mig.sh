@@ -153,8 +153,35 @@ assert_unchanged "feemarket.all_other_params" \
   "$(jq -cS 'del(.send_tip_to_proposer)' <<<"$(pre  '.module_params.feemarket')")" \
   "$(jq -cS 'del(.send_tip_to_proposer)' <<<"$(post '.module_params.feemarket')")"
 
+
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 4. Burns: revenue treasury and staking rewards ---\n'
+printf '\n--- 4. slashing params ---\n'
+note "slashing params should be updated by the upgrade"
+
+assert_eq "slashing.signed_blocks_window (post, changed by upgrade)" \
+  "140000" "$(pre '.module_params.slashing.params.signed_blocks_window')"
+assert_eq "slashing.min_signed_per_window (post, changed by upgrade)" \
+  "0.050000000000000000" "$(pre '.module_params.slashing.params.min_signed_per_window')"
+assert_eq "slashing.downtime_jail_duration (post, changed by upgrade)" \
+  "10m" "$(pre '.module_params.slashing.params.downtime_jail_duration')"
+assert_eq "slashing.slash_fraction_double_sign (post, changed by upgrade)" \
+  "0.000000000000000000" "$(pre '.module_params.slashing.params.slash_fraction_double_sign')"
+assert_eq "slashing.slash_fraction_downtime (post, changed by upgrade)" \
+  "0.000000000000000000" "$(pre '.module_params.slashing.params.slash_fraction_downtime')"
+
+assert_eq "slashing.signed_blocks_window (post, changed by upgrade)" \
+  "10000" "$(post '.module_params.slashing.params.signed_blocks_window')"
+assert_eq "slashing.min_signed_per_window (post, changed by upgrade)" \
+  "0.050000000000000000" "$(post '.module_params.slashing.params.min_signed_per_window')"
+assert_eq "slashing.downtime_jail_duration (post, changed by upgrade)" \
+  "10m" "$(post '.module_params.slashing.params.downtime_jail_duration')"
+assert_eq "slashing.slash_fraction_double_sign (post, changed by upgrade)" \
+  "0.050000000000000000" "$(post '.module_params.slashing.params.slash_fraction_double_sign')"
+assert_eq "slashing.slash_fraction_downtime (post, changed by upgrade)" \
+  "0.000100000000000000" "$(post '.module_params.slashing.params.slash_fraction_downtime')"
+
+# ─────────────────────────────────────────────────────────────────────────────
+printf '\n--- 5. Burns: revenue treasury and staking rewards ---\n'
 note "Upgrade burns all untrn from revenue-treasury and staking-rewards contract."
 
 rev_pre="$(jq -r --arg d "$default_denom" \
@@ -172,7 +199,7 @@ info "staking_rewards_contract.$default_denom pre-migration balance" "$sr_pre"
 assert_eq "staking_rewards_contract.$default_denom (burned to zero)" "0" "$sr_post"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 5. Burns: DAO dNTRN, Astroport LP shares, and NTRN;\n'
+printf '\n--- 6. Burns: DAO dNTRN, Astroport LP shares, and NTRN;\n'
 note "dNTRN burned directly; LP shares withdrawn, converted to NTRN via Drop swap, then burned."
 note "All NTRN on the DAO burned."
 
@@ -190,7 +217,7 @@ info "main_dao.untrn pre-migration balance" "$untrn_pre"
 assert_eq "main_dao.untrn (burned/transferred to gov module)" "0" "$untrn_post"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 6. Cron params ---\n'
+printf '\n--- 7. Cron params ---\n'
 note "security_address should change to gov module; all other cron params should be unchanged."
 
 pre_security="$(pre '.module_params.cron.params.security_address')"
@@ -202,7 +229,7 @@ assert_unchanged "cron.all_other_params" \
   "$(jq -cS 'del(.security_address)' <<<"$(post '.module_params.cron.params')")"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 7. MarketMap params ---\n'
+printf '\n--- 8. MarketMap params ---\n'
 note "admin and market_authorities should both be set to the gov module address."
 
 pre_admin="$(pre '.module_params.marketmap.admin // .module_params.marketmap.params.admin')"
@@ -215,7 +242,7 @@ assert_eq "marketmap.market_authorities[0] (set to gov module)" "$gov_addr" \
   "$(jq -r '(.module_params.marketmap.market_authorities // .module_params.marketmap.params.market_authorities)[0]' "$POST_FILE")"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 8. Module accounts drained ---\n'
+printf '\n--- 9. Module accounts drained ---\n'
 note "Upgrade transfers all balances from legacy module accounts to main DAO."
 
 while IFS= read -r entry; do
@@ -232,7 +259,7 @@ while IFS= read -r entry; do
 done < <(jq -c '.module_accounts[]' "$PRE_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 9. Staking: new validator set ---\n'
+printf '\n--- 10. Staking: new validator set ---\n'
 note "delegations only to 13 new validators."
 note "Each validator in the new set must have a delegation from the puppeteer:"
 for val in "${NEW_VALIDATOR_SET[@]}"; do
@@ -253,7 +280,7 @@ while IFS= read -r val; do
 done < <(jq -r '.puppeteer.delegations | keys[]' "$POST_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 10. Delegation sum: pre = post + 13×500000000 ---\n'
+printf '\n--- 11. Delegation sum: pre = post + 13×500000000 ---\n'
 note "13 validators each have 500M untrn being unbonded; pre total should equal post total + unbondings from UMC's \"tick\"."
 
 pre_sum="$(jq -r '[.puppeteer.delegations | to_entries[] | .value | tonumber] | add // 0' "$PRE_FILE")"
@@ -267,7 +294,7 @@ info "expected post sum (pre − unbonding)" "$expected_post_sum"
 assert_eq "delegations.post_sum = pre_sum − unbonding_total" "$expected_post_sum" "$post_sum"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 11. Cron schedule: undelegations manager tick & burn ---\n'
+printf '\n--- 12. Cron schedule: undelegations manager tick & burn ---\n'
 note "New schedule registered by the upgrade: calls tick then burn on the undelegations manager contract."
 SCHEDULE_NAME="undelegations manager contract tick & burn"
 
@@ -281,7 +308,7 @@ assert_eq "schedule msgs[1].msg" '{"burn": {}}' \
   "$(jq -r --arg n "$SCHEDULE_NAME" '[.cron_schedules[] | select(.name==$n)] | first | .msgs[1].msg' "$POST_FILE")"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 12. Puppeteer unbonding delegations ---\n'
+printf '\n--- 13. Puppeteer unbonding delegations ---\n'
 note "13 unbonding delegations of 500000000 untrn each — one per new validator, created during redelegation."
 
 assert_eq "puppeteer unbonding delegation count" "13" \
@@ -294,7 +321,7 @@ while IFS= read -r entry; do
 done < <(jq -c '.puppeteer.unbonding_delegations | to_entries[]' "$POST_FILE")
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 13. Puppeteer admin ---\n'
+printf '\n--- 14. Puppeteer admin ---\n'
 note "Puppeteer contract admin should be transferred to the gov module by the upgrade."
 
 pre_puppeteer_admin="$(pre '.puppeteer.admin')"
@@ -303,7 +330,7 @@ assert_eq "puppeteer.admin (set to gov module)" "$gov_addr" "$(post '.puppeteer.
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 13. Dao voting power wipe ---\n'
+printf '\n--- 15. Dao voting power wipe ---\n'
 note "DAO voting power should be equal to zero after upgrade"
 
 pre_dao_vaults="$(pre '.dao_setup.active_voting_vaults_count')"
@@ -316,7 +343,7 @@ assert_eq "DAO active vaults after upgrade" "0" "$post_dao_vaults"
 assert_eq "DAO total power after upgrade" "0" "$post_dao_power"
 
 # ─────────────────────────────────────────────────────────────────────────────
-printf '\n--- 15. Valence funds transferred to gov module ---\n'
+printf '\n--- 16. Valence funds transferred to gov module ---\n'
 note "Upgrade withdraws ntrn_usdc_pair_share from the Withdraw Ready Account and USDC from"
 note "the Provide Ready Account, then forwards both to the gov module."
 
