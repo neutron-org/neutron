@@ -10,9 +10,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v10/utils/math"
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
-	"github.com/neutron-org/neutron/v10/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v11/utils/math"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
+	"github.com/neutron-org/neutron/v11/x/dex/utils"
 )
 
 // LiquidityType

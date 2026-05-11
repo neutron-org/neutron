@@ -5,7 +5,6 @@ import (
 
 	"cosmossdk.io/log"
 	metrics2 "cosmossdk.io/store/metrics"
-	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	db2 "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -15,10 +14,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/x/cron/keeper"
-	"github.com/neutron-org/neutron/v10/x/cron/types"
+	"github.com/neutron-org/neutron/v11/x/cron/keeper"
+	"github.com/neutron-org/neutron/v11/x/cron/types"
 )
 
 func CronKeeper(t testing.TB, wasmMsgServer types.WasmMsgServer, accountKeeper types.AccountKeeper) (*keeper.Keeper, sdk.Context) {
@@ -39,7 +39,7 @@ func CronKeeper(t testing.TB, wasmMsgServer types.WasmMsgServer, accountKeeper t
 		storeKey,
 		memStoreKey,
 		accountKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	k.WasmMsgServer = wasmMsgServer
 

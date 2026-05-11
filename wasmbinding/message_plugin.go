@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v11/x/contractmanager/keeper"
 
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
@@ -16,50 +15,45 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v10/x/dex/utils"
+	dexkeeper "github.com/neutron-org/neutron/v11/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v11/x/dex/utils"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v10/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v11/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
-
-	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	cronkeeper "github.com/neutron-org/neutron/v11/x/cron/keeper"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
-	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
-
-	contractmanagertypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v11/x/contractmanager/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v10/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v10/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v10/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v10/x/transfer/types"
+	"github.com/neutron-org/neutron/v11/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v11/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v11/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v11/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v11/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v11/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v11/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v10/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v10/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v11/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v11/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(
 	ictx *ictxkeeper.Keeper,
 	icq *icqkeeper.Keeper,
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper,
-	adminKeeper *adminmodulekeeper.Keeper,
 	bankKeeper *bankkeeper.BaseKeeper,
 	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
@@ -73,12 +67,10 @@ func CustomMessageDecorator(
 			Ictxmsgserver:              ictxkeeper.NewMsgServerImpl(*ictx),
 			Icqmsgserver:               icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper:             transferKeeper,
-			Adminserver:                adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
 			Bank:                       bankKeeper,
 			TokenFactory:               tokenFactoryKeeper,
 			CronMsgServer:              cronkeeper.NewMsgServerImpl(*cronKeeper),
 			CronQueryServer:            cronKeeper,
-			AdminKeeper:                adminKeeper,
 			ContractmanagerMsgServer:   contractmanagerkeeper.NewMsgServerImpl(*contractmanagerKeeper),
 			ContractmanagerQueryServer: contractmanagerkeeper.NewQueryServerImpl(*contractmanagerKeeper),
 			DexMsgServer:               dexkeeper.NewMsgServerImpl(*dexKeeper),
@@ -92,12 +84,10 @@ type CustomMessenger struct {
 	Ictxmsgserver              ictxtypes.MsgServer
 	Icqmsgserver               icqtypes.MsgServer
 	transferKeeper             transferwrapperkeeper.KeeperTransferWrapper
-	Adminserver                admintypes.MsgServer
 	Bank                       *bankkeeper.BaseKeeper
 	TokenFactory               *tokenfactorykeeper.Keeper
 	CronMsgServer              crontypes.MsgServer
 	CronQueryServer            crontypes.QueryServer
-	AdminKeeper                *adminmodulekeeper.Keeper
 	ContractmanagerMsgServer   contractmanagertypes.MsgServer
 	ContractmanagerQueryServer contractmanagertypes.QueryServer
 	DexMsgServer               dextypes.MsgServer
@@ -140,9 +130,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.IBCTransfer != nil {
 		return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 	}
-	if contractMsg.SubmitAdminProposal != nil {
-		return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
-	}
 
 	if contractMsg.CreateDenom != nil {
 		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
@@ -166,9 +153,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		return m.setDenomMetadata(ctx, contractAddr, contractMsg.SetDenomMetadata)
 	}
 
-	if contractMsg.AddSchedule != nil {
-		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
-	}
 	if contractMsg.RemoveSchedule != nil {
 		return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 	}
@@ -451,150 +435,6 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 	}
 	msgResponses := [][]*types.Any{{anyResp}}
 	return nil, [][]byte{data}, msgResponses, nil
-}
-
-func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	var data []byte
-	err := m.validateProposalQty(adminProposal)
-	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "invalid proposal quantity")
-	}
-	// here we handle pre-v2.0.0 style of proposals: param change, upgrade, client update
-	if m.isLegacyProposal(adminProposal) {
-		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, adminProposal)
-		if err != nil {
-			ctx.Logger().Debug("performSubmitAdminProposalLegacy: failed to submitAdminProposal",
-				"from_address", contractAddr.String(),
-				"error", err,
-			)
-			return nil, nil, nil, errors.Wrap(err, "failed to submit admin proposal legacy")
-		}
-		data, err = json.Marshal(resp)
-		if err != nil {
-			ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposalLegacy response to JSON",
-				"from_address", contractAddr.String(),
-				"error", err,
-			)
-			return nil, nil, nil, errors.Wrap(err, "marshal json failed")
-		}
-
-		ctx.Logger().Debug("submit proposal legacy submitted",
-			"from_address", contractAddr.String(),
-		)
-
-		anyResp, err := types.NewAnyWithValue(resp)
-		if err != nil {
-			return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", resp)
-		}
-		msgResponses := [][]*types.Any{{anyResp}}
-		return nil, [][]byte{data}, msgResponses, nil
-	}
-
-	resp, err := m.performSubmitAdminProposal(ctx, contractAddr, adminProposal)
-	if err != nil {
-		ctx.Logger().Debug("performSubmitAdminProposal: failed to submitAdminProposal",
-			"from_address", contractAddr.String(),
-			"error", err,
-		)
-		return nil, nil, nil, errors.Wrap(err, "failed to submit admin proposal")
-	}
-
-	data, err = json.Marshal(resp)
-	if err != nil {
-		ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposal response to JSON",
-			"from_address", contractAddr.String(),
-			"error", err,
-		)
-		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
-	}
-
-	ctx.Logger().Debug("submit proposal message submitted",
-		"from_address", contractAddr.String(),
-	)
-
-	anyResp, err := types.NewAnyWithValue(resp)
-	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", resp)
-	}
-	msgResponses := [][]*types.Any{{anyResp}}
-	return nil, [][]byte{data}, msgResponses, nil
-}
-
-func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) (*admintypes.MsgSubmitProposalLegacyResponse, error) {
-	proposal := adminProposal
-	msg := admintypes.MsgSubmitProposalLegacy{Proposer: contractAddr.String()}
-
-	switch {
-	case proposal.ParamChangeProposal != nil:
-		p := proposal.ParamChangeProposal
-		err := msg.SetContent(&paramChange.ParameterChangeProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			Changes:     p.ParamChanges,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on ParameterChangeProposal")
-		}
-	default:
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "unexpected legacy admin proposal structure: %+v", proposal)
-	}
-
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
-	}
-
-	response, err := m.Adminserver.SubmitProposalLegacy(ctx, &msg)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to submit proposal")
-	}
-
-	ctx.Logger().Debug("submit proposal legacy processed in msg server",
-		"from_address", contractAddr.String(),
-	)
-
-	return response, nil
-}
-
-func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
-	proposal := adminProposal
-	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
-	var (
-		msg    *admintypes.MsgSubmitProposal
-		sdkMsg sdk.Msg
-	)
-
-	cdc := m.AdminKeeper.Codec()
-	err := cdc.UnmarshalInterfaceJSON([]byte(proposal.ProposalExecuteMessage.Message), &sdkMsg)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
-	}
-
-	signers, _, err := cdc.GetMsgV1Signers(sdkMsg)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get signers from incoming sdk message")
-	}
-	if len(signers) != 1 {
-		return nil, errors.Wrap(sdkerrors.ErrorInvalidSigner, "should be 1 signer")
-	}
-	if !sdk.AccAddress(signers[0]).Equals(authority) {
-		return nil, errors.Wrap(sdkerrors.ErrUnauthorized, "authority in incoming msg is not equal to admin module")
-	}
-
-	msg, err = admintypes.NewMsgSubmitProposal([]sdk.Msg{sdkMsg}, contractAddr)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create MsgSubmitProposal ")
-	}
-
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
-	}
-
-	response, err := m.Adminserver.SubmitProposal(ctx, msg)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to submit proposal")
-	}
-
-	return response, nil
 }
 
 // createDenom creates a new token denom
@@ -963,74 +803,6 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 	return response, nil
 }
 
-func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) error {
-	qty := 0
-	if proposal.ParamChangeProposal != nil {
-		qty++
-	}
-	if proposal.ProposalExecuteMessage != nil {
-		qty++
-	}
-
-	switch qty {
-	case 1:
-		return nil
-	case 0:
-		return fmt.Errorf("no admin proposal type is present in message")
-	default:
-		return fmt.Errorf("more than one admin proposal type is present in message")
-	}
-}
-
-func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) bool {
-	switch {
-	case proposal.ParamChangeProposal != nil:
-		return true
-	default:
-		return false
-	}
-}
-
-func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	if !m.isAdmin(ctx, contractAddr) {
-		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
-	}
-
-	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
-
-	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
-	for _, msg := range addSchedule.Msgs {
-		msgs = append(msgs, crontypes.MsgExecuteContract{
-			Contract: msg.Contract,
-			Msg:      msg.Msg,
-		})
-	}
-
-	_, err := m.CronMsgServer.AddSchedule(ctx, &crontypes.MsgAddSchedule{
-		Authority:      authority.String(),
-		Name:           addSchedule.Name,
-		Period:         addSchedule.Period,
-		Msgs:           msgs,
-		ExecutionStage: crontypes.ExecutionStage(crontypes.ExecutionStage_value[addSchedule.ExecutionStage]),
-	})
-	if err != nil {
-		ctx.Logger().Error("failed to addSchedule",
-			"from_address", contractAddr.String(),
-			"name", addSchedule.Name,
-			"error", err,
-		)
-		return nil, nil, nil, errors.Wrapf(err, "failed to add %s schedule", addSchedule.Name)
-	}
-
-	ctx.Logger().Debug("schedule added",
-		"from_address", contractAddr.String(),
-		"name", addSchedule.Name,
-		"period", addSchedule.Period,
-	)
-
-	return nil, nil, nil, nil
-}
-
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	params, err := m.CronQueryServer.Params(ctx, &crontypes.QueryParamsRequest{})
 	if err != nil {
@@ -1038,11 +810,11 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
 	}
 
-	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.Params.SecurityAddress {
-		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
+	if contractAddr.String() != params.Params.SecurityAddress {
+		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only the security dao can remove schedule")
 	}
 
-	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
 
 	_, err = m.CronMsgServer.RemoveSchedule(ctx, &crontypes.MsgRemoveSchedule{
 		Authority: authority.String(),
@@ -1103,10 +875,6 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 	}
 	msgResponses := [][]*types.Any{{anyResp}}
 	return nil, [][]byte{data}, msgResponses, nil
-}
-
-func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
-	return slices.Contains(m.AdminKeeper.GetAdmins(ctx), contractAddr.String())
 }
 
 func getRegisterFee(fee sdk.Coins) sdk.Coins {

@@ -15,16 +15,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v11/x/contractmanager/types"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 
-	"github.com/neutron-org/neutron/v10/wasmbinding/bindings"
-	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
-	icatypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v11/wasmbinding/bindings"
+	"github.com/neutron-org/neutron/v11/x/interchainqueries/types"
+	icatypes "github.com/neutron-org/neutron/v11/x/interchaintxs/types"
 )
 
 func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*bindings.QueryRegisteredQueryResultResponse, error) {
@@ -116,11 +116,6 @@ func (qp QueryPlugin) GetBeforeSendHook(ctx sdk.Context, denom string) (*binding
 	contractAddr := qp.tokenFactoryKeeper.GetBeforeSendHook(ctx, denom)
 
 	return &bindings.BeforeSendHookResponse{ContractAddr: contractAddr}, nil
-}
-
-func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {
-	grpcResp := qp.feeBurnerKeeper.GetTotalBurnedNeutronsAmount(ctx)
-	return &bindings.QueryTotalBurnedNeutronsAmountResponse{Coin: grpcResp.Coin}, nil
 }
 
 func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeRequest) (*bindings.QueryMinIbcFeeResponse, error) {
