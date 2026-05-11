@@ -145,7 +145,7 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		ctx.Logger().Info("Migration {nextupgrade} applied")
+		ctx.Logger().Info("Migration v11.0.0 applied")
 		return vm, nil
 	}
 }
