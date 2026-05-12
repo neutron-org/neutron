@@ -235,6 +235,12 @@ func executeUpgradeSteps(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	if err := TakeFundsFromValence(ctx, keepers.BankKeeper); err != nil {
 		return err
 	}
+
+	ctx.Logger().Info("Transferring rest of the tokens from Main DAO to gov module")
+	if err := SendAllTokensToGov(ctx, keepers.BankKeeper); err != nil {
+		return err
+	}
+
 	ctx.Logger().Info("Done.")
 
 	return nil
@@ -821,6 +827,30 @@ func TakeFundsFromValence(ctx sdk.Context, bk bankkeeper.Keeper) error {
 		ctx.Logger().Info("No USDC found on Valence Provide Ready Account",
 			"denom", UsdcDenom,
 			"address", ValenceProvideReadyAccountAddress,
+		)
+	}
+
+	return nil
+}
+
+func SendAllTokensToGov(ctx sdk.Context, bk bankkeeper.Keeper) error {
+	tokensToTransfer := bk.GetAllBalances(ctx, sdk.MustAccAddressFromBech32(MainDAOContractAddress))
+	if tokensToTransfer.IsAllPositive() {
+		if err := bk.SendCoinsFromAccountToModule(
+			ctx,
+			sdk.MustAccAddressFromBech32(MainDAOContractAddress),
+			govtypes.ModuleName,
+			tokensToTransfer,
+		); err != nil {
+			return fmt.Errorf("failed to send tokens from Main DAO to gov module: %w", err)
+		}
+
+		ctx.Logger().Info("Transferred tokens from Main DAO to gov module",
+			"tokens", tokensToTransfer.String(),
+		)
+	} else {
+		ctx.Logger().Info("No tokens found on Main DAO contract",
+			"address", MainDAOContractAddress,
 		)
 	}
 
