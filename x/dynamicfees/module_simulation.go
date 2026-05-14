@@ -7,15 +7,12 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/neutron-org/neutron/v10/testutil/common/sample"
-	feeburnersimulation "github.com/neutron-org/neutron/v10/x/feeburner/simulation"
-	"github.com/neutron-org/neutron/v10/x/feeburner/types"
+	"github.com/neutron-org/neutron/v11/testutil/common/sample"
 )
 
 // avoid unused import issue
 var (
 	_ = sample.AccAddress
-	_ = feeburnersimulation.FindAccount
 	_ = sims.StakePerAccount
 	_ = simulation.MsgEntryKind
 	_ = baseapp.Paramspace
@@ -27,10 +24,6 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	for i, acc := range simState.Accounts {
 		accs[i] = acc.Address.String()
 	}
-	feeburnerGenesis := types.GenesisState{
-		Params: types.DefaultParams(),
-	}
-	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&feeburnerGenesis)
 }
 
 // ProposalContents doesn't return any content functions for governance proposals

@@ -1,4 +1,4 @@
-module github.com/neutron-org/neutron/v10
+module github.com/neutron-org/neutron/v11
 
 go 1.24.10
 
@@ -15,9 +15,8 @@ require (
 	cosmossdk.io/x/tx v0.14.0
 	cosmossdk.io/x/upgrade v0.2.0
 	github.com/CosmWasm/wasmd v0.61.0
-	github.com/CosmWasm/wasmvm/v3 v3.0.3
+	github.com/CosmWasm/wasmvm/v3 v3.0.5
 	github.com/cometbft/cometbft v0.38.21
-	github.com/cosmos/admin-module/v2 v2.0.0
 	github.com/cosmos/cosmos-db v1.1.3
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/cosmos-sdk v0.53.6
@@ -99,7 +98,6 @@ require (
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/iavl v1.2.6 // indirect
-	github.com/cosmos/ibc-go/modules/capability v1.0.1 // indirect
 	github.com/cosmos/interchain-security/v7 v7.0.1 // indirect
 	github.com/cosmos/ledger-cosmos-go v1.0.0 // indirect
 	github.com/danieljoos/wincred v1.2.1 // indirect
@@ -245,7 +243,6 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.61.10-neutron
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/cometbft/cometbft-db => github.com/sotnikov-s/cometbft-db v0.12.0-no-leveldb-compression
-	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.1.0
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.53.4-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0

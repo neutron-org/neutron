@@ -1,7 +1,7 @@
 package types
 
 import (
-	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	math_utils "github.com/neutron-org/neutron/v11/utils/math"
 )
 
 type Liquidity interface {

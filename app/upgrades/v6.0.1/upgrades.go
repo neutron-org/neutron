@@ -9,9 +9,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v10/app/upgrades"
-	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
-	"github.com/neutron-org/neutron/v10/x/dex/types"
+	"github.com/neutron-org/neutron/v11/app/upgrades"
+	dexkeeper "github.com/neutron-org/neutron/v11/x/dex/keeper"
+	"github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 func CreateUpgradeHandler(

@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	math_utils "github.com/neutron-org/neutron/v10/utils/math"
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v11/utils/math"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 type DepositState struct {
