@@ -5,6 +5,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/gogoproto/proto"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
@@ -16,20 +18,17 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	coinfactorytypes "github.com/neutron-org/neutron/v10/x/coinfactory/types"
-	crontypes "github.com/neutron-org/neutron/v10/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v10/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v10/x/interchaintxs/types"
-	stateverifiertypes "github.com/neutron-org/neutron/v10/x/state-verifier/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v10/x/tokenfactory/types"
+	coinfactorytypes "github.com/neutron-org/neutron/v11/x/coinfactory/types"
+	crontypes "github.com/neutron-org/neutron/v11/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v11/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v11/x/interchaintxs/types"
+	stateverifiertypes "github.com/neutron-org/neutron/v11/x/state-verifier/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v11/x/tokenfactory/types"
 
-	harpoontypes "github.com/neutron-org/neutron/v10/x/harpoon/types"
+	globalfeetypes "github.com/neutron-org/neutron/v11/x/globalfee/types"
 
-	globalfeetypes "github.com/neutron-org/neutron/v10/x/globalfee/types"
-
-	dynamicfeestypes "github.com/neutron-org/neutron/v10/x/dynamicfees/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v11/x/dynamicfees/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
@@ -85,10 +84,6 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.interchainqueries.Query/QueryResult":       func() proto.Message { return &interchainqueriestypes.QueryRegisteredQueryResultResponse{} },
 		"/neutron.interchainqueries.Query/LastRemoteHeight":  func() proto.Message { return &interchainqueriestypes.QueryLastRemoteHeightResponse{} },
 
-		// feeburner
-		"/neutron.feeburner.Query/Params":                    func() proto.Message { return &feeburnertypes.QueryParamsResponse{} },
-		"/neutron.feeburner.Query/TotalBurnedNeutronsAmount": func() proto.Message { return &feeburnertypes.QueryTotalBurnedNeutronsAmountResponse{} },
-
 		// dex
 		"/neutron.dex.Query/Params":                            func() proto.Message { return &dextypes.QueryParamsResponse{} },
 		"/neutron.dex.Query/LimitOrderTrancheUser":             func() proto.Message { return &dextypes.QueryGetLimitOrderTrancheUserResponse{} },
@@ -140,7 +135,37 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/gaia.globalfee.v1beta1.Query/Params": func() proto.Message { return &globalfeetypes.QueryParamsResponse{} },
 
 		// distribution
-		"/cosmos.distribution.v1beta1.Query/DelegationRewards": func() proto.Message { return &types.QueryDelegationRewardsResponse{} },
+		"/cosmos.distribution.v1beta1.Query/Params":                    func() proto.Message { return &types.QueryParamsResponse{} },
+		"/cosmos.distribution.v1beta1.Query/ValidatorDistributionInfo": func() proto.Message { return &types.QueryValidatorDistributionInfoResponse{} },
+		"/cosmos.distribution.v1beta1.Query/ValidatorOutstandingRewards": func() proto.Message {
+			return &types.QueryValidatorOutstandingRewardsResponse{}
+		},
+		"/cosmos.distribution.v1beta1.Query/ValidatorCommission": func() proto.Message { return &types.QueryValidatorCommissionResponse{} },
+		"/cosmos.distribution.v1beta1.Query/ValidatorSlashes":    func() proto.Message { return &types.QueryValidatorSlashesResponse{} },
+		"/cosmos.distribution.v1beta1.Query/DelegationRewards":   func() proto.Message { return &types.QueryDelegationRewardsResponse{} },
+		"/cosmos.distribution.v1beta1.Query/DelegationTotalRewards": func() proto.Message {
+			return &types.QueryDelegationTotalRewardsResponse{}
+		},
+		"/cosmos.distribution.v1beta1.Query/DelegatorValidators": func() proto.Message { return &types.QueryDelegatorValidatorsResponse{} },
+		"/cosmos.distribution.v1beta1.Query/DelegatorWithdrawAddress": func() proto.Message {
+			return &types.QueryDelegatorWithdrawAddressResponse{}
+		},
+		"/cosmos.distribution.v1beta1.Query/CommunityPool": func() proto.Message { return &types.QueryCommunityPoolResponse{} },
+
+		// gov
+		"/cosmos.gov.v1beta1.Query/Proposal":    func() proto.Message { return &govtypes.QueryProposalResponse{} },
+		"/cosmos.gov.v1beta1.Query/Proposals":   func() proto.Message { return &govtypes.QueryProposalsResponse{} },
+		"/cosmos.gov.v1beta1.Query/Vote":        func() proto.Message { return &govtypes.QueryVoteResponse{} },
+		"/cosmos.gov.v1beta1.Query/Votes":       func() proto.Message { return &govtypes.QueryVotesResponse{} },
+		"/cosmos.gov.v1beta1.Query/Params":      func() proto.Message { return &govtypes.QueryParamsResponse{} },
+		"/cosmos.gov.v1beta1.Query/Deposit":     func() proto.Message { return &govtypes.QueryDepositResponse{} },
+		"/cosmos.gov.v1beta1.Query/Deposits":    func() proto.Message { return &govtypes.QueryDepositsResponse{} },
+		"/cosmos.gov.v1beta1.Query/TallyResult": func() proto.Message { return &govtypes.QueryTallyResultResponse{} },
+
+		// mint
+		"/cosmos.mint.v1beta1.Query/Params":           func() proto.Message { return &minttypes.QueryParamsResponse{} },
+		"/cosmos.mint.v1beta1.Query/Inflation":        func() proto.Message { return &minttypes.QueryInflationResponse{} },
+		"/cosmos.mint.v1beta1.Query/AnnualProvisions": func() proto.Message { return &minttypes.QueryAnnualProvisionsResponse{} },
 
 		// staking
 		"/cosmos.staking.v1beta1.Query/Delegation":                    func() proto.Message { return &stakingtypes.QueryDelegationResponse{} },
@@ -148,9 +173,6 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/cosmos.staking.v1beta1.Query/Validator":                     func() proto.Message { return &stakingtypes.QueryValidatorResponse{} },
 		"/cosmos.staking.v1beta1.Query/DelegatorDelegations":          func() proto.Message { return &stakingtypes.QueryDelegatorDelegationsResponse{} },
 		"/cosmos.staking.v1beta1.Query/DelegatorUnbondingDelegations": func() proto.Message { return &stakingtypes.QueryDelegatorUnbondingDelegationsResponse{} },
-
-		// harpoon
-		"/neutron.harpoon.Query/SubscribedContracts": func() proto.Message { return &harpoontypes.QuerySubscribedContractsResponse{} },
 
 		// state verifier
 		"/neutron.state_verifier.v1.Query/VerifyStateValues": func() proto.Message { return &stateverifiertypes.QueryVerifyStateValuesResponse{} },

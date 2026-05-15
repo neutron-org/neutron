@@ -10,8 +10,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v10/utils/math"
-	"github.com/neutron-org/neutron/v10/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v11/utils/math"
+	"github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 type MultihopStep struct {

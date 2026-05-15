@@ -6,10 +6,10 @@ import (
 	"cosmossdk.io/math"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v10/x/contractmanager/types"
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v11/x/contractmanager/types"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v10/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v11/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -18,7 +18,7 @@ import (
 
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/neutron-org/neutron/v10/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v11/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.
@@ -31,8 +31,7 @@ type NeutronQuery struct {
 	RegisteredInterchainQueries *QueryRegisteredQueriesRequest `json:"registered_interchain_queries,omitempty"`
 	// RegisteredInterchainQuery
 	RegisteredInterchainQuery *QueryRegisteredQueryRequest `json:"registered_interchain_query,omitempty"`
-	// TotalBurnedNeutronsAmount
-	TotalBurnedNeutronsAmount *QueryTotalBurnedNeutronsAmountRequest `json:"total_burned_neutrons_amount,omitempty"`
+
 	// MinIbcFee
 	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
 	// Token Factory queries

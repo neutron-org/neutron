@@ -10,9 +10,10 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/testutil"
+	"github.com/neutron-org/neutron/v11/testutil"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -23,7 +24,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v10/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v11/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {
@@ -33,6 +34,22 @@ type MiddlewareTestSuite struct {
 // Setup
 func TestMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, new(MiddlewareTestSuite))
+}
+
+func (suite *MiddlewareTestSuite) SetupTest() {
+	suite.IBCConnectionTestSuite.SetupTest()
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	err := app.MintKeeper.Params.Set(suite.ChainA.GetContext(), minttypes.Params{
+		MintDenom:           "stake", // minting untrn brakes some ratelimit tests, so we disable untrn mint by changing mint denom at the mint module
+		InflationRateChange: sdkmath.LegacyZeroDec(),
+		InflationMax:        sdkmath.LegacyOneDec(),
+		InflationMin:        sdkmath.LegacyZeroDec(),
+		GoalBonded:          sdkmath.LegacyOneDec(),
+		BlocksPerYear:       1,
+	})
+	if err != nil {
+		return
+	}
 }
 
 // Helpers

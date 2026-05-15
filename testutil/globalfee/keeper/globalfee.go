@@ -5,7 +5,6 @@ import (
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store/metrics"
-	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	db "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -15,10 +14,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/x/globalfee/keeper"
-	"github.com/neutron-org/neutron/v10/x/globalfee/types"
+	"github.com/neutron-org/neutron/v11/x/globalfee/keeper"
+	"github.com/neutron-org/neutron/v11/x/globalfee/types"
 )
 
 func GlobalFeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
@@ -35,7 +35,7 @@ func GlobalFeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
