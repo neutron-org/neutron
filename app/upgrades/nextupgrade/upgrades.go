@@ -82,12 +82,17 @@ func reconstructLoTranches(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper)
 		}
 	}
 
+	if len(loTrancheKeysToRemove) != len(loTranchesToUpdate) {
+		return fmt.Errorf("mismatch in LO tranches to remove and update counts: %d != %d", len(loTrancheKeysToRemove), len(loTranchesToUpdate))
+	}
+
 	for _, loTrancheKey := range loTrancheKeysToRemove {
 		k.RemoveLimitOrderTranche(ctx, &loTrancheKey)
 	}
 	for _, loTranche := range loTranchesToUpdate {
 		k.SetLimitOrderTranche(ctx, &loTranche)
 	}
+	ctx.Logger().Info("LO tranche keys reconstructed", "count", len(loTranchesToUpdate))
 
 	return nil
 }
@@ -97,7 +102,6 @@ func reconstructInactiveLoTranches(ctx sdk.Context, cdc codec.Codec, k dexkeeper
 
 	inactiveKeysToRemove := make([]dextypes.LimitOrderTrancheKey, 0)
 	inactiveTranchesToUpdate := make([]dextypes.LimitOrderTranche, 0)
-
 	for ; iter.Valid(); iter.Next() {
 		var tranche dextypes.LimitOrderTranche
 		cdc.MustUnmarshal(iter.Value(), &tranche)
@@ -119,12 +123,17 @@ func reconstructInactiveLoTranches(ctx sdk.Context, cdc codec.Codec, k dexkeeper
 	}
 	iter.Close() //nolint:errcheck
 
+	if len(inactiveKeysToRemove) != len(inactiveTranchesToUpdate) {
+		return fmt.Errorf("mismatch in inactive LO tranches to remove and update counts: %d != %d", len(inactiveKeysToRemove), len(inactiveTranchesToUpdate))
+	}
+
 	for _, key := range inactiveKeysToRemove {
 		k.RemoveInactiveLimitOrderTranche(ctx, &key)
 	}
 	for i := range inactiveTranchesToUpdate {
 		k.SetInactiveLimitOrderTranche(ctx, &inactiveTranchesToUpdate[i])
 	}
+	ctx.Logger().Info("inactive LO tranche keys reconstructed", "count", len(inactiveTranchesToUpdate))
 
 	return nil
 }
@@ -142,13 +151,11 @@ func reconstructLoTrancheUserLists(ctx sdk.Context, k dexkeeper.Keeper) error {
 
 	keysToRemove := make([]userRemoveKey, 0)
 	usersToUpdate := make([]*dextypes.LimitOrderTrancheUser, 0)
-
 	for _, user := range allUsers {
 		if !strings.HasPrefix(user.TrancheKey, "tk-") {
 			continue
 		}
 
-		// Snapshot address + old key before mutation.
 		keysToRemove = append(keysToRemove, userRemoveKey{
 			address:    user.Address,
 			trancheKey: user.TrancheKey,
@@ -163,12 +170,17 @@ func reconstructLoTrancheUserLists(ctx sdk.Context, k dexkeeper.Keeper) error {
 		usersToUpdate = append(usersToUpdate, user)
 	}
 
+	if len(keysToRemove) != len(usersToUpdate) {
+		return fmt.Errorf("mismatch in LO tranche user keys to remove and update counts: %d != %d", len(keysToRemove), len(usersToUpdate))
+	}
+
 	for _, key := range keysToRemove {
 		k.RemoveLimitOrderTrancheUserByKey(ctx, key.trancheKey, key.address)
 	}
 	for _, user := range usersToUpdate {
 		k.SetLimitOrderTrancheUser(ctx, user)
 	}
+	ctx.Logger().Info("LO tranche user keys reconstructed", "count", len(usersToUpdate))
 
 	return nil
 }
