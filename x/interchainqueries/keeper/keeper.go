@@ -11,7 +11,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
@@ -118,7 +118,7 @@ func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuer
 	)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		query := types.RegisteredQuery{}
@@ -381,7 +381,7 @@ func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk
 func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context, limit uint64) []uint64 {
 	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.TxQueryToRemoveKey)
 	iterator := prefixStore.Iterator(nil, nil)
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 	ids := make([]uint64, 0, 100)
 	for ; iterator.Valid(); iterator.Next() {
 		ids = append(ids, sdk.BigEndianToUint64(iterator.Key()))
@@ -401,7 +401,7 @@ func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context, limit uint64) []uint64 {
 func (k Keeper) calculateTxQueryRemoval(ctx sdk.Context, queryID, limit uint64) *TxQueryToRemove {
 	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(queryID))
 	iterator := prefixStore.Iterator(nil, nil)
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	result := &TxQueryToRemove{ID: queryID, Hashes: make([][]byte, 0, limit)}
 	for ; iterator.Valid(); iterator.Next() {

@@ -21,7 +21,7 @@ import (
 	"github.com/neutron-org/neutron/v11/x/ibc-hooks/utils"
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
@@ -334,7 +334,7 @@ func (suite *HooksTestSuite) RelayPacket(packet channeltypes.Packet, direction D
 }
 
 func (suite *HooksTestSuite) StoreContractCode(chain *ibctesting.TestChain, addr sdk.AccAddress, path string) uint64 {
-	wasmCode, err := os.ReadFile(path) //nolint:gosec
+	wasmCode, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}

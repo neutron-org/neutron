@@ -154,13 +154,12 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
 
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v11/x/ibc-rate-limit/keeper"
 	ibcratelimittypes "github.com/neutron-org/neutron/v11/x/ibc-rate-limit/types"
 
-	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
@@ -422,7 +421,7 @@ type App struct {
 // AutoCLIOpts returns options based upon the modules in the neutron v5 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule)
-	for _, m := range app.mm.Modules {
+	for _, m := range app.mm.Modules { //mapiter:ignore
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
 			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
@@ -1348,7 +1347,7 @@ func (app *App) setupUpgradeHandlers() {
 
 func (app *App) AutoCliOpts() autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule, 0)
-	for _, m := range app.mm.Modules {
+	for _, m := range app.mm.Modules { //mapiter:ignore
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
 			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
@@ -1433,7 +1432,7 @@ func (app *App) LoadHeight(height int64) error {
 // ModuleAccountAddrs returns all the app's module account addresses.
 func (app *App) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
-	for acc := range maccPerms {
+	for acc := range maccPerms { //mapiter:ignore
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
 

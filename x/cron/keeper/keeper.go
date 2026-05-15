@@ -135,7 +135,7 @@ func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	res := make([]types.Schedule, 0)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		var schedule types.Schedule
@@ -158,7 +158,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context, executionStage t
 	res := make([]types.Schedule, 0)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		var schedule types.Schedule

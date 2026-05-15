@@ -127,7 +127,7 @@ func (k *Keeper) GetAllConsensusStates(ctx sdk.Context) ([]*types.ConsensusState
 	)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		cs := tendermint.ConsensusState{}

@@ -227,7 +227,7 @@ func (coins PrecDecCoins) safeAdd(coinsB PrecDecCoins) (coalesced PrecDecCoins) 
 		}
 	}
 
-	for denom, cL := range uniqCoins { //#nosec
+	for denom, cL := range uniqCoins { //#nosec //mapiter:ignore
 		comboCoin := PrecDecCoin{Denom: denom, Amount: math_utils.NewPrecDec(0)}
 		for _, c := range cL {
 			comboCoin = comboCoin.Add(c)

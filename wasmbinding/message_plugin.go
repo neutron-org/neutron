@@ -36,7 +36,6 @@ import (
 	contractmanagertypes "github.com/neutron-org/neutron/v11/x/contractmanager/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	//nolint:staticcheck
 
 	"github.com/neutron-org/neutron/v11/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/v11/x/interchainqueries/keeper"

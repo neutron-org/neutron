@@ -39,7 +39,6 @@ import (
 	appparams "github.com/neutron-org/neutron/v11/app/params"
 	tokenfactorytypes "github.com/neutron-org/neutron/v11/x/tokenfactory/types"
 
-	//nolint:staticcheck
 	"github.com/neutron-org/neutron/v11/app"
 	ictxstypes "github.com/neutron-org/neutron/v11/x/interchaintxs/types"
 )
@@ -173,7 +172,7 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 func (suite *IBCConnectionTestSuite) StoreTestCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
 	// wasm file built with https://github.com/neutron-org/neutron-sdk/tree/main/contracts/reflect
 	// wasm file built with https://github.com/neutron-org/neutron-dev-contracts/tree/feat/ica-register-fee-update/contracts/neutron_interchain_txs
-	wasmCode, err := os.ReadFile(path) //nolint:gosec
+	wasmCode, err := os.ReadFile(path)
 	suite.Require().NoError(err)
 
 	codeID, _, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody})

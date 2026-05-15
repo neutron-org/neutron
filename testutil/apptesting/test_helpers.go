@@ -6,7 +6,6 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 
-	//nolint:staticcheck
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 
 	"github.com/neutron-org/neutron/v11/app"
