@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types" //nolint:staticcheck
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 
 	"github.com/neutron-org/neutron/v11/x/ibc-hooks/types"
 

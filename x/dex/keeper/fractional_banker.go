@@ -54,7 +54,7 @@ func (k *FractionalBanker) GetFractionalBalances(ctx sdk.Context, address sdk.Ac
 func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.PrecDecCoins, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	balances := types.PrecDecCoins{}
 
@@ -74,7 +74,7 @@ func (k *FractionalBanker) GetAllFractionalBalances(ctx sdk.Context) (types.Prec
 func (k *FractionalBanker) SetFractionalBalance(ctx sdk.Context, address sdk.AccAddress, balances BalanceMap) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FractionalBalanceKeyPrefix))
 	sortedBalances := make([]string, 0, len(balances))
-	for denom := range balances { //nolint:mapiter
+	for denom := range balances { //mapiter:ignore
 		sortedBalances = append(sortedBalances, denom)
 	}
 	sort.Strings(sortedBalances)

@@ -39,12 +39,12 @@ func (f FlagAdvice) Sanitize() FlagAdvice {
 	// map CustomFlagOverrides & CustomFieldParser keys to lower-case
 	// initialize if uninitialized
 	newFlagOverrides := make(map[string]string, len(f.CustomFlagOverrides))
-	for k, v := range f.CustomFlagOverrides { //nolint:mapiter
+	for k, v := range f.CustomFlagOverrides { //mapiter:ignore
 		newFlagOverrides[strings.ToLower(k)] = v
 	}
 	f.CustomFlagOverrides = newFlagOverrides
 	newFlagParsers := make(map[string]CustomFieldParserFn, len(f.CustomFieldParsers))
-	for k, v := range f.CustomFieldParsers { //nolint:mapiter
+	for k, v := range f.CustomFieldParsers { //mapiter:ignore
 		newFlagParsers[strings.ToLower(k)] = v
 	}
 	f.CustomFieldParsers = newFlagParsers

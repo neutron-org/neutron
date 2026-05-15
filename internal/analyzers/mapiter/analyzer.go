@@ -43,7 +43,7 @@ func hasIgnoreComment(pass *analysis.Pass, file *ast.File, rangeStmt *ast.RangeS
 	for _, group := range file.Comments {
 		for _, comment := range group.List {
 			text := comment.Text
-			if !strings.Contains(text, "nolint:mapiter") && !strings.Contains(text, "mapiter:ignore") {
+			if !strings.Contains(text, "mapiter:ignore") {
 				continue
 			}
 
