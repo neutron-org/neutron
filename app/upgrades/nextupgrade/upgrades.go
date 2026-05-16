@@ -98,7 +98,7 @@ func reconstructLoTranches(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper)
 }
 
 func reconstructInactiveLoTranches(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper) error {
-	iter := k.GetInactiveLimitOrderTrancheIterator(ctx)
+	iter := k.GetInactiveLimitOrderTrancheIterator(ctx) // there are more than 400k entries -> iterating
 
 	inactiveKeysToRemove := make([]dextypes.LimitOrderTrancheKey, 0)
 	inactiveTranchesToUpdate := make([]dextypes.LimitOrderTranche, 0)
@@ -130,8 +130,8 @@ func reconstructInactiveLoTranches(ctx sdk.Context, cdc codec.Codec, k dexkeeper
 	for _, key := range inactiveKeysToRemove {
 		k.RemoveInactiveLimitOrderTranche(ctx, &key)
 	}
-	for i := range inactiveTranchesToUpdate {
-		k.SetInactiveLimitOrderTranche(ctx, &inactiveTranchesToUpdate[i])
+	for _, tranche := range inactiveTranchesToUpdate {
+		k.SetInactiveLimitOrderTranche(ctx, &tranche)
 	}
 	ctx.Logger().Info("inactive LO tranche keys reconstructed", "count", len(inactiveTranchesToUpdate))
 
@@ -141,25 +141,14 @@ func reconstructInactiveLoTranches(ctx sdk.Context, cdc codec.Codec, k dexkeeper
 func reconstructLoTrancheUserLists(ctx sdk.Context, k dexkeeper.Keeper) error {
 	allUsers := k.GetAllLimitOrderTrancheUser(ctx) // there are only 300-ish entries, so getting all is fine
 
-	// Each LimitOrderTrancheUser has its TrancheKey embedded in both the KV store key
-	// (address + trancheKey) and the serialised value. It is required to remove the old entry and
-	// write a new one under the updated key.
-	type userRemoveKey struct {
-		address    string
-		trancheKey string
-	}
-
-	keysToRemove := make([]userRemoveKey, 0)
-	usersToUpdate := make([]*dextypes.LimitOrderTrancheUser, 0)
+	usersToRemove := make([]dextypes.LimitOrderTrancheUser, 0)
+	usersToUpdate := make([]dextypes.LimitOrderTrancheUser, 0)
 	for _, user := range allUsers {
 		if !strings.HasPrefix(user.TrancheKey, "tk-") {
 			continue
 		}
 
-		keysToRemove = append(keysToRemove, userRemoveKey{
-			address:    user.Address,
-			trancheKey: user.TrancheKey,
-		})
+		usersToRemove = append(usersToRemove, *user)
 
 		trancheIdxStr := strings.TrimPrefix(user.TrancheKey, "tk-")
 		trancheIdx, err := strconv.ParseUint(trancheIdxStr, 10, 64)
@@ -167,18 +156,18 @@ func reconstructLoTrancheUserLists(ctx sdk.Context, k dexkeeper.Keeper) error {
 			return fmt.Errorf("failed to parse tranche idx %s: %w", trancheIdxStr, err)
 		}
 		user.TrancheKey = dextypes.NewTrancheKey(trancheIdx)
-		usersToUpdate = append(usersToUpdate, user)
+		usersToUpdate = append(usersToUpdate, *user)
 	}
 
-	if len(keysToRemove) != len(usersToUpdate) {
-		return fmt.Errorf("mismatch in LO tranche user keys to remove and update counts: %d != %d", len(keysToRemove), len(usersToUpdate))
+	if len(usersToRemove) != len(usersToUpdate) {
+		return fmt.Errorf("mismatch in LO tranche user keys to remove and update counts: %d != %d", len(usersToRemove), len(usersToUpdate))
 	}
 
-	for _, key := range keysToRemove {
-		k.RemoveLimitOrderTrancheUserByKey(ctx, key.trancheKey, key.address)
+	for _, user := range usersToRemove {
+		k.RemoveLimitOrderTrancheUser(ctx, &user)
 	}
 	for _, user := range usersToUpdate {
-		k.SetLimitOrderTrancheUser(ctx, user)
+		k.SetLimitOrderTrancheUser(ctx, &user)
 	}
 	ctx.Logger().Info("LO tranche user keys reconstructed", "count", len(usersToUpdate))
 

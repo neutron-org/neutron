@@ -278,8 +278,6 @@ func (suite *UpgradeTestSuite) TestReconstructInactiveLoTranches() {
 
 // TestReconstructLoTrancheUserLists verifies that LimitOrderTrancheUser entries stored under
 // the old plain-decimal "tk-N" key are rewritten to the zero-padded "tk-%020d" format.
-// The TrancheKey appears in both the KV store composite key (address + trancheKey) and in
-// the serialised protobuf value, so both must be updated correctly.
 // Entries with the original base-36 sortable key (no "tk-" prefix) must remain unchanged.
 func (suite *UpgradeTestSuite) TestReconstructLoTrancheUserLists() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
@@ -347,7 +345,7 @@ func (suite *UpgradeTestSuite) TestReconstructLoTrancheUserLists() {
 		migratedKey1,
 	)
 	require.True(t, found, "migrated user tk-3819855 must exist under new key")
-	require.Equal(t, migratedKey1, migratedUser1.TrancheKey, "TrancheKey in value must also be updated")
+	require.Equal(t, migratedKey1, migratedUser1.TrancheKey)
 
 	_, found = app.DexKeeper.GetLimitOrderTrancheUser(
 		ctx,
@@ -366,7 +364,7 @@ func (suite *UpgradeTestSuite) TestReconstructLoTrancheUserLists() {
 		migratedKey2,
 	)
 	require.True(t, found, "migrated user tk-4079303 must exist under new key")
-	require.Equal(t, migratedKey2, migratedUser2.TrancheKey, "TrancheKey in value must also be updated")
+	require.Equal(t, migratedKey2, migratedUser2.TrancheKey)
 
 	_, found = app.DexKeeper.GetLimitOrderTrancheUser(
 		ctx,
