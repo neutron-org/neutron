@@ -3,7 +3,7 @@ package types
 import (
 	fmt "fmt"
 
-	math_utils "github.com/neutron-org/neutron/v10/utils/math"
+	math_utils "github.com/neutron-org/neutron/v11/utils/math"
 )
 
 var _ TickLiquidityKey = (*LimitOrderTrancheKey)(nil)

@@ -3,9 +3,9 @@ package v900
 import (
 	storetypes "cosmossdk.io/store/types"
 
-	coinfactorytypes "github.com/neutron-org/neutron/v10/x/coinfactory/types"
+	coinfactorytypes "github.com/neutron-org/neutron/v11/x/coinfactory/types"
 
-	"github.com/neutron-org/neutron/v10/app/upgrades"
+	"github.com/neutron-org/neutron/v11/app/upgrades"
 )
 
 const (

@@ -4,12 +4,14 @@ import (
 	store "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -17,21 +19,17 @@ import (
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
-	feerefunderkeeper "github.com/neutron-org/neutron/v10/x/feerefunder/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v11/x/feerefunder/keeper"
 
-	harpoonkeeper "github.com/neutron-org/neutron/v10/x/harpoon/keeper"
-	revenuekeeper "github.com/neutron-org/neutron/v10/x/revenue/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v11/x/dex/keeper"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v11/x/ibc-rate-limit/keeper"
 
-	dexkeeper "github.com/neutron-org/neutron/v10/x/dex/keeper"
-	ibcratelimitkeeper "github.com/neutron-org/neutron/v10/x/ibc-rate-limit/keeper"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v11/x/dynamicfees/keeper"
 
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v10/x/dynamicfees/keeper"
-
-	contractmanagerkeeper "github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v10/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v10/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v10/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v10/x/tokenfactory/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v11/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v11/x/cron/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v11/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v11/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	transferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
@@ -60,11 +58,12 @@ type UpgradeKeepers struct {
 	IcqKeeper          icqkeeper.Keeper
 	CronKeeper         cronkeeper.Keeper
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper
-	FeeBurnerKeeper    *feeburnerkeeper.Keeper
 	SlashingKeeper     slashingkeeper.Keeper
 	ParamsKeeper       paramskeeper.Keeper //nolint:staticcheck
 	ContractManager    contractmanagerkeeper.Keeper
-	AdminModule        adminmodulekeeper.Keeper
+	GovKeeper          govkeeper.Keeper
+	MintKeeper         mintkeeper.Keeper
+	DistributionKeeper distributionkeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper
 	MarketmapKeeper    *marketmapkeeper.Keeper
 	FeeMarketKeeper    *feemarketkeeper.Keeper
@@ -74,8 +73,6 @@ type UpgradeKeepers struct {
 	IbcRateLimitKeeper *ibcratelimitkeeper.Keeper
 	ChannelKeeper      *channelkeeper.Keeper
 	WasmKeeper         *wasmkeeper.Keeper
-	HarpoonKeeper      *harpoonkeeper.Keeper
-	RevenueKeeper      *revenuekeeper.Keeper
 	FeerefunderKeeper  *feerefunderkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace paramtypes.Subspace

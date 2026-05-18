@@ -3,7 +3,7 @@ package nextupgrade
 import (
 	storetypes "cosmossdk.io/store/types"
 
-	"github.com/neutron-org/neutron/v10/app/upgrades"
+	"github.com/neutron-org/neutron/v11/app/upgrades"
 )
 
 const (

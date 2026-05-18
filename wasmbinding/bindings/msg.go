@@ -7,10 +7,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
-	feetypes "github.com/neutron-org/neutron/v10/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v10/x/interchainqueries/types"
-	transferwrappertypes "github.com/neutron-org/neutron/v10/x/transfer/types"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
+	feetypes "github.com/neutron-org/neutron/v11/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v11/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/v11/x/transfer/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -29,8 +29,6 @@ type NeutronMsg struct {
 	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
 	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
-	SubmitAdminProposal       *SubmitAdminProposal              `json:"submit_admin_proposal,omitempty"`
-
 	// Token factory types
 	/// Contracts can create denoms, namespaced under the contract's address.
 	/// A contract may create any number of independent sub-denoms.
@@ -55,7 +53,6 @@ type NeutronMsg struct {
 	SetDenomMetadata *SetDenomMetadata `json:"set_denom_metadata,omitempty"`
 
 	// Cron types
-	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
 	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
 
 	// Contractmanager types

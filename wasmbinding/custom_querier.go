@@ -8,7 +8,7 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v10/wasmbinding/bindings"
+	"github.com/neutron-org/neutron/v11/wasmbinding/bindings"
 )
 
 // CustomQuerier returns a function that is an implementation of custom querier mechanism for specific messages
@@ -68,18 +68,6 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			bz, err := json.Marshal(registeredQuery)
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to marshal interchain account query response: %v", err)
-			}
-
-			return bz, nil
-		case contractQuery.TotalBurnedNeutronsAmount != nil:
-			totalBurnedNeutrons, err := qp.GetTotalBurnedNeutronsAmount(ctx, contractQuery.TotalBurnedNeutronsAmount)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to get total burned neutrons amount: %v", err)
-			}
-
-			bz, err := json.Marshal(totalBurnedNeutrons)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to marshal total burned neutrons amount response: %v", err)
 			}
 
 			return bz, nil

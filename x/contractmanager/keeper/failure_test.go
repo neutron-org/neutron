@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v11/testutil/common/nullify"
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/neutron-org/neutron/v10/testutil"
-	mock_types "github.com/neutron-org/neutron/v10/testutil/mocks/contractmanager/types"
+	"github.com/neutron-org/neutron/v11/testutil"
+	mock_types "github.com/neutron-org/neutron/v11/testutil/mocks/contractmanager/types"
 
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
@@ -20,9 +20,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v10/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v10/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v10/x/contractmanager/types"
+	keepertest "github.com/neutron-org/neutron/v11/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v11/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v11/x/contractmanager/types"
 )
 
 // Prevent strconv unused error

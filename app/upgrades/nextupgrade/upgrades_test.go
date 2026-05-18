@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v10/app/upgrades/nextupgrade"
-	"github.com/neutron-org/neutron/v10/testutil"
-	dextypes "github.com/neutron-org/neutron/v10/x/dex/types"
+	"github.com/neutron-org/neutron/v11/app/upgrades/nextupgrade"
+	"github.com/neutron-org/neutron/v11/testutil"
+	dextypes "github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 type UpgradeTestSuite struct {

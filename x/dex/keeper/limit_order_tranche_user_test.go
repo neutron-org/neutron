@@ -8,11 +8,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v10/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v10/testutil/dex/keeper"
-	math_utils "github.com/neutron-org/neutron/v10/utils/math"
-	"github.com/neutron-org/neutron/v10/x/dex/keeper"
-	"github.com/neutron-org/neutron/v10/x/dex/types"
+	"github.com/neutron-org/neutron/v11/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v11/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v11/utils/math"
+	"github.com/neutron-org/neutron/v11/x/dex/keeper"
+	"github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
 func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int) []*types.LimitOrderTrancheUser {
