@@ -58,6 +58,12 @@ func (k Keeper) GetAllInactiveLimitOrderTranche(ctx sdk.Context) (list []*types.
 	return list
 }
 
+// GetInactiveLimitOrderTrancheIterator returns a store iterator over all inactive limit order tranches.
+func (k Keeper) GetInactiveLimitOrderTrancheIterator(ctx sdk.Context) storetypes.Iterator {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.InactiveLimitOrderTrancheKeyPrefix))
+	return storetypes.KVStorePrefixIterator(store, []byte{})
+}
+
 // UpdateInactiveTranche handles the logic for all updates to InactiveLimitOrderTranches
 // It will delete an InactiveTranche if there is no remaining MakerReserves or TakerReserves
 func (k Keeper) UpdateInactiveTranche(sdkCtx sdk.Context, tranche *types.LimitOrderTranche) {

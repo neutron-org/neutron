@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 
+	"github.com/neutron-org/neutron/v11/app/upgrades/nextupgrade"
 	v10_0_0 "github.com/neutron-org/neutron/v11/app/upgrades/v10.0.0"
 	v10_1_0 "github.com/neutron-org/neutron/v11/app/upgrades/v10.1.0"
 	v10_2_0 "github.com/neutron-org/neutron/v11/app/upgrades/v10.2.0"
@@ -246,6 +247,7 @@ var (
 		v10_2_0.Upgrade,
 		v10_3_0.Upgrade,
 		v11.Upgrade,
+		nextupgrade.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/binary"
-	"fmt"
 	"time"
 
 	"cosmossdk.io/math"
@@ -208,10 +207,11 @@ func (k Keeper) GetAllLimitOrderTrancheAtIndex(
 	return trancheList
 }
 
-func (k Keeper) NewTrancheKey(ctx sdk.Context) string {
+// NextTrancheKey increments the tranche count and returns the next tranche key.
+func (k Keeper) NextTrancheKey(ctx sdk.Context) string {
 	trancheCount := k.GetTrancheCount(ctx)
 	k.IncrementTrancheCount(ctx)
-	return fmt.Sprintf("tk-%d", trancheCount)
+	return types.NewTrancheKey(trancheCount)
 }
 
 func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
@@ -232,7 +232,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
-			TrancheKey:            k.NewTrancheKey(ctx),
+			TrancheKey:            k.NextTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, &JITGoodTilTime)
 		ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
@@ -240,7 +240,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
-			TrancheKey:            k.NewTrancheKey(ctx),
+			TrancheKey:            k.NextTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
 		ctx.EventManager().EmitEvents(types.GetEventsIncExpiringOrders(tradePairID))
@@ -250,7 +250,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 				TradePairId:           tradePairID,
 				TickIndexTakerToMaker: tickIndexTakerToMaker,
-				TrancheKey:            k.NewTrancheKey(ctx),
+				TrancheKey:            k.NextTrancheKey(ctx),
 			}
 			placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, nil)
 			ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
