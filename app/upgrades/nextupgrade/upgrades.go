@@ -44,6 +44,10 @@ func CreateUpgradeHandler(
 }
 
 func ReconstructTrancheKeys(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper) error {
+	if err := reconstructLoExpirations(ctx, k); err != nil {
+		return fmt.Errorf("failed to reconstruct LO expirations: %w", err)
+	}
+
 	if err := reconstructLoTranches(ctx, cdc, k); err != nil {
 		return fmt.Errorf("failed to reconstruct LO tranches: %w", err)
 	}
@@ -55,6 +59,47 @@ func ReconstructTrancheKeys(ctx sdk.Context, cdc codec.Codec, k dexkeeper.Keeper
 	if err := reconstructLoTrancheUserLists(ctx, k); err != nil {
 		return fmt.Errorf("failed to reconstruct LO tranche user lists: %w", err)
 	}
+
+	return nil
+}
+
+func reconstructLoExpirations(ctx sdk.Context, k dexkeeper.Keeper) error {
+	allExpirations := k.GetAllLimitOrderExpiration(ctx) // total count varies but is expected to be small or even 0
+
+	expirationsToRemove := make([]dextypes.LimitOrderExpiration, 0)
+	expirationsToUpdate := make([]dextypes.LimitOrderExpiration, 0)
+	for _, expiration := range allExpirations {
+		tranche, found := k.GetLimitOrderTrancheByKey(ctx, expiration.TrancheRef)
+		if !found {
+			return fmt.Errorf("limit order tranche not found for expiration.TrancheRef %s", expiration.TrancheRef)
+		}
+
+		if !strings.HasPrefix(tranche.Key.TrancheKey, "tk-") {
+			continue
+		}
+
+		expirationsToRemove = append(expirationsToRemove, *expiration)
+
+		trancheIdxStr := strings.TrimPrefix(tranche.Key.TrancheKey, "tk-")
+		trancheIdx, err := strconv.ParseUint(trancheIdxStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf("failed to parse tranche idx %s: %w", trancheIdxStr, err)
+		}
+		tranche.Key.TrancheKey = dextypes.NewTrancheKey(trancheIdx)
+		expirationsToUpdate = append(expirationsToUpdate, *dexkeeper.NewLimitOrderExpiration(tranche))
+	}
+
+	if len(expirationsToRemove) != len(expirationsToUpdate) {
+		return fmt.Errorf("mismatch in LO expirations to remove and update counts: %d != %d", len(expirationsToRemove), len(expirationsToUpdate))
+	}
+
+	for _, expiration := range expirationsToRemove {
+		k.RemoveLimitOrderExpiration(ctx, expiration.ExpirationTime, expiration.TrancheRef)
+	}
+	for _, expiration := range expirationsToUpdate {
+		k.SetLimitOrderExpiration(ctx, &expiration)
+	}
+	ctx.Logger().Info("LO expiration keys reconstructed", "count", len(expirationsToUpdate))
 
 	return nil
 }

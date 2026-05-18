@@ -2,6 +2,7 @@ package nextupgrade_test
 
 import (
 	"testing"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -39,13 +40,125 @@ func (suite *UpgradeTestSuite) TestUpgrade() {
 	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
 }
 
-// TestReconstructTrancheKeys verifies the tranche key migration from the plain-decimal
+// TestReconstructLoExpirations verifies the LimitOrderExpiration migration.
+//
+// A LimitOrderExpiration stores a TrancheRef = tranche.Key.KeyMarshal(), which embeds the
+// TrancheKey string as part of its bytes. When a tranche key is rewritten from the old
+// plain-decimal "tk-N" format to the zero-padded "tk-%020d" format, the corresponding
+// expiration entry must be removed from its old store key and re-inserted under the new one.
+//
+// Entries pointing to a base-36 tranche key (no "tk-" prefix) must be left untouched.
+func (suite *UpgradeTestSuite) TestReconstructLoExpirations() {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := suite.ChainA.GetContext().WithChainID("neutron-1")
+	t := suite.T()
+
+	expTime1 := time.Now().UTC().Add(time.Second * 111)
+	expTime2 := time.Now().UTC().Add(time.Second * 222)
+	expTime3 := time.Now().UTC().Add(time.Second * 333)
+
+	// ── pre-upgrade state ────────────────────────────────────────────────────
+
+	// Two active limit-order tranches with old plain-decimal keys and different ExpirationTime.
+	pairID1 := dextypes.MustNewTradePairID(
+		"ibc/B559A80D62249C8AA07A380E2A2BEA6E5CA9A6F079C912C3A9E9B494105E4F81",
+		"factory/neutron1frc0p5czd9uaaymdkug2njz7dc7j65jxukp9apmt9260a8egujkspms2t2/udntrn",
+	)
+	oldKey1 := &dextypes.LimitOrderTrancheKey{
+		TradePairId:           pairID1,
+		TrancheKey:            "tk-19993998",
+		TickIndexTakerToMaker: -43028,
+	}
+	app.DexKeeper.SetLimitOrderTranche(ctx, &dextypes.LimitOrderTranche{
+		Key:            oldKey1,
+		ExpirationTime: &expTime1,
+	})
+	app.DexKeeper.SetLimitOrderExpiration(ctx, &dextypes.LimitOrderExpiration{
+		ExpirationTime: expTime1,
+		TrancheRef:     oldKey1.KeyMarshal(),
+	})
+
+	oldKey2 := &dextypes.LimitOrderTrancheKey{
+		TradePairId:           pairID1,
+		TrancheKey:            "tk-19940606",
+		TickIndexTakerToMaker: -42321,
+	}
+	app.DexKeeper.SetLimitOrderTranche(ctx, &dextypes.LimitOrderTranche{
+		Key:            oldKey2,
+		ExpirationTime: &expTime2,
+	})
+	app.DexKeeper.SetLimitOrderExpiration(ctx, &dextypes.LimitOrderExpiration{
+		ExpirationTime: expTime2,
+		TrancheRef:     oldKey2.KeyMarshal(),
+	})
+
+	// One tranche with the original base-36 sortable key (no "tk-" prefix).
+	// Its expiration must not be touched.
+	pairID2 := dextypes.MustNewTradePairID(
+		"factory/neutron1dqd0wsqldr89m4d9trk2arv35twz7a5erjj6td/nick",
+		"factory/neutron1dqd0wsqldr89m4d9trk2arv35twz7a5erjj6td/jcp",
+	)
+	base36Key := &dextypes.LimitOrderTrancheKey{
+		TradePairId:           pairID2,
+		TrancheKey:            "57mgzl47if5",
+		TickIndexTakerToMaker: 46055,
+	}
+	app.DexKeeper.SetLimitOrderTranche(ctx, &dextypes.LimitOrderTranche{
+		Key:            base36Key,
+		ExpirationTime: &expTime3,
+	})
+	app.DexKeeper.SetLimitOrderExpiration(ctx, &dextypes.LimitOrderExpiration{
+		ExpirationTime: expTime3,
+		TrancheRef:     base36Key.KeyMarshal(),
+	})
+
+	require.Len(t, app.DexKeeper.GetAllLimitOrderExpiration(ctx), 3, "pre-upgrade: 3 expirations")
+
+	// ── run migration ────────────────────────────────────────────────────────
+
+	require.NoError(t, nextupgrade.ReconstructTrancheKeys(ctx, app.AppCodec(), app.DexKeeper))
+
+	// ── post-upgrade assertions ──────────────────────────────────────────────
+
+	require.Len(t, app.DexKeeper.GetAllLimitOrderExpiration(ctx), 3, "post-upgrade: expiration count must not change")
+
+	// --- tk-19993998 expiration → new TrancheRef under tk-00000000000019993998 ---
+
+	newKey1 := &dextypes.LimitOrderTrancheKey{
+		TradePairId:           pairID1,
+		TrancheKey:            dextypes.NewTrancheKey(19993998),
+		TickIndexTakerToMaker: -43028,
+	}
+	_, found := app.DexKeeper.GetLimitOrderExpiration(ctx, expTime1, newKey1.KeyMarshal())
+	require.True(t, found, "new expiration (tk-00000000000019993998) must exist")
+	_, found = app.DexKeeper.GetLimitOrderExpiration(ctx, expTime1, oldKey1.KeyMarshal())
+	require.False(t, found, "old expiration (tk-19993998) must be removed")
+
+	// --- tk-19940606 expiration → new TrancheRef under tk-00000000000019940606 ---
+
+	newKey2 := &dextypes.LimitOrderTrancheKey{
+		TradePairId:           pairID1,
+		TrancheKey:            dextypes.NewTrancheKey(19940606),
+		TickIndexTakerToMaker: -42321,
+	}
+	_, found = app.DexKeeper.GetLimitOrderExpiration(ctx, expTime2, newKey2.KeyMarshal())
+	require.True(t, found, "new expiration (tk-00000000000019940606) must exist")
+	_, found = app.DexKeeper.GetLimitOrderExpiration(ctx, expTime2, oldKey2.KeyMarshal())
+	require.False(t, found, "old expiration (tk-19940606) must be removed")
+
+	// --- base-36 expiration must be unchanged ---
+
+	_, found = app.DexKeeper.GetLimitOrderExpiration(ctx, expTime3, base36Key.KeyMarshal())
+	require.True(t, found, "base-36 expiration must still exist")
+}
+
+// TestReconstructLoTrancheKeys verifies the tranche key migration from the plain-decimal
 // "tk-N" format to the zero-padded "tk-%020d" format. It uses realistic mainnet entries:
 //
 //   - tk-19993998 / tk-19940606: old decimal keys that must be rewritten.
 //   - 57mgzl47if5: original base-36 sortable key (no "tk-" prefix) that must be left untouched.
 //   - pool_reserves: a tick-liquidity entry that is not a limit order; must be untouched.
-func (suite *UpgradeTestSuite) TestReconstructTrancheKeys() {
+func (suite *UpgradeTestSuite) TestReconstructLoTrancheKeys() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	ctx := suite.ChainA.GetContext().WithChainID("neutron-1")
 	t := suite.T()
