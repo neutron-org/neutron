@@ -42,11 +42,11 @@ type NeutronMsg struct {
 	/// that they are the admin of.
 	/// Currently, the burn from address must be the admin contract.
 	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
-	/// Contracts can set before send hook for an existing factory denom
+	/// Contracts can set a before-send hook for an existing factory denom
 	///	that they are the admin of.
-	///	Currently, the set before hook call should be performed from address that must be the admin contract.
+	///	Currently, the before-send hook must be set by the admin contract.
 	SetBeforeSendHook *SetBeforeSendHook `json:"set_before_send_hook,omitempty"`
-	/// Force transferring of a specific denom is only allowed for the creator of the denom registered during CreateDenom.
+	/// Force-transferring a specific denom is only allowed for the admin of the denom.
 	ForceTransfer *ForceTransfer `json:"force_transfer,omitempty"`
 	/// Setting of metadata for a specific denom is only allowed for the admin of the denom.
 	/// It allows the overwriting of the denom metadata in the bank module.
@@ -171,19 +171,19 @@ type BurnTokens struct {
 	BurnFromAddress string `json:"burn_from_address"`
 }
 
-// SetBeforeSendHook Allowing to assign a CosmWasm contract to call with a BeforeSend hook for a specific denom is only
-// allowed for the creator of the denom registered during CreateDenom.
+// SetBeforeSendHook assigns a CosmWasm contract as the BeforeSend hook for a specific denom.
+// Only the denom admin can set it.
 type SetBeforeSendHook struct {
 	Denom        string `json:"denom"`
 	ContractAddr string `json:"contract_addr"`
 }
 
-// SetDenomMetadata is sets the denom's bank metadata
+// SetDenomMetadata sets the denom's bank metadata.
 type SetDenomMetadata struct {
 	banktypes.Metadata
 }
 
-// ForceTransfer forces transferring of a specific denom is only allowed for the creator of the denom registered during CreateDenom.
+// ForceTransfer force-transfers a specific denom. Only the denom admin can perform this action.
 type ForceTransfer struct {
 	Denom               string   `json:"denom"`
 	Amount              math.Int `json:"amount"`

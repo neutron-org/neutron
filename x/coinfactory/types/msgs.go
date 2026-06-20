@@ -151,7 +151,7 @@ func (m MsgBurn) GetSigners() []sdk.AccAddress {
 
 var _ sdk.Msg = &MsgForceTransfer{}
 
-// NewMsgForceTransfer creates a transfer funds from one account to another
+// NewMsgForceTransfer creates a message to force-transfer funds from one account to another.
 func NewMsgForceTransfer(sender string, amount sdk.Coin, fromAddr, toAddr string) *MsgForceTransfer {
 	return &MsgForceTransfer{
 		Sender:              sender,
@@ -196,7 +196,7 @@ func (m MsgForceTransfer) GetSigners() []sdk.AccAddress {
 
 var _ sdk.Msg = &MsgChangeAdmin{}
 
-// NewMsgChangeAdmin creates a message to burn tokens
+// NewMsgChangeAdmin creates a message to change the admin of a denom.
 func NewMsgChangeAdmin(sender, denom, newAdmin string) *MsgChangeAdmin {
 	return &MsgChangeAdmin{
 		Sender:   sender,
