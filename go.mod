@@ -1,6 +1,6 @@
 module github.com/neutron-org/neutron/v11
 
-go 1.24.10
+go 1.25
 
 require (
 	cosmossdk.io/api v0.9.2
@@ -32,7 +32,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3
-	github.com/hashicorp/go-metrics v0.5.4
+	github.com/hashicorp/go-metrics v0.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/zerolog v1.34.0
