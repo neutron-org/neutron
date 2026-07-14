@@ -463,7 +463,7 @@ func PerformCreateDenom(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractA
 	return nil
 }
 
-// createDenom forces a transfer of a tokenFactory token
+// forceTransfer forces a transfer of a tokenfactory token.
 func (m *CustomMessenger) forceTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, forceTransfer *bindings.ForceTransfer) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := PerformForceTransfer(m.TokenFactory, ctx, contractAddr, forceTransfer)
 	if err != nil {
