@@ -205,13 +205,18 @@ test-sim-multi-seed-short: runsim
 lint:
 	golangci-lint run --fix --config .golangci.yml
 	find . -name '*.go' -not -name "*.pb.go" -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*_test.go" | xargs gofmt -d -s
+	$(MAKE) lint-mapiter
+
+lint-mapiter:
+	go run ./internal/analyzers/mapiter -- ./...
+
 
 format: lint
 	@go install mvdan.cc/gofumpt@latest
 	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name "*.pb.go" -not -name "*.pb.gw.go" -not -name "*.pulsar.go" -not -path "./crypto/keys/secp256k1/*" | xargs -I % sh -c 'gofumpt -w -l % && goimports -w -local github.com/neutron-org %'
 
-.PHONY: format
+.PHONY: format lint-mapiter
 
 ###############################################################################
 ###                                Protobuf                                 ###

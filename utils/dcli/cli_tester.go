@@ -27,7 +27,7 @@ type QueryCliTestCase[Q proto.Message] struct {
 }
 
 func RunTxTestCases[M sdk.HasValidateBasic](t *testing.T, desc *TxCliDesc, testcases map[string]TxCliTestCase[M]) {
-	for name, tc := range testcases {
+	for name, tc := range testcases { //mapiter:ignore
 		t.Run(name, func(t *testing.T) {
 			RunTxTestCase(t, desc, tc)
 		})
@@ -35,7 +35,7 @@ func RunTxTestCases[M sdk.HasValidateBasic](t *testing.T, desc *TxCliDesc, testc
 }
 
 func RunQueryTestCases[Q proto.Message](t *testing.T, desc *QueryDescriptor, testcases map[string]QueryCliTestCase[Q]) {
-	for name, tc := range testcases {
+	for name, tc := range testcases { //mapiter:ignore
 		t.Run(name, func(t *testing.T) {
 			RunQueryTestCase(t, desc, tc)
 		})

@@ -56,7 +56,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	tempDir := tempDir()
 	// cleanup temp dir after we are done with the tempApp, so we don't leave behind a
 	// new temporary directory for every invocation. See https://github.com/CosmWasm/wasmd/issues/2017
-	defer os.RemoveAll(tempDir) //nolint:errcheck
+	defer os.RemoveAll(tempDir)
 	initAppOptions.Set(flags.FlagHome, tempDir)
 	tempApplication := app.New(
 		log.NewNopLogger(),

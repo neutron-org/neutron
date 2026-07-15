@@ -79,7 +79,7 @@ func SubmitQueryResultCmd() *cobra.Command {
 
 			resultFile := args[1]
 
-			result, err := os.ReadFile(resultFile) //nolint:gosec
+			result, err := os.ReadFile(resultFile)
 			if err != nil {
 				return fmt.Errorf("failed to read query result file: %w", err)
 			}

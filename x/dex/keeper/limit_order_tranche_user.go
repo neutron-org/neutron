@@ -113,7 +113,7 @@ func (k Keeper) GetAllLimitOrderTrancheUser(ctx sdk.Context) (list []*types.Limi
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.LimitOrderTrancheUserKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		val := &types.LimitOrderTrancheUser{}
@@ -132,7 +132,7 @@ func (k Keeper) GetAllLimitOrderTrancheUserForAddress(
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), addressPrefix)
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
-	defer iterator.Close() //nolint:errcheck
+	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		val := &types.LimitOrderTrancheUser{}
