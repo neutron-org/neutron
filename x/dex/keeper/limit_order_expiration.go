@@ -10,19 +10,6 @@ import (
 	"github.com/neutron-org/neutron/v11/x/dex/types"
 )
 
-// Creates a new LimitOrderExpiration struct based on a LimitOrderTranche
-func NewLimitOrderExpiration(tranche *types.LimitOrderTranche) *types.LimitOrderExpiration {
-	trancheExpiry := tranche.ExpirationTime
-	if trancheExpiry == nil {
-		panic("Cannot create LimitOrderExpiration from tranche with nil ExpirationTime")
-	}
-
-	return &types.LimitOrderExpiration{
-		TrancheRef:     tranche.Key.KeyMarshal(),
-		ExpirationTime: *tranche.ExpirationTime,
-	}
-}
-
 // SetLimitOrderExpiration set a specific goodTilRecord in the store from its index
 func (k Keeper) SetLimitOrderExpiration(
 	ctx sdk.Context,

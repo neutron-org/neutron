@@ -1,7 +1,10 @@
 package types
 
 import (
+	fmt "fmt"
+
 	math_utils "github.com/neutron-org/neutron/v11/utils/math"
+	"github.com/neutron-org/neutron/v11/x/dex/utils"
 )
 
 var _ TickLiquidityKey = (*LimitOrderTrancheKey)(nil)
@@ -41,4 +44,9 @@ func (p LimitOrderTrancheKey) MustPrice() (priceTakerToMaker math_utils.PrecDec)
 		panic(err)
 	}
 	return price
+}
+
+// NewTrancheKey returns a new tranche key based on the tranche index.
+func NewTrancheKey(trancheIdx uint64) string {
+	return fmt.Sprintf("tk-%s", utils.Uint64ToSortableString(trancheIdx))
 }

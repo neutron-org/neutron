@@ -178,7 +178,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountToPlace)
 
 		if orderType.HasExpiration() {
-			goodTilRecord := NewLimitOrderExpiration(placeTranche)
+			goodTilRecord := types.NewLimitOrderExpiration(placeTranche)
 			k.SetLimitOrderExpiration(ctx, goodTilRecord)
 			ctx.GasMeter().ConsumeGas(types.ExpiringLimitOrderGas, "Expiring LimitOrder Fee")
 		}

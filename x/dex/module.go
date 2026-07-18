@@ -174,6 +174,9 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	if err := cfg.RegisterMigration(types.ModuleName, 7, m.Migrate7to8); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/dex from version 7 to 8: %v", err))
 	}
+	if err := cfg.RegisterMigration(types.ModuleName, 8, m.Migrate8to9); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/dex from version 8 to 9: %v", err))
+	}
 }
 
 // RegisterInvariants registers the capability module's invariants.

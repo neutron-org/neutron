@@ -21,7 +21,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 			k.SetLimitOrderTranche(ctx, tranche)
 			if tranche.HasExpiration() {
 				// re-create expiration record
-				loExpiration := keeper.NewLimitOrderExpiration(tranche)
+				loExpiration := types.NewLimitOrderExpiration(tranche)
 				k.SetLimitOrderExpiration(ctx, loExpiration)
 			}
 		}

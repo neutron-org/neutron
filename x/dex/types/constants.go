@@ -1,6 +1,6 @@
 package types
 
-const ConsensusVersion = 8
+const ConsensusVersion = 9
 
 const (
 	MaxRoutesPerRequest = 16

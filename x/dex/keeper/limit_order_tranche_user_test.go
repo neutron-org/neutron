@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -20,7 +19,7 @@ func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int)
 	items := make([]*types.LimitOrderTrancheUser, n)
 	for i := range items {
 		val := &types.LimitOrderTrancheUser{
-			TrancheKey:            fmt.Sprintf("tk-%d", i),
+			TrancheKey:            types.NewTrancheKey(uint64(i)),
 			Address:               strconv.Itoa(i),
 			TradePairId:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
 			TickIndexTakerToMaker: int64(i),
