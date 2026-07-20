@@ -81,9 +81,9 @@ BinarySearch:
 			// Use bottom logic
 			break BinarySearch
 		case PrecomputedPrices[mid].LT(price):
-			left = mid + 1
+			left = mid
 		default:
-			right = mid - 1
+			right = mid
 
 		}
 	}

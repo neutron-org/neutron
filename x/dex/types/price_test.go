@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	fmt "fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -37,7 +38,7 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 		},
 		{
 			desc: "-200100",
-			tick: -2000100,
+			tick: -200100,
 		},
 		{
 			desc: "400000",
@@ -65,15 +66,28 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			price, err1 := types.CalcPrice(tc.tick)
 			val, err2 := types.CalcTickIndexFromPrice(price)
-			if err1 != nil {
+			if tc.err {
 				require.Error(t, err1)
-				require.Error(t, err2)
 			} else {
 				// If we are not outside the tick range we should TestCalcTickIndexFromPrice to never throw
 				require.NoError(t, err1)
 				require.NoError(t, err2)
 				require.Equal(t, tc.tick, val)
 			}
+		})
+	}
+}
+
+func TestCalcTickIndexFromPriceFullRange(t *testing.T) {
+	for i := int64(types.MaxTickExp) * -1; i <= int64(types.MaxTickExp); i++ {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			price, err1 := types.CalcPrice(i)
+			val, err2 := types.CalcTickIndexFromPrice(price)
+			// If we are not outside the tick range we should TestCalcTickIndexFromPrice to never throw
+			require.NoError(t, err1)
+			require.NoError(t, err2)
+			require.Equal(t, i, val)
+
 		})
 	}
 }
